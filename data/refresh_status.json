@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-03T12:50:39Z",
+  "generated_at": "2026-07-03T15:46:40Z",
   "mode": "runtime",
   "sports": {
     "NFL": {
@@ -10,10 +10,17 @@
     },
     "MLB": {
       "status": "success",
-      "message": "MLB schedule refreshed from MLB Stats API with 13 games. Model probabilities are schedule_only until a model export is available.",
-      "last_success_at": "2026-07-03T12:50:39Z",
+      "message": "MLB schedule refreshed from MLB Stats API with 13 games. Odds unavailable - add ODDS_API_KEY to enable moneyline/spread/line movement data. Model probabilities are schedule_only until a model export is available.",
+      "last_success_at": "2026-07-03T15:46:40Z",
       "used_cache": false,
       "python": "C:\\Users\\Vraj.Patel\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe"
     }
+  },
+  "odds": {
+    "provider": "the_odds_api",
+    "enabled": false,
+    "key_present": false,
+    "region": "us",
+    "markets": "h2h,spreads,totals"
   }
 }

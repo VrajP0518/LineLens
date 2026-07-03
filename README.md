@@ -65,12 +65,21 @@ Use this workflow on restricted Windows work machines.
 ```powershell
 npm install
 npm run app
+npm run app:dist
 npm run check:js
 ```
 
 `npm run app` serves the vanilla HTML/CSS/JS dashboard at a local static URL. It does not require MSVC or a local Tauri native build.
 
 Browser/static mode uses existing exported JSON/JS files only. Automatic runtime refresh is available in the Tauri desktop app, where the frontend can call the Rust command that runs `scripts/refresh_data.py` in the background.
+
+The Tauri production bundle uses a generated web folder:
+
+```powershell
+npm run build:web
+```
+
+This creates `dist-web/` with only the static frontend assets Tauri should bundle. Do not point `tauri.conf.json > build > frontendDist` at the repo root, because that includes `node_modules`, `src-tauri`, and build output folders.
 
 ## Local Python / Data Work
 
@@ -158,6 +167,30 @@ If no trained MLB model is available, the refresh still writes a real schedule-b
 
 NFL refresh checks for cached processed features and an NFL model, then runs the existing export wrapper when possible. During offseason or when processed features are missing, it preserves cached data and writes an offseason/cache status instead of failing the app.
 
+## Optional Odds API
+
+Core app features do not require API keys. MLB schedules use the public MLB Stats API and NFL uses the existing nfl-data-py/nflverse/cached pipeline.
+
+Line movement, spreads, totals, moneylines, and closing line value can later use an optional odds provider. Current support is structured for The Odds API and is disabled unless a key is present.
+
+To get an optional key:
+
+1. Go to The Odds API website.
+2. Create an account.
+3. Copy the API key.
+4. Create a `.env` file in the repo root or set environment variables.
+
+Example `.env`:
+
+```text
+ODDS_API_KEY=your_key_here
+ODDS_PROVIDER=the_odds_api
+ODDS_REGION=us
+ODDS_MARKETS=h2h,spreads,totals
+```
+
+Do not commit `.env`. The app works without `ODDS_API_KEY` and will show: odds unavailable / missing key.
+
 ## Reports, Calibration, And Model Comparison
 
 The Reports page reads:
@@ -198,6 +231,14 @@ Local Tauri builds on Windows require Microsoft C++ Build Tools/MSVC. On restric
 This repo builds the Windows desktop app through GitHub Actions. The local machine can edit UI, run static checks, run compatible Python scripts, and push changes.
 
 The Tauri v2 Rust crate uses the standard `src-tauri/src/lib.rs` plus `src-tauri/src/main.rs` structure so GitHub Actions can resolve the `linelens_sports_lib` library crate during build.
+
+The frontend bundle path is:
+
+```text
+src-tauri/tauri.conf.json > build.frontendDist = ../dist-web
+```
+
+`beforeBuildCommand` runs `npm run build:web`, which exits after copying the static assets.
 
 ## Build Desktop App Through GitHub Actions
 
@@ -245,10 +286,12 @@ npm install
 npm run app
 npm run check:js
 python -m compileall src scripts
+npm run build:web
+npm run app:dist
 npm run refresh:mlb
 git status
 git add .
-git commit -m "Fix Tauri build and add automatic data refresh"
+git commit -m "Fix Tauri frontend bundle and improve data sources"
 git push origin main
 ```
 
@@ -259,3 +302,4 @@ git push origin main
 - NFL injury impact and MLB pitcher impact have graceful placeholders when source data is missing.
 - Report data is demo until a real backtest exporter replaces `data/reports/model_report.json`.
 - Local native Tauri builds remain optional; use GitHub Actions for the Windows artifact on restricted machines.
+- `dist-web/` is generated and ignored by Git; source assets remain in the repo root and `data/`.

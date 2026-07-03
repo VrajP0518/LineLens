@@ -438,6 +438,7 @@ function renderHome() {
         <section class="summary-grid">
             ${card("NFL games loaded", state.nfl.games.length, dataMode(state.nfl.payload, state.nfl.games))}
             ${card("MLB games loaded", state.mlb.games.length, dataMode(state.mlb.payload, state.mlb.games))}
+            ${card("Odds status", oddsStatusLabel(), oddsStatusMessage())}
             ${card("Strong edges", top.filter(row => row.edge >= 0.1).length, "confidence distance from 50%")}
             ${card("Best current pick", best ? `${best.pick}` : "-", best ? `${best.game.away} @ ${best.game.home}` : "no picks loaded", "summary-card--accent")}
             ${card("Latest export", latest ? formatDate(latest) : "-", latest ? timestamp(latest) : "no export timestamp")}
@@ -455,6 +456,21 @@ function renderHome() {
             </article>
         </section>
     `;
+}
+
+function oddsStatusLabel() {
+    const odds = state.refreshStatus?.odds;
+    if (!odds) return "unknown";
+    if (odds.enabled) return "enabled";
+    if (!odds.key_present) return "missing key";
+    return "unavailable";
+}
+
+function oddsStatusMessage() {
+    const odds = state.refreshStatus?.odds;
+    if (!odds) return "refresh status pending";
+    if (odds.enabled) return `${odds.provider} / ${odds.markets}`;
+    return "add ODDS_API_KEY for lines";
 }
 
 function refreshSportStatus(sport) {
@@ -893,6 +909,9 @@ function renderSettings() {
         ["App version", state.app.version || APP_VERSION, "Visible release metadata"],
         ["NFL data mode", dataMode(state.nfl.payload, state.nfl.games), "data/predictions/nfl_predictions.json"],
         ["MLB data mode", dataMode(state.mlb.payload, state.mlb.games), "data/predictions/mlb_predictions.json"],
+        ["MLB Stats API", "No key required", "schedule/probable pitchers/status/scores"],
+        ["NFL data", "nfl-data-py/cached pipeline", "exported NFL predictions or offseason cache"],
+        ["Odds API", oddsStatusLabel(), "optional The Odds API via ODDS_API_KEY"],
         ["Reports mode", state.report?.metadata?.demo ? "demo" : state.report ? "real" : "missing", "data/reports/model_report.json"],
         ["Team metadata", state.teamPayload?.teams?.length ? `${state.teamPayload.teams.length} teams` : "missing", "data/team_metadata.json"],
         ["Desktop build", "GitHub Actions", ".github/workflows/tauri-windows-build.yml"],

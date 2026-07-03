@@ -3,7 +3,7 @@
     "sport": "MLB",
     "app": "LineLens Sports",
     "version": "v0.2.0",
-    "generated_at": "2026-07-03T12:50:39Z",
+    "generated_at": "2026-07-03T15:46:40Z",
     "model_type": "schedule_only",
     "target": "home_win",
     "row_count": 13,
@@ -12,7 +12,8 @@
     "prediction_mode": "schedule_only",
     "schedule_source": "MLB Stats API",
     "raw_schedule_file": "data\\raw\\mlb\\schedule_2026-07-03.json",
-    "odds_status": "Optional odds API hooks only; no odds provider required."
+    "odds_status": "Odds unavailable - add ODDS_API_KEY to enable moneyline/spread/line movement data.",
+    "odds_provider": "the_odds_api"
   },
   "games": [
     {

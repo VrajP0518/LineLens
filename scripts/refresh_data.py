@@ -18,6 +18,11 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.shared.odds_provider import fetch_odds, odds_config_status
+
 DATA_DIR = ROOT / "data"
 RAW_MLB_DIR = DATA_DIR / "raw" / "mlb"
 PREDICTIONS_DIR = DATA_DIR / "predictions"
@@ -48,6 +53,7 @@ def load_status() -> dict[str, Any]:
 
 def write_status(status: dict[str, Any]) -> None:
     status["generated_at"] = utc_now()
+    status["odds"] = odds_config_status()
     STATUS_JSON.parent.mkdir(parents=True, exist_ok=True)
     STATUS_JSON.write_text(json.dumps(status, indent=2), encoding="utf-8")
     STATUS_JS.write_text(
@@ -210,6 +216,9 @@ def refresh_mlb(status: dict[str, Any], target_date: str | None, date_range: lis
     try:
         schedule, raw_path = fetch_mlb_schedule(target_date, date_range)
         payload = mlb_schedule_payload(schedule, raw_path)
+        odds = fetch_odds("MLB")
+        payload["metadata"]["odds_status"] = odds.message
+        payload["metadata"]["odds_provider"] = odds.provider
         write_json_and_js(
             payload,
             PREDICTIONS_DIR / "mlb_predictions.json",
@@ -221,7 +230,7 @@ def refresh_mlb(status: dict[str, Any], target_date: str | None, date_range: lis
             status,
             "MLB",
             "success",
-            f"MLB schedule refreshed from MLB Stats API with {count} games. Model probabilities are schedule_only until a model export is available.",
+            f"MLB schedule refreshed from MLB Stats API with {count} games. {odds.message} Model probabilities are schedule_only until a model export is available.",
             used_cache=False,
         )
     except Exception as exc:  # noqa: BLE001 - surface a friendly runtime status
@@ -239,6 +248,7 @@ def first_existing(paths: list[Path]) -> Path | None:
 
 
 def refresh_nfl(status: dict[str, Any]) -> None:
+    odds = fetch_odds("NFL")
     features = first_existing(
         [
             ROOT / "data" / "processed" / "nfl" / "spread_dataset.parquet",
@@ -258,7 +268,7 @@ def refresh_nfl(status: dict[str, Any]) -> None:
             status,
             "NFL",
             "offseason",
-            "NFL data refresh checked local cache. No processed feature export was found; preserving cached/offseason payload.",
+            f"NFL data refresh checked local cache. No processed feature export was found; preserving cached/offseason payload. {odds.message}",
             used_cache=True,
         )
         return
