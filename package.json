@@ -1,6 +1,6 @@
 {
   "name": "linelens-sports",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "private": true,
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
@@ -10,9 +10,17 @@
     "check:js": "node --check app.js",
     "check:python": "python -m compileall src scripts",
     "generate:icons": "python scripts/generate_app_icons.py",
-    "refresh:data": "python scripts/refresh_data.py --sport all",
-    "refresh:mlb": "python scripts/refresh_data.py --sport mlb",
-    "refresh:nfl": "python scripts/refresh_data.py --sport nfl",
+    "refresh:data": "python scripts/refresh_data.py --sport all --mode current",
+    "refresh:startup": "python scripts/refresh_data.py --sport all --mode startup",
+    "refresh:data:real": "python scripts/refresh_data.py --sport all --mode real",
+    "refresh:mlb": "python scripts/refresh_data.py --sport mlb --mode current",
+    "refresh:mlb:history": "python scripts/refresh_data.py --sport mlb --mode history",
+    "refresh:mlb:train": "python scripts/refresh_data.py --sport mlb --mode train",
+    "refresh:mlb:predict": "python scripts/refresh_data.py --sport mlb --mode predict",
+    "refresh:mlb:all": "python scripts/refresh_data.py --sport mlb --mode all",
+    "refresh:mlb:export": "python scripts/refresh_data.py --sport mlb --mode export",
+    "refresh:nfl": "python scripts/refresh_data.py --sport nfl --mode export",
+    "refresh:nfl:real": "python scripts/refresh_data.py --sport nfl --mode real",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"

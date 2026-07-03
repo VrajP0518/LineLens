@@ -26,6 +26,29 @@ def _write_json(payload: dict, path: Path) -> None:
     console.print(f"[green]Saved[/green] {path}")
 
 
+def _fetch_schedule_payload(
+    season: int,
+    *,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    game_type: str = "R",
+) -> dict:
+    params = {
+        "sportId": 1,
+        "season": season,
+        "gameType": game_type,
+        "hydrate": "probablePitcher,team,linescore",
+    }
+    if start_date:
+        params["startDate"] = start_date
+    if end_date:
+        params["endDate"] = end_date
+
+    response = requests.get(SCHEDULE_URL, params=params, timeout=45)
+    response.raise_for_status()
+    return response.json()
+
+
 @app.command("schedule")
 def schedule(
     season: int = typer.Option(date.today().year, help="MLB season to cache."),
@@ -36,24 +59,39 @@ def schedule(
     """Cache MLB public schedule data, including scores and probable pitchers when supplied."""
 
     ensure_project_dirs()
-    params = {
-        "sportId": 1,
-        "season": season,
-        "hydrate": "probablePitcher,team,linescore",
-    }
-    if start_date:
-        params["startDate"] = start_date
-    if end_date:
-        params["endDate"] = end_date
-
     console.print(f"Fetching MLB schedule for {season}...")
-    response = requests.get(SCHEDULE_URL, params=params, timeout=30)
-    response.raise_for_status()
-    payload = response.json()
+    payload = _fetch_schedule_payload(season, start_date=start_date, end_date=end_date)
 
     out = output_file or MLB_RAW_DIR / f"schedule_{season}.json"
     out = resolve_project_path(out)
     _write_json(payload, out)
+
+
+@app.command("history")
+def history(
+    start_season: int = typer.Option(2021, help="First historical MLB season to cache."),
+    end_season: int = typer.Option(2025, help="Last historical MLB season to cache."),
+    start_month_day: str = typer.Option("03-01", help="Season cache start as MM-DD."),
+    end_month_day: str = typer.Option("11-30", help="Season cache end as MM-DD."),
+    force: bool = typer.Option(False, "--force", "--overwrite", help="Re-download files that already exist."),
+) -> None:
+    """Cache regular-season MLB schedules/results for leakage-safe backtests."""
+
+    ensure_project_dirs()
+    if end_season < start_season:
+        raise typer.BadParameter("end-season must be greater than or equal to start-season.")
+
+    for season in range(start_season, end_season + 1):
+        out = resolve_project_path(MLB_RAW_DIR / f"history_{season}.json")
+        if out.exists() and not force:
+            console.print(f"[cyan]Using cached[/cyan] {out}")
+            continue
+
+        start_date = f"{season}-{start_month_day}"
+        end_date = f"{season}-{end_month_day}"
+        console.print(f"Fetching MLB regular-season history for {season} ({start_date} to {end_date})...")
+        payload = _fetch_schedule_payload(season, start_date=start_date, end_date=end_date, game_type="R")
+        _write_json(payload, out)
 
 
 @app.command("team-stats")

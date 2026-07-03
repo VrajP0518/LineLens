@@ -1,4 +1,4 @@
-const APP_VERSION = "v0.2.0";
+const APP_VERSION = "v0.4.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 
@@ -9,6 +9,7 @@ const DATA_SOURCES = {
     refresh: ["data/refresh_status.json"],
     nfl: ["data/predictions/nfl_predictions.json", "data/predictions.json"],
     mlb: ["data/predictions/mlb_predictions.json"],
+    mlbBacktest: ["data/predictions/mlb_backtest_predictions.json"],
 };
 
 const state = {
@@ -19,6 +20,7 @@ const state = {
     refreshRuntime: { available: false, active: false, message: "Checking refresh availability..." },
     nfl: { payload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null, games: [], error: null },
     mlb: { payload: window.__MLB_PREDICTIONS__ || null, games: [], error: null },
+    mlbBacktest: { payload: window.__MLB_BACKTEST_PREDICTIONS__ || null, games: [], error: null },
     selected: { nfl: null, mlb: null, teamSport: "MLB", teamCode: "TOR", reportSport: "MLB" },
     tracker: [],
     charts: {},
@@ -199,8 +201,10 @@ function teamCell(sport, code, display) {
 }
 
 function getGameProbability(game, sport) {
-    if (sport === "NFL") return safeNumber(game.model_home_cover);
-    return safeNumber(game.home_win_probability);
+    if (sport === "NFL") {
+        return safeNumber(game.home_cover_probability ?? game.cover_probability ?? game.model_home_cover);
+    }
+    return safeNumber(game.home_win_probability ?? game.model_home_win);
 }
 
 function getGamePick(game, sport) {
@@ -262,21 +266,23 @@ function getCLVSummary(game) {
     return "Matched close";
 }
 
-function isDemoPayload(payload) {
-    const meta = normalizeMeta(payload);
-    return Boolean(meta.demo) || meta.mode === "demo" || meta.model_type === "sample_fallback";
-}
-
 function dataMode(payload, games) {
     if (!payload) return "missing";
-    if (isDemoPayload(payload)) return "demo";
+    const meta = normalizeMeta(payload);
+    if (meta.real_data === false) return "missing";
+    if (meta.prediction_mode === "schedule_only") return "schedule only";
     return games.length ? "real" : "missing";
+}
+
+function isScheduleOnly(game, payload) {
+    return game?.prediction_mode === "schedule_only" || normalizeMeta(payload).prediction_mode === "schedule_only";
 }
 
 function allGames() {
     return [
         ...state.nfl.games.map(game => ({ ...game, sport: "NFL" })),
         ...state.mlb.games.map(game => ({ ...game, sport: "MLB" })),
+        ...state.mlbBacktest.games.map(game => ({ ...game, sport: "MLB" })),
     ];
 }
 
@@ -298,13 +304,14 @@ async function loadAll() {
     setStatus("Loading prediction exports...", "info");
     loadSettings();
     loadTracker();
-    const [app, teams, report, refresh, nfl, mlb] = await Promise.all([
+    const [app, teams, report, refresh, nfl, mlb, mlbBacktest] = await Promise.all([
         loadOptional("app", ["__APP_METADATA__"]),
         loadOptional("teams", ["__TEAM_METADATA__"]),
         loadOptional("reports", ["__MODEL_REPORT__"]),
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
         loadOptional("nfl", ["__NFL_PREDICTIONS__", "__PREDICTIONS__"]),
         loadOptional("mlb", ["__MLB_PREDICTIONS__"]),
+        loadOptional("mlbBacktest", ["__MLB_BACKTEST_PREDICTIONS__"]),
     ]);
 
     state.app = app || state.app;
@@ -317,6 +324,8 @@ async function loadAll() {
     state.mlb.payload = mlb;
     state.mlb.games = normalizeGames(mlb);
     state.mlb.error = mlb ? null : "No MLB predictions found. Run the MLB export command.";
+    state.mlbBacktest.payload = mlbBacktest;
+    state.mlbBacktest.games = normalizeGames(mlbBacktest);
     teamIndex = buildTeamIndex();
 
     $("#sidebar-version").textContent = state.app.version || APP_VERSION;
@@ -333,7 +342,7 @@ async function loadAll() {
             : "Automatic desktop refresh is available in the Tauri app. Browser/static mode uses existing exported data.";
         renderAll();
         if (state.refreshRuntime.available) {
-            refreshData("all", { background: true });
+            runStartupRefresh({ background: true });
         }
     }
 }
@@ -374,11 +383,38 @@ async function refreshData(sport = "all", options = {}) {
     }
 }
 
+async function runStartupRefresh(options = {}) {
+    if (!isTauriRefreshAvailable()) {
+        state.refreshRuntime.message = "Automatic startup refresh is available in the Tauri desktop app. Browser/static mode uses existing exported data.";
+        showToast(state.refreshRuntime.message);
+        renderAll();
+        return;
+    }
+    state.refreshRuntime.available = true;
+    state.refreshRuntime.active = true;
+    state.refreshRuntime.message = "Running startup data refresh...";
+    if (!options.background) showToast("Running startup refresh...");
+    renderAll();
+    try {
+        const message = await tauriInvoke("run_startup_refresh", {});
+        state.refreshRuntime.message = message || "Startup refresh complete.";
+        showToast("Startup refresh complete");
+        await loadAllAfterRefresh();
+    } catch (error) {
+        state.refreshRuntime.message = String(error?.message || error || "Startup refresh failed.");
+        showToast("Startup refresh failed");
+    } finally {
+        state.refreshRuntime.active = false;
+        renderAll();
+    }
+}
+
 async function loadAllAfterRefresh() {
-    const [refresh, nfl, mlb] = await Promise.all([
+    const [refresh, nfl, mlb, mlbBacktest] = await Promise.all([
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
         loadOptional("nfl", []),
         loadOptional("mlb", []),
+        loadOptional("mlbBacktest", []),
     ]);
     if (refresh) {
         state.refreshStatus = refresh;
@@ -391,6 +427,10 @@ async function loadAllAfterRefresh() {
     if (mlb) {
         state.mlb.payload = mlb;
         state.mlb.games = normalizeGames(mlb);
+    }
+    if (mlbBacktest) {
+        state.mlbBacktest.payload = mlbBacktest;
+        state.mlbBacktest.games = normalizeGames(mlbBacktest);
     }
 }
 
@@ -448,7 +488,7 @@ function renderHome() {
         <section class="dashboard-grid">
             <article class="panel">
                 <header class="section-header"><div><p class="eyebrow">Top model edges</p><h2>Best leans</h2></div><span class="chip">${top.length ? "ranked" : "empty"}</span></header>
-                ${top.length ? renderEdgeList(top) : emptyState("No model probabilities found", "Run an export command or use the included MLB demo payload.")}
+                ${top.length ? renderEdgeList(top) : emptyState("No real model probabilities found", "Run npm run refresh:startup or npm run refresh:mlb:all.")}
             </article>
             <article class="panel">
                 <header class="section-header"><div><p class="eyebrow">Today / Upcoming</p><h2>Board watch</h2></div></header>
@@ -495,9 +535,9 @@ function renderRefreshPanel(context = "home") {
                     <p class="muted">${escapeHtml(state.refreshRuntime.message || "Loading cached predictions first.")}</p>
                 </div>
                 <div class="report-actions">
-                    <button class="btn btn--primary" data-refresh-sport="all" ${disabled}>Refresh All Data</button>
-                    <button class="btn" data-refresh-sport="nfl" ${disabled}>Refresh NFL</button>
-                    <button class="btn" data-refresh-sport="mlb" ${disabled}>Refresh MLB</button>
+                    <button class="btn btn--primary" data-startup-refresh ${disabled}>Run Startup Refresh</button>
+                    <button class="btn" data-refresh-sport="nfl" ${disabled}>Run NFL Real Export</button>
+                    <button class="btn" data-refresh-sport="mlb" ${disabled}>Refresh Current MLB</button>
                 </div>
             </header>
             <div class="summary-grid summary-grid--compact">
@@ -587,21 +627,25 @@ function renderNFL() {
 }
 
 function renderMLB() {
-    const games = state.mlb.games;
-    const selected = state.selected.mlb || games[0] || null;
+    const currentHasModel = state.mlb.games.some(game => getGameProbability(game, "MLB") !== null);
+    const usingBacktest = !currentHasModel && state.mlbBacktest.games.length > 0;
+    const games = usingBacktest ? state.mlbBacktest.games : state.mlb.games;
+    const payload = usingBacktest ? state.mlbBacktest.payload : state.mlb.payload;
+    const selectedStillVisible = games.some(game => String(game.game_id || game.id || "") === String(state.selected.mlb?.game_id || state.selected.mlb?.id || ""));
+    const selected = selectedStillVisible ? state.selected.mlb : games[0] || null;
     state.selected.mlb = selected;
     $("#view-mlb").innerHTML = `
         <section class="module-header panel">
-            <div><p class="eyebrow">MLB Moneyline Predictor</p><h2>Daily moneyline board with pitcher and market-readiness context</h2><p class="muted">MLB schedule source: MLB Stats API. Model status: ${escapeHtml(mlbModelStatus())}.</p></div>
+            <div><p class="eyebrow">MLB Moneyline Predictor</p><h2>Daily moneyline board with pitcher and market-readiness context</h2><p class="muted">MLB schedule source: MLB Stats API. Model status: ${escapeHtml(mlbModelStatus())}.${usingBacktest ? " Showing 2025 historical backtest because the current board has no model probabilities." : ""}</p></div>
             <div class="report-actions"><button class="btn" data-refresh-sport="mlb" ${state.refreshRuntime.available ? "" : "disabled"}>Refresh MLB</button>
-            <span class="chip">${dataMode(state.mlb.payload, games)}</span>
+            <span class="chip">${usingBacktest ? "historical backtest" : dataMode(payload, games)}</span>
             </div>
         </section>
-        ${sportSummaryCards("MLB", games, state.mlb.payload)}
+        ${sportSummaryCards("MLB", games, payload)}
         <section class="dashboard-grid">
             <article class="panel panel--wide">
-                <header class="section-header"><div><p class="eyebrow">Today / Upcoming</p><h2>MLB board</h2></div></header>
-                ${games.length ? renderGameTable("MLB", games) : emptyState("No MLB predictions found", "Run the MLB export command or use sample payloads.")}
+                <header class="section-header"><div><p class="eyebrow">${usingBacktest ? "Historical backtest" : "Today / Upcoming"}</p><h2>MLB board</h2></div></header>
+                ${games.length ? renderGameTable("MLB", games, usingBacktest ? "MLB_BACKTEST" : "MLB") : emptyState("No real MLB model export found", "Run npm run refresh:mlb:all.")}
             </article>
             <article class="panel">${renderMatchupDetail("MLB", selected)}</article>
         </section>
@@ -610,20 +654,26 @@ function renderMLB() {
 
 function mlbModelStatus() {
     const meta = normalizeMeta(state.mlb.payload);
+    const backtestMeta = normalizeMeta(state.mlbBacktest.payload);
+    if (backtestMeta.real_data === true && state.mlbBacktest.games.length) {
+        if (meta.prediction_mode === "schedule_only" || meta.model_type === "schedule_only") {
+            return "Model trained; current board is schedule only until current features refresh";
+        }
+        return "Model trained with historical backtest available";
+    }
     if (!state.mlb.payload) return "missing";
-    if (meta.prediction_mode === "schedule_only" || meta.model_type === "schedule_only") return "Schedule loaded, model pending";
-    if (isDemoPayload(state.mlb.payload)) return "Demo predictions";
+    if (meta.prediction_mode === "schedule_only" || meta.model_type === "schedule_only") return "Schedule only - train model to generate predictions";
     return "Model predictions available";
 }
 
-function renderGameTable(sport, games) {
+function renderGameTable(sport, games, source = sport) {
     return `
         <div class="table-wrapper">
             <table class="data-table">
                 <thead><tr><th>Date</th><th>Away</th><th>Home</th><th>Pick</th><th>Prob</th><th>Edge</th><th>Confidence</th><th>CLV</th></tr></thead>
                 <tbody>
                     ${games.map((game, index) => `
-                        <tr class="selectable-row" data-select-game="${sport}" data-game-index="${index}" data-game-id="${escapeHtml(game.game_id || game.id || "")}">
+                        <tr class="selectable-row" data-select-game="${source}" data-game-index="${index}" data-game-id="${escapeHtml(game.game_id || game.id || "")}">
                             <td>${formatDate(game.game_date || game.week || game.season)}</td>
                             <td>${teamCell(sport, game.away, game.away_display || game.away)}</td>
                             <td>${teamCell(sport, game.home, game.home_display || game.home)}</td>
@@ -647,6 +697,11 @@ function renderMatchupDetail(sport, game) {
     const homeProb = getGameProbability(game, sport);
     const awayProb = homeProb === null ? null : 1 - homeProb;
     const isNfl = sport === "NFL";
+    const scheduleOnly = isScheduleOnly(game, sport === "MLB" ? state.mlb.payload : state.nfl.payload);
+    const canTrack = !scheduleOnly && getGamePick(game, sport) !== "-" && homeProb !== null;
+    const probabilityRows = scheduleOnly ? `<div class="empty-state"><strong>Schedule only</strong><p>Train the model to generate probabilities.</p></div>` : `
+            <div class="prob-row"><div class="prob-row__header"><span>${escapeHtml(homeMeta.abbreviation)}</span><strong>${formatProbability(homeProb)}</strong></div><div class="prob-bar"><span style="width:${homeProb === null ? 0 : homeProb * 100}%;background:${homeMeta.primary}"></span></div></div>
+            <div class="prob-row"><div class="prob-row__header"><span>${escapeHtml(awayMeta.abbreviation)}</span><strong>${formatProbability(awayProb)}</strong></div><div class="prob-bar"><span style="width:${awayProb === null ? 0 : awayProb * 100}%;background:${awayMeta.primary}"></span></div></div>`;
     return `
         <div class="matchup-card">
             <div class="matchup-head">
@@ -660,15 +715,14 @@ function renderMatchupDetail(sport, game) {
                 <div><span>${isNfl ? "Away cover/fail" : "Away win"}</span><strong>${formatProbability(awayProb)}</strong></div>
                 <div><span>Confidence</span>${confidenceTag(getGameConfidence(game, sport))}</div>
             </div>
-            <div class="prob-row"><div class="prob-row__header"><span>${escapeHtml(homeMeta.abbreviation)}</span><strong>${formatProbability(homeProb)}</strong></div><div class="prob-bar"><span style="width:${homeProb === null ? 0 : homeProb * 100}%;background:${homeMeta.primary}"></span></div></div>
-            <div class="prob-row"><div class="prob-row__header"><span>${escapeHtml(awayMeta.abbreviation)}</span><strong>${formatProbability(awayProb)}</strong></div><div class="prob-bar"><span style="width:${awayProb === null ? 0 : awayProb * 100}%;background:${awayMeta.primary}"></span></div></div>
+            ${probabilityRows}
             <div class="detail-grid">
                 ${isNfl ? renderNFLImpact(game) : renderMLBImpact(game)}
                 ${renderLineMovement(game, sport)}
                 ${renderCLV(game, sport)}
                 <div class="detail-card"><span>Result status</span><strong>${escapeHtml(game.result || game.status || "Pending")}</strong></div>
             </div>
-            <button class="btn btn--primary full-width" data-add-tracker="${sport}" data-game-id="${escapeHtml(game.game_id || game.id || "")}">Add to Tracker</button>
+            <button class="btn btn--primary full-width" data-add-tracker="${sport}" data-game-id="${escapeHtml(game.game_id || game.id || "")}" ${canTrack ? "" : "disabled"}>${canTrack ? "Add to Tracker" : "No model prediction"}</button>
         </div>
     `;
 }
@@ -710,7 +764,7 @@ function renderReports() {
         </section>
         <section class="dashboard-grid">
             <article class="panel">
-                <header class="section-header"><div><p class="eyebrow">Calibration</p><h2>${sport} calibration</h2></div><span class="chip">${state.report?.metadata?.demo ? "demo" : "real"}</span></header>
+                <header class="section-header"><div><p class="eyebrow">Calibration</p><h2>${sport} calibration</h2></div><span class="chip">${state.report?.metadata?.real_data === false ? "missing" : "real"}</span></header>
                 <div class="trend-chart"><canvas id="calibration-chart"></canvas></div>
                 ${renderCalibrationTable(report.calibration || [])}
             </article>
@@ -787,7 +841,7 @@ function generateReportText(sport) {
         `- Prediction mode: ${dataMode(sport === "NFL" ? state.nfl.payload : state.mlb.payload, sport === "NFL" ? state.nfl.games : state.mlb.games)}.`,
         `- Odds data: ${meta.odds_status || "Optional/unavailable."}`,
         sport === "MLB" ? "- Probable pitcher data may be partial; missing pitcher data falls back to team-level model only." : "- Injury impact depends on exported injury fields; missing injuries are labeled unknown.",
-        `- Report metrics mode: ${report?.status || (state.report?.metadata?.demo ? "demo" : "missing")}.`,
+        `- Report metrics mode: ${report?.status || (state.report?.metadata?.real_data === false ? "missing" : "real")}.`,
     ];
     return lines.join("\n");
 }
@@ -912,7 +966,7 @@ function renderSettings() {
         ["MLB Stats API", "No key required", "schedule/probable pitchers/status/scores"],
         ["NFL data", "nfl-data-py/cached pipeline", "exported NFL predictions or offseason cache"],
         ["Odds API", oddsStatusLabel(), "optional The Odds API via ODDS_API_KEY"],
-        ["Reports mode", state.report?.metadata?.demo ? "demo" : state.report ? "real" : "missing", "data/reports/model_report.json"],
+        ["Reports mode", state.report?.metadata?.real_data === false ? "missing" : state.report ? "real" : "missing", "data/reports/model_report.json"],
         ["Team metadata", state.teamPayload?.teams?.length ? `${state.teamPayload.teams.length} teams` : "missing", "data/team_metadata.json"],
         ["Desktop build", "GitHub Actions", ".github/workflows/tauri-windows-build.yml"],
         ["Refresh runtime", state.refreshRuntime.available ? "Available in desktop app" : "Not available in browser/static mode", state.refreshRuntime.message],
@@ -958,8 +1012,9 @@ function bindEvents() {
 
         const row = event.target.closest("[data-select-game]");
         if (row && !event.target.closest("[data-team-code]")) {
-            const sport = row.dataset.selectGame;
-            const source = sport === "NFL" ? state.nfl.games : state.mlb.games;
+            const sourceName = row.dataset.selectGame;
+            const sport = sourceName === "MLB_BACKTEST" ? "MLB" : sourceName;
+            const source = sourceName === "NFL" ? state.nfl.games : sourceName === "MLB_BACKTEST" ? state.mlbBacktest.games : state.mlb.games;
             const game = source.find(item => String(item.game_id || item.id || "") === row.dataset.gameId) || source[Number(row.dataset.gameIndex)];
             state.selected[sport.toLowerCase()] = game;
             persistSettings();
@@ -980,6 +1035,8 @@ function bindEvents() {
         if (event.target.id === "export-tracker-btn") exportTrackerCsv();
         const refreshButton = event.target.closest("[data-refresh-sport]");
         if (refreshButton) refreshData(refreshButton.dataset.refreshSport);
+        const startupRefreshButton = event.target.closest("[data-startup-refresh]");
+        if (startupRefreshButton) runStartupRefresh();
         if (event.target.id === "clear-tracker-btn" && confirm("Clear all locally tracked picks?")) {
             state.tracker = [];
             saveTracker();

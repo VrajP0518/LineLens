@@ -21,8 +21,9 @@ from rich.console import Console
 
 console = Console()
 app = typer.Typer(help="Download nflfastR datasets via nfl-data-py and cache them locally.")
-RAW_DIR = Path(__file__).resolve().parents[1] / "data" / "raw"
+RAW_DIR = Path(__file__).resolve().parent / "data" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
+NFLVERSE_GAMES_URL = "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv"
 
 
 def _build_season_list(start: int, end: int) -> List[int]:
@@ -101,7 +102,12 @@ def schedules(
     outfile = RAW_DIR / f"schedules_{start_season}_{end_season}.csv"
     console.print(f"Fetching schedules seasons: {seasons}")
     with console.status("Downloading schedule metadata..."):
-        df = nfl.import_schedules(seasons)
+        try:
+            df = nfl.import_schedules(seasons)
+        except Exception as exc:  # noqa: BLE001 - nfl-data-py may use an HTTP mirror blocked by local policy.
+            console.print(f"[yellow]nfl-data-py schedule mirror failed ({type(exc).__name__}: {exc}); trying nflverse HTTPS CSV.[/yellow]")
+            df = pd.read_csv(NFLVERSE_GAMES_URL)
+            df = df[df["season"].isin(seasons)]
     _write_frame(df, outfile)
 
 

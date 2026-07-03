@@ -16,7 +16,7 @@ from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parent
 PROCESSED_DIR = ROOT / "data" / "processed"
 MODEL_DIR = ROOT / "models"
 

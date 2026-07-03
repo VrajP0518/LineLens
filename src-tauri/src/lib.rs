@@ -15,17 +15,30 @@ fn project_root() -> Result<PathBuf, String> {
     }
 }
 
-fn run_refresh_command(sport: &str) -> Result<String, String> {
-    let root = project_root()?;
-    let candidates: Vec<(&str, Vec<&str>)> = vec![
-        ("python", vec!["scripts/refresh_data.py", "--sport", sport]),
-        ("py", vec!["-3.11", "scripts/refresh_data.py", "--sport", sport]),
-        ("py", vec!["scripts/refresh_data.py", "--sport", sport]),
-    ];
+fn python_candidates(root: &PathBuf) -> Vec<(String, Vec<String>)> {
+    let venv_python = root.join(".venv").join("Scripts").join("python.exe");
+    let mut candidates: Vec<(String, Vec<String>)> = Vec::new();
+    if venv_python.exists() {
+        candidates.push((venv_python.to_string_lossy().to_string(), Vec::new()));
+    }
+    candidates.push(("python".to_string(), Vec::new()));
+    candidates.push(("py".to_string(), vec!["-3.11".to_string()]));
+    candidates.push(("py".to_string(), Vec::new()));
+    candidates
+}
 
+fn run_refresh_command(sport: &str, mode: &str) -> Result<String, String> {
+    let root = project_root()?;
     let mut failures = Vec::new();
-    for (program, args) in candidates {
-        let output = Command::new(program).args(args).current_dir(&root).output();
+    for (program, mut args) in python_candidates(&root) {
+        args.extend([
+            "scripts/refresh_data.py".to_string(),
+            "--sport".to_string(),
+            sport.to_string(),
+            "--mode".to_string(),
+            mode.to_string(),
+        ]);
+        let output = Command::new(&program).args(args).current_dir(&root).output();
         match output {
             Ok(result) if result.status.success() => {
                 let stdout = String::from_utf8_lossy(&result.stdout).trim().to_string();
@@ -61,17 +74,30 @@ async fn refresh_sports_data(sport: String) -> Result<String, String> {
     if !["all", "nfl", "mlb"].contains(&normalized.as_str()) {
         return Err("Unsupported sport refresh request.".to_string());
     }
+    let mode = match normalized.as_str() {
+        "all" => "startup",
+        "nfl" => "real",
+        "mlb" => "predict",
+        _ => "current",
+    };
 
-    tauri::async_runtime::spawn_blocking(move || run_refresh_command(&normalized))
+    tauri::async_runtime::spawn_blocking(move || run_refresh_command(&normalized, mode))
         .await
         .map_err(|error| format!("Refresh task failed: {}", error))?
+}
+
+#[tauri::command]
+async fn run_startup_refresh() -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || run_refresh_command("all", "startup"))
+        .await
+        .map_err(|error| format!("Startup refresh task failed: {}", error))?
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![refresh_sports_data])
+        .invoke_handler(tauri::generate_handler![refresh_sports_data, run_startup_refresh])
         .run(tauri::generate_context!())
         .expect("error while running LineLens Sports");
 }

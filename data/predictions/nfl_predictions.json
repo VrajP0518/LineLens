@@ -2,13 +2,14 @@
   "metadata": {
     "sport": "NFL",
     "app": "LineLens Sports",
-    "version": "v0.2.0",
-    "generated_at": null,
-    "model_type": "logistic_regression",
+    "version": "v0.4.0",
+    "generated_at": "2026-07-03T19:13:05Z",
+    "model_type": "missing",
     "target": "home_cover",
     "row_count": 0,
-    "demo": false,
-    "mode": "missing"
+    "real_data": false,
+    "prediction_mode": "missing",
+    "reason": "No real export has been generated yet. NFL rebuild failed; see data/refresh_status.json."
   },
   "games": []
 }

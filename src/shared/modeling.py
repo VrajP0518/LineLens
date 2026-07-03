@@ -25,3 +25,12 @@ def confidence_bucket(probability: float | None) -> str:
     if distance < 0.12:
         return "Medium"
     return "High"
+
+
+def read_table(path) -> pd.DataFrame:
+    """Read CSV or Parquet tables while keeping pipeline commands simple."""
+
+    path = str(path)
+    if path.lower().endswith(".csv"):
+        return pd.read_csv(path)
+    return pd.read_parquet(path)

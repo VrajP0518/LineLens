@@ -28,6 +28,15 @@ RAW_MLB_DIR = DATA_DIR / "raw" / "mlb"
 PREDICTIONS_DIR = DATA_DIR / "predictions"
 STATUS_JSON = DATA_DIR / "refresh_status.json"
 STATUS_JS = DATA_DIR / "refresh_status.js"
+MLB_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_features_2021_2025.csv"
+MLB_CURRENT_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_current_features.csv"
+MLB_MODEL = ROOT / "models" / "mlb_moneyline_model.joblib"
+NFL_FEATURES = ROOT / "data" / "processed" / "nfl" / "spread_dataset.parquet"
+VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
+
+
+def pipeline_python() -> str:
+    return str(VENV_PYTHON) if VENV_PYTHON.exists() else sys.executable
 
 
 def utc_now() -> str:
@@ -62,6 +71,65 @@ def write_status(status: dict[str, Any]) -> None:
     )
 
 
+def run_module(args: list[str], timeout: int = 300) -> subprocess.CompletedProcess[str]:
+    command = [pipeline_python(), "-m", *args]
+    return subprocess.run(command, cwd=ROOT, text=True, capture_output=True, timeout=timeout, check=False)
+
+
+def run_python_script(args: list[str], timeout: int = 300) -> subprocess.CompletedProcess[str]:
+    command = [pipeline_python(), *args]
+    return subprocess.run(command, cwd=ROOT, text=True, capture_output=True, timeout=timeout, check=False)
+
+
+def missing_dependency_message(stderr: str, stdout: str = "") -> str:
+    combined = f"{stderr}\n{stdout}"
+    if "ModuleNotFoundError: No module named 'typer'" in combined:
+        return "Missing dependency typer. Activate venv and run pip install -r requirements.txt."
+    if "WinError 10061" in combined or "ConnectionRefusedError" in combined:
+        return "Network/source unavailable: connection refused while downloading required data. Retry when nfl-data-py/nflverse source access is available."
+    if "ModuleNotFoundError" in combined:
+        return combined.strip()
+    return (stderr or stdout or "Command failed.").strip()
+
+
+def empty_prediction_payload(sport: str, *, target: str, reason: str, prediction_mode: str = "missing") -> dict[str, Any]:
+    return {
+        "metadata": {
+            "sport": sport,
+            "app": "LineLens Sports",
+            "version": "v0.4.0",
+            "generated_at": utc_now(),
+            "model_type": "missing",
+            "target": target,
+            "row_count": 0,
+            "real_data": False,
+            "prediction_mode": prediction_mode,
+            "reason": reason,
+        },
+        "games": [],
+    }
+
+
+def write_empty_prediction(sport: str, variable: str, json_name: str, *, target: str, reason: str, prediction_mode: str = "missing") -> None:
+    write_json_and_js(
+        empty_prediction_payload(sport, target=target, reason=reason, prediction_mode=prediction_mode),
+        PREDICTIONS_DIR / json_name,
+        PREDICTIONS_DIR / json_name.replace(".json", ".js"),
+        variable,
+    )
+
+
+def has_real_prediction_export(path: Path) -> bool:
+    if not path.exists():
+        return False
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return False
+    meta = payload.get("metadata") or payload.get("meta") or {}
+    return bool(meta.get("real_data") is True and payload.get("games"))
+
+
 def update_sport_status(
     status: dict[str, Any],
     sport: str,
@@ -72,14 +140,13 @@ def update_sport_status(
     python: str | None = None,
 ) -> None:
     sports = status.setdefault("sports", {})
-    previous = sports.get(sport, {})
-    last_success = utc_now() if state in {"success", "offseason"} else previous.get("last_success_at")
+    last_success = utc_now() if state in {"success", "schedule_only"} else None
     sports[sport] = {
         "status": state,
         "message": message,
         "last_success_at": last_success,
         "used_cache": used_cache,
-        "python": python or sys.executable,
+        "python": python or pipeline_python(),
     }
 
 
@@ -196,13 +263,13 @@ def mlb_schedule_payload(schedule: dict[str, Any], raw_path: Path) -> dict[str, 
         "metadata": {
             "sport": "MLB",
             "app": "LineLens Sports",
-            "version": "v0.2.0",
+            "version": "v0.4.0",
+            "real_data": True,
             "generated_at": utc_now(),
             "model_type": "schedule_only",
             "target": "home_win",
             "row_count": len(games),
-            "demo": False,
-            "mode": "real",
+            "mode": "schedule",
             "prediction_mode": "schedule_only",
             "schedule_source": "MLB Stats API",
             "raw_schedule_file": str(raw_path.relative_to(ROOT)),
@@ -229,8 +296,8 @@ def refresh_mlb(status: dict[str, Any], target_date: str | None, date_range: lis
         update_sport_status(
             status,
             "MLB",
-            "success",
-            f"MLB schedule refreshed from MLB Stats API with {count} games. {odds.message} Model probabilities are schedule_only until a model export is available.",
+            "schedule_only",
+            f"MLB schedule refreshed from MLB Stats API with {count} games. No probabilities were generated unless a trained model export is available. {odds.message}",
             used_cache=False,
         )
     except Exception as exc:  # noqa: BLE001 - surface a friendly runtime status
@@ -238,16 +305,168 @@ def refresh_mlb(status: dict[str, Any], target_date: str | None, date_range: lis
             status,
             "MLB",
             "failed",
-            f"{type(exc).__name__}: {exc}. Showing cached/demo MLB predictions.",
+            f"MLB current schedule refresh failed: {type(exc).__name__}: {exc}",
             used_cache=True,
         )
+
+
+def refresh_mlb_train(status: dict[str, Any]) -> bool:
+    steps = [
+        (["src.mlb.data_ingest_mlb", "history", "--start-season", "2021", "--end-season", "2025"], 420),
+        (["src.mlb.feature_builder_mlb", "build-history", "--start-season", "2021", "--end-season", "2025"], 300),
+        (
+            [
+                "src.mlb.train_model_mlb",
+                "--features-file",
+                "data/processed/mlb/mlb_features_2021_2025.csv",
+                "--train-start-season",
+                "2021",
+                "--train-end-season",
+                "2024",
+                "--test-season",
+                "2025",
+            ],
+            300,
+        ),
+        (
+            [
+                "src.mlb.export_predictions_mlb",
+                "backtest",
+                "--features-file",
+                "data/processed/mlb/mlb_features_2021_2025.csv",
+                "--season",
+                "2025",
+            ],
+            180,
+        ),
+    ]
+    try:
+        for args, timeout in steps:
+            result = run_module(args, timeout=timeout)
+            if result.returncode != 0:
+                message = missing_dependency_message(result.stderr, result.stdout)
+                update_sport_status(status, "MLB", "failed", message, used_cache=True)
+                return False
+        update_sport_status(
+            status,
+            "MLB",
+            "success",
+            "MLB historical model trained on 2021-2024, tested on 2025, and backtest export refreshed.",
+            used_cache=False,
+        )
+        return True
+    except Exception as exc:  # noqa: BLE001
+        update_sport_status(status, "MLB", "failed", f"{type(exc).__name__}: {exc}", used_cache=True)
+        return False
+
+
+def refresh_mlb_export(status: dict[str, Any]) -> None:
+    if not MLB_FEATURES.exists() or not MLB_MODEL.exists():
+        update_sport_status(
+            status,
+            "MLB",
+            "failed",
+            "MLB model export skipped because historical features or model artifact are missing. Run npm run refresh:mlb:train.",
+            used_cache=True,
+        )
+        return
+    result = run_module(
+        [
+            "src.mlb.export_predictions_mlb",
+            "export",
+            "--features-file",
+            "data/processed/mlb/mlb_features_2021_2025.csv",
+            "--season",
+            str(date.today().year),
+            "--no-write-empty-if-missing",
+        ],
+        timeout=180,
+    )
+    if result.returncode != 0:
+        update_sport_status(status, "MLB", "failed", (result.stderr or result.stdout).strip(), used_cache=True)
+        return
+    update_sport_status(status, "MLB", "success", "MLB model prediction export refreshed from local artifact.", used_cache=False)
+
+
+def refresh_mlb_history(status: dict[str, Any], *, force: bool = False) -> bool:
+    args = ["src.mlb.data_ingest_mlb", "history", "--start-season", "2021", "--end-season", "2025"]
+    if force:
+        args.append("--force")
+    result = run_module(args, timeout=420)
+    if result.returncode != 0:
+        update_sport_status(status, "MLB", "failed", missing_dependency_message(result.stderr, result.stdout), used_cache=True)
+        return False
+    update_sport_status(status, "MLB", "success", "MLB historical regular-season data cache is available for 2021-2025.", used_cache=False)
+    return True
+
+
+def refresh_mlb_predict(status: dict[str, Any], target_date: str | None, date_range: list[str] | None) -> None:
+    used_cached_schedule = False
+    try:
+        schedule, raw_path = fetch_mlb_schedule(target_date, date_range)
+    except Exception as exc:  # noqa: BLE001
+        cached = sorted(RAW_MLB_DIR.glob("schedule_*.json"))
+        if not cached:
+            update_sport_status(status, "MLB", "failed", f"MLB current schedule fetch failed: {type(exc).__name__}: {exc}", used_cache=True)
+            return
+        raw_path = cached[-1]
+        schedule = json.loads(raw_path.read_text(encoding="utf-8"))
+        used_cached_schedule = True
+
+    if not MLB_MODEL.exists() or not MLB_FEATURES.exists():
+        payload = mlb_schedule_payload(schedule, raw_path)
+        payload["metadata"]["reason"] = "Schedule only - train model to generate predictions."
+        write_json_and_js(payload, PREDICTIONS_DIR / "mlb_predictions.json", PREDICTIONS_DIR / "mlb_predictions.js", "__MLB_PREDICTIONS__")
+        update_sport_status(status, "MLB", "schedule_only", "MLB schedule loaded, but model/features are missing. Run npm run refresh:mlb:all for real predictions.", used_cache=False)
+        return
+
+    result = run_module(
+        [
+            "src.mlb.feature_builder_mlb",
+            "build-current",
+            "--season",
+            str(date.today().year),
+            "--schedule-file",
+            str(raw_path.relative_to(ROOT)),
+        ],
+        timeout=180,
+    )
+    if result.returncode != 0:
+        update_sport_status(status, "MLB", "failed", (result.stderr or result.stdout or "MLB current feature build failed.").strip(), used_cache=True)
+        return
+
+    result = run_module(
+        [
+            "src.mlb.export_predictions_mlb",
+            "export",
+            "--features-file",
+            "data/processed/mlb/mlb_current_features.csv",
+            "--model-file",
+            "models/mlb_moneyline_model.joblib",
+            "--season",
+            str(date.today().year),
+            "--no-write-empty-if-missing",
+        ],
+        timeout=180,
+    )
+    if result.returncode != 0:
+        update_sport_status(status, "MLB", "failed", (result.stderr or result.stdout or "MLB current prediction export failed.").strip(), used_cache=True)
+        return
+    update_sport_status(
+        status,
+        "MLB",
+        "success",
+        "MLB current predictions refreshed with trained model probabilities"
+        + (" using the latest cached schedule after live fetch failed." if used_cached_schedule else "."),
+        used_cache=used_cached_schedule,
+    )
 
 
 def first_existing(paths: list[Path]) -> Path | None:
     return next((path for path in paths if path.exists()), None)
 
 
-def refresh_nfl(status: dict[str, Any]) -> None:
+def refresh_nfl(status: dict[str, Any], *, require_real: bool = False) -> None:
     odds = fetch_odds("NFL")
     features = first_existing(
         [
@@ -263,12 +482,45 @@ def refresh_nfl(status: dict[str, Any]) -> None:
         ]
     )
 
+    rebuilt = False
+    if not features:
+        rebuilt = rebuild_nfl_processed_dataset(status)
+        features = first_existing(
+            [
+                ROOT / "data" / "processed" / "nfl" / "spread_dataset.parquet",
+                ROOT / "data" / "processed" / "spread_dataset.parquet",
+            ]
+        )
+        if not rebuilt and not features:
+            write_empty_prediction(
+                "NFL",
+                "__NFL_PREDICTIONS__",
+                "nfl_predictions.json",
+                target="home_cover",
+                reason="No real export has been generated yet. NFL rebuild failed; see data/refresh_status.json.",
+                prediction_mode="missing",
+            )
+            return
+
     if not features or not model:
+        missing = []
+        if not features:
+            missing.append("processed NFL feature file data/processed/nfl/spread_dataset.parquet or data/processed/spread_dataset.parquet")
+        if not model:
+            missing.append("NFL model models/nfl_spread_model.joblib, models/spread_model.joblib, or spread_model.joblib")
+        write_empty_prediction(
+            "NFL",
+            "__NFL_PREDICTIONS__",
+            "nfl_predictions.json",
+            target="home_cover",
+            reason=f"No real export has been generated yet. Missing: {', '.join(missing)}",
+            prediction_mode="missing",
+        )
         update_sport_status(
             status,
             "NFL",
-            "offseason",
-            f"NFL data refresh checked local cache. No processed feature export was found; preserving cached/offseason payload. {odds.message}",
+            "failed" if require_real else "missing",
+            f"NFL real export unavailable. Missing: {', '.join(missing)}. {odds.message}",
             used_cache=True,
         )
         return
@@ -287,16 +539,18 @@ def refresh_nfl(status: dict[str, Any]) -> None:
         "data/predictions/nfl_predictions.js",
     ]
     try:
-        result = subprocess.run(command, cwd=ROOT, text=True, capture_output=True, timeout=120, check=False)
+        result = subprocess.run([pipeline_python(), *command[1:]], cwd=ROOT, text=True, capture_output=True, timeout=180, check=False)
         if result.returncode != 0:
-            message = (result.stderr or result.stdout or "NFL export command failed.").strip()
-            update_sport_status(status, "NFL", "failed", f"{message} Showing cached NFL predictions.", used_cache=True)
+            message = missing_dependency_message(result.stderr, result.stdout)
+            update_sport_status(status, "NFL", "failed", f"NFL export failed: {message}", used_cache=True)
             return
+        normalize_nfl_export(PREDICTIONS_DIR / "nfl_predictions.json", PREDICTIONS_DIR / "nfl_predictions.js")
+        count = len(json.loads((PREDICTIONS_DIR / "nfl_predictions.json").read_text(encoding="utf-8")).get("games", []))
         update_sport_status(
             status,
             "NFL",
             "success",
-            "NFL predictions refreshed from the cached nfl-data-py/export pipeline.",
+            f"{'Processed NFL dataset missing. Rebuilt locally, then exported' if rebuilt else 'Found existing NFL processed dataset. Exported'} {count} real historical predictions.",
             used_cache=False,
         )
     except Exception as exc:  # noqa: BLE001
@@ -304,14 +558,88 @@ def refresh_nfl(status: dict[str, Any]) -> None:
             status,
             "NFL",
             "failed",
-            f"{type(exc).__name__}: {exc}. Showing cached NFL predictions.",
+            f"NFL export failed: {type(exc).__name__}: {exc}",
             used_cache=True,
         )
+
+
+def rebuild_nfl_processed_dataset(status: dict[str, Any]) -> bool:
+    steps = [
+        (["data_ingest.py", "schedules", "--start-season", "2018", "--end-season", "2024"], 300),
+        (["data_ingest.py", "pbp", "--start-season", "2018", "--end-season", "2024"], 1200),
+        (["data_ingest.py", "weekly", "--start-season", "2018", "--end-season", "2024"], 600),
+        (
+            [
+                "feature_builder.py",
+                "--start-season",
+                "2018",
+                "--end-season",
+                "2024",
+                "--output-file",
+                "data/processed/nfl/spread_dataset.parquet",
+            ],
+            900,
+        ),
+    ]
+    for args, timeout in steps:
+        result = run_python_script(args, timeout=timeout)
+        if result.returncode != 0:
+            update_sport_status(
+                status,
+                "NFL",
+                "failed",
+                f"NFL rebuild failed while running {' '.join(args)}: {missing_dependency_message(result.stderr, result.stdout)}",
+                used_cache=True,
+            )
+            return False
+    return NFL_FEATURES.exists()
+
+def normalize_nfl_export(json_path: Path, js_path: Path) -> None:
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    games = payload.get("games", [])
+    for game in games:
+        probability = game.get("home_cover_probability", game.get("model_home_cover"))
+        game["sport"] = "NFL"
+        game["home_cover_probability"] = probability
+        game["away_cover_probability"] = None if probability is None else 1 - probability
+        game["model_pick"] = game.get("model_pick") or (game.get("home") if (probability or 0) >= 0.5 else game.get("away"))
+        game["prediction_mode"] = "historical_backtest"
+        if "home_cover" in game and game.get("home_cover") in (0, 1):
+            picked_home = probability is not None and probability >= 0.5
+            actual_home = int(game["home_cover"]) == 1
+            game["model_result"] = "Win" if picked_home == actual_home else "Loss"
+            game["completed"] = True
+    payload["metadata"] = {
+        "sport": "NFL",
+        "app": "LineLens Sports",
+        "version": "v0.4.0",
+        "real_data": True,
+        "prediction_mode": "historical_backtest",
+        "generated_at": utc_now(),
+        "model_type": "existing_project_pipeline",
+        "source": "nfl-data-py / existing project pipeline",
+        "season_min": min([int(game.get("season")) for game in games if game.get("season") is not None], default=None),
+        "season_max": max([int(game.get("season")) for game in games if game.get("season") is not None], default=None),
+        "row_count": len(games),
+    }
+    write_json_and_js(payload, json_path, js_path, "__NFL_PREDICTIONS__")
+
+
+def refresh_startup(status: dict[str, Any]) -> None:
+    if has_real_prediction_export(PREDICTIONS_DIR / "nfl_predictions.json"):
+        update_sport_status(status, "NFL", "success", "NFL real export found; skipping rebuild.", used_cache=True)
+    else:
+        refresh_nfl(status, require_real=True)
+    if not MLB_MODEL.exists() or not MLB_FEATURES.exists():
+        if not refresh_mlb_train(status):
+            return
+    refresh_mlb_predict(status, None, None)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sport", choices=["all", "nfl", "mlb"], default="all")
+    parser.add_argument("--mode", choices=["current", "history", "train", "predict", "export", "real", "startup", "all"], default="current")
     parser.add_argument("--date", default="today", help="MLB schedule date, or 'today'.")
     parser.add_argument("--date-range", nargs=2, metavar=("START", "END"), help="MLB schedule date range.")
     return parser.parse_args()
@@ -320,12 +648,27 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     status = load_status()
-    status["mode"] = "runtime"
+    status["mode"] = args.mode
 
-    if args.sport in {"all", "mlb"}:
+    if args.mode == "startup":
+        refresh_startup(status)
+    elif args.sport in {"all", "mlb"} and args.mode == "history":
+        refresh_mlb_history(status)
+    elif args.sport in {"all", "mlb"} and args.mode in {"train", "all", "real"}:
+        mlb_trained = refresh_mlb_train(status)
+        if args.mode in {"all", "real"} and not mlb_trained:
+            write_status(status)
+            requested = "NFL and MLB" if args.sport == "all" else args.sport.upper()
+            print(f"Refresh finished for {requested}. Status written to data/refresh_status.json")
+            return
+    if args.sport in {"all", "mlb"} and args.mode in {"current"}:
         refresh_mlb(status, args.date, args.date_range)
-    if args.sport in {"all", "nfl"}:
-        refresh_nfl(status)
+    if args.sport in {"all", "mlb"} and args.mode in {"predict", "all", "real"}:
+        refresh_mlb_predict(status, args.date, args.date_range)
+    if args.sport in {"all", "mlb"} and args.mode == "export":
+        refresh_mlb_export(status)
+    if args.sport in {"all", "nfl"} and args.mode in {"current", "export", "real", "all"}:
+        refresh_nfl(status, require_real=args.mode in {"real", "all"})
 
     write_status(status)
     requested = "NFL and MLB" if args.sport == "all" else args.sport.upper()
