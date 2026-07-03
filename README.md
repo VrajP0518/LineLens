@@ -70,6 +70,8 @@ npm run check:js
 
 `npm run app` serves the vanilla HTML/CSS/JS dashboard at a local static URL. It does not require MSVC or a local Tauri native build.
 
+Browser/static mode uses existing exported JSON/JS files only. Automatic runtime refresh is available in the Tauri desktop app, where the frontend can call the Rust command that runs `scripts/refresh_data.py` in the background.
+
 ## Local Python / Data Work
 
 Use Python 3.10 or 3.11. The existing NFL stack pins `pandas<2.0`, which does not install cleanly on Python 3.14.
@@ -79,6 +81,12 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 python -m compileall src
+```
+
+For the broader project check used by CI:
+
+```powershell
+python -m compileall src scripts
 ```
 
 ## NFL Pipeline
@@ -113,6 +121,42 @@ python -m src.mlb.export_predictions_mlb export
 ```
 
 If MLB feature/model files are missing, the exporter can write a clearly labeled sample payload so the MLB dashboard still renders.
+
+## Runtime Data Refresh
+
+LineLens loads bundled/cached exports immediately, then the Tauri desktop app can try a background refresh without blocking startup.
+
+Desktop/Tauri behavior:
+
+- Load existing `data/predictions/*.json` and `data/reports/model_report.json` immediately.
+- Call the Tauri `refresh_sports_data` command in the background.
+- Run `scripts/refresh_data.py --sport all` through Python if project files and Python are available.
+- Reload prediction/status JSON after a successful refresh.
+- Keep cached/demo data and show a friendly warning if Python, internet, dependencies, or model files are missing.
+
+Browser/static behavior:
+
+- Uses existing exported JSON/JS files.
+- Does not call Tauri commands.
+- Shows that automatic desktop refresh is unavailable in browser/static mode.
+
+Manual refresh commands:
+
+```powershell
+npm run refresh:data
+npm run refresh:mlb
+npm run refresh:nfl
+```
+
+MLB refresh uses the free public MLB Stats API schedule endpoint:
+
+```text
+https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=YYYY-MM-DD&hydrate=probablePitcher,team,linescore
+```
+
+If no trained MLB model is available, the refresh still writes a real schedule-based payload with `"prediction_mode": "schedule_only"` and clear model-pending labels.
+
+NFL refresh checks for cached processed features and an NFL model, then runs the existing export wrapper when possible. During offseason or when processed features are missing, it preserves cached data and writes an offseason/cache status instead of failing the app.
 
 ## Reports, Calibration, And Model Comparison
 
@@ -152,6 +196,8 @@ Tracked fields include date, sport, game, pick, line/odds, model probability, co
 Local Tauri builds on Windows require Microsoft C++ Build Tools/MSVC. On restricted work machines, `npm run tauri:dev` or `npm run tauri:build` may fail because MSVC cannot be installed. That is expected and not a project failure.
 
 This repo builds the Windows desktop app through GitHub Actions. The local machine can edit UI, run static checks, run compatible Python scripts, and push changes.
+
+The Tauri v2 Rust crate uses the standard `src-tauri/src/lib.rs` plus `src-tauri/src/main.rs` structure so GitHub Actions can resolve the `linelens_sports_lib` library crate during build.
 
 ## Build Desktop App Through GitHub Actions
 
@@ -198,10 +244,11 @@ CI does not require live data downloads.
 npm install
 npm run app
 npm run check:js
-python -m compileall src
+python -m compileall src scripts
+npm run refresh:mlb
 git status
 git add .
-git commit -m "Add LineLens Sports v0.2.0 analytics dashboard"
+git commit -m "Fix Tauri build and add automatic data refresh"
 git push origin main
 ```
 

@@ -33,4 +33,4 @@ jobs:
         run: npm run check:js
 
       - name: Check Python syntax
-        run: python -m compileall src
+        run: python -m compileall src scripts

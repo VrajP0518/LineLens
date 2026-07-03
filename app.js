@@ -6,6 +6,7 @@ const DATA_SOURCES = {
     app: ["data/app_metadata.json"],
     teams: ["data/team_metadata.json"],
     reports: ["data/reports/model_report.json"],
+    refresh: ["data/refresh_status.json"],
     nfl: ["data/predictions/nfl_predictions.json", "data/predictions.json"],
     mlb: ["data/predictions/mlb_predictions.json"],
 };
@@ -14,6 +15,8 @@ const state = {
     app: window.__APP_METADATA__ || { app: "LineLens Sports", version: APP_VERSION },
     teamPayload: window.__TEAM_METADATA__ || { teams: [] },
     report: window.__MODEL_REPORT__ || null,
+    refreshStatus: window.__REFRESH_STATUS__ || null,
+    refreshRuntime: { available: false, active: false, message: "Checking refresh availability..." },
     nfl: { payload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null, games: [], error: null },
     mlb: { payload: window.__MLB_PREDICTIONS__ || null, games: [], error: null },
     selected: { nfl: null, mlb: null, teamSport: "MLB", teamCode: "TOR", reportSport: "MLB" },
@@ -295,10 +298,11 @@ async function loadAll() {
     setStatus("Loading prediction exports...", "info");
     loadSettings();
     loadTracker();
-    const [app, teams, report, nfl, mlb] = await Promise.all([
+    const [app, teams, report, refresh, nfl, mlb] = await Promise.all([
         loadOptional("app", ["__APP_METADATA__"]),
         loadOptional("teams", ["__TEAM_METADATA__"]),
         loadOptional("reports", ["__MODEL_REPORT__"]),
+        loadOptional("refresh", ["__REFRESH_STATUS__"]),
         loadOptional("nfl", ["__NFL_PREDICTIONS__", "__PREDICTIONS__"]),
         loadOptional("mlb", ["__MLB_PREDICTIONS__"]),
     ]);
@@ -306,6 +310,7 @@ async function loadAll() {
     state.app = app || state.app;
     state.teamPayload = teams || state.teamPayload;
     state.report = report || state.report;
+    state.refreshStatus = refresh || state.refreshStatus;
     state.nfl.payload = nfl;
     state.nfl.games = normalizeGames(nfl);
     state.nfl.error = nfl ? null : "No NFL predictions found. Run the NFL export command.";
@@ -320,6 +325,73 @@ async function loadAll() {
 
     const modes = [`NFL ${dataMode(state.nfl.payload, state.nfl.games)}`, `MLB ${dataMode(state.mlb.payload, state.mlb.games)}`];
     setStatus(`Ready. ${modes.join(" / ")}.`, allGames().length ? "success" : "warning");
+    if (!state.refreshRuntime.checked) {
+        state.refreshRuntime.checked = true;
+        state.refreshRuntime.available = isTauriRefreshAvailable();
+        state.refreshRuntime.message = state.refreshRuntime.available
+            ? "Desktop auto-refresh is available."
+            : "Automatic desktop refresh is available in the Tauri app. Browser/static mode uses existing exported data.";
+        renderAll();
+        if (state.refreshRuntime.available) {
+            refreshData("all", { background: true });
+        }
+    }
+}
+
+function isTauriRefreshAvailable() {
+    return Boolean(window.__TAURI__?.core?.invoke || window.__TAURI__?.invoke);
+}
+
+function tauriInvoke(command, payload) {
+    const invoker = window.__TAURI__?.core?.invoke || window.__TAURI__?.invoke;
+    if (!invoker) return Promise.reject(new Error("Tauri invoke is unavailable."));
+    return invoker(command, payload);
+}
+
+async function refreshData(sport = "all", options = {}) {
+    if (!isTauriRefreshAvailable()) {
+        state.refreshRuntime.message = "Automatic desktop refresh is available in the Tauri app. Browser/static mode uses existing exported data.";
+        showToast(state.refreshRuntime.message);
+        renderAll();
+        return;
+    }
+    state.refreshRuntime.available = true;
+    state.refreshRuntime.active = true;
+    state.refreshRuntime.message = `Refreshing ${sport.toUpperCase()} data...`;
+    if (!options.background) showToast("Refreshing data...");
+    renderAll();
+    try {
+        const message = await tauriInvoke("refresh_sports_data", { sport });
+        state.refreshRuntime.message = message || "Data refreshed.";
+        showToast("Data refreshed");
+        await loadAllAfterRefresh();
+    } catch (error) {
+        state.refreshRuntime.message = String(error?.message || error || "Refresh failed; showing cached data.");
+        showToast("Refresh failed; showing cached data");
+    } finally {
+        state.refreshRuntime.active = false;
+        renderAll();
+    }
+}
+
+async function loadAllAfterRefresh() {
+    const [refresh, nfl, mlb] = await Promise.all([
+        loadOptional("refresh", ["__REFRESH_STATUS__"]),
+        loadOptional("nfl", []),
+        loadOptional("mlb", []),
+    ]);
+    if (refresh) {
+        state.refreshStatus = refresh;
+        window.__REFRESH_STATUS__ = refresh;
+    }
+    if (nfl) {
+        state.nfl.payload = nfl;
+        state.nfl.games = normalizeGames(nfl);
+    }
+    if (mlb) {
+        state.mlb.payload = mlb;
+        state.mlb.games = normalizeGames(mlb);
+    }
 }
 
 function switchView(view) {
@@ -371,6 +443,7 @@ function renderHome() {
             ${card("Latest export", latest ? formatDate(latest) : "-", latest ? timestamp(latest) : "no export timestamp")}
             ${card("Active modules", "2", "NFL spread / MLB moneyline")}
         </section>
+        ${renderRefreshPanel("home")}
         <section class="dashboard-grid">
             <article class="panel">
                 <header class="section-header"><div><p class="eyebrow">Top model edges</p><h2>Best leans</h2></div><span class="chip">${top.length ? "ranked" : "empty"}</span></header>
@@ -380,6 +453,47 @@ function renderHome() {
                 <header class="section-header"><div><p class="eyebrow">Today / Upcoming</p><h2>Board watch</h2></div></header>
                 ${renderUpcoming()}
             </article>
+        </section>
+    `;
+}
+
+function refreshSportStatus(sport) {
+    return state.refreshStatus?.sports?.[sport] || {
+        status: "cached",
+        message: `No ${sport} runtime refresh has run yet.`,
+        last_success_at: null,
+        used_cache: true,
+    };
+}
+
+function renderRefreshPanel(context = "home") {
+    const nfl = refreshSportStatus("NFL");
+    const mlb = refreshSportStatus("MLB");
+    const disabled = state.refreshRuntime.available ? "" : "disabled";
+    return `
+        <section class="panel refresh-panel">
+            <header class="section-header">
+                <div>
+                    <p class="eyebrow">Runtime data refresh</p>
+                    <h2>${context === "settings" ? "Data refresh controls" : "Cached first, refresh in background"}</h2>
+                    <p class="muted">${escapeHtml(state.refreshRuntime.message || "Loading cached predictions first.")}</p>
+                </div>
+                <div class="report-actions">
+                    <button class="btn btn--primary" data-refresh-sport="all" ${disabled}>Refresh All Data</button>
+                    <button class="btn" data-refresh-sport="nfl" ${disabled}>Refresh NFL</button>
+                    <button class="btn" data-refresh-sport="mlb" ${disabled}>Refresh MLB</button>
+                </div>
+            </header>
+            <div class="summary-grid summary-grid--compact">
+                ${card("Last refresh", timestamp(state.refreshStatus?.generated_at), state.refreshRuntime.active ? "refreshing" : "runtime status")}
+                ${card("NFL refresh", nfl.status, nfl.used_cache ? "using cache" : "fresh export")}
+                ${card("MLB refresh", mlb.status, mlb.used_cache ? "using cache" : "fresh schedule")}
+                ${card("Tauri command", state.refreshRuntime.available ? "Available" : "Browser/static", state.refreshRuntime.available ? "desktop app" : "exported data only")}
+            </div>
+            <div class="refresh-log">
+                <div><strong>NFL</strong><span>${escapeHtml(nfl.message)}</span></div>
+                <div><strong>MLB</strong><span>${escapeHtml(mlb.message)}</span></div>
+            </div>
         </section>
     `;
 }
@@ -440,8 +554,10 @@ function renderNFL() {
     state.selected.nfl = selected;
     $("#view-nfl").innerHTML = `
         <section class="module-header panel">
-            <div><p class="eyebrow">NFL Spread Predictor</p><h2>Spread, injury, CLV, and line movement workspace</h2><p class="muted">Preserves the original NFL module while adding v0.2.0 analytics panels.</p></div>
+            <div><p class="eyebrow">NFL Spread Predictor</p><h2>Spread, injury, CLV, and line movement workspace</h2><p class="muted">NFL data source: ${escapeHtml(refreshSportStatus("NFL").status)}. ${games.length ? "Cached/exported rows loaded." : "NFL is currently off-season or no upcoming games are available."}</p></div>
+            <div class="report-actions"><button class="btn" data-refresh-sport="nfl" ${state.refreshRuntime.available ? "" : "disabled"}>Refresh NFL</button>
             <span class="chip">${dataMode(state.nfl.payload, games)}</span>
+            </div>
         </section>
         ${sportSummaryCards("NFL", games, state.nfl.payload)}
         <section class="dashboard-grid">
@@ -460,8 +576,10 @@ function renderMLB() {
     state.selected.mlb = selected;
     $("#view-mlb").innerHTML = `
         <section class="module-header panel">
-            <div><p class="eyebrow">MLB Moneyline Predictor</p><h2>Daily moneyline board with pitcher and market-readiness context</h2><p class="muted">Odds and pitcher enrichment are optional. Demo rows stay clearly labeled.</p></div>
+            <div><p class="eyebrow">MLB Moneyline Predictor</p><h2>Daily moneyline board with pitcher and market-readiness context</h2><p class="muted">MLB schedule source: MLB Stats API. Model status: ${escapeHtml(mlbModelStatus())}.</p></div>
+            <div class="report-actions"><button class="btn" data-refresh-sport="mlb" ${state.refreshRuntime.available ? "" : "disabled"}>Refresh MLB</button>
             <span class="chip">${dataMode(state.mlb.payload, games)}</span>
+            </div>
         </section>
         ${sportSummaryCards("MLB", games, state.mlb.payload)}
         <section class="dashboard-grid">
@@ -474,6 +592,14 @@ function renderMLB() {
     `;
 }
 
+function mlbModelStatus() {
+    const meta = normalizeMeta(state.mlb.payload);
+    if (!state.mlb.payload) return "missing";
+    if (meta.prediction_mode === "schedule_only" || meta.model_type === "schedule_only") return "Schedule loaded, model pending";
+    if (isDemoPayload(state.mlb.payload)) return "Demo predictions";
+    return "Model predictions available";
+}
+
 function renderGameTable(sport, games) {
     return `
         <div class="table-wrapper">
@@ -481,7 +607,7 @@ function renderGameTable(sport, games) {
                 <thead><tr><th>Date</th><th>Away</th><th>Home</th><th>Pick</th><th>Prob</th><th>Edge</th><th>Confidence</th><th>CLV</th></tr></thead>
                 <tbody>
                     ${games.map((game, index) => `
-                        <tr class="selectable-row" data-select-game="${sport}" data-game-index="${index}">
+                        <tr class="selectable-row" data-select-game="${sport}" data-game-index="${index}" data-game-id="${escapeHtml(game.game_id || game.id || "")}">
                             <td>${formatDate(game.game_date || game.week || game.season)}</td>
                             <td>${teamCell(sport, game.away, game.away_display || game.away)}</td>
                             <td>${teamCell(sport, game.home, game.home_display || game.home)}</td>
@@ -668,11 +794,14 @@ function renderTeams() {
 
 function renderTeamProfile(team) {
     const games = (team.sport === "NFL" ? state.nfl.games : state.mlb.games).filter(game => game.home === team.abbreviation || game.away === team.abbreviation);
-    const avgProb = games.length ? games.reduce((sum, game) => {
-        const prob = getGameProbability(game, team.sport);
-        if (prob === null) return sum;
-        return sum + (game.home === team.abbreviation ? prob : 1 - prob);
-    }, 0) / games.length : null;
+    const probabilityValues = games
+        .map(game => {
+            const prob = getGameProbability(game, team.sport);
+            if (prob === null) return null;
+            return game.home === team.abbreviation ? prob : 1 - prob;
+        })
+        .filter(value => value !== null);
+    const avgProb = probabilityValues.length ? probabilityValues.reduce((sum, value) => sum + value, 0) / probabilityValues.length : null;
     return `
         <section class="team-profile panel">
             <div class="team-profile__hero" style="--team-color:${team.primary}">
@@ -767,12 +896,14 @@ function renderSettings() {
         ["Reports mode", state.report?.metadata?.demo ? "demo" : state.report ? "real" : "missing", "data/reports/model_report.json"],
         ["Team metadata", state.teamPayload?.teams?.length ? `${state.teamPayload.teams.length} teams` : "missing", "data/team_metadata.json"],
         ["Desktop build", "GitHub Actions", ".github/workflows/tauri-windows-build.yml"],
+        ["Refresh runtime", state.refreshRuntime.available ? "Available in desktop app" : "Not available in browser/static mode", state.refreshRuntime.message],
     ];
     $("#view-settings").innerHTML = `
         <section class="module-header panel">
             <div><p class="eyebrow">Settings / Data Status</p><h2>Environment, data files, and build path</h2><p class="muted">Local native Tauri build is optional. This work machine can use GitHub Actions for Windows bundles.</p></div>
             <span class="chip">${escapeHtml(state.app.version || APP_VERSION)}</span>
         </section>
+        ${renderRefreshPanel("settings")}
         <section class="panel"><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>
         <section class="panel"><p class="data-status" data-variant="warning">Python data refresh is not available from the desktop shell yet. Run CLI commands from terminal. Tracking data is stored locally in <code>${TRACKER_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
     `;
@@ -809,7 +940,8 @@ function bindEvents() {
         const row = event.target.closest("[data-select-game]");
         if (row && !event.target.closest("[data-team-code]")) {
             const sport = row.dataset.selectGame;
-            const game = sport === "NFL" ? state.nfl.games[Number(row.dataset.gameIndex)] : state.mlb.games[Number(row.dataset.gameIndex)];
+            const source = sport === "NFL" ? state.nfl.games : state.mlb.games;
+            const game = source.find(item => String(item.game_id || item.id || "") === row.dataset.gameId) || source[Number(row.dataset.gameIndex)];
             state.selected[sport.toLowerCase()] = game;
             persistSettings();
             sport === "NFL" ? renderNFL() : renderMLB();
@@ -827,6 +959,8 @@ function bindEvents() {
             $("#generated-report").value = generateReportText(generator.dataset.generateReport);
         }
         if (event.target.id === "export-tracker-btn") exportTrackerCsv();
+        const refreshButton = event.target.closest("[data-refresh-sport]");
+        if (refreshButton) refreshData(refreshButton.dataset.refreshSport);
         if (event.target.id === "clear-tracker-btn" && confirm("Clear all locally tracked picks?")) {
             state.tracker = [];
             saveTracker();

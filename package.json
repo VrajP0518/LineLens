@@ -6,6 +6,10 @@
   "scripts": {
     "app": "npx http-server . -p 4173",
     "check:js": "node --check app.js",
+    "check:python": "python -m compileall src scripts",
+    "refresh:data": "python scripts/refresh_data.py --sport all",
+    "refresh:mlb": "python scripts/refresh_data.py --sport mlb",
+    "refresh:nfl": "python scripts/refresh_data.py --sport nfl",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
