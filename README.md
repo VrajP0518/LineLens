@@ -240,6 +240,28 @@ src-tauri/tauri.conf.json > build.frontendDist = ../dist-web
 
 `beforeBuildCommand` runs `npm run build:web`, which exits after copying the static assets.
 
+## App Icons
+
+Tauri app icons live in:
+
+```text
+src-tauri/icons/
+```
+
+They are original generic LineLens Sports assets and do not use league, team, or sportsbook logos.
+
+To regenerate the icon set:
+
+```powershell
+python scripts/generate_app_icons.py
+```
+
+or:
+
+```powershell
+npm run generate:icons
+```
+
 ## Build Desktop App Through GitHub Actions
 
 1. Commit and push changes:
@@ -288,6 +310,7 @@ npm run check:js
 python -m compileall src scripts
 npm run build:web
 npm run app:dist
+npm run generate:icons
 npm run refresh:mlb
 git status
 git add .

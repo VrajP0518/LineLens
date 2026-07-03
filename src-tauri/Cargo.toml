@@ -1,9 +1,13 @@
 [package]
 name = "linelens-sports"
 version = "0.2.0"
-description = "LineLens Sports desktop prediction dashboard"
-authors = ["LineLens Sports"]
+description = "LineLens Sports desktop analytics dashboard"
+authors = ["Vraj Patel"]
 edition = "2021"
+license = "MIT"
+
+[package.metadata.bundle]
+identifier = "com.linelens.sports"
 
 [lib]
 name = "linelens_sports_lib"

@@ -9,6 +9,7 @@
     "app:dist": "npm run build:web && npx http-server dist-web -p 4174",
     "check:js": "node --check app.js",
     "check:python": "python -m compileall src scripts",
+    "generate:icons": "python scripts/generate_app_icons.py",
     "refresh:data": "python scripts/refresh_data.py --sport all",
     "refresh:mlb": "python scripts/refresh_data.py --sport mlb",
     "refresh:nfl": "python scripts/refresh_data.py --sport nfl",
