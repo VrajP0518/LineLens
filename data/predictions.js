@@ -1,0 +1,1 @@
+window.__PREDICTIONS__ = window.__PREDICTIONS__ || {"metadata":{"sport":"NFL","app":"LineLens Sports","version":"v0.2.0","generated_at":null,"model_type":"logistic_regression","target":"home_cover","row_count":0,"demo":false,"mode":"missing"},"games":[]};

@@ -1,0 +1,36 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  static-checks:
+    name: Static JS and Python checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Check JavaScript syntax
+        run: npm run check:js
+
+      - name: Check Python syntax
+        run: python -m compileall src

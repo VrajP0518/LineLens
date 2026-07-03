@@ -1,0 +1,12 @@
+node_modules/
+.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+src-tauri/target/
+dist/
+*.log
+.agents/
+.vscode/
+.git-broken/
+nfl-spread-predictor/

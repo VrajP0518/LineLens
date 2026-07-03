@@ -1,0 +1,1 @@
+window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v0.2.0","release":"Analytics dashboard","generated_at":"2026-07-02T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};

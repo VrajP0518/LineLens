@@ -4,248 +4,69 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NFL Spread Predictor</title>
+    <title>LineLens Sports</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" defer></script>
+    <script src="data/app_metadata.js" defer></script>
+    <script src="data/team_metadata.js" defer></script>
+    <script src="data/reports/model_report.js" defer></script>
+    <script src="data/predictions/nfl_predictions.js" defer></script>
     <script src="data/predictions.js" defer></script>
+    <script src="data/predictions/mlb_predictions.js" defer></script>
 </head>
 <body>
-    <header class="hero">
-        <div class="hero__content">
-            <p class="eyebrow">nflverse data · experimental</p>
-            <h1>NFL Spread Predictor</h1>
-            <p class="subheading">
-                Compare model odds to the market, inspect team trends, and track weekly performance side-by-side.
-            </p>
-            <div class="hero__actions">
-                <button id="refresh-btn" class="btn btn--primary">Refresh data</button>
-                <a class="btn" href="../src/ui/app.py" title="Streamlit reference">Open Streamlit</a>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand__mark">LL</span>
+                <div>
+                    <strong>LineLens Sports</strong>
+                    <small id="sidebar-version">v0.2.0</small>
+                </div>
             </div>
-        </div>
-        <div class="hero__meta">
-            <dl>
+            <nav class="nav" aria-label="Primary navigation">
+                <button class="nav__item is-active" data-view="home">Home</button>
+                <button class="nav__item" data-view="nfl">NFL</button>
+                <button class="nav__item" data-view="mlb">MLB</button>
+                <button class="nav__item" data-view="reports">Reports</button>
+                <button class="nav__item" data-view="teams">Teams</button>
+                <button class="nav__item" data-view="tracking">Tracking</button>
+                <button class="nav__item" data-view="settings">Settings</button>
+            </nav>
+            <div class="sidebar__note">
+                <span class="status-dot"></span>
+                CI-first desktop builds through GitHub Actions.
+            </div>
+        </aside>
+
+        <div class="workspace">
+            <header class="topbar">
                 <div>
-                    <dt>Last Updated</dt>
-                    <dd id="last-updated">-</dd>
+                    <p class="eyebrow" id="view-kicker">sports prediction command center</p>
+                    <h1 id="view-title">LineLens Sports</h1>
                 </div>
-                <div>
-                    <dt>Data Window</dt>
-                    <dd id="data-range">2018-2025</dd>
-                </div>
-                <div>
-                    <dt>Model Version</dt>
-                    <dd id="model-version">spread_model.joblib</dd>
-                </div>
-            </dl>
-        </div>
-    </header>
-
-    <p class="data-status" id="data-status">Loading predictions…</p>
-
-    <main>
-        <section class="card filters">
-            <h2>Filters</h2>
-            <form id="filter-form">
-                <label>
-                    Season
-                    <select id="season-select"></select>
-                </label>
-                <label>
-                    Week
-                    <select id="week-select"></select>
-                </label>
-                <label>
-                    Matchup
-                    <select id="matchup-select"></select>
-                </label>
-            </form>
-        </section>
-
-        <section class="grid grid--two-cols">
-            <article class="card" id="prediction-card">
-                <header>
-                    <p class="eyebrow">Model output</p>
-                    <h2 id="matchup-title">Select a game</h2>
-                </header>
-                <div class="matchup-banner">
-                    <div class="matchup-team">
-                        <div class="team-emblem" id="away-emblem">
-                            <img id="away-logo" alt="Away logo" />
-                            <span class="team-emblem__initial" id="away-initial">AWY</span>
-                        </div>
-                        <div>
-                            <p class="eyebrow eyebrow--mini">Away</p>
-                            <h3 id="away-name">-</h3>
-                        </div>
-                    </div>
-                    <div class="matchup-divider">@</div>
-                    <div class="matchup-team">
-                        <div class="team-emblem" id="home-emblem">
-                            <img id="home-logo" alt="Home logo" />
-                            <span class="team-emblem__initial" id="home-initial">HME</span>
-                        </div>
-                        <div>
-                            <p class="eyebrow eyebrow--mini">Home</p>
-                            <h3 id="home-name">-</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="metrics">
-                    <div>
-                        <span class="metric__label">Home cover probability</span>
-                        <span class="metric__value" id="prob-home">-</span>
-                    </div>
-                    <div>
-                        <span class="metric__label">Spread</span>
-                        <span class="metric__value" id="spread-line">-</span>
-                    </div>
-                    <div>
-                        <span class="metric__label">Actual result</span>
-                        <span class="metric__value" id="actual-result">-</span>
-                    </div>
-                </div>
-                <div class="moneyline">
-                    <div>
-                        <span class="metric__label">Home ML</span>
-                        <span id="home-moneyline">-</span>
-                    </div>
-                    <div>
-                        <span class="metric__label">Away ML</span>
-                        <span id="away-moneyline">-</span>
-                    </div>
-                </div>
-
-                <div class="prediction-breakdown">
-                    <div class="prob-row">
-                        <div class="prob-row__header">
-                            <span>Home cover</span>
-                            <strong id="prob-home-detail">-</strong>
-                        </div>
-                        <div class="prob-bar">
-                            <span class="prob-fill prob-fill--home" id="prob-home-bar"></span>
-                        </div>
-                    </div>
-                    <div class="prob-row">
-                        <div class="prob-row__header">
-                            <span>Away cover</span>
-                            <strong id="prob-away-detail">-</strong>
-                        </div>
-                        <div class="prob-bar">
-                            <span class="prob-fill prob-fill--away" id="prob-away-bar"></span>
-                        </div>
-                    </div>
-                    <div class="confidence-callout">
-                        <p class="eyebrow">Model confidence</p>
-                        <h3 id="confidence-label">Select a matchup</h3>
-                        <p id="confidence-copy">We will summarize the edge once you pick a game.</p>
-                    </div>
-                </div>
-            </article>
-
-            <article class="card" id="team-form">
-                <header>
-                    <p class="eyebrow">Recent form</p>
-                    <h2>Team snapshots</h2>
-                </header>
-                <div class="timeline">
-                    <div class="timeline__group">
-                        <div class="timeline__group-header">
-                            <h3 id="home-timeline-title">Home recent</h3>
-                            <span id="home-form-chip" class="form-chip">-</span>
-                        </div>
-                        <div id="home-timeline" class="timeline__rows"></div>
-                    </div>
-                    <div class="timeline__group">
-                        <div class="timeline__group-header">
-                            <h3 id="away-timeline-title">Away recent</h3>
-                            <span id="away-form-chip" class="form-chip">-</span>
-                        </div>
-                        <div id="away-timeline" class="timeline__rows"></div>
-                    </div>
-                </div>
-                <div class="trend-chart">
-                    <canvas id="trend-chart" aria-label="Team trend chart"></canvas>
-                </div>
-            </article>
-        </section>
-
-        <section class="card" id="week-table">
-            <header class="section-header">
-                <div>
-                    <p class="eyebrow">Week overview</p>
-                    <h2 class="h3">All games</h2>
-                </div>
-                <div class="table-controls">
-                    <label>
-                        Quick filter
-                        <input type="search" id="table-filter" placeholder="Search team..." />
-                    </label>
+                <div class="topbar__meta">
+                    <span class="chip" id="app-version-chip">v0.2.0</span>
+                    <span class="chip chip--soft" id="desktop-status">Static desktop shell</span>
+                    <button id="refresh-btn" class="btn btn--primary">Reload exports</button>
                 </div>
             </header>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Home</th>
-                            <th>Away</th>
-                            <th>Spread</th>
-                            <th>Model</th>
-                            <th>Result</th>
-                        </tr>
-                    </thead>
-                    <tbody id="games-body"></tbody>
-                </table>
-            </div>
-        </section>
 
-        <section class="grid grid--records">
-            <article class="card">
-                <header class="section-header">
-                    <div>
-                        <p class="eyebrow">Season snapshot</p>
-                        <h2 class="h3">Model record by season</h2>
-                    </div>
-                </header>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Season</th>
-                                <th>Record</th>
-                                <th>Accuracy</th>
-                            </tr>
-                        </thead>
-                        <tbody id="season-record-body"></tbody>
-                    </table>
-                </div>
-            </article>
-            <article class="card">
-                <header class="section-header">
-                    <div>
-                        <p class="eyebrow">Weekly detail</p>
-                        <h2 class="h3">Selected season breakdown</h2>
-                    </div>
-                </header>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Week</th>
-                                <th>Record</th>
-                                <th>Accuracy</th>
-                            </tr>
-                        </thead>
-                        <tbody id="weekly-record-body"></tbody>
-                    </table>
-                </div>
-            </article>
-        </section>
-    </main>
+            <p class="data-status" id="data-status">Loading prediction exports...</p>
 
-    <footer>
-        <p>Built for exploration. Streamlit remains the source of truth for live inference.</p>
-    </footer>
+            <main>
+                <section class="view is-active" id="view-home"></section>
+                <section class="view" id="view-nfl"></section>
+                <section class="view" id="view-mlb"></section>
+                <section class="view" id="view-reports"></section>
+                <section class="view" id="view-teams"></section>
+                <section class="view" id="view-tracking"></section>
+                <section class="view" id="view-settings"></section>
+            </main>
+        </div>
+    </div>
 
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="app.js" defer></script>
 </body>
 </html>
