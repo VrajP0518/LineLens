@@ -1,4 +1,4 @@
-const APP_VERSION = "v0.5.0";
+const APP_VERSION = "v0.6.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
@@ -7,6 +7,11 @@ const DATA_SOURCES = {
     app: ["data/app_metadata.json"],
     teams: ["data/team_metadata.json"],
     reports: ["data/reports/model_report.json"],
+    modelComparison: ["data/reports/mlb_model_comparison.json"],
+    featureSummary: ["data/reports/mlb_feature_summary.json"],
+    modelRegistry: ["data/models/model_registry.json"],
+    modelRecord: ["data/tracking/model_record.json"],
+    predictionLog: ["data/tracking/model_predictions_log.json"],
     bootstrap: ["data/bootstrap_status.json"],
     startup: ["data/startup_status.json"],
     refresh: ["data/refresh_status.json"],
@@ -19,6 +24,11 @@ const state = {
     app: window.__APP_METADATA__ || { app: "LineLens Sports", version: APP_VERSION },
     teamPayload: window.__TEAM_METADATA__ || { teams: [] },
     report: window.__MODEL_REPORT__ || null,
+    modelComparison: window.__MLB_MODEL_COMPARISON__ || null,
+    featureSummary: window.__MLB_FEATURE_SUMMARY__ || null,
+    modelRegistry: window.__MODEL_REGISTRY__ || null,
+    modelRecord: window.__MODEL_RECORD__ || null,
+    predictionLog: window.__MODEL_PREDICTIONS_LOG__ || null,
     bootstrapStatus: window.__BOOTSTRAP_STATUS__ || null,
     startupStatus: window.__STARTUP_STATUS__ || null,
     refreshStatus: window.__REFRESH_STATUS__ || null,
@@ -26,7 +36,7 @@ const state = {
     nfl: { payload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null, games: [], error: null },
     mlb: { payload: window.__MLB_PREDICTIONS__ || null, games: [], error: null },
     mlbBacktest: { payload: window.__MLB_BACKTEST_PREDICTIONS__ || null, games: [], error: null },
-    selected: { nfl: null, mlb: null, teamSport: "MLB", teamCode: "TOR", reportSport: "MLB" },
+    selected: { nfl: null, mlb: null, teamSport: "MLB", teamCode: "TOR", reportSport: "MLB", mlbFilter: "all" },
     tracker: [],
     refreshLogs: [],
     charts: {},
@@ -77,6 +87,11 @@ const REFRESH_COMMANDS = {
         label: "Check Data Status",
         manual: "npm run check:data",
         description: "Read local data/status files without downloading live data.",
+    },
+    score_models: {
+        label: "Score Model Predictions",
+        manual: "npm run score:models",
+        description: "Score logged model predictions against completed results when available.",
     },
 };
 
@@ -369,8 +384,16 @@ function allGames() {
     ];
 }
 
-function topEdges(limit = 5) {
-    return allGames()
+function currentGames() {
+    return [
+        ...state.nfl.games.map(game => ({ ...game, sport: "NFL" })),
+        ...state.mlb.games.map(game => ({ ...game, sport: "MLB" })),
+    ];
+}
+
+function topEdges(limit = 5, options = {}) {
+    const source = options.includeBacktest ? allGames() : currentGames();
+    return source
         .map(game => ({
             game,
             edge: getGameEdge(game, game.sport),
@@ -383,15 +406,84 @@ function topEdges(limit = 5) {
         .slice(0, limit);
 }
 
+function selectedModelEntry(sport = "MLB") {
+    const entries = state.modelRegistry?.models || [];
+    return entries.find(model => model.sport === sport && model.selected) || entries.find(model => model.sport === sport) || null;
+}
+
+function getModelRecord(sport = "MLB") {
+    return state.modelRecord?.sports?.[sport] || {};
+}
+
+function recordLine(record = {}) {
+    const wins = safeNumber(record.wins, 0);
+    const losses = safeNumber(record.losses, 0);
+    const pushes = safeNumber(record.pushes, 0);
+    const pending = safeNumber(record.pending, 0);
+    return `${wins}-${losses}${pushes ? `-${pushes}` : ""}${pending ? ` / ${pending} pending` : ""}`;
+}
+
+function getLogEntries() {
+    return Array.isArray(state.predictionLog?.predictions) ? state.predictionLog.predictions : [];
+}
+
+function logSummaryForSport(sport = "MLB") {
+    const entries = getLogEntries().filter(row => row.sport === sport);
+    const scored = entries.filter(row => ["win", "loss", "push"].includes(String(row.model_result || "").toLowerCase())).length;
+    const pending = entries.filter(row => String(row.model_result || row.result_status || "").toLowerCase() === "pending").length;
+    return { entries, scored, pending };
+}
+
+function getComparisonRows(sport = "MLB") {
+    if (sport === "MLB" && Array.isArray(state.modelComparison?.models)) return state.modelComparison.models;
+    return state.report?.sports?.[sport]?.model_comparison || [];
+}
+
+function topGlobalFeatures(sport = "MLB") {
+    if (sport === "MLB" && Array.isArray(state.modelComparison?.top_global_features)) {
+        return state.modelComparison.top_global_features;
+    }
+    return state.report?.sports?.[sport]?.top_global_features || [];
+}
+
+function featureQualityForGame(game) {
+    const quality = game?.explanation?.data_quality || game?.data_quality || {};
+    return {
+        pitcher: quality.pitcher_data || game?.pitcher_data_status || "missing",
+        travel: quality.travel_data || "missing",
+        missing: safeNumber(quality.feature_missing_count, 0),
+    };
+}
+
 async function loadAll() {
     setStatus("Loading prediction exports...", "info");
     loadSettings();
     loadTracker();
     loadRefreshLogs();
-    const [app, teams, report, bootstrap, startup, refresh, nfl, mlb, mlbBacktest] = await Promise.all([
+    const [
+        app,
+        teams,
+        report,
+        modelComparison,
+        featureSummary,
+        modelRegistry,
+        modelRecord,
+        predictionLog,
+        bootstrap,
+        startup,
+        refresh,
+        nfl,
+        mlb,
+        mlbBacktest,
+    ] = await Promise.all([
         loadOptional("app", ["__APP_METADATA__"]),
         loadOptional("teams", ["__TEAM_METADATA__"]),
         loadOptional("reports", ["__MODEL_REPORT__"]),
+        loadOptional("modelComparison", ["__MLB_MODEL_COMPARISON__"]),
+        loadOptional("featureSummary", ["__MLB_FEATURE_SUMMARY__"]),
+        loadOptional("modelRegistry", ["__MODEL_REGISTRY__"]),
+        loadOptional("modelRecord", ["__MODEL_RECORD__"]),
+        loadOptional("predictionLog", ["__MODEL_PREDICTIONS_LOG__"]),
         loadOptional("bootstrap", ["__BOOTSTRAP_STATUS__"]),
         loadOptional("startup", ["__STARTUP_STATUS__"]),
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
@@ -403,6 +495,11 @@ async function loadAll() {
     state.app = app || state.app;
     state.teamPayload = teams || state.teamPayload;
     state.report = report || state.report;
+    state.modelComparison = modelComparison || state.modelComparison;
+    state.featureSummary = featureSummary || state.featureSummary;
+    state.modelRegistry = modelRegistry || state.modelRegistry;
+    state.modelRecord = modelRecord || state.modelRecord;
+    state.predictionLog = predictionLog || state.predictionLog;
     state.bootstrapStatus = bootstrap || state.bootstrapStatus;
     state.startupStatus = startup || state.startupStatus;
     state.refreshStatus = refresh || state.refreshStatus;
@@ -556,11 +653,16 @@ async function runStartupAutomation(options = {}) {
 }
 
 async function loadAllAfterRefresh() {
-    const [bootstrap, startup, refresh, report, nfl, mlb, mlbBacktest] = await Promise.all([
+    const [bootstrap, startup, refresh, report, modelComparison, featureSummary, modelRegistry, modelRecord, predictionLog, nfl, mlb, mlbBacktest] = await Promise.all([
         loadOptional("bootstrap", []),
         loadOptional("startup", []),
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
         loadOptional("reports", []),
+        loadOptional("modelComparison", []),
+        loadOptional("featureSummary", []),
+        loadOptional("modelRegistry", []),
+        loadOptional("modelRecord", []),
+        loadOptional("predictionLog", []),
         loadOptional("nfl", []),
         loadOptional("mlb", []),
         loadOptional("mlbBacktest", []),
@@ -580,6 +682,26 @@ async function loadAllAfterRefresh() {
     if (report) {
         state.report = report;
         window.__MODEL_REPORT__ = report;
+    }
+    if (modelComparison) {
+        state.modelComparison = modelComparison;
+        window.__MLB_MODEL_COMPARISON__ = modelComparison;
+    }
+    if (featureSummary) {
+        state.featureSummary = featureSummary;
+        window.__MLB_FEATURE_SUMMARY__ = featureSummary;
+    }
+    if (modelRegistry) {
+        state.modelRegistry = modelRegistry;
+        window.__MODEL_REGISTRY__ = modelRegistry;
+    }
+    if (modelRecord) {
+        state.modelRecord = modelRecord;
+        window.__MODEL_RECORD__ = modelRecord;
+    }
+    if (predictionLog) {
+        state.predictionLog = predictionLog;
+        window.__MODEL_PREDICTIONS_LOG__ = predictionLog;
     }
     if (nfl) {
         state.nfl.payload = nfl;
@@ -622,12 +744,14 @@ function renderHome() {
     const top = topEdges(5);
     const latest = [normalizeMeta(state.nfl.payload).generated_at, normalizeMeta(state.mlb.payload).generated_at, state.report?.metadata?.generated_at].filter(Boolean).sort().at(-1);
     const best = top[0];
+    const mlbRecord = getModelRecord("MLB").overall || {};
+    const selectedModel = selectedModelEntry("MLB");
     $("#view-home").innerHTML = `
         <section class="hero-panel panel">
             <div>
                 <p class="eyebrow">LineLens Sports ${escapeHtml(state.app.version || APP_VERSION)}</p>
-                <h2>Desktop-grade model edge command center for NFL and MLB.</h2>
-                <p class="muted">Track predictions, inspect calibration, compare model families, review team profiles, and keep a local analysis ledger without requiring paid odds APIs.</p>
+                <h2>Desktop-grade model command center for NFL and MLB.</h2>
+                <p class="muted">Track real predictions, inspect model drivers, compare training runs, review calibration, and keep an honest model record without requiring paid odds APIs.</p>
             </div>
             <div class="hero-actions">
                 <button class="btn btn--primary" data-view-link="mlb">Open MLB</button>
@@ -643,6 +767,8 @@ function renderHome() {
             ${card("Strong edges", top.filter(row => row.edge >= 0.1).length, "confidence distance from 50%")}
             ${card("Best current pick", best ? `${best.pick}` : "-", best ? `${best.game.away} @ ${best.game.home}` : "no picks loaded", "summary-card--accent")}
             ${card("Latest export", latest ? formatDate(latest) : "-", latest ? timestamp(latest) : "no export timestamp")}
+            ${card("MLB model record", recordLine(mlbRecord), formatProbability(mlbRecord.accuracy))}
+            ${card("Current MLB model", selectedModel?.model_name || normalizeMeta(state.mlb.payload).model_type || "-", selectedModel?.selected_by || "selected by report")}
             ${card("Active modules", "2", "NFL spread / MLB moneyline")}
         </section>
         ${renderStartupAutomationCard()}
@@ -785,6 +911,7 @@ function renderRefreshPanel(context = "home") {
             ["nfl_real", "Refresh NFL Real Data", ""],
             ["mlb_current", "Refresh MLB Current", ""],
             ["mlb_all", "Run MLB Full Train", ""],
+            ["score_models", "Score Model Record", ""],
             ["check_data", "Check Data Status", ""],
         ]
         : [
@@ -792,6 +919,7 @@ function renderRefreshPanel(context = "home") {
             ["bootstrap_env", "Bootstrap Python Environment", ""],
             ["mlb_current", "Refresh MLB Current", ""],
             ["mlb_all", "Run MLB Full Train", ""],
+            ["score_models", "Score Model Record", ""],
             ["nfl_real", "Refresh NFL Real Data", ""],
             ["check_data", "Check Data Status", ""],
         ];
@@ -906,10 +1034,30 @@ function renderNFL() {
     `;
 }
 
+function filterMlbGames(games) {
+    const filter = state.selected.mlbFilter || "all";
+    return games.filter(game => {
+        const probability = getGameProbability(game, "MLB");
+        const confidence = probability === null ? 0 : Math.max(probability, 1 - probability);
+        const quality = featureQualityForGame(game);
+        const factors = game.explanation?.top_factors || [];
+        const factorLabels = factors.map(factor => `${factor.label || ""} ${factor.feature || ""}`.toLowerCase()).join(" ");
+        if (filter === "model") return probability !== null && !isScheduleOnly(game, state.mlb.payload);
+        if (filter === "high55") return confidence >= 0.55;
+        if (filter === "high60") return confidence >= 0.6;
+        if (filter === "pitcher") return ["available", "proxy"].includes(String(quality.pitcher).toLowerCase());
+        if (filter === "travel") return factorLabels.includes("travel") || safeNumber(game.feature_values?.travel_km_diff) !== null;
+        if (filter === "fatigue") return factorLabels.includes("fatigue") || safeNumber(game.feature_values?.schedule_fatigue_diff) !== null;
+        if (filter === "schedule") return isScheduleOnly(game, state.mlb.payload);
+        return true;
+    });
+}
+
 function renderMLB() {
     const currentHasModel = state.mlb.games.some(game => getGameProbability(game, "MLB") !== null);
     const usingBacktest = !currentHasModel && state.mlbBacktest.games.length > 0;
-    const games = usingBacktest ? state.mlbBacktest.games : state.mlb.games;
+    const rawGames = usingBacktest ? state.mlbBacktest.games : state.mlb.games;
+    const games = filterMlbGames(rawGames);
     const payload = usingBacktest ? state.mlbBacktest.payload : state.mlb.payload;
     const selectedStillVisible = games.some(game => String(game.game_id || game.id || "") === String(state.selected.mlb?.game_id || state.selected.mlb?.id || ""));
     const selected = selectedStillVisible ? state.selected.mlb : games[0] || null;
@@ -924,12 +1072,29 @@ function renderMLB() {
         ${sportSummaryCards("MLB", games, payload)}
         <section class="dashboard-grid">
             <article class="panel panel--wide">
-                <header class="section-header"><div><p class="eyebrow">${usingBacktest ? "Historical backtest" : "Today / Upcoming"}</p><h2>MLB board</h2></div></header>
-                ${games.length ? renderGameTable("MLB", games, usingBacktest ? "MLB_BACKTEST" : "MLB") : emptyState("No real MLB model export found", "Run npm run refresh:mlb:all.")}
+                <header class="section-header">
+                    <div><p class="eyebrow">${usingBacktest ? "Historical backtest" : "Today / Upcoming"}</p><h2>MLB board</h2></div>
+                    ${renderMlbFilter()}
+                </header>
+                ${games.length ? renderGameTable("MLB", games, usingBacktest ? "MLB_BACKTEST" : "MLB") : emptyState("No MLB rows match this filter", rawGames.length ? "Change the MLB filter or refresh current predictions." : "Run npm run refresh:mlb:all.")}
             </article>
             <article class="panel">${renderMatchupDetail("MLB", selected)}</article>
         </section>
     `;
+}
+
+function renderMlbFilter() {
+    const options = [
+        ["all", "All"],
+        ["model", "Model picks"],
+        ["high55", "55%+"],
+        ["high60", "60%+"],
+        ["pitcher", "Pitcher data"],
+        ["travel", "Travel edge"],
+        ["fatigue", "Fatigue edge"],
+        ["schedule", "Schedule-only"],
+    ];
+    return `<select id="mlb-filter-select">${options.map(([value, label]) => `<option value="${value}" ${state.selected.mlbFilter === value ? "selected" : ""}>${label}</option>`).join("")}</select>`;
 }
 
 function mlbModelStatus() {
@@ -950,7 +1115,7 @@ function renderGameTable(sport, games, source = sport) {
     return `
         <div class="table-wrapper">
             <table class="data-table">
-                <thead><tr><th>Date</th><th>Away</th><th>Home</th><th>Pick</th><th>Prob</th><th>Edge</th><th>Confidence</th><th>CLV</th></tr></thead>
+                <thead><tr><th>Date</th><th>Away</th><th>Home</th><th>Pick</th><th>Prob</th><th>Edge</th><th>Confidence</th><th>Top factor</th><th>CLV</th></tr></thead>
                 <tbody>
                     ${games.map((game, index) => `
                         <tr class="selectable-row" data-select-game="${source}" data-game-index="${index}" data-game-id="${escapeHtml(game.game_id || game.id || "")}">
@@ -961,11 +1126,23 @@ function renderGameTable(sport, games, source = sport) {
                             <td>${formatProbability(getGameProbability(game, sport))}</td>
                             <td>${formatEdge(getGameEdge(game, sport))}</td>
                             <td>${confidenceTag(getGameConfidence(game, sport))}</td>
+                            <td>${sport === "MLB" ? renderTopFactorCell(game) : "-"}</td>
                             <td><span class="chip chip--soft">${escapeHtml(getCLVSummary(game))}</span></td>
                         </tr>
                     `).join("")}
                 </tbody>
             </table>
+        </div>
+    `;
+}
+
+function renderTopFactorCell(game) {
+    const factor = game.top_factor_label || game.explanation?.top_factors?.[0]?.label;
+    const quality = featureQualityForGame(game);
+    return `
+        <div class="factor-cell">
+            <strong>${escapeHtml(factor || "Model drivers pending")}</strong>
+            <span>${escapeHtml(`P:${quality.pitcher} / T:${quality.travel}`)}</span>
         </div>
     `;
 }
@@ -1002,6 +1179,7 @@ function renderMatchupDetail(sport, game) {
                 ${renderCLV(game, sport)}
                 <div class="detail-card"><span>Result status</span><strong>${escapeHtml(game.result || game.status || "Pending")}</strong></div>
             </div>
+            ${sport === "MLB" ? renderPredictionExplanation(game) : ""}
             <button class="btn btn--primary full-width" data-add-tracker="${sport}" data-game-id="${escapeHtml(game.game_id || game.id || "")}" ${canTrack ? "" : "disabled"}>${canTrack ? "Add to Tracker" : "No model prediction"}</button>
         </div>
     `;
@@ -1015,10 +1193,64 @@ function renderNFLImpact(game) {
 }
 
 function renderMLBImpact(game) {
+    const quality = featureQualityForGame(game);
     return `
         <div class="detail-card"><span>Starting pitchers</span><strong>${escapeHtml(game.away_probable_pitcher || "TBD")} vs ${escapeHtml(game.home_probable_pitcher || "TBD")}</strong><small>${escapeHtml(game.pitcher_data_status === "missing" ? "Probable pitcher data unavailable. Using team-level model only." : game.pitcher_edge || "Pitcher edge pending")}</small></div>
-        <div class="detail-card"><span>Pitcher edge</span><strong>${escapeHtml(game.pitcher_edge || "Unknown")}</strong><small>${escapeHtml(game.home_pitcher_summary || "Pitcher summary pending")}</small></div>
+        <div class="detail-card"><span>Data quality</span><strong>${escapeHtml(game.pitcher_edge || "Unknown")}</strong><small>Pitcher ${escapeHtml(quality.pitcher)} / travel ${escapeHtml(quality.travel)} / missing ${escapeHtml(quality.missing)}</small></div>
     `;
+}
+
+function renderPredictionExplanation(game) {
+    const explanation = game.explanation || {};
+    const factors = explanation.top_factors || [];
+    const quality = featureQualityForGame(game);
+    const values = game.feature_values || {};
+    return `
+        <section class="explanation-card">
+            <div class="explanation-card__head">
+                <div>
+                    <p class="eyebrow">Why this pick?</p>
+                    <h3>${escapeHtml(explanation.summary || "Model explanation unavailable for this row.")}</h3>
+                </div>
+                <div class="quality-badges">
+                    <span class="chip">pitcher ${escapeHtml(quality.pitcher)}</span>
+                    <span class="chip">travel ${escapeHtml(quality.travel)}</span>
+                    <span class="chip chip--soft">${escapeHtml(quality.missing)} missing</span>
+                </div>
+            </div>
+            ${factors.length ? `<div class="factor-list">${factors.slice(0, 5).map(factor => renderFactorRow(factor)).join("")}</div>` : emptyState("No factor export found", "Run npm run refresh:mlb:all to regenerate explanations.")}
+            <details class="feature-details">
+                <summary>Model metadata and feature values</summary>
+                <div class="metadata-grid">
+                    <div><span>Model</span><strong>${escapeHtml(game.model_name || normalizeMeta(state.mlb.payload).model_type || "model")}</strong></div>
+                    <div><span>Model id</span><strong>${escapeHtml(game.model_id || normalizeMeta(state.mlb.payload).model_id || "-")}</strong></div>
+                    <div><span>Feature rows</span><strong>${escapeHtml(normalizeMeta(state.mlb.payload).feature_count || selectedModelEntry("MLB")?.feature_count || "-")}</strong></div>
+                </div>
+                ${renderFeatureValueList(values)}
+            </details>
+        </section>
+    `;
+}
+
+function renderFactorRow(factor) {
+    const impact = String(factor.impact || "").replaceAll("_", " ");
+    return `
+        <div class="factor-row">
+            <div>
+                <strong>${escapeHtml(factor.label || factor.feature || "Model factor")}</strong>
+                <span>${escapeHtml(factor.feature || "")}</span>
+            </div>
+            <div><span>${escapeHtml(impact || "neutral")}</span><strong>${formatNumber(factor.strength, 3)}</strong></div>
+            <div><span>Home</span><strong>${formatNumber(factor.home_value, 2)}</strong></div>
+            <div><span>Away</span><strong>${formatNumber(factor.away_value, 2)}</strong></div>
+        </div>
+    `;
+}
+
+function renderFeatureValueList(values) {
+    const entries = Object.entries(values || {}).filter(([, value]) => safeNumber(value) !== null).slice(0, 16);
+    if (!entries.length) return emptyState("No feature values exported", "Feature values are added during MLB prediction export.");
+    return `<div class="feature-list">${entries.map(([key, value]) => `<div><span>${escapeHtml(key)}</span><strong>${formatNumber(value, 3)}</strong></div>`).join("")}</div>`;
 }
 
 function renderLineMovement(game, sport) {
@@ -1037,10 +1269,15 @@ function renderCLV(game, sport) {
 function renderReports() {
     const sport = state.selected.reportSport || "MLB";
     const report = state.report?.sports?.[sport] || {};
+    const comparisonRows = getComparisonRows(sport);
     $("#view-reports").innerHTML = `
         <section class="module-header panel">
-            <div><p class="eyebrow">Reports / Backtesting</p><h2>Calibration, confidence buckets, and model comparison</h2><p class="muted">Calibration checks whether games predicted around 60% actually win around 60% of the time.</p></div>
+            <div><p class="eyebrow">Reports / Backtesting</p><h2>Model evaluation center</h2><p class="muted">Calibration checks whether games predicted around 60% actually win around 60% of the time.</p></div>
             <select id="report-sport-select"><option ${sport === "MLB" ? "selected" : ""}>MLB</option><option ${sport === "NFL" ? "selected" : ""}>NFL</option></select>
+        </section>
+        <section class="dashboard-grid">
+            <article class="panel">${renderCurrentModelPanel(sport)}</article>
+            <article class="panel">${renderModelRecordPanel(sport)}</article>
         </section>
         <section class="dashboard-grid">
             <article class="panel">
@@ -1050,15 +1287,122 @@ function renderReports() {
             </article>
             <article class="panel">
                 <header><p class="eyebrow">Model comparison</p><h2>Model leaderboard</h2></header>
-                ${renderModelComparison(report.model_comparison || [])}
+                ${renderModelComparison(comparisonRows)}
             </article>
         </section>
         <section class="dashboard-grid">
             <article class="panel"><header><p class="eyebrow">Confidence buckets</p><h2>Performance by tag</h2></header>${renderConfidenceBuckets(report.confidence_buckets || [])}</article>
+            <article class="panel">${renderTopGlobalFeatures(sport)}</article>
+        </section>
+        <section class="dashboard-grid">
+            <article class="panel">${renderPredictionLogSummary(sport)}</article>
+            <article class="panel">${renderFeatureSummary(sport)}</article>
+        </section>
+        <section class="dashboard-grid">
+            <article class="panel">${renderModelRegistryPanel(sport)}</article>
             <article class="panel"><header><p class="eyebrow">Auto report</p><h2>Generated report text</h2></header><div class="report-actions"><button class="btn" data-generate-report="NFL">Generate NFL Weekly Report</button><button class="btn" data-generate-report="MLB">Generate MLB Daily Report</button><button class="btn btn--primary" id="copy-report-btn">Copy Report</button></div><textarea id="generated-report" readonly>${escapeHtml(generateReportText(sport))}</textarea></article>
         </section>
     `;
     renderCalibrationChart(report.calibration || []);
+}
+
+function renderCurrentModelPanel(sport) {
+    const selectedModel = selectedModelEntry(sport);
+    const meta = sport === "MLB" ? normalizeMeta(state.mlb.payload) : normalizeMeta(state.nfl.payload);
+    const report = state.report?.sports?.[sport] || {};
+    const metrics = selectedModel?.metrics || report.metrics || {};
+    return `
+        <header><p class="eyebrow">Current ${sport} model</p><h2>${escapeHtml(selectedModel?.model_name || meta.model_type || report.metadata?.model_name || "Model not selected")}</h2></header>
+        <div class="metric-grid">
+            <div><span>Version</span><strong>${escapeHtml(selectedModel?.version || meta.version || state.app.version || APP_VERSION)}</strong></div>
+            <div><span>Selected by</span><strong>${escapeHtml(selectedModel?.selected_by || "log loss / Brier")}</strong></div>
+            <div><span>Features</span><strong>${escapeHtml(selectedModel?.feature_count || report.metadata?.feature_count || meta.feature_count || "-")}</strong></div>
+            <div><span>Trained</span><strong>${escapeHtml(timestamp(selectedModel?.trained_at || report.metadata?.created_at))}</strong></div>
+        </div>
+        <div class="stat-list">
+            <div><strong>Accuracy</strong><span>${formatProbability(metrics.accuracy)}</span></div>
+            <div><strong>ROC AUC</strong><span>${formatNumber(metrics.roc_auc, 3)}</span></div>
+            <div><strong>Log loss</strong><span>${formatNumber(metrics.log_loss, 3)}</span></div>
+            <div><strong>Brier</strong><span>${formatNumber(metrics.brier_score, 3)}</span></div>
+        </div>
+        ${selectedModel ? "" : emptyState("No registry entry", sport === "MLB" ? "Run npm run refresh:mlb:all." : "NFL registry support is schema-ready.")}
+    `;
+}
+
+function renderModelRecordPanel(sport) {
+    const record = getModelRecord(sport);
+    const overall = record.overall || {};
+    const lastRun = state.modelRecord?.metadata?.generated_at;
+    return `
+        <header><p class="eyebrow">Model record</p><h2>${recordLine(overall)}</h2></header>
+        <div class="summary-grid summary-grid--compact">
+            ${card("Accuracy", formatProbability(overall.accuracy), "scored predictions")}
+            ${card("Pending", safeNumber(overall.pending, 0), "awaiting final")}
+            ${card("Recent 7 days", recordLine(record.recent_7_days || {}), formatProbability(record.recent_7_days?.accuracy))}
+            ${card("Recent 30 days", recordLine(record.recent_30_days || {}), formatProbability(record.recent_30_days?.accuracy))}
+        </div>
+        <p class="muted">Last scoring run: ${escapeHtml(timestamp(lastRun))}. ${sport === "NFL" ? "NFL scoring remains schema-ready and depends on exported cover-result fields." : "MLB scoring uses cached MLB Stats API schedule/results when available."}</p>
+        ${state.modelRecord ? "" : emptyState("No model record file", "Run npm run score:models.")}
+    `;
+}
+
+function renderTopGlobalFeatures(sport) {
+    const features = topGlobalFeatures(sport);
+    return `
+        <header><p class="eyebrow">Top global features</p><h2>Model drivers</h2></header>
+        ${features.length ? `<div class="stat-list">${features.slice(0, 12).map(row => `<div><strong>${escapeHtml(row.feature)}</strong><span>${formatNumber(row.importance ?? row.coefficient, 4)}</span></div>`).join("")}</div>` : emptyState("No feature importance export", sport === "MLB" ? "Run npm run refresh:mlb:all." : "NFL feature importance export is not available yet.")}
+    `;
+}
+
+function renderPredictionLogSummary(sport) {
+    const summary = logSummaryForSport(sport);
+    const latest = summary.entries.map(row => row.generated_at).filter(Boolean).sort().at(-1);
+    return `
+        <header><p class="eyebrow">Prediction log</p><h2>${summary.entries.length} logged snapshots</h2></header>
+        <div class="summary-grid summary-grid--compact">
+            ${card("Scored", summary.scored, "win/loss/push")}
+            ${card("Pending", summary.pending, "future or no final")}
+            ${card("Latest log", latest ? formatDate(latest) : "-", timestamp(latest))}
+        </div>
+        ${summary.entries.length ? renderPredictionLogTable(summary.entries.slice(0, 6)) : emptyState("No prediction log", sport === "MLB" ? "Run npm run refresh:mlb, then npm run score:models." : "NFL prediction logging is schema-ready.")}
+    `;
+}
+
+function renderPredictionLogTable(rows) {
+    return `<div class="table-wrapper"><table class="data-table"><thead><tr><th>Date</th><th>Game</th><th>Pick</th><th>Prob</th><th>Result</th></tr></thead><tbody>${rows.map(row => `<tr><td>${formatDate(row.game_date)}</td><td>${escapeHtml(row.away)} @ ${escapeHtml(row.home)}</td><td><strong>${escapeHtml(row.model_pick)}</strong></td><td>${formatProbability(row.confidence || Math.max(safeNumber(row.home_win_probability, 0), safeNumber(row.away_win_probability, 0)))}</td><td>${escapeHtml(row.model_result || row.result_status || "pending")}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+function renderFeatureSummary(sport) {
+    if (sport !== "MLB") return `<header><p class="eyebrow">Feature summary</p><h2>NFL compatibility</h2></header>${emptyState("NFL feature summary not generated", "NFL structure is preserved; this sprint focuses on MLB feature engineering.")}`;
+    const summary = state.featureSummary || {};
+    const meta = summary.metadata || {};
+    const groups = summary.feature_groups || {};
+    const groupRows = Object.entries(groups).map(([name, group]) => ({ name, missing: group.missingness_avg, feature_count: group.feature_count }));
+    return `
+        <header><p class="eyebrow">Feature summary</p><h2>${escapeHtml(summary.feature_count || 0)} MLB features</h2></header>
+        <div class="summary-grid summary-grid--compact">
+            ${card("Rows", summary.rows || 0, "feature table")}
+            ${card("Features used", (summary.features_used_by_model || []).length, "selected model")}
+            ${card("Dropped", (summary.features_dropped || []).length, "missing/object/excluded")}
+            ${card("Generated", timestamp(meta.generated_at), "summary export")}
+        </div>
+        ${groupRows.length ? `<div class="stat-list">${groupRows.map(row => `<div><strong>${escapeHtml(row.name.replaceAll("_", " "))}</strong><span>${row.feature_count} features / ${formatProbability(row.missing)} missing</span></div>`).join("")}</div>` : emptyState("No feature groups", "Run npm run refresh:mlb:all.")}
+    `;
+}
+
+function renderModelRegistryPanel(sport) {
+    const entries = (state.modelRegistry?.models || []).filter(model => model.sport === sport);
+    if (!entries.length) return `<header><p class="eyebrow">Model registry</p><h2>No model runs yet</h2></header>${emptyState("Registry file missing or empty", sport === "MLB" ? "Run npm run refresh:mlb:all." : "NFL registry entries will appear after model-backed training exports.")}`;
+    const current = entries.find(model => model.selected) || entries[0];
+    const previous = entries.find(model => model.model_id !== current.model_id);
+    const improved = previous && safeNumber(current.metrics?.log_loss) !== null && safeNumber(previous.metrics?.log_loss) !== null
+        ? safeNumber(current.metrics.log_loss) < safeNumber(previous.metrics.log_loss)
+        : null;
+    return `
+        <header><p class="eyebrow">Model registry</p><h2>${escapeHtml(current.model_id || current.model_name)}</h2></header>
+        <p class="muted">${improved === null ? "No previous comparable model yet." : improved ? "Improved vs previous by log loss." : "No log-loss improvement vs previous model."}</p>
+        <div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Version</th><th>Trained</th><th>Log loss</th><th>Brier</th><th>Selected</th></tr></thead><tbody>${entries.slice(0, 6).map(row => `<tr><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.version)}</td><td>${formatDate(row.trained_at)}</td><td>${formatNumber(row.metrics?.log_loss, 3)}</td><td>${formatNumber(row.metrics?.brier_score, 3)}</td><td>${row.selected ? '<span class="tag tag--high">current</span>' : ""}</td></tr>`).join("")}</tbody></table></div>
+    `;
 }
 
 function renderCalibrationTable(rows) {
@@ -1068,8 +1412,9 @@ function renderCalibrationTable(rows) {
 
 function renderModelComparison(rows) {
     if (!rows.length) return emptyState("No comparison rows", "Model comparison export is missing.");
-    const bestAccuracy = Math.max(...rows.map(row => safeNumber(row.accuracy, 0)));
-    return `<div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Status</th><th>Accuracy</th><th>ROC AUC</th><th>Log loss</th><th>Brier</th><th>N</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${escapeHtml(row.model)}</strong> ${safeNumber(row.accuracy) === bestAccuracy ? '<span class="tag tag--high">Best acc</span>' : ""}</td><td>${escapeHtml(row.status)}</td><td>${formatProbability(row.accuracy)}</td><td>${formatNumber(row.roc_auc, 3)}</td><td>${formatNumber(row.log_loss, 3)}</td><td>${formatNumber(row.brier_score, 3)}</td><td>${row.sample_size || 0}</td></tr>`).join("")}</tbody></table></div>`;
+    const finiteLogLosses = rows.map(row => safeNumber(row.log_loss)).filter(value => value !== null);
+    const bestLogLoss = finiteLogLosses.length ? Math.min(...finiteLogLosses) : null;
+    return `<div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Status</th><th>Accuracy</th><th>ROC AUC</th><th>Log loss</th><th>Brier</th><th>N</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${escapeHtml(row.model || row.model_name)}</strong> ${bestLogLoss !== null && safeNumber(row.log_loss) === bestLogLoss ? '<span class="tag tag--high">Best log loss</span>' : ""}</td><td>${escapeHtml(row.status)}</td><td>${formatProbability(row.accuracy)}</td><td>${formatNumber(row.roc_auc, 3)}</td><td>${formatNumber(row.log_loss, 3)}</td><td>${formatNumber(row.brier_score, 3)}</td><td>${row.sample_size || 0}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 function renderConfidenceBuckets(rows) {
@@ -1110,17 +1455,25 @@ function generateReportText(sport) {
     const rows = topEdges(5).filter(row => row.game.sport === sport);
     const meta = sport === "NFL" ? normalizeMeta(state.nfl.payload) : normalizeMeta(state.mlb.payload);
     const report = state.report?.sports?.[sport];
+    const record = getModelRecord(sport).overall || {};
+    const currentModel = selectedModelEntry(sport);
     const lines = [
         `LineLens Sports ${sport === "MLB" ? "MLB Daily" : "NFL Weekly"} Report`,
         `Generated: ${new Date().toLocaleString()}`,
+        `Current model: ${currentModel?.model_name || meta.model_type || "not selected"} (${currentModel?.version || meta.version || state.app.version || APP_VERSION})`,
+        `Model record: ${recordLine(record)} / ${formatProbability(record.accuracy)}`,
         "",
         "Top model leans:",
-        ...(rows.length ? rows.map((row, idx) => `${idx + 1}. ${row.pick} in ${row.game.away} @ ${row.game.home} - ${formatProbability(row.probability)} home-side probability (${row.confidence})`) : ["No model leans loaded."]),
+        ...(rows.length ? rows.map((row, idx) => {
+            const factor = row.game.top_factor_label || row.game.explanation?.top_factors?.[0]?.label || "model confidence";
+            return `${idx + 1}. ${row.pick} in ${row.game.away} @ ${row.game.home} - ${formatProbability(row.probability)} home-side probability (${row.confidence}); top factor: ${factor}`;
+        }) : ["No model leans loaded."]),
         "",
         "Data notes:",
         `- Prediction mode: ${dataMode(sport === "NFL" ? state.nfl.payload : state.mlb.payload, sport === "NFL" ? state.nfl.games : state.mlb.games)}.`,
         `- Odds data: ${meta.odds_status || "Optional/unavailable."}`,
-        sport === "MLB" ? "- Probable pitcher data may be partial; missing pitcher data falls back to team-level model only." : "- Injury impact depends on exported injury fields; missing injuries are labeled unknown.",
+        sport === "MLB" ? "- Pitcher features use real probable pitcher names when available and pitcher-team-result proxies, not fabricated ERA/WHIP." : "- Injury impact depends on exported injury fields; missing injuries are labeled unknown.",
+        sport === "MLB" ? "- Travel is an estimated city/venue distance feature, not an exact itinerary." : "- NFL record scoring is schema-ready when cover-result fields are exported.",
         `- Report metrics mode: ${report?.status || (state.report?.metadata?.real_data === false ? "missing" : "real")}.`,
     ];
     return lines.join("\n");
@@ -1247,6 +1600,11 @@ function renderSettings() {
         ["NFL data", "nfl-data-py/cached pipeline", "exported NFL predictions or offseason cache"],
         ["Odds API", oddsStatusLabel(), "optional The Odds API via ODDS_API_KEY"],
         ["Reports mode", state.report?.metadata?.real_data === false ? "missing" : state.report ? "real" : "missing", "data/reports/model_report.json"],
+        ["MLB feature summary", state.featureSummary ? `${state.featureSummary.feature_count || 0} features` : "missing", "data/reports/mlb_feature_summary.json"],
+        ["Model comparison", state.modelComparison ? `${(state.modelComparison.models || []).length} rows` : "missing", "data/reports/mlb_model_comparison.json"],
+        ["Model registry", state.modelRegistry ? `${(state.modelRegistry.models || []).length} model runs` : "missing", "data/models/model_registry.json"],
+        ["Prediction log", state.predictionLog ? `${getLogEntries().length} snapshots` : "missing", "data/tracking/model_predictions_log.json"],
+        ["Model record", state.modelRecord ? timestamp(state.modelRecord.metadata?.generated_at) : "missing", "data/tracking/model_record.json"],
         ["Team metadata", state.teamPayload?.teams?.length ? `${state.teamPayload.teams.length} teams` : "missing", "data/team_metadata.json"],
         ["Bootstrap status", state.bootstrapStatus?.status || "missing", state.bootstrapStatus?.python_version ? `Python ${state.bootstrapStatus.python_version}` : "data/bootstrap_status.json"],
         ["Startup automation", state.startupStatus?.status || "missing", state.startupStatus?.error || "data/startup_status.json"],
@@ -1335,6 +1693,11 @@ function bindEvents() {
             state.selected.reportSport = event.target.value;
             persistSettings();
             renderReports();
+        }
+        if (event.target.id === "mlb-filter-select") {
+            state.selected.mlbFilter = event.target.value;
+            persistSettings();
+            renderMLB();
         }
         if (event.target.id === "team-sport-select") {
             state.selected.teamSport = event.target.value;

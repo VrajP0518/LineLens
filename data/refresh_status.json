@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-06T17:05:37Z",
+  "generated_at": "2026-07-06T17:49:00Z",
   "mode": "predict",
   "sports": {
     "NFL": {
@@ -11,9 +11,9 @@
     },
     "MLB": {
       "status": "model_generated",
-      "message": "MLB model predictions generated from cached schedule after live fetch failed.",
-      "last_success_at": "2026-07-06T17:05:37Z",
-      "used_cache": true,
+      "message": "MLB model predictions generated from current schedule.",
+      "last_success_at": "2026-07-06T17:48:59Z",
+      "used_cache": false,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     }
   },
@@ -23,5 +23,10 @@
     "key_present": false,
     "region": "us",
     "markets": "h2h,spreads,totals"
+  },
+  "model_record": {
+    "status": "real_fresh",
+    "message": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v0.6.0\",\n  \"generated_at\": \"2026-07-06T17:49:00Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 24,\n  \"predictions_scored_this_run\": 0,\n  \"pending_predictions\": 24\n}",
+    "last_run_at": "2026-07-06T17:49:00Z"
   }
 }

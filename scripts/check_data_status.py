@@ -51,6 +51,18 @@ def main() -> int:
     startup = load_json(DATA_DIR / "startup_status.json")
     refresh = load_json(DATA_DIR / "refresh_status.json")
     report = load_json(DATA_DIR / "reports" / "model_report.json")
+    comparison = load_json(DATA_DIR / "reports" / "mlb_model_comparison.json")
+    feature_summary = load_json(DATA_DIR / "reports" / "mlb_feature_summary.json")
+    registry = load_json(DATA_DIR / "models" / "model_registry.json")
+    prediction_log = load_json(DATA_DIR / "tracking" / "model_predictions_log.json")
+    model_record = load_json(DATA_DIR / "tracking" / "model_record.json")
+    selected_models = [row for row in registry.get("models", []) if row.get("selected")]
+    log_rows = prediction_log.get("predictions", [])
+    scored_rows = [
+        row
+        for row in log_rows
+        if str(row.get("model_result", "")).lower() in {"win", "loss", "push"}
+    ]
     summary = {
         "bootstrap": {
             "status": bootstrap.get("status", "missing"),
@@ -75,6 +87,41 @@ def main() -> int:
             "status": "real_cached" if report and not report.get("_error") else "missing",
             "generated_at": (report.get("metadata") or {}).get("generated_at") if report else None,
             "error": report.get("_error"),
+            "mlb_model_comparison": {
+                "status": "real_cached" if comparison and not comparison.get("_error") else "missing",
+                "selected_model": (comparison.get("metadata") or {}).get("selected_model"),
+                "model_count": len(comparison.get("models", [])),
+                "error": comparison.get("_error"),
+            },
+            "mlb_feature_summary": {
+                "status": "real_cached" if feature_summary and not feature_summary.get("_error") else "missing",
+                "rows": feature_summary.get("rows", feature_summary.get("row_count")),
+                "feature_count": feature_summary.get("feature_count"),
+                "features_used": len(feature_summary.get("features_used_by_model", [])),
+                "error": feature_summary.get("_error"),
+            },
+        },
+        "model_registry": {
+            "status": "real_cached" if registry and not registry.get("_error") else "missing",
+            "model_count": len(registry.get("models", [])),
+            "selected": selected_models[:1],
+            "error": registry.get("_error"),
+        },
+        "model_tracking": {
+            "prediction_log": {
+                "status": "real_cached" if prediction_log and not prediction_log.get("_error") else "missing",
+                "rows": len(log_rows),
+                "scored": len(scored_rows),
+                "pending": sum(1 for row in log_rows if str(row.get("model_result", "")).lower() == "pending"),
+                "error": prediction_log.get("_error"),
+            },
+            "record": {
+                "status": "real_cached" if model_record and not model_record.get("_error") else "missing",
+                "generated_at": (model_record.get("metadata") or {}).get("generated_at"),
+                "mlb_overall": ((model_record.get("sports") or {}).get("MLB") or {}).get("overall"),
+                "nfl_overall": ((model_record.get("sports") or {}).get("NFL") or {}).get("overall"),
+                "error": model_record.get("_error"),
+            },
         },
     }
     print(json.dumps(summary, indent=2))

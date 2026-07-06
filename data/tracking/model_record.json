@@ -1,0 +1,113 @@
+{
+  "metadata": {
+    "app": "LineLens Sports",
+    "version": "v0.6.0",
+    "generated_at": "2026-07-06T17:49:33Z",
+    "real_data": true,
+    "predictions_logged": 24,
+    "predictions_scored_this_run": 0,
+    "pending_predictions": 24
+  },
+  "sports": {
+    "MLB": {
+      "overall": {
+        "wins": 0,
+        "losses": 0,
+        "pushes": 0,
+        "pending": 24,
+        "accuracy": null,
+        "sample_size": 24
+      },
+      "by_model_version": {
+        "v0.6.0": {
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "pending": 24,
+          "accuracy": null,
+          "sample_size": 24
+        }
+      },
+      "by_confidence": {
+        "50-52.5%": {
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "pending": 6,
+          "accuracy": null,
+          "sample_size": 6
+        },
+        "52.5-55%": {
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "pending": 6,
+          "accuracy": null,
+          "sample_size": 6
+        },
+        "55-57.5%": {
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "pending": 6,
+          "accuracy": null,
+          "sample_size": 6
+        },
+        "57.5-60%": {
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "pending": 3,
+          "accuracy": null,
+          "sample_size": 3
+        },
+        "65%+": {
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "pending": 3,
+          "accuracy": null,
+          "sample_size": 3
+        }
+      },
+      "by_month": {
+        "2026-07": {
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "pending": 24,
+          "accuracy": null,
+          "sample_size": 24
+        }
+      },
+      "recent_7_days": {
+        "wins": 0,
+        "losses": 0,
+        "pushes": 0,
+        "pending": 24,
+        "accuracy": null,
+        "sample_size": 24
+      },
+      "recent_30_days": {
+        "wins": 0,
+        "losses": 0,
+        "pushes": 0,
+        "pending": 24,
+        "accuracy": null,
+        "sample_size": 24
+      }
+    },
+    "NFL": {
+      "overall": {
+        "wins": 1409,
+        "losses": 368,
+        "pushes": 0,
+        "pending": 0,
+        "accuracy": 0.7929093978615644,
+        "sample_size": 1777
+      },
+      "source": "data/predictions/nfl_predictions.json",
+      "real_data": true
+    }
+  }
+}

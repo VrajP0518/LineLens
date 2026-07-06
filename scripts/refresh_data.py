@@ -36,7 +36,7 @@ NFL_FEATURES = ROOT / "data" / "processed" / "nfl" / "spread_dataset.parquet"
 NFL_IMPORT_FEATURES = ROOT / "data" / "imports" / "nfl" / "spread_dataset.parquet"
 NFL_IMPORT_FEATURES_CSV = ROOT / "data" / "imports" / "nfl" / "spread_dataset.csv"
 VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
-APP_VERSION = "v0.5.0"
+APP_VERSION = "v0.6.0"
 
 
 def pipeline_python() -> str:
@@ -83,6 +83,15 @@ def run_module(args: list[str], timeout: int = 300) -> subprocess.CompletedProce
 def run_python_script(args: list[str], timeout: int = 300) -> subprocess.CompletedProcess[str]:
     command = [pipeline_python(), *args]
     return subprocess.run(command, cwd=ROOT, text=True, capture_output=True, timeout=timeout, check=False)
+
+
+def run_model_scoring(status: dict[str, Any]) -> None:
+    result = run_python_script(["scripts/score_model_predictions.py"], timeout=180)
+    status["model_record"] = {
+        "status": "real_fresh" if result.returncode == 0 else "failed",
+        "message": (result.stdout or result.stderr or "Model scoring finished.").strip(),
+        "last_run_at": utc_now(),
+    }
 
 
 def missing_dependency_message(stderr: str, stdout: str = "") -> str:
@@ -673,6 +682,7 @@ def refresh_startup(status: dict[str, Any]) -> None:
         if not refresh_mlb_train(status):
             return
     refresh_mlb_predict(status, None, None)
+    run_model_scoring(status)
 
 
 def parse_args() -> argparse.Namespace:
@@ -704,6 +714,7 @@ def main() -> None:
         refresh_mlb(status, args.date, args.date_range)
     if args.sport in {"all", "mlb"} and args.mode in {"predict", "all", "real"}:
         refresh_mlb_predict(status, args.date, args.date_range)
+        run_model_scoring(status)
     if args.sport in {"all", "mlb"} and args.mode == "export":
         refresh_mlb_export(status)
     if args.sport in {"all", "nfl"} and args.mode in {"current", "export", "real", "all"}:

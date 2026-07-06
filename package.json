@@ -1,6 +1,6 @@
 {
   "name": "linelens-sports",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
@@ -23,6 +23,8 @@
     "refresh:mlb:export": "python scripts/refresh_data.py --sport mlb --mode export",
     "refresh:nfl": "python scripts/refresh_data.py --sport nfl --mode export",
     "refresh:nfl:real": "python scripts/refresh_data.py --sport nfl --mode real",
+    "score:models": "python scripts/score_model_predictions.py",
+    "record:models": "python scripts/score_model_predictions.py",
     "check:data": "python scripts/check_data_status.py",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",

@@ -24,7 +24,7 @@ MLB_MODEL = ROOT / "models" / "mlb_moneyline_model.joblib"
 MLB_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_features_2021_2025.csv"
 MLB_PREDICTIONS = DATA_DIR / "predictions" / "mlb_predictions.json"
 NFL_PREDICTIONS = DATA_DIR / "predictions" / "nfl_predictions.json"
-APP_VERSION = "v0.5.0"
+APP_VERSION = "v0.6.0"
 VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
 
 
@@ -171,6 +171,8 @@ def orchestrate() -> dict[str, Any]:
         status["error"] = "MLB model refresh finished without model probabilities. Check data/refresh_status.json."
         write_json_and_js(status, STATUS_JSON, STATUS_JS, "__STARTUP_STATUS__")
         return status
+
+    steps.append(run_step("Score logged model predictions", [python_path, "scripts/score_model_predictions.py"], timeout=300))
 
     if has_real_export(NFL_PREDICTIONS):
         update_refresh_sport_status(

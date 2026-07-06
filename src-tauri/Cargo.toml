@@ -1,6 +1,6 @@
 [package]
 name = "linelens-sports"
-version = "0.5.0"
+version = "0.6.0"
 description = "LineLens Sports desktop analytics dashboard"
 authors = ["Vraj Patel"]
 edition = "2021"

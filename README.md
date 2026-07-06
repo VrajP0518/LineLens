@@ -1,22 +1,124 @@
-# LineLens Sports v0.5.0
+# LineLens Sports v0.6.0
 
-LineLens Sports is a Tauri-ready desktop sports prediction dashboard for NFL spread and MLB moneyline modeling. Version v0.5.0 adds automated Python environment bootstrap and real-data startup refresh.
+LineLens Sports is a Tauri-ready desktop sports prediction dashboard for NFL spread and MLB moneyline modeling. Version v0.6.0 focuses on the MLB prediction engine: richer real features, model comparison, pick explanations, model registry, and ongoing model record tracking.
 
 Predictions are experimental research outputs for analysis and portfolio demonstration only. They are not financial or betting advice.
 
 ## Current Modules
 
-- Home command center with startup automation, data readiness, and refresh console.
-- NFL spread predictor that shows real exported rows when the existing NFL pipeline has processed features and a model.
-- MLB moneyline predictor backed by a real logistic-regression model when model artifacts and features are available.
-- Reports page for real model metrics, calibration, confidence buckets, and model comparison.
+- Home command center with startup automation, data readiness, model record summary, and refresh console.
+- NFL spread predictor that preserves the existing NFL pipeline and real exported rows when source/processed data is available.
+- MLB moneyline predictor with real model probabilities, pitcher matchup display, top factors, and data-quality badges.
+- Reports page for current model, model record, model comparison, confidence buckets, calibration, global features, prediction log, and feature summary.
 - Teams page using team metadata and logo fallbacks.
-- Tracking page for local-only analysis; schedule-only rows cannot be tracked as model picks.
-- Settings/Data Status page with bootstrap, refresh, and file status guidance.
+- Tracking page for local-only analysis.
+- Settings/Data Status page with bootstrap, refresh, registry, prediction log, and file status guidance.
+
+## Improved MLB Model
+
+The MLB model is built from historical MLB game results with no fabricated rows. Feature engineering keeps strict no-leakage rules: games are sorted by date, rolling windows are shifted by one game, and same-game scores are used only for target/result/backtest scoring.
+
+Feature groups now include:
+
+- Team form: 3/7/14/30-game win percentage and matchup diffs.
+- Run scoring: rolling runs scored and allowed over 3/7/14 games.
+- Run differential and momentum: rolling run differential, streaks, and diffs.
+- Home/away splits: recent home team home form and away team road form.
+- Rest/fatigue: rest days, back-to-back flags, 3-in-4, 6-in-7, and fatigue diff.
+- Series context: doubleheaders, series game number, previous head-to-head winner, and recent head-to-head rate.
+- Pitcher proxy: probable pitcher names when supplied by MLB Stats API, plus prior-start team-result proxy features. This is not ERA/WHIP modeling unless richer pitcher stat joins are added.
+- Travel estimate: approximate city/venue distance using team coordinates. This is not an exact travel itinerary.
+- Season context: game number, month, day of week, late-season flag, interleague/division metadata when available.
+- Volatility: recent scoring and prevention standard deviation.
+
+Feature summaries are exported to:
+
+```text
+data/reports/mlb_feature_summary.json
+data/reports/mlb_feature_summary.js
+```
+
+Large raw and processed files stay local-only under ignored folders.
+
+## Why This Pick?
+
+MLB prediction exports include an explanation object for each model-backed row:
+
+- Summary text using careful language such as "Model leans".
+- Top factors with feature name, home value, away value, impact direction, and strength.
+- Data-quality badges for pitcher data, estimated travel, and missing feature count.
+- Feature values for audit/debugging.
+
+Logistic regression uses local coefficient-style contributions. Tree models use global feature importance plus row values when local explanations are not available. SHAP is not required.
+
+## Model Training And Registry
+
+Default MLB training uses 2021-2024 for training and 2025 for test/backtest. The trainer compares:
+
+- Logistic Regression
+- Random Forest
+- Gradient Boosting
+- HistGradientBoostingClassifier
+- Baseline Home Team
+- Baseline Recent Form
+- Baseline 50/50
+
+The selected model is chosen by test log loss, with Brier score as a secondary quality check. The active model is saved to:
+
+```text
+models/mlb_moneyline_model.joblib
+```
+
+Model comparison and registry outputs:
+
+```text
+data/reports/mlb_model_comparison.json
+data/reports/mlb_model_comparison.js
+data/models/model_registry.json
+data/models/model_registry.js
+```
+
+Run the full train/backtest/export path:
+
+```powershell
+npm run refresh:mlb:all
+```
+
+## Model Record Tracking
+
+Current MLB exports append real prediction snapshots to:
+
+```text
+data/tracking/model_predictions_log.json
+data/tracking/model_predictions_log.js
+```
+
+Scoring reads completed MLB results from cached/live MLB Stats API schedule data when available and writes:
+
+```text
+data/tracking/model_record.json
+data/tracking/model_record.js
+```
+
+Commands:
+
+```powershell
+npm run refresh:mlb
+npm run score:models
+```
+
+No historical prediction records are fabricated. The registry and prediction log start from real runs.
+
+## Data Honesty
+
+- No fake predictions.
+- Missing feature sources are marked missing and the model continues with available real features.
+- Cached data is labeled cached.
+- Pitcher proxy means pitcher-team-result proxy from prior starts, not invented pitcher stats.
+- Estimated travel is approximate team/city distance.
+- Odds are optional only through environment configuration such as `ODDS_API_KEY`; odds are not required.
 
 ## Recommended First Run
-
-The Tauri desktop app now tries to automate this, but this manual path is still useful when preparing a fresh machine:
 
 ```powershell
 cd C:\Users\Vraj.Patel\Downloads\coop\LineLens
@@ -25,75 +127,46 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
+npm install
 npm run startup:auto
+npm run refresh:mlb:all
 npm run app
 ```
 
-## Why Python 3.11 Instead Of Python 3.14
+Use Python 3.11 for this app. `nfl-data-py` depends on an older numpy/pandas stack, and newer Python versions can force fragile local source builds on machines without MSVC/C++ Build Tools.
 
-Use Python 3.11 for this app. `nfl-data-py` depends on an older numpy/pandas stack, and Python 3.14 can force source builds for packages that normally have prebuilt wheels on Python 3.11. On work machines without MSVC/C++ Build Tools, compiling numpy/pandas locally is fragile. The bootstrap script rejects Python 3.14 for the main environment and tells you to install/use Python 3.11.
+## MLB Pipeline
 
-## Automatic Startup Refresh
+Manual workflow:
 
-In Tauri desktop mode, the app:
+```powershell
+python -m src.mlb.data_ingest_mlb history --start-season 2021 --end-season 2025 --force
+python -m src.mlb.feature_builder_mlb build-history --start-season 2021 --end-season 2025
+python -m src.mlb.train_model_mlb --features-file data/processed/mlb/mlb_features_2021_2025.csv --train-start-season 2021 --train-end-season 2024 --test-season 2025
+python -m src.mlb.export_predictions_mlb backtest --features-file data/processed/mlb/mlb_features_2021_2025.csv --season 2025
+python -m src.mlb.export_predictions_mlb export --features-file data/processed/mlb/mlb_current_features.csv --model-file models/mlb_moneyline_model.joblib --season 2026
+python scripts/score_model_predictions.py
+```
 
-1. Loads existing exported JSON immediately so the UI opens fast.
-2. Runs `run_startup_automation()` through the Rust command bridge.
-3. Bootstraps/checks Python via `scripts/bootstrap_env.py`.
-4. Creates/uses `.venv`.
-5. Installs requirements only when missing or when `requirements.txt` changed.
-6. Refreshes MLB current model predictions, training first if the model is missing.
-7. Attempts NFL real-data refresh if a real NFL export is missing.
-8. Reloads bootstrap, refresh, prediction, and report JSON.
-9. Shows stdout/stderr in the Home and Settings refresh console.
+Package scripts:
 
-No fake NFL or MLB games are created. Cached data is labeled as cached, missing data is labeled as missing, and source failures are reported directly.
-
-## Data Status Files
-
-- `data/bootstrap_status.json/js`: Python version, venv, requirements, and import readiness.
-- `data/env_state.json`: local-only requirements hash/cache state; ignored by Git.
-- `data/startup_status.json/js`: startup automation steps and current warning/error summary.
-- `data/refresh_status.json/js`: sport-level refresh results.
-- `data/predictions/*.json/js`: compact prediction exports.
-- `data/reports/model_report.json/js`: compact report export.
-
-Large raw, processed, and import files are intentionally ignored. Do not use Git LFS for NFL parquet/raw caches; regenerate or import them locally.
-
-## Data Modes
-
-- `env_ready`: Python environment is ready.
-- `dependency_missing`: core MLB dependencies work, but optional NFL dependency/import failed.
-- `model_generated`: a model export generated prediction probabilities.
-- `real_fresh`: real data was regenerated/exported in the current run.
-- `real_cached`: a real local export/cache was reused.
-- `schedule_only`: real schedule rows exist, but no model probabilities exist.
-- `missing`: no real model export/report exists.
-- `source_refused`: an external source refused the connection.
-- `install_failed`: Python setup or dependency install failed.
-
-## Data Sources
-
-- NFL: existing nflverse / `nfl-data-py` project pipeline, local model/feature artifacts, optional `nflreadpy`, and direct nflverse CSV fallback for schedules.
-- MLB: public MLB Stats API schedule/results/probable-pitcher data plus local historical feature/model artifacts.
-- Odds: optional only through `ODDS_API_KEY`; not required for core NFL/MLB modeling.
+```powershell
+npm run refresh:mlb
+npm run refresh:mlb:all
+npm run refresh:mlb:train
+npm run score:models
+npm run check:data
+```
 
 ## NFL Pipeline And Recovery
+
+NFL functionality is preserved, but NFL real-data refresh still depends on source access or local processed artifacts.
 
 Preferred refresh wrapper:
 
 ```powershell
 npm run refresh:nfl:real
 ```
-
-NFL refresh order:
-
-1. Import local `data\imports\nfl\spread_dataset.parquet`.
-2. Import local `data\imports\nfl\spread_dataset.csv`.
-3. Reuse existing processed parquet under `data\processed\nfl\` or `data\processed\`.
-4. Rebuild through the original `nfl-data-py` scripts.
-5. For schedules, fall back to direct nflverse-data CSV and optional `nflreadpy`.
-6. If all real sources fail, write an honest failure and keep `games = []`.
 
 Manual NFL recovery from an older local project:
 
@@ -103,28 +176,7 @@ copy C:\path\to\old\spread_dataset.parquet data\imports\nfl\spread_dataset.parqu
 npm run refresh:nfl:real
 ```
 
-The app does not fabricate offseason rows. If NFL source access is refused, the NFL page and Settings page show the manual import path.
-
-## MLB Pipeline
-
-Historical model/backtest workflow:
-
-```powershell
-python -m src.mlb.data_ingest_mlb history --start-season 2021 --end-season 2025 --force
-python -m src.mlb.feature_builder_mlb build-history --start-season 2021 --end-season 2025
-python -m src.mlb.train_model_mlb --features-file data/processed/mlb/mlb_features_2021_2025.csv --train-start-season 2021 --train-end-season 2024 --test-season 2025
-python -m src.mlb.export_predictions_mlb backtest --features-file data/processed/mlb/mlb_features_2021_2025.csv --season 2025
-python -m src.mlb.export_predictions_mlb export --features-file data/processed/mlb/mlb_current_features.csv --model-file models/mlb_moneyline_model.joblib --season 2026
-```
-
-Or run:
-
-```powershell
-npm run refresh:mlb:all
-npm run refresh:mlb
-```
-
-`npm run refresh:mlb` uses prediction mode, not schedule-only mode.
+The app does not fabricate offseason NFL rows. If NFL source access is refused, the NFL page and Settings page show the manual import path.
 
 ## Desktop Commands
 
@@ -138,29 +190,10 @@ mlb_all       -> python scripts/refresh_data.py --sport mlb --mode all
 nfl_real      -> python scripts/refresh_data.py --sport nfl --mode real
 data_real     -> python scripts/refresh_data.py --sport all --mode real
 check_data    -> python scripts/check_data_status.py
+score_models  -> python scripts/score_model_predictions.py
 ```
 
 Browser/static mode cannot run terminal commands. It shows the manual command instead of pretending to refresh.
-
-Refresh console logs are stored locally under:
-
-```text
-linelens.refreshLogs.v1
-```
-
-## Package Scripts
-
-```powershell
-npm run bootstrap:env
-npm run startup:auto
-npm run refresh:startup
-npm run refresh:data:real
-npm run refresh:mlb
-npm run refresh:mlb:all
-npm run refresh:mlb:train
-npm run refresh:nfl:real
-npm run check:data
-```
 
 ## Local Validation
 
@@ -168,6 +201,9 @@ npm run check:data
 npm run check:js
 python -m compileall src scripts
 npm run build:web
+npm run refresh:mlb:all
+npm run refresh:mlb
+npm run score:models
 npm run check:data
 npm run tauri -- info
 ```
@@ -191,16 +227,15 @@ LineLens-Sports-Windows
 ## Push Workflow
 
 ```powershell
-npm run bootstrap:env
-npm run startup:auto
+npm run refresh:mlb:all
 npm run refresh:mlb
-npm run refresh:nfl:real
+npm run score:models
 npm run check:data
 npm run check:js
 python -m compileall src scripts
 npm run build:web
 git status
 git add .
-git commit -m "Automate LineLens startup environment and real-data refresh"
+git commit -m "Improve MLB model features explanations and record tracking"
 git push origin main
 ```

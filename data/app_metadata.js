@@ -1,1 +1,1 @@
-window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v0.5.0","release":"Automated Python bootstrap and real-data startup refresh","generated_at":"2026-07-03T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};
+window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v0.6.0","release":"Improved MLB model features, explanations, and record tracking","generated_at":"2026-07-03T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};

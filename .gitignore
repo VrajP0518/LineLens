@@ -16,6 +16,12 @@ data/predictions/data/
 !data/reports/
 !data/reports/*.json
 !data/reports/*.js
+!data/tracking/
+!data/tracking/*.json
+!data/tracking/*.js
+!data/models/
+!data/models/*.json
+!data/models/*.js
 !data/app_metadata.*
 !data/team_metadata.*
 !data/refresh_status.*

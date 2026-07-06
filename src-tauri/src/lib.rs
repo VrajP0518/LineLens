@@ -41,6 +41,10 @@ fn scripts_detected(root: &PathBuf) -> bool {
             .join("startup_orchestrator.py")
             .exists()
         && root.join("scripts").join("refresh_data.py").exists()
+        && root
+            .join("scripts")
+            .join("score_model_predictions.py")
+            .exists()
 }
 
 fn python_candidates(root: &PathBuf) -> Vec<(String, Vec<String>)> {
@@ -91,6 +95,10 @@ fn command_spec(command_name: &str) -> Result<CommandSpec, String> {
         }),
         "check_data" => Ok(CommandSpec {
             script: "scripts/check_data_status.py",
+            args: Vec::new(),
+        }),
+        "score_models" => Ok(CommandSpec {
+            script: "scripts/score_model_predictions.py",
             args: Vec::new(),
         }),
         _ => Err(format!("Unsupported refresh command: {}", command_name)),
