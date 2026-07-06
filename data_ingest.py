@@ -10,6 +10,7 @@ Usage examples:
 
 from __future__ import annotations
 
+import importlib
 from pathlib import Path
 from typing import List, Optional
 from urllib.error import HTTPError
@@ -39,6 +40,23 @@ def _write_frame(df: pd.DataFrame, path: Path) -> None:
     else:
         df.to_csv(path, index=False)
     console.print(f"Saved {len(df):,} rows -> {path}")
+
+
+def _read_schedules_with_nflreadpy(seasons: list[int]) -> pd.DataFrame:
+    """Best-effort optional fallback for environments with nflreadpy installed."""
+
+    module = importlib.import_module("nflreadpy")
+    for function_name in ("load_schedules", "import_schedules", "read_schedules"):
+        reader = getattr(module, function_name, None)
+        if reader is None:
+            continue
+        try:
+            df = reader(seasons)
+        except TypeError:
+            df = reader()
+        if isinstance(df, pd.DataFrame):
+            return df[df["season"].isin(seasons)] if "season" in df.columns else df
+    raise RuntimeError("nflreadpy is installed, but no supported schedule reader was found.")
 
 
 @app.command()
@@ -106,8 +124,18 @@ def schedules(
             df = nfl.import_schedules(seasons)
         except Exception as exc:  # noqa: BLE001 - nfl-data-py may use an HTTP mirror blocked by local policy.
             console.print(f"[yellow]nfl-data-py schedule mirror failed ({type(exc).__name__}: {exc}); trying nflverse HTTPS CSV.[/yellow]")
-            df = pd.read_csv(NFLVERSE_GAMES_URL)
-            df = df[df["season"].isin(seasons)]
+            try:
+                df = pd.read_csv(NFLVERSE_GAMES_URL)
+                df = df[df["season"].isin(seasons)]
+            except Exception as csv_exc:  # noqa: BLE001 - keep the CLI friendly for source outages.
+                console.print(f"[yellow]Direct nflverse CSV failed ({type(csv_exc).__name__}: {csv_exc}); trying optional nflreadpy.[/yellow]")
+                try:
+                    df = _read_schedules_with_nflreadpy(seasons)
+                except Exception as nflreadpy_exc:  # noqa: BLE001
+                    raise RuntimeError(
+                        "NFL schedule download failed through nfl-data-py, direct nflverse CSV, "
+                        f"and optional nflreadpy fallback: {nflreadpy_exc}"
+                    ) from nflreadpy_exc
     _write_frame(df, outfile)
 
 

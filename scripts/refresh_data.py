@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
 from datetime import date, datetime, timezone
@@ -32,7 +33,10 @@ MLB_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_features_2021_2025.csv"
 MLB_CURRENT_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_current_features.csv"
 MLB_MODEL = ROOT / "models" / "mlb_moneyline_model.joblib"
 NFL_FEATURES = ROOT / "data" / "processed" / "nfl" / "spread_dataset.parquet"
+NFL_IMPORT_FEATURES = ROOT / "data" / "imports" / "nfl" / "spread_dataset.parquet"
+NFL_IMPORT_FEATURES_CSV = ROOT / "data" / "imports" / "nfl" / "spread_dataset.csv"
 VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
+APP_VERSION = "v0.5.0"
 
 
 def pipeline_python() -> str:
@@ -83,6 +87,8 @@ def run_python_script(args: list[str], timeout: int = 300) -> subprocess.Complet
 
 def missing_dependency_message(stderr: str, stdout: str = "") -> str:
     combined = f"{stderr}\n{stdout}"
+    if sys.version_info >= (3, 14):
+        return "nfl-data-py requires Python 3.11/older numpy stack. Current Python was 3.14. Use py -3.11."
     if "ModuleNotFoundError: No module named 'typer'" in combined:
         return "Missing dependency typer. Activate venv and run pip install -r requirements.txt."
     if "WinError 10061" in combined or "ConnectionRefusedError" in combined:
@@ -92,12 +98,19 @@ def missing_dependency_message(stderr: str, stdout: str = "") -> str:
     return (stderr or stdout or "Command failed.").strip()
 
 
+def nfl_manual_import_hint() -> str:
+    return (
+        "Manual recovery: copy a known-good spread dataset to "
+        "data/imports/nfl/spread_dataset.parquet, then run npm run refresh:nfl:real."
+    )
+
+
 def empty_prediction_payload(sport: str, *, target: str, reason: str, prediction_mode: str = "missing") -> dict[str, Any]:
     return {
         "metadata": {
             "sport": sport,
             "app": "LineLens Sports",
-            "version": "v0.4.0",
+            "version": APP_VERSION,
             "generated_at": utc_now(),
             "model_type": "missing",
             "target": target,
@@ -140,7 +153,7 @@ def update_sport_status(
     python: str | None = None,
 ) -> None:
     sports = status.setdefault("sports", {})
-    last_success = utc_now() if state in {"success", "schedule_only"} else None
+    last_success = utc_now() if state in {"success", "schedule_only", "model_generated", "real_fresh", "real_cached"} else None
     sports[sport] = {
         "status": state,
         "message": message,
@@ -263,7 +276,7 @@ def mlb_schedule_payload(schedule: dict[str, Any], raw_path: Path) -> dict[str, 
         "metadata": {
             "sport": "MLB",
             "app": "LineLens Sports",
-            "version": "v0.4.0",
+            "version": APP_VERSION,
             "real_data": True,
             "generated_at": utc_now(),
             "model_type": "schedule_only",
@@ -350,7 +363,7 @@ def refresh_mlb_train(status: dict[str, Any]) -> bool:
         update_sport_status(
             status,
             "MLB",
-            "success",
+            "model_generated",
             "MLB historical model trained on 2021-2024, tested on 2025, and backtest export refreshed.",
             used_cache=False,
         )
@@ -385,7 +398,7 @@ def refresh_mlb_export(status: dict[str, Any]) -> None:
     if result.returncode != 0:
         update_sport_status(status, "MLB", "failed", (result.stderr or result.stdout).strip(), used_cache=True)
         return
-    update_sport_status(status, "MLB", "success", "MLB model prediction export refreshed from local artifact.", used_cache=False)
+    update_sport_status(status, "MLB", "model_generated", "MLB model prediction export refreshed from local artifact.", used_cache=False)
 
 
 def refresh_mlb_history(status: dict[str, Any], *, force: bool = False) -> bool:
@@ -396,7 +409,7 @@ def refresh_mlb_history(status: dict[str, Any], *, force: bool = False) -> bool:
     if result.returncode != 0:
         update_sport_status(status, "MLB", "failed", missing_dependency_message(result.stderr, result.stdout), used_cache=True)
         return False
-    update_sport_status(status, "MLB", "success", "MLB historical regular-season data cache is available for 2021-2025.", used_cache=False)
+    update_sport_status(status, "MLB", "real_cached", "MLB historical regular-season data cache is available for 2021-2025.", used_cache=False)
     return True
 
 
@@ -455,15 +468,38 @@ def refresh_mlb_predict(status: dict[str, Any], target_date: str | None, date_ra
     update_sport_status(
         status,
         "MLB",
-        "success",
-        "MLB current predictions refreshed with trained model probabilities"
-        + (" using the latest cached schedule after live fetch failed." if used_cached_schedule else "."),
+        "model_generated",
+        "MLB model predictions generated"
+        + (" from cached schedule after live fetch failed." if used_cached_schedule else " from current schedule."),
         used_cache=used_cached_schedule,
     )
 
 
 def first_existing(paths: list[Path]) -> Path | None:
     return next((path for path in paths if path.exists()), None)
+
+
+def import_nfl_features_if_available(status: dict[str, Any]) -> bool:
+    if not NFL_IMPORT_FEATURES.exists() and not NFL_IMPORT_FEATURES_CSV.exists():
+        return False
+    NFL_FEATURES.parent.mkdir(parents=True, exist_ok=True)
+    if NFL_IMPORT_FEATURES.exists():
+        shutil.copy2(NFL_IMPORT_FEATURES, NFL_FEATURES)
+        source = "data/imports/nfl/spread_dataset.parquet"
+    else:
+        import pandas as pd
+
+        df = pd.read_csv(NFL_IMPORT_FEATURES_CSV)
+        df.to_parquet(NFL_FEATURES, index=False)
+        source = "data/imports/nfl/spread_dataset.csv"
+    update_sport_status(
+        status,
+        "NFL",
+        "real_cached",
+        f"Imported local NFL processed feature dataset from {source}.",
+        used_cache=False,
+    )
+    return True
 
 
 def refresh_nfl(status: dict[str, Any], *, require_real: bool = False) -> None:
@@ -484,7 +520,8 @@ def refresh_nfl(status: dict[str, Any], *, require_real: bool = False) -> None:
 
     rebuilt = False
     if not features:
-        rebuilt = rebuild_nfl_processed_dataset(status)
+        imported = import_nfl_features_if_available(status)
+        rebuilt = imported or rebuild_nfl_processed_dataset(status)
         features = first_existing(
             [
                 ROOT / "data" / "processed" / "nfl" / "spread_dataset.parquet",
@@ -497,7 +534,7 @@ def refresh_nfl(status: dict[str, Any], *, require_real: bool = False) -> None:
                 "__NFL_PREDICTIONS__",
                 "nfl_predictions.json",
                 target="home_cover",
-                reason="No real export has been generated yet. NFL rebuild failed; see data/refresh_status.json.",
+                reason=f"No real export has been generated yet. NFL rebuild failed; see data/refresh_status.json. {nfl_manual_import_hint()}",
                 prediction_mode="missing",
             )
             return
@@ -519,8 +556,8 @@ def refresh_nfl(status: dict[str, Any], *, require_real: bool = False) -> None:
         update_sport_status(
             status,
             "NFL",
-            "failed" if require_real else "missing",
-            f"NFL real export unavailable. Missing: {', '.join(missing)}. {odds.message}",
+            "dependency_missing" if require_real else "missing",
+            f"NFL real export unavailable. Missing: {', '.join(missing)}. {odds.message} {nfl_manual_import_hint()}",
             used_cache=True,
         )
         return
@@ -549,7 +586,7 @@ def refresh_nfl(status: dict[str, Any], *, require_real: bool = False) -> None:
         update_sport_status(
             status,
             "NFL",
-            "success",
+            "real_fresh",
             f"{'Processed NFL dataset missing. Rebuilt locally, then exported' if rebuilt else 'Found existing NFL processed dataset. Exported'} {count} real historical predictions.",
             used_cache=False,
         )
@@ -584,11 +621,13 @@ def rebuild_nfl_processed_dataset(status: dict[str, Any]) -> bool:
     for args, timeout in steps:
         result = run_python_script(args, timeout=timeout)
         if result.returncode != 0:
+            message = missing_dependency_message(result.stderr, result.stdout)
+            state = "source_refused" if "connection refused" in message.lower() else "failed"
             update_sport_status(
                 status,
                 "NFL",
-                "failed",
-                f"NFL rebuild failed while running {' '.join(args)}: {missing_dependency_message(result.stderr, result.stdout)}",
+                state,
+                f"NFL rebuild failed while running {' '.join(args)}: {message} {nfl_manual_import_hint()} Source order: local import, existing processed parquet, nfl-data-py, direct nflverse-data CSV, optional nflreadpy schedule fallback.",
                 used_cache=True,
             )
             return False
@@ -612,7 +651,7 @@ def normalize_nfl_export(json_path: Path, js_path: Path) -> None:
     payload["metadata"] = {
         "sport": "NFL",
         "app": "LineLens Sports",
-        "version": "v0.4.0",
+        "version": APP_VERSION,
         "real_data": True,
         "prediction_mode": "historical_backtest",
         "generated_at": utc_now(),
@@ -627,7 +666,7 @@ def normalize_nfl_export(json_path: Path, js_path: Path) -> None:
 
 def refresh_startup(status: dict[str, Any]) -> None:
     if has_real_prediction_export(PREDICTIONS_DIR / "nfl_predictions.json"):
-        update_sport_status(status, "NFL", "success", "NFL real export found; skipping rebuild.", used_cache=True)
+        update_sport_status(status, "NFL", "real_cached", "NFL real export found; skipping rebuild.", used_cache=True)
     else:
         refresh_nfl(status, require_real=True)
     if not MLB_MODEL.exists() or not MLB_FEATURES.exists():

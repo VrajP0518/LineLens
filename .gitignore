@@ -5,6 +5,9 @@ __pycache__/
 *.pyc
 data/raw/
 data/processed/
+data/imports/
+data/env_state.json
+data/predictions/data/
 *.parquet
 *.pkl
 !data/predictions/

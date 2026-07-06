@@ -19,6 +19,10 @@ DATA_FILES = [
     "app_metadata.js",
     "team_metadata.json",
     "team_metadata.js",
+    "bootstrap_status.json",
+    "bootstrap_status.js",
+    "startup_status.json",
+    "startup_status.js",
     "refresh_status.json",
     "refresh_status.js",
     "predictions.js",
@@ -39,7 +43,7 @@ def copy_tree(src: Path, dest: Path) -> None:
     shutil.copytree(
         src,
         dest,
-        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.log"),
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.log", "data"),
     )
 
 

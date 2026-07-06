@@ -1,11 +1,14 @@
-const APP_VERSION = "v0.4.0";
+const APP_VERSION = "v0.5.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
+const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
 
 const DATA_SOURCES = {
     app: ["data/app_metadata.json"],
     teams: ["data/team_metadata.json"],
     reports: ["data/reports/model_report.json"],
+    bootstrap: ["data/bootstrap_status.json"],
+    startup: ["data/startup_status.json"],
     refresh: ["data/refresh_status.json"],
     nfl: ["data/predictions/nfl_predictions.json", "data/predictions.json"],
     mlb: ["data/predictions/mlb_predictions.json"],
@@ -16,6 +19,8 @@ const state = {
     app: window.__APP_METADATA__ || { app: "LineLens Sports", version: APP_VERSION },
     teamPayload: window.__TEAM_METADATA__ || { teams: [] },
     report: window.__MODEL_REPORT__ || null,
+    bootstrapStatus: window.__BOOTSTRAP_STATUS__ || null,
+    startupStatus: window.__STARTUP_STATUS__ || null,
     refreshStatus: window.__REFRESH_STATUS__ || null,
     refreshRuntime: { available: false, active: false, message: "Checking refresh availability..." },
     nfl: { payload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null, games: [], error: null },
@@ -23,7 +28,56 @@ const state = {
     mlbBacktest: { payload: window.__MLB_BACKTEST_PREDICTIONS__ || null, games: [], error: null },
     selected: { nfl: null, mlb: null, teamSport: "MLB", teamCode: "TOR", reportSport: "MLB" },
     tracker: [],
+    refreshLogs: [],
     charts: {},
+};
+
+const REFRESH_COMMANDS = {
+    startup_auto: {
+        label: "Startup Automation",
+        manual: "npm run startup:auto",
+        description: "Bootstrap Python, refresh MLB, and attempt NFL real-data recovery.",
+    },
+    bootstrap_env: {
+        label: "Bootstrap Python Environment",
+        manual: "py -3.11 scripts/bootstrap_env.py",
+        description: "Create/use .venv, install requirements when needed, and verify imports.",
+    },
+    startup: {
+        label: "Startup Refresh",
+        manual: "npm run refresh:startup",
+        description: "Refresh cached startup data for all sports.",
+    },
+    nfl_real: {
+        label: "NFL Real Data",
+        manual: "npm run refresh:nfl:real",
+        description: "Rebuild/export the NFL real-data pipeline when source files are available.",
+    },
+    mlb_current: {
+        label: "MLB Current Predictions",
+        manual: "npm run refresh:mlb",
+        description: "Refresh current MLB schedule and model predictions.",
+    },
+    mlb_all: {
+        label: "MLB Full Train",
+        manual: "npm run refresh:mlb:all",
+        description: "Refresh MLB history, train, backtest, and current predictions.",
+    },
+    mlb_train: {
+        label: "MLB Train Only",
+        manual: "npm run refresh:mlb:train",
+        description: "Train the MLB model and refresh backtest reports.",
+    },
+    data_real: {
+        label: "All Real Data",
+        manual: "npm run refresh:data:real",
+        description: "Run real-data refresh for all supported sports.",
+    },
+    check_data: {
+        label: "Check Data Status",
+        manual: "npm run check:data",
+        description: "Read local data/status files without downloading live data.",
+    },
 };
 
 const $ = selector => document.querySelector(selector);
@@ -75,6 +129,10 @@ function formatDate(value) {
 
 function timestamp(value) {
     if (!value) return "-";
+    if (String(value).startsWith("unix:")) {
+        const seconds = Number(String(value).slice(5));
+        if (Number.isFinite(seconds)) return new Date(seconds * 1000).toLocaleString();
+    }
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
 }
@@ -147,6 +205,31 @@ function loadTracker() {
 
 function saveTracker() {
     localStorage.setItem(TRACKER_KEY, JSON.stringify(state.tracker));
+}
+
+function loadRefreshLogs() {
+    try {
+        state.refreshLogs = JSON.parse(localStorage.getItem(REFRESH_LOGS_KEY) || "[]");
+    } catch (_error) {
+        state.refreshLogs = [];
+    }
+}
+
+function saveRefreshLogs() {
+    localStorage.setItem(REFRESH_LOGS_KEY, JSON.stringify(state.refreshLogs.slice(0, 20)));
+}
+
+function appendRefreshLog(entry) {
+    state.refreshLogs = [{ ...entry, id: entry.id || `${Date.now()}-${entry.command_name || "refresh"}` }, ...state.refreshLogs].slice(0, 20);
+    saveRefreshLogs();
+}
+
+function tailLines(text, limit = 80) {
+    return String(text || "")
+        .split(/\r?\n/)
+        .filter(line => line.trim().length)
+        .slice(-limit)
+        .join("\n");
 }
 
 function buildTeamIndex() {
@@ -304,10 +387,13 @@ async function loadAll() {
     setStatus("Loading prediction exports...", "info");
     loadSettings();
     loadTracker();
-    const [app, teams, report, refresh, nfl, mlb, mlbBacktest] = await Promise.all([
+    loadRefreshLogs();
+    const [app, teams, report, bootstrap, startup, refresh, nfl, mlb, mlbBacktest] = await Promise.all([
         loadOptional("app", ["__APP_METADATA__"]),
         loadOptional("teams", ["__TEAM_METADATA__"]),
         loadOptional("reports", ["__MODEL_REPORT__"]),
+        loadOptional("bootstrap", ["__BOOTSTRAP_STATUS__"]),
+        loadOptional("startup", ["__STARTUP_STATUS__"]),
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
         loadOptional("nfl", ["__NFL_PREDICTIONS__", "__PREDICTIONS__"]),
         loadOptional("mlb", ["__MLB_PREDICTIONS__"]),
@@ -317,6 +403,8 @@ async function loadAll() {
     state.app = app || state.app;
     state.teamPayload = teams || state.teamPayload;
     state.report = report || state.report;
+    state.bootstrapStatus = bootstrap || state.bootstrapStatus;
+    state.startupStatus = startup || state.startupStatus;
     state.refreshStatus = refresh || state.refreshStatus;
     state.nfl.payload = nfl;
     state.nfl.games = normalizeGames(nfl);
@@ -339,10 +427,10 @@ async function loadAll() {
         state.refreshRuntime.available = isTauriRefreshAvailable();
         state.refreshRuntime.message = state.refreshRuntime.available
             ? "Desktop auto-refresh is available."
-            : "Automatic desktop refresh is available in the Tauri app. Browser/static mode uses existing exported data.";
+            : "Command refresh is available only in the Tauri desktop app. Browser/static mode uses existing exported data and manual npm commands.";
         renderAll();
         if (state.refreshRuntime.available) {
-            runStartupRefresh({ background: true });
+            runStartupAutomation({ background: true });
         }
     }
 }
@@ -357,25 +445,63 @@ function tauriInvoke(command, payload) {
     return invoker(command, payload);
 }
 
-async function refreshData(sport = "all", options = {}) {
+function browserRefreshMessage(commandName) {
+    const config = REFRESH_COMMANDS[commandName] || REFRESH_COMMANDS.startup;
+    return `Command refresh is available only in the Tauri desktop app. Run this manually: ${config.manual}`;
+}
+
+function refreshCommandLabel(commandName) {
+    return REFRESH_COMMANDS[commandName]?.label || commandName;
+}
+
+async function runRefreshCommand(commandName = "startup", options = {}) {
+    const config = REFRESH_COMMANDS[commandName] || REFRESH_COMMANDS.startup;
     if (!isTauriRefreshAvailable()) {
-        state.refreshRuntime.message = "Automatic desktop refresh is available in the Tauri app. Browser/static mode uses existing exported data.";
+        state.refreshRuntime.available = false;
+        state.refreshRuntime.message = browserRefreshMessage(commandName);
+        appendRefreshLog({
+            command_name: commandName,
+            command: config.manual,
+            success: false,
+            skipped: true,
+            exit_code: null,
+            stdout: "",
+            stderr: state.refreshRuntime.message,
+            started_at: new Date().toISOString(),
+            finished_at: new Date().toISOString(),
+            duration_ms: 0,
+        });
         showToast(state.refreshRuntime.message);
         renderAll();
         return;
     }
     state.refreshRuntime.available = true;
     state.refreshRuntime.active = true;
-    state.refreshRuntime.message = `Refreshing ${sport.toUpperCase()} data...`;
-    if (!options.background) showToast("Refreshing data...");
+    state.refreshRuntime.command = commandName;
+    state.refreshRuntime.message = `Running ${config.label}: python scripts/refresh_data.py`;
+    if (!options.background) showToast(`Running ${config.label}...`);
     renderAll();
     try {
-        const message = await tauriInvoke("refresh_sports_data", { sport });
-        state.refreshRuntime.message = message || "Data refreshed.";
-        showToast("Data refreshed");
+        const result = await tauriInvoke("run_refresh_command", { commandName });
+        appendRefreshLog(result);
+        state.refreshRuntime.message = result.success
+            ? `${config.label} completed.`
+            : `${config.label} failed with exit code ${result.exit_code ?? "unknown"}.`;
+        showToast(result.success ? `${config.label} complete` : `${config.label} failed`);
         await loadAllAfterRefresh();
     } catch (error) {
         state.refreshRuntime.message = String(error?.message || error || "Refresh failed; showing cached data.");
+        appendRefreshLog({
+            command_name: commandName,
+            command: config.manual,
+            success: false,
+            exit_code: null,
+            stdout: "",
+            stderr: state.refreshRuntime.message,
+            started_at: new Date().toISOString(),
+            finished_at: new Date().toISOString(),
+            duration_ms: 0,
+        });
         showToast("Refresh failed; showing cached data");
     } finally {
         state.refreshRuntime.active = false;
@@ -383,26 +509,46 @@ async function refreshData(sport = "all", options = {}) {
     }
 }
 
+async function refreshData(sport = "all", options = {}) {
+    const commandName = sport === "nfl" ? "nfl_real" : sport === "mlb" ? "mlb_current" : "startup";
+    return runRefreshCommand(commandName, options);
+}
+
 async function runStartupRefresh(options = {}) {
+    return runRefreshCommand("startup", options);
+}
+
+async function runStartupAutomation(options = {}) {
     if (!isTauriRefreshAvailable()) {
-        state.refreshRuntime.message = "Automatic startup refresh is available in the Tauri desktop app. Browser/static mode uses existing exported data.";
-        showToast(state.refreshRuntime.message);
-        renderAll();
-        return;
+        return runRefreshCommand("startup_auto", options);
     }
+    const config = REFRESH_COMMANDS.startup_auto;
     state.refreshRuntime.available = true;
     state.refreshRuntime.active = true;
-    state.refreshRuntime.message = "Running startup data refresh...";
-    if (!options.background) showToast("Running startup refresh...");
+    state.refreshRuntime.command = "startup_auto";
+    state.refreshRuntime.message = "Running startup automation: bootstrap Python, refresh MLB, then attempt NFL.";
+    if (!options.background) showToast("Running startup automation...");
     renderAll();
     try {
-        const message = await tauriInvoke("run_startup_refresh", {});
-        state.refreshRuntime.message = message || "Startup refresh complete.";
-        showToast("Startup refresh complete");
+        const result = await tauriInvoke("run_startup_automation", {});
+        appendRefreshLog(result);
+        state.refreshRuntime.message = result.success ? "Startup automation finished." : "Startup automation failed; see command console.";
+        showToast(result.success ? "Startup automation finished" : "Startup automation failed");
         await loadAllAfterRefresh();
     } catch (error) {
-        state.refreshRuntime.message = String(error?.message || error || "Startup refresh failed.");
-        showToast("Startup refresh failed");
+        state.refreshRuntime.message = String(error?.message || error || "Startup automation failed.");
+        appendRefreshLog({
+            command_name: "startup_auto",
+            command: config.manual,
+            success: false,
+            exit_code: null,
+            stdout: "",
+            stderr: state.refreshRuntime.message,
+            started_at: new Date().toISOString(),
+            finished_at: new Date().toISOString(),
+            duration_ms: 0,
+        });
+        showToast("Startup automation failed");
     } finally {
         state.refreshRuntime.active = false;
         renderAll();
@@ -410,15 +556,30 @@ async function runStartupRefresh(options = {}) {
 }
 
 async function loadAllAfterRefresh() {
-    const [refresh, nfl, mlb, mlbBacktest] = await Promise.all([
+    const [bootstrap, startup, refresh, report, nfl, mlb, mlbBacktest] = await Promise.all([
+        loadOptional("bootstrap", []),
+        loadOptional("startup", []),
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
+        loadOptional("reports", []),
         loadOptional("nfl", []),
         loadOptional("mlb", []),
         loadOptional("mlbBacktest", []),
     ]);
+    if (bootstrap) {
+        state.bootstrapStatus = bootstrap;
+        window.__BOOTSTRAP_STATUS__ = bootstrap;
+    }
+    if (startup) {
+        state.startupStatus = startup;
+        window.__STARTUP_STATUS__ = startup;
+    }
     if (refresh) {
         state.refreshStatus = refresh;
         window.__REFRESH_STATUS__ = refresh;
+    }
+    if (report) {
+        state.report = report;
+        window.__MODEL_REPORT__ = report;
     }
     if (nfl) {
         state.nfl.payload = nfl;
@@ -484,7 +645,9 @@ function renderHome() {
             ${card("Latest export", latest ? formatDate(latest) : "-", latest ? timestamp(latest) : "no export timestamp")}
             ${card("Active modules", "2", "NFL spread / MLB moneyline")}
         </section>
+        ${renderStartupAutomationCard()}
         ${renderRefreshPanel("home")}
+        ${renderCommandConsole("home")}
         <section class="dashboard-grid">
             <article class="panel">
                 <header class="section-header"><div><p class="eyebrow">Top model edges</p><h2>Best leans</h2></div><span class="chip">${top.length ? "ranked" : "empty"}</span></header>
@@ -494,6 +657,60 @@ function renderHome() {
                 <header class="section-header"><div><p class="eyebrow">Today / Upcoming</p><h2>Board watch</h2></div></header>
                 ${renderUpcoming()}
             </article>
+        </section>
+    `;
+}
+
+function statusTone(status) {
+    const normalized = String(status || "").toLowerCase();
+    if (["env_ready", "real_fresh", "model_generated", "real_cached", "done"].includes(normalized)) return "success";
+    if (["dependency_missing", "source_refused", "schedule_only", "manual only", "real_cached"].includes(normalized)) return "warning";
+    if (["failed", "install_failed", "env_missing", "missing"].includes(normalized)) return "error";
+    return "info";
+}
+
+function renderAutomationStep(label, status, copy) {
+    const tone = statusTone(status);
+    return `
+        <div class="automation-step" data-variant="${tone}">
+            <span></span>
+            <div><strong>${escapeHtml(label)}</strong><small>${escapeHtml(status || "pending")} - ${escapeHtml(copy || "")}</small></div>
+        </div>
+    `;
+}
+
+function renderStartupAutomationCard() {
+    const bootstrap = state.bootstrapStatus || {};
+    const startup = state.startupStatus || {};
+    const refresh = state.refreshStatus?.sports || {};
+    const running = state.refreshRuntime.active && state.refreshRuntime.command === "startup_auto";
+    const bootstrapCopy = bootstrap.python_version
+        ? `${bootstrap.python_version} at ${bootstrap.python_path || "unknown path"}`
+        : "Python environment has not been checked yet.";
+    const mlbStatus = refresh.MLB?.status || (startup.mlb_ready ? "model_generated" : "pending");
+    const nflStatus = refresh.NFL?.status || (startup.nfl_ready ? "real_cached" : "pending");
+    return `
+        <section class="panel startup-panel">
+            <header class="section-header">
+                <div>
+                    <p class="eyebrow">Startup automation</p>
+                    <h2>${running ? "Preparing environment and real data..." : "Python, models, and real-data refresh"}</h2>
+                    <p class="muted">${escapeHtml(startup.error || bootstrap.error || "Desktop startup loads cached JSON first, then bootstraps Python and refreshes real data.")}</p>
+                </div>
+                <div class="report-actions">
+                    <button class="btn btn--primary" data-refresh-command="startup_auto">Run Startup Automation Again</button>
+                    <button class="btn" data-refresh-command="bootstrap_env">Bootstrap Python Environment</button>
+                </div>
+            </header>
+            <div class="automation-steps">
+                ${renderAutomationStep("Checking Python environment", bootstrap.status || "pending", bootstrapCopy)}
+                ${renderAutomationStep("Creating virtual environment", bootstrap.venv_created ? "done" : bootstrap.venv_detected ? "real_cached" : "pending", bootstrap.venv_detected ? ".venv detected" : ".venv will be created when automation runs")}
+                ${renderAutomationStep("Installing requirements", bootstrap.requirements_installed ? "done" : bootstrap.requirements_skipped ? "real_cached" : bootstrap.status === "install_failed" ? "install_failed" : "pending", bootstrap.requirements_skipped ? "requirements hash current; install skipped" : "installs only when missing or outdated")}
+                ${renderAutomationStep("Refreshing MLB predictions", mlbStatus, refresh.MLB?.message || "Uses trained model when available; trains if missing during startup automation.")}
+                ${renderAutomationStep("Rebuilding NFL data if needed", nflStatus, refresh.NFL?.message || "Attempts local import, processed parquet, nfl-data-py, and source fallbacks.")}
+                ${renderAutomationStep("Done", startup.status || "pending", startup.status ? `Last startup status: ${startup.status}` : "Run the Tauri app or npm run startup:auto.")}
+            </div>
+            ${startup.nfl_requires_import || nflStatus === "source_refused" || dataMode(state.nfl.payload, state.nfl.games) === "missing" ? renderNflManualRecoveryCard("inline") : ""}
         </section>
     `;
 }
@@ -522,10 +739,62 @@ function refreshSportStatus(sport) {
     };
 }
 
+function renderCommandConsole(context = "compact") {
+    const latest = state.refreshLogs[0];
+    const logs = context === "settings" ? state.refreshLogs.slice(0, 6) : state.refreshLogs.slice(0, 2);
+    if (!logs.length) {
+        return `
+            <section class="panel command-console">
+                <header class="section-header"><div><p class="eyebrow">Command console</p><h2>Terminal output</h2></div><span class="chip">empty</span></header>
+                ${emptyState("No refresh commands logged", "Run a Tauri desktop refresh command to capture stdout and stderr here.")}
+            </section>
+        `;
+    }
+    return `
+        <section class="panel command-console">
+            <header class="section-header">
+                <div><p class="eyebrow">Command console</p><h2>${context === "settings" ? "Refresh command history" : "Latest terminal output"}</h2></div>
+                <span class="chip ${latest?.success ? "chip--success" : "chip--warning"}">${latest?.success ? "last success" : latest?.skipped ? "manual mode" : "last failed"}</span>
+            </header>
+            <div class="command-log-list">
+                ${logs.map(log => `
+                    <article class="command-log-entry">
+                        <div class="command-log-entry__head">
+                            <strong>${escapeHtml(refreshCommandLabel(log.command_name))}</strong>
+                            <span>${escapeHtml(log.success ? "Success" : log.skipped ? "Manual only" : "Failed")} / ${escapeHtml(timestamp(log.finished_at))} / ${escapeHtml(String(log.duration_ms ?? 0))} ms</span>
+                        </div>
+                        <code>${escapeHtml(log.command || REFRESH_COMMANDS[log.command_name]?.manual || log.command_name)}</code>
+                        ${tailLines(log.stdout, 60) ? `<pre>${escapeHtml(tailLines(log.stdout, 60))}</pre>` : ""}
+                        ${tailLines(log.stderr, 60) ? `<pre class="command-log-entry__stderr">${escapeHtml(tailLines(log.stderr, 60))}</pre>` : ""}
+                    </article>
+                `).join("")}
+            </div>
+        </section>
+    `;
+}
+
 function renderRefreshPanel(context = "home") {
     const nfl = refreshSportStatus("NFL");
     const mlb = refreshSportStatus("MLB");
-    const disabled = state.refreshRuntime.available ? "" : "disabled";
+    const disabled = state.refreshRuntime.available ? "" : "";
+    const commandButtons = context === "settings"
+        ? [
+            ["startup_auto", "Run Startup Automation Again", "btn--primary"],
+            ["bootstrap_env", "Bootstrap Python Environment", ""],
+            ["data_real", "Refresh All Real Data", ""],
+            ["nfl_real", "Refresh NFL Real Data", ""],
+            ["mlb_current", "Refresh MLB Current", ""],
+            ["mlb_all", "Run MLB Full Train", ""],
+            ["check_data", "Check Data Status", ""],
+        ]
+        : [
+            ["startup_auto", "Run Startup Automation Again", "btn--primary"],
+            ["bootstrap_env", "Bootstrap Python Environment", ""],
+            ["mlb_current", "Refresh MLB Current", ""],
+            ["mlb_all", "Run MLB Full Train", ""],
+            ["nfl_real", "Refresh NFL Real Data", ""],
+            ["check_data", "Check Data Status", ""],
+        ];
     return `
         <section class="panel refresh-panel">
             <header class="section-header">
@@ -535,9 +804,7 @@ function renderRefreshPanel(context = "home") {
                     <p class="muted">${escapeHtml(state.refreshRuntime.message || "Loading cached predictions first.")}</p>
                 </div>
                 <div class="report-actions">
-                    <button class="btn btn--primary" data-startup-refresh ${disabled}>Run Startup Refresh</button>
-                    <button class="btn" data-refresh-sport="nfl" ${disabled}>Run NFL Real Export</button>
-                    <button class="btn" data-refresh-sport="mlb" ${disabled}>Refresh Current MLB</button>
+                    ${commandButtons.map(([command, label, cls]) => `<button class="btn ${cls}" data-refresh-command="${command}" ${disabled}>${escapeHtml(label)}</button>`).join("")}
                 </div>
             </header>
             <div class="summary-grid summary-grid--compact">
@@ -550,6 +817,7 @@ function renderRefreshPanel(context = "home") {
                 <div><strong>NFL</strong><span>${escapeHtml(nfl.message)}</span></div>
                 <div><strong>MLB</strong><span>${escapeHtml(mlb.message)}</span></div>
             </div>
+            ${state.refreshRuntime.available ? "" : `<p class="data-status" data-variant="warning">Command refresh is available only in the Tauri desktop app. Browser/static mode uses cached exports. Manual examples: <code>${escapeHtml(REFRESH_COMMANDS.nfl_real.manual)}</code> or <code>${escapeHtml(REFRESH_COMMANDS.mlb_current.manual)}</code>.</p>`}
         </section>
     `;
 }
@@ -592,6 +860,18 @@ function emptyState(title, copy) {
     return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(copy)}</p></div>`;
 }
 
+function renderNflManualRecoveryCard(extraClass = "") {
+    return `
+        <div class="empty-state manual-recovery ${extraClass}">
+            <strong>NFL local import missing</strong>
+            <p>Regeneration uses real sources only. If nfl-data-py/nflverse sources are blocked, import a known-good processed spread dataset:</p>
+            <pre>mkdir data\\imports\\nfl
+copy C:\\path\\to\\old\\spread_dataset.parquet data\\imports\\nfl\\spread_dataset.parquet
+npm run refresh:nfl:real</pre>
+        </div>
+    `;
+}
+
 function sportSummaryCards(sport, games, payload) {
     const top = games.map(game => ({ game, edge: getGameEdge(game, sport), confidence: getGameConfidence(game, sport) })).sort((a, b) => (b.edge ?? 0) - (a.edge ?? 0));
     return `
@@ -611,7 +891,7 @@ function renderNFL() {
     $("#view-nfl").innerHTML = `
         <section class="module-header panel">
             <div><p class="eyebrow">NFL Spread Predictor</p><h2>Spread, injury, CLV, and line movement workspace</h2><p class="muted">NFL data source: ${escapeHtml(refreshSportStatus("NFL").status)}. ${games.length ? "Cached/exported rows loaded." : "NFL is currently off-season or no upcoming games are available."}</p></div>
-            <div class="report-actions"><button class="btn" data-refresh-sport="nfl" ${state.refreshRuntime.available ? "" : "disabled"}>Refresh NFL</button>
+            <div class="report-actions"><button class="btn" data-refresh-command="nfl_real">Refresh NFL</button>
             <span class="chip">${dataMode(state.nfl.payload, games)}</span>
             </div>
         </section>
@@ -619,7 +899,7 @@ function renderNFL() {
         <section class="dashboard-grid">
             <article class="panel panel--wide">
                 <header class="section-header"><div><p class="eyebrow">Board</p><h2>All NFL games</h2></div></header>
-                ${games.length ? renderGameTable("NFL", games) : emptyState("No NFL predictions found", "Run the NFL export command. Existing NFL model files are preserved.")}
+                ${games.length ? renderGameTable("NFL", games) : `${emptyState("No NFL predictions found", "Run the NFL real refresh command. Existing NFL model files are preserved.")}${renderNflManualRecoveryCard()}`}
             </article>
             <article class="panel">${renderMatchupDetail("NFL", selected)}</article>
         </section>
@@ -637,7 +917,7 @@ function renderMLB() {
     $("#view-mlb").innerHTML = `
         <section class="module-header panel">
             <div><p class="eyebrow">MLB Moneyline Predictor</p><h2>Daily moneyline board with pitcher and market-readiness context</h2><p class="muted">MLB schedule source: MLB Stats API. Model status: ${escapeHtml(mlbModelStatus())}.${usingBacktest ? " Showing 2025 historical backtest because the current board has no model probabilities." : ""}</p></div>
-            <div class="report-actions"><button class="btn" data-refresh-sport="mlb" ${state.refreshRuntime.available ? "" : "disabled"}>Refresh MLB</button>
+            <div class="report-actions"><button class="btn" data-refresh-command="mlb_current">Refresh MLB</button>
             <span class="chip">${usingBacktest ? "historical backtest" : dataMode(payload, games)}</span>
             </div>
         </section>
@@ -968,6 +1248,8 @@ function renderSettings() {
         ["Odds API", oddsStatusLabel(), "optional The Odds API via ODDS_API_KEY"],
         ["Reports mode", state.report?.metadata?.real_data === false ? "missing" : state.report ? "real" : "missing", "data/reports/model_report.json"],
         ["Team metadata", state.teamPayload?.teams?.length ? `${state.teamPayload.teams.length} teams` : "missing", "data/team_metadata.json"],
+        ["Bootstrap status", state.bootstrapStatus?.status || "missing", state.bootstrapStatus?.python_version ? `Python ${state.bootstrapStatus.python_version}` : "data/bootstrap_status.json"],
+        ["Startup automation", state.startupStatus?.status || "missing", state.startupStatus?.error || "data/startup_status.json"],
         ["Desktop build", "GitHub Actions", ".github/workflows/tauri-windows-build.yml"],
         ["Refresh runtime", state.refreshRuntime.available ? "Available in desktop app" : "Not available in browser/static mode", state.refreshRuntime.message],
     ];
@@ -977,8 +1259,10 @@ function renderSettings() {
             <span class="chip">${escapeHtml(state.app.version || APP_VERSION)}</span>
         </section>
         ${renderRefreshPanel("settings")}
+        ${renderCommandConsole("settings")}
         <section class="panel"><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>
-        <section class="panel"><p class="data-status" data-variant="warning">Python data refresh is not available from the desktop shell yet. Run CLI commands from terminal. Tracking data is stored locally in <code>${TRACKER_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
+        ${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}
+        <section class="panel"><p class="data-status" data-variant="${state.refreshRuntime.available ? "success" : "warning"}">${state.refreshRuntime.available ? "Python data refresh is available through the Tauri desktop shell. Browser mode still uses manual commands." : "Command refresh is available only in the Tauri desktop app. Run CLI commands from terminal in browser/static mode."} Tracking data is stored locally in <code>${TRACKER_KEY}</code>. Refresh logs use <code>${REFRESH_LOGS_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
     `;
 }
 
@@ -1033,6 +1317,8 @@ function bindEvents() {
             $("#generated-report").value = generateReportText(generator.dataset.generateReport);
         }
         if (event.target.id === "export-tracker-btn") exportTrackerCsv();
+        const commandRefreshButton = event.target.closest("[data-refresh-command]");
+        if (commandRefreshButton) runRefreshCommand(commandRefreshButton.dataset.refreshCommand);
         const refreshButton = event.target.closest("[data-refresh-sport]");
         if (refreshButton) refreshData(refreshButton.dataset.refreshSport);
         const startupRefreshButton = event.target.closest("[data-startup-refresh]");

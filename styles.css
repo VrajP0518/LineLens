@@ -403,6 +403,130 @@ textarea {
     color: var(--muted);
 }
 
+.command-console {
+    border-color: rgba(243, 201, 105, 0.18);
+}
+
+.command-log-list {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.command-log-entry {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel-3);
+    padding: 0.85rem;
+}
+
+.command-log-entry__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.command-log-entry__head span {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+.command-log-entry code {
+    display: block;
+    white-space: normal;
+    word-break: break-word;
+    color: var(--gold);
+    margin-bottom: 0.6rem;
+}
+
+.command-log-entry pre {
+    max-height: 220px;
+    overflow: auto;
+    margin: 0.55rem 0 0;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    background: #080d14;
+    color: #d7e6f5;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+}
+
+.command-log-entry__stderr {
+    color: #ffd0d0;
+}
+
+.startup-panel {
+    border-color: rgba(78, 204, 163, 0.18);
+}
+
+.automation-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.75rem;
+}
+
+.automation-step {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.65rem;
+    align-items: flex-start;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel-3);
+    padding: 0.75rem;
+}
+
+.automation-step > span {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 999px;
+    margin-top: 0.24rem;
+    background: var(--muted);
+}
+
+.automation-step[data-variant="success"] > span {
+    background: var(--green);
+}
+
+.automation-step[data-variant="warning"] > span {
+    background: var(--gold);
+}
+
+.automation-step[data-variant="error"] > span {
+    background: var(--red);
+}
+
+.automation-step small {
+    display: block;
+    color: var(--muted);
+    margin-top: 0.2rem;
+}
+
+.manual-recovery {
+    margin-top: 0.8rem;
+}
+
+.manual-recovery pre {
+    margin: 0.65rem 0 0;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    background: #080d14;
+    color: #d7e6f5;
+    white-space: pre-wrap;
+    overflow: auto;
+}
+
+.chip--success {
+    border-color: rgba(78, 204, 163, 0.35);
+    color: #a7f3d0;
+}
+
+.chip--warning {
+    border-color: rgba(243, 201, 105, 0.35);
+    color: var(--gold);
+}
+
 button:disabled {
     cursor: not-allowed;
     opacity: 0.55;

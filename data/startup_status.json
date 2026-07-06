@@ -1,0 +1,69 @@
+{
+  "metadata": {
+    "app": "LineLens Sports",
+    "version": "v0.5.0",
+    "generated_at": "2026-07-06T17:03:05Z"
+  },
+  "status": "real_fresh",
+  "steps": [
+    {
+      "name": "Bootstrap Python environment",
+      "command": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe scripts/bootstrap_env.py",
+      "status": "done",
+      "exit_code": 0,
+      "started_at": "2026-07-06T17:03:05Z",
+      "finished_at": "2026-07-06T17:03:10Z",
+      "stdout_tail": "  \"status\": \"env_ready\",\n  \"python_found\": true,\n  \"python_path\": \"C:\\\\Users\\\\Vraj.Patel\\\\Downloads\\\\coop\\\\LineLens\\\\.venv\\\\Scripts\\\\python.exe\",\n  \"python_version\": \"3.11.9\",\n  \"venv_detected\": true,\n  \"venv_created\": false,\n  \"requirements_hash\": \"7d1ba12dcf8818284b56764e046122b8f882b6d8a6a992fee088781cf70b3fc5\",\n  \"requirements_installed\": false,\n  \"requirements_skipped\": true,\n  \"imports_verified\": true,\n  \"mlb_ready\": true,\n  \"nfl_ready\": true,\n  \"nfl_error\": null,\n  \"error\": null,\n  \"candidates\": [\n    {\n      \"path\": \"C:\\\\Users\\\\Vraj.Patel\\\\Downloads\\\\coop\\\\LineLens\\\\.venv\\\\Scripts\\\\python.exe\",\n      \"version\": \"3.11.9\",\n      \"major\": 3,\n      \"minor\": 11,\n      \"micro\": 9,\n      \"command\": [\n        \"C:\\\\Users\\\\Vraj.Patel\\\\Downloads\\\\coop\\\\LineLens\\\\.venv\\\\Scripts\\\\python.exe\"\n      ],\n      \"available\": true,\n      \"supported\": true,\n      \"too_new\": false\n    }\n  ],\n  \"imports\": {\n    \"pandas\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"numpy\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"sklearn\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"joblib\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"typer\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"requests\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"nfl_data_py\": {\n      \"ok\": true,\n      \"error\": null\n    }\n  }\n}",
+      "stderr_tail": ""
+    },
+    {
+      "name": "Refresh MLB current predictions",
+      "command": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe scripts/refresh_data.py --sport mlb --mode predict",
+      "status": "done",
+      "exit_code": 0,
+      "started_at": "2026-07-06T17:03:10Z",
+      "finished_at": "2026-07-06T17:03:18Z",
+      "stdout_tail": "Refresh finished for MLB. Status written to data/refresh_status.json",
+      "stderr_tail": ""
+    },
+    {
+      "name": "Check NFL real export",
+      "command": "data/predictions/nfl_predictions.json",
+      "status": "real_cached",
+      "exit_code": 0,
+      "started_at": "2026-07-06T17:03:18Z",
+      "finished_at": "2026-07-06T17:03:18Z",
+      "stdout_tail": "NFL real prediction export already exists; startup did not regenerate it.",
+      "stderr_tail": ""
+    }
+  ],
+  "mlb_ready": true,
+  "nfl_ready": true,
+  "nfl_requires_import": false,
+  "manual_nfl_import_path": "data/imports/nfl/spread_dataset.parquet",
+  "error": null,
+  "bootstrap": {
+    "status": "env_ready",
+    "python_path": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe",
+    "python_version": "3.11.9",
+    "mlb_ready": true,
+    "nfl_ready": true,
+    "nfl_error": null
+  },
+  "refresh_status": {
+    "NFL": {
+      "status": "real_cached",
+      "message": "NFL real export found; startup reused the cached real prediction export.",
+      "last_success_at": "2026-07-06T17:03:18Z",
+      "used_cache": true,
+      "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
+    },
+    "MLB": {
+      "status": "model_generated",
+      "message": "MLB model predictions generated from cached schedule after live fetch failed.",
+      "last_success_at": "2026-07-06T17:03:18Z",
+      "used_cache": true,
+      "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
+    }
+  }
+}
