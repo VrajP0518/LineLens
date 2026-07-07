@@ -1945,6 +1945,21 @@ function sportSummaryCards(sport, games, payload) {
     `;
 }
 
+function mlbFilterLabel() {
+    const value = state.selected.mlbFilter || "all";
+    const labels = {
+        all: "All",
+        model: "Model picks",
+        high55: "55%+",
+        high60: "60%+",
+        pitcher: "Pitcher data",
+        travel: "Travel edge",
+        fatigue: "Fatigue edge",
+        schedule: "Schedule-only",
+    };
+    return labels[value] || value;
+}
+
 function renderNFL() {
     const scope = ensureNflScope();
     const games = scope.games;
@@ -2007,7 +2022,8 @@ function renderMLB() {
             <span class="chip">${usingBacktest ? "historical backtest" : dataMode(payload, games)}</span>
             </div>
         </section>
-        ${sportSummaryCards("MLB", games, payload)}
+        ${sportSummaryCards("MLB", rawGames, payload)}
+        ${rawGames.length && games.length !== rawGames.length ? `<p class="data-status" data-variant="info">Showing ${games.length} of ${rawGames.length} MLB rows for ${escapeHtml(selectedDate)}. Filter: ${escapeHtml(mlbFilterLabel())}.</p>` : ""}
         <section class="dashboard-grid">
             <article class="panel panel--wide">
                 <header class="section-header">
@@ -2053,7 +2069,7 @@ function renderGameTable(sport, games, source = sport) {
     return `
         <div class="table-wrapper">
             <table class="data-table">
-                <thead><tr><th>Date</th><th>Away</th><th>Home</th><th>Pick</th><th>Prob</th><th>Edge</th><th>Confidence</th><th>Top factor</th><th>CLV</th></tr></thead>
+                <thead><tr><th>Date</th><th>Away</th><th>Home</th><th>Pick</th><th>Prob</th><th>Edge</th><th>Confidence</th><th>Top factor</th><th>Result</th><th>CLV</th></tr></thead>
                 <tbody>
                     ${games.map((game, index) => `
                         <tr class="selectable-row" data-select-game="${source}" data-game-index="${index}" data-game-id="${escapeHtml(gameKey({ ...game, sport }))}">
@@ -2065,6 +2081,7 @@ function renderGameTable(sport, games, source = sport) {
                             <td>${formatEdge(getGameEdge(game, sport))}</td>
                             <td>${confidenceTag(getGameConfidence(game, sport))}</td>
                             <td>${sport === "MLB" ? renderTopFactorCell(game) : "-"}</td>
+                            <td>${resultChip(modelResultLabel({ ...game, sport }))}</td>
                             <td><span class="chip chip--soft">${escapeHtml(getCLVSummary(game))}</span></td>
                         </tr>
                     `).join("")}
@@ -2115,7 +2132,7 @@ function renderMatchupDetail(sport, game) {
                 ${isNfl ? renderNFLImpact(game) : renderMLBImpact(game)}
                 ${renderLineMovement(game, sport)}
                 ${renderCLV(game, sport)}
-                <div class="detail-card"><span>Result status</span><strong>${escapeHtml(game.result || game.status || "Pending")}</strong></div>
+                <div class="detail-card"><span>Model result</span><strong>${escapeHtml(modelResultLabel({ ...game, sport }))}</strong><small>${escapeHtml(finalScoreLabel(game) || game.result || game.status || "Pending")}</small></div>
             </div>
             ${sport === "MLB" ? renderPredictionExplanation(game) : ""}
             <button class="btn btn--primary full-width" data-add-tracker="${sport}" data-game-id="${escapeHtml(game.game_id || game.id || "")}" ${canTrack ? "" : "disabled"}>${canTrack ? "Add to Tracker" : "No model prediction"}</button>

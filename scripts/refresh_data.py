@@ -12,7 +12,7 @@ import json
 import shutil
 import subprocess
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
@@ -23,6 +23,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.shared.odds_provider import fetch_odds, odds_config_status
+from src.shared.mlb_teams import mlb_team_abbreviation, mlb_team_display_name
 
 DATA_DIR = ROOT / "data"
 RAW_MLB_DIR = DATA_DIR / "raw" / "mlb"
@@ -193,14 +194,64 @@ def fetch_mlb_schedule(target_date: str | None, date_range: list[str] | None) ->
     return payload, raw_path
 
 
+def parse_mlb_target_date(target_date: str | None) -> date:
+    if target_date in {None, "today"}:
+        return date.today()
+    return date.fromisoformat(str(target_date)[:10])
+
+
+def default_mlb_predict_range(target_date: str | None, date_range: list[str] | None) -> list[str] | None:
+    if date_range:
+        return date_range
+    day = parse_mlb_target_date(target_date)
+    return [(day - timedelta(days=1)).isoformat(), (day + timedelta(days=1)).isoformat()]
+
+
+def load_cached_mlb_schedule(target_date: str | None, date_range: list[str] | None) -> tuple[dict[str, Any], Path] | None:
+    if date_range:
+        start = date.fromisoformat(date_range[0])
+        end = date.fromisoformat(date_range[1])
+        dates = [start + timedelta(days=offset) for offset in range((end - start).days + 1)]
+    else:
+        dates = [parse_mlb_target_date(target_date)]
+
+    payload = {
+        "copyright": None,
+        "totalItems": 0,
+        "totalEvents": 0,
+        "totalGames": 0,
+        "totalGamesInProgress": 0,
+        "dates": [],
+    }
+    used_paths: list[Path] = []
+    for day in dates:
+        path = RAW_MLB_DIR / f"schedule_{day.isoformat()}.json"
+        if not path.exists():
+            continue
+        cached = json.loads(path.read_text(encoding="utf-8"))
+        payload["copyright"] = payload["copyright"] or cached.get("copyright")
+        payload["dates"].extend(cached.get("dates", []))
+        payload["totalItems"] += int(cached.get("totalItems") or 0)
+        payload["totalEvents"] += int(cached.get("totalEvents") or 0)
+        payload["totalGames"] += int(cached.get("totalGames") or 0)
+        payload["totalGamesInProgress"] += int(cached.get("totalGamesInProgress") or 0)
+        used_paths.append(path)
+
+    if not payload["dates"]:
+        return None
+    start_label = dates[0].isoformat()
+    end_label = dates[-1].isoformat()
+    raw_path = RAW_MLB_DIR / f"schedule_combined_{start_label}_{end_label}.json"
+    raw_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return payload, raw_path
+
+
 def team_abbrev(side: dict[str, Any]) -> str:
-    team = side.get("team", {})
-    return team.get("abbreviation") or team.get("teamCode") or team.get("fileCode") or team.get("name", "UNK")
+    return mlb_team_abbreviation(side)
 
 
 def team_name(side: dict[str, Any]) -> str:
-    team = side.get("team", {})
-    return team.get("name") or team_abbrev(side)
+    return mlb_team_display_name(side)
 
 
 def pitcher_name(side: dict[str, Any]) -> str | None:
@@ -238,7 +289,7 @@ def mlb_schedule_payload(schedule: dict[str, Any], raw_path: Path) -> dict[str, 
                 {
                     "sport": "MLB",
                     "season": int(str(game.get("season") or date.today().year)),
-                    "game_date": str(game.get("gameDate") or day.get("date") or "")[:10],
+                    "game_date": str(day.get("date") or game.get("officialDate") or game.get("gameDate") or "")[:10],
                     "game_id": str(game.get("gamePk")),
                     "home": home_code,
                     "away": away_code,
@@ -424,15 +475,15 @@ def refresh_mlb_history(status: dict[str, Any], *, force: bool = False) -> bool:
 
 def refresh_mlb_predict(status: dict[str, Any], target_date: str | None, date_range: list[str] | None) -> None:
     used_cached_schedule = False
+    schedule_range = default_mlb_predict_range(target_date, date_range)
     try:
-        schedule, raw_path = fetch_mlb_schedule(target_date, date_range)
+        schedule, raw_path = fetch_mlb_schedule(target_date, schedule_range)
     except Exception as exc:  # noqa: BLE001
-        cached = sorted(RAW_MLB_DIR.glob("schedule_*.json"))
-        if not cached:
+        cached_schedule = load_cached_mlb_schedule(target_date, schedule_range)
+        if cached_schedule is None:
             update_sport_status(status, "MLB", "failed", f"MLB current schedule fetch failed: {type(exc).__name__}: {exc}", used_cache=True)
             return
-        raw_path = cached[-1]
-        schedule = json.loads(raw_path.read_text(encoding="utf-8"))
+        schedule, raw_path = cached_schedule
         used_cached_schedule = True
 
     if not MLB_MODEL.exists() or not MLB_FEATURES.exists():

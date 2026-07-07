@@ -4,12 +4,18 @@ from __future__ import annotations
 
 import json
 import math
+import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.shared.mlb_teams import mlb_team_abbreviation, normalize_mlb_abbrev
+
 TRACKING_DIR = ROOT / "data" / "tracking"
 RAW_MLB_DIR = ROOT / "data" / "raw" / "mlb"
 PREDICTIONS_DIR = ROOT / "data" / "predictions"
@@ -82,8 +88,7 @@ def normalize_result(value: Any) -> str:
 
 
 def team_abbrev(side: dict[str, Any]) -> str:
-    team = side.get("team", {})
-    return (team.get("abbreviation") or team.get("teamCode") or team.get("fileCode") or team.get("name", "UNK")).upper()
+    return mlb_team_abbreviation(side)
 
 
 def status_label(game: dict[str, Any]) -> str:
@@ -218,6 +223,32 @@ def date_rows(rows: list[dict[str, Any]], days_offset: int) -> list[dict[str, An
     return [row for row in rows if str(row.get("game_date") or row.get("generated_at", ""))[:10] == target]
 
 
+def prediction_game_key(row: dict[str, Any]) -> str:
+    game_id = row.get("game_id")
+    if game_id:
+        return f"{row.get('sport')}:{row.get('game_date')}:{game_id}"
+    return (
+        f"{row.get('sport')}:{row.get('game_date')}:"
+        f"{normalize_mlb_abbrev(row.get('away'))}@{normalize_mlb_abbrev(row.get('home'))}"
+    )
+
+
+def prediction_sort_key(row: dict[str, Any]) -> tuple[datetime, int]:
+    parsed = parse_datetime(row.get("generated_at")) or parse_datetime(row.get("game_date")) or datetime.min.replace(tzinfo=timezone.utc)
+    scored_weight = 1 if normalize_result(row.get("model_result")) in SCORED_RESULTS else 0
+    return parsed, scored_weight
+
+
+def latest_prediction_per_game(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    latest: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        key = prediction_game_key(row)
+        existing = latest.get(key)
+        if existing is None or prediction_sort_key(row) >= prediction_sort_key(existing):
+            latest[key] = row
+    return sorted(latest.values(), key=lambda row: (str(row.get("game_date") or ""), str(row.get("generated_at") or "")))
+
+
 def score_mlb_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
     results = mlb_result_map()
     scored_this_run = 0
@@ -241,7 +272,11 @@ def score_mlb_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
         row["home_score"] = result["home_score"]
         row["away_score"] = result["away_score"]
         row["result_status"] = "scored"
-        row["model_result"] = "win" if row.get("model_pick") == result["actual_winner"] else "loss"
+        row["model_result"] = (
+            "win"
+            if normalize_mlb_abbrev(row.get("model_pick")) == normalize_mlb_abbrev(result["actual_winner"])
+            else "loss"
+        )
         scored_this_run += 1
     return scored_this_run, pending
 
@@ -307,7 +342,8 @@ def recent_prediction_table(rows: list[dict[str, Any]], limit: int = 12) -> list
 
 
 def mlb_live_record(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    mlb_rows = [row for row in rows if row.get("sport") == "MLB"]
+    raw_mlb_rows = [row for row in rows if row.get("sport") == "MLB"]
+    mlb_rows = latest_prediction_per_game(raw_mlb_rows)
     by_confidence: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in mlb_rows:
         by_confidence[confidence_group(row)].append(row)
@@ -321,7 +357,9 @@ def mlb_live_record(rows: list[dict[str, Any]]) -> dict[str, Any]:
         mlb_rows,
         "Live Record",
         source=str(LOG_JSON.relative_to(ROOT)),
-        note="Only logged LineLens MLB predictions are counted here.",
+        note="Only the latest logged LineLens MLB prediction per game is counted here.",
+        logged_rows=len(raw_mlb_rows),
+        unique_games=len(mlb_rows),
     )
     return {
         "overall": live,

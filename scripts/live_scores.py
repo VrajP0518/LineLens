@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,11 @@ except ImportError:  # pragma: no cover - validation environments may vary.
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.shared.mlb_teams import mlb_team_abbreviation
+
 LIVE_DIR = ROOT / "data" / "live"
 LIVE_JSON = LIVE_DIR / "live_scores.json"
 LIVE_JS = LIVE_DIR / "live_scores.js"
@@ -101,12 +107,7 @@ def normalize_team(value: Any) -> str:
 
 
 def team_code(team: dict[str, Any]) -> str:
-    return normalize_team(
-        team.get("abbreviation")
-        or team.get("teamCode")
-        or team.get("fileCode")
-        or team.get("name")
-    )
+    return mlb_team_abbreviation(team)
 
 
 def pitcher_name(entry: dict[str, Any]) -> str | None:

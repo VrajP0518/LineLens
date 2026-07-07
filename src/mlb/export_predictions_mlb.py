@@ -285,6 +285,8 @@ def _append_prediction_log(games: list[dict], artifact: dict, generated_at: str)
     for game in games:
         if game.get("prediction_mode") != "model":
             continue
+        if _is_final_status(game.get("status")):
+            continue
         prediction_id = f"MLB-{game.get('game_id')}-{model_id}-{generated_day}"
         row = {
             "prediction_id": prediction_id,
@@ -356,7 +358,7 @@ def export(
     output_file: Path = typer.Option(PREDICTIONS_DIR / "mlb_predictions.json", help="JSON output."),
     js_out: Path = typer.Option(PREDICTIONS_DIR / "mlb_predictions.js", help="JS output."),
     season: Optional[int] = typer.Option(None, help="Optional season filter."),
-    limit: Optional[int] = typer.Option(30, help="Max games to export."),
+    limit: Optional[int] = typer.Option(None, help="Max games to export."),
     write_empty_if_missing: bool = typer.Option(True, help="Write an empty no-real-export payload when data/model files are missing."),
 ) -> None:
     ensure_project_dirs()

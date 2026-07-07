@@ -14,6 +14,7 @@ import typer
 from rich.console import Console
 
 from src.shared.export_utils import write_json_and_js
+from src.shared.mlb_teams import mlb_team_abbreviation, mlb_team_display_name
 from src.shared.paths import PROCESSED_DIR, RAW_DIR, ensure_project_dirs, resolve_project_path
 from src.shared.version import APP_VERSION
 
@@ -212,13 +213,11 @@ def _is_final_status(status: str | None) -> bool:
 
 
 def _team_abbrev(team: dict) -> str:
-    info = team.get("team", team)
-    return info.get("abbreviation") or info.get("teamCode") or info.get("fileCode") or info.get("name", "UNK")
+    return mlb_team_abbreviation(team)
 
 
 def _team_name(team: dict) -> str:
-    info = team.get("team", team)
-    return info.get("name") or _team_abbrev(team)
+    return mlb_team_display_name(team)
 
 
 def _pitcher_name(side: dict) -> str | None:
@@ -258,7 +257,7 @@ def _flatten_schedule(payload: dict, season: int) -> pd.DataFrame:
             rows.append(
                 {
                     "season": int(game.get("season") or season),
-                    "game_date": str(game.get("gameDate", day.get("date")))[:10],
+                    "game_date": str(day.get("date") or game.get("officialDate") or game.get("gameDate"))[:10],
                     "game_datetime": game.get("gameDate", day.get("date")),
                     "game_id": str(game.get("gamePk")),
                     "home_team": home_code,
