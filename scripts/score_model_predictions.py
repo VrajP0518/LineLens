@@ -16,7 +16,7 @@ LOG_JSON = TRACKING_DIR / "model_predictions_log.json"
 LOG_JS = TRACKING_DIR / "model_predictions_log.js"
 RECORD_JSON = TRACKING_DIR / "model_record.json"
 RECORD_JS = TRACKING_DIR / "model_record.js"
-APP_VERSION = "v0.6.0"
+APP_VERSION = "v0.7.0"
 
 
 def utc_now() -> str:
