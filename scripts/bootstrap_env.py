@@ -24,7 +24,7 @@ ENV_STATE_JSON = DATA_DIR / "env_state.json"
 REQUIREMENTS = ROOT / "requirements.txt"
 VENV_DIR = ROOT / ".venv"
 VENV_PYTHON = VENV_DIR / "Scripts" / "python.exe"
-APP_VERSION = "v0.6.0"
+APP_VERSION = "v0.7.0"
 
 CORE_IMPORTS = ["pandas", "numpy", "sklearn", "joblib", "typer", "requests"]
 NFL_IMPORT = "nfl_data_py"

@@ -1,4 +1,4 @@
-const APP_VERSION = "v0.6.0";
+const APP_VERSION = "v0.7.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
@@ -740,49 +740,284 @@ function card(label, value, note, extraClass = "") {
     return `<article class="summary-card ${extraClass}"><span>${label}</span><strong>${value}</strong><small>${note}</small></article>`;
 }
 
+function getGameTimeLabel(game) {
+    const raw = game?.game_time || game?.start_time || game?.commence_time || game?.kickoff || game?.first_pitch || game?.game_date;
+    if (!raw) return "TBD";
+    const date = new Date(raw);
+    if (Number.isNaN(date.getTime())) return String(raw);
+    if (String(raw).length <= 10) return formatDate(raw);
+    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function isHistoricalBoardRow(game) {
+    return game?.prediction_mode === "historical_backtest" || game?.mode === "historical_backtest";
+}
+
+function homeBoardGames() {
+    return currentGames().filter(game => !isHistoricalBoardRow(game));
+}
+
+function homeTopEdges(limit = 8) {
+    return homeBoardGames()
+        .map(game => ({
+            game,
+            edge: getGameEdge(game, game.sport),
+            probability: getGameProbability(game, game.sport),
+            confidence: getGameConfidence(game, game.sport),
+            pick: getGamePick(game, game.sport),
+        }))
+        .filter(row => row.probability !== null)
+        .sort((a, b) => (b.edge ?? 0) - (a.edge ?? 0))
+        .slice(0, limit);
+}
+
+function renderHomeTeamBadge(game, side) {
+    const code = game?.[side] || "---";
+    const display = game?.[`${side}_display`] || code;
+    const sport = game?.sport || "MLB";
+    return `
+        <span class="ll-team-badge">
+            ${renderTeamLogo(sport, code, "sm", display)}
+            <span>${escapeHtml(display)}</span>
+        </span>
+    `;
+}
+
+function homeMetricCard(icon, label, value, note, tone = "blue") {
+    return `
+        <article class="ll-metric-card ll-metric-card--${tone}">
+            <div class="ll-metric-icon" aria-hidden="true">${escapeHtml(icon)}</div>
+            <div>
+                <span>${escapeHtml(label)}</span>
+                <strong>${escapeHtml(value)}</strong>
+                <small>${escapeHtml(note || "")}</small>
+            </div>
+            <i aria-hidden="true"></i>
+        </article>
+    `;
+}
+
+function renderBestPickSpotlight(row) {
+    if (!row) {
+        return `
+            <article class="ll-top-edge-card ll-empty-spotlight">
+                <p class="eyebrow">Top edge right now</p>
+                <h3>No current pick loaded</h3>
+                <p class="muted">Run a refresh to generate current NFL/MLB predictions.</p>
+            </article>
+        `;
+    }
+    const game = row.game;
+    return `
+        <article class="ll-top-edge-card">
+            <div class="ll-card-live"><span></span> model scanning</div>
+            <p class="eyebrow">Top edge right now</p>
+            <div class="ll-top-matchup">
+                ${renderHomeTeamBadge(game, "away")}
+                <span class="ll-at">@</span>
+                ${renderHomeTeamBadge(game, "home")}
+            </div>
+            <div class="ll-top-pick">
+                <span>Pick</span>
+                <strong>${escapeHtml(row.pick)}</strong>
+                <em>${formatEdge(row.edge)}</em>
+            </div>
+            <div class="ll-top-meta">
+                <span>${escapeHtml(game.sport)}</span>
+                <span>${escapeHtml(getGameConfidence(game, game.sport))} confidence</span>
+                <span>${formatProbability(row.probability)}</span>
+            </div>
+        </article>
+    `;
+}
+
+function renderBestPickFeature(row) {
+    if (!row) return emptyState("No best pick available", "Run startup automation or refresh MLB/NFL data.");
+    const game = row.game;
+    const probability = formatProbability(row.probability);
+    const confidence = getGameConfidence(game, game.sport);
+    const factor = game.top_factor_label || game.top_factor || game.explanation?.top_factors?.[0]?.label || game.explanation?.top_factors?.[0]?.feature || "Model edge";
+    const width = Math.max(4, Math.min(96, safeNumber(row.probability, 0.5) * 100)).toFixed(1);
+    return `
+        <article class="panel ll-best-pick-panel">
+            <div class="ll-panel-glow" aria-hidden="true"></div>
+            <header class="section-header">
+                <div>
+                    <p class="eyebrow">Best current pick</p>
+                    <h2>${escapeHtml(row.pick)} ${formatEdge(row.edge)}</h2>
+                    <p class="muted">${escapeHtml(game.away_display || game.away)} @ ${escapeHtml(game.home_display || game.home)}</p>
+                </div>
+                <span class="chip ${confidenceClass(confidence)}">${escapeHtml(confidence)}</span>
+            </header>
+            <div class="ll-best-matchup">
+                ${renderHomeTeamBadge(game, "away")}
+                <span>@</span>
+                ${renderHomeTeamBadge(game, "home")}
+            </div>
+            <div class="ll-best-readout">
+                <div><span>Pick</span><strong>${escapeHtml(row.pick)}</strong></div>
+                <div><span>Probability</span><strong>${probability}</strong></div>
+                <div><span>Edge</span><strong>${formatEdge(row.edge)}</strong></div>
+                <div><span>Top factor</span><strong>${escapeHtml(factor)}</strong></div>
+            </div>
+            <div class="ll-probability-bar" aria-label="Model probability ${probability}">
+                <span style="width:${width}%"></span>
+            </div>
+            <button class="btn btn--primary ll-wide-action" data-view-link="${game.sport === "NFL" ? "nfl" : "mlb"}">View Full Analysis</button>
+        </article>
+    `;
+}
+
+function renderLivePulsePanel(rows) {
+    const items = rows.slice(0, 6);
+    return `
+        <article class="panel ll-live-pulse-panel">
+            <header class="section-header">
+                <div><p class="eyebrow">Sports pulse</p><h2>Today's edge board</h2></div>
+                <span class="ll-live-pill"><span></span> scanning</span>
+            </header>
+            <div class="ll-pulse-list">
+                ${items.length ? items.map(row => {
+                    const game = row.game;
+                    return `
+                        <div class="ll-pulse-row">
+                            <span>${escapeHtml(game.sport)}</span>
+                            <strong>${escapeHtml(game.away)} @ ${escapeHtml(game.home)}</strong>
+                            <em>${escapeHtml(row.pick)}</em>
+                            <small>${formatEdge(row.edge)}</small>
+                        </div>
+                    `;
+                }).join("") : emptyState("No pulse rows", "Refresh predictions to populate the board.")}
+            </div>
+        </article>
+    `;
+}
+
+function renderEdgeLeaderboardPanel(rows) {
+    return `
+        <article class="panel ll-edge-leaderboard-panel">
+            <header class="section-header">
+                <div><p class="eyebrow">Edge leaderboard</p><h2>Top model edges</h2></div>
+                <span class="chip">Top ${Math.min(rows.length, 5)}</span>
+            </header>
+            <div class="ll-edge-bars">
+                ${rows.length ? rows.slice(0, 5).map((row, index) => {
+                    const game = row.game;
+                    const pct = Math.max(6, Math.min(100, Math.abs(safeNumber(row.edge, 0)) * 180));
+                    return `
+                        <div class="ll-edge-bar-row">
+                            <span>${index + 1}</span>
+                            <strong>${escapeHtml(row.pick)} <small>${escapeHtml(game.away)} @ ${escapeHtml(game.home)}</small></strong>
+                            <div class="ll-edge-bar"><i style="width:${pct}%"></i></div>
+                            <em>${formatEdge(row.edge)}</em>
+                        </div>
+                    `;
+                }).join("") : emptyState("No edge rows", "Run an MLB/NFL refresh to rank current picks.")}
+            </div>
+        </article>
+    `;
+}
+
+function renderTickerItem(game) {
+    const sport = game?.sport || "MLB";
+    const pick = getGamePick(game, sport);
+    const edge = formatEdge(getGameEdge(game, sport));
+    const time = getGameTimeLabel(game);
+    return `
+        <span class="ll-ticker-item">
+            <b>${escapeHtml(sport)}</b>
+            <span>${escapeHtml(time)}</span>
+            <strong>${escapeHtml(game?.away || "AWAY")} @ ${escapeHtml(game?.home || "HOME")}</strong>
+            <em>${escapeHtml(pick)} ${edge}</em>
+        </span>
+    `;
+}
+
+function renderSportsPulseTicker(rows) {
+    const tickerGames = homeBoardGames().slice(0, 16);
+    const fallbackGames = rows.map(row => row.game);
+    const games = tickerGames.length ? tickerGames : fallbackGames;
+    if (!games.length) {
+        return `
+            <section class="ll-bottom-ticker ll-bottom-ticker--empty">
+                <span class="ll-ticker-label">Sports pulse</span>
+                <div class="ll-ticker-empty">No current games loaded. Run startup automation or refresh predictions.</div>
+            </section>
+        `;
+    }
+    const items = games.map(renderTickerItem).join("");
+    return `
+        <section class="ll-bottom-ticker" aria-label="Sports pulse ticker">
+            <span class="ll-ticker-label"><i></i> Sports pulse</span>
+            <div class="ll-ticker-window" tabindex="0">
+                <div class="ll-ticker-track">${items}${items}</div>
+            </div>
+        </section>
+    `;
+}
+
 function renderHome() {
-    const top = topEdges(5);
+    const top = homeTopEdges(8);
     const latest = [normalizeMeta(state.nfl.payload).generated_at, normalizeMeta(state.mlb.payload).generated_at, state.report?.metadata?.generated_at].filter(Boolean).sort().at(-1);
     const best = top[0];
     const mlbRecord = getModelRecord("MLB").overall || {};
     const selectedModel = selectedModelEntry("MLB");
+    const strongEdges = top.filter(row => safeNumber(row.edge, 0) >= 0.1).length;
     $("#view-home").innerHTML = `
-        <section class="hero-panel panel">
-            <div>
-                <p class="eyebrow">LineLens Sports ${escapeHtml(state.app.version || APP_VERSION)}</p>
-                <h2>Desktop-grade model command center for NFL and MLB.</h2>
-                <p class="muted">Track real predictions, inspect model drivers, compare training runs, review calibration, and keep an honest model record without requiring paid odds APIs.</p>
-            </div>
-            <div class="hero-actions">
-                <button class="btn btn--primary" data-view-link="mlb">Open MLB</button>
-                <button class="btn" data-view-link="nfl">Open NFL</button>
-                <button class="btn" data-view-link="reports">Reports</button>
-                <button class="btn" data-view-link="tracking">Tracking</button>
-            </div>
-        </section>
-        <section class="summary-grid">
-            ${card("NFL games loaded", state.nfl.games.length, dataMode(state.nfl.payload, state.nfl.games))}
-            ${card("MLB games loaded", state.mlb.games.length, dataMode(state.mlb.payload, state.mlb.games))}
-            ${card("Odds status", oddsStatusLabel(), oddsStatusMessage())}
-            ${card("Strong edges", top.filter(row => row.edge >= 0.1).length, "confidence distance from 50%")}
-            ${card("Best current pick", best ? `${best.pick}` : "-", best ? `${best.game.away} @ ${best.game.home}` : "no picks loaded", "summary-card--accent")}
-            ${card("Latest export", latest ? formatDate(latest) : "-", latest ? timestamp(latest) : "no export timestamp")}
-            ${card("MLB model record", recordLine(mlbRecord), formatProbability(mlbRecord.accuracy))}
-            ${card("Current MLB model", selectedModel?.model_name || normalizeMeta(state.mlb.payload).model_type || "-", selectedModel?.selected_by || "selected by report")}
-            ${card("Active modules", "2", "NFL spread / MLB moneyline")}
-        </section>
-        ${renderStartupAutomationCard()}
-        ${renderRefreshPanel("home")}
-        ${renderCommandConsole("home")}
-        <section class="dashboard-grid">
-            <article class="panel">
-                <header class="section-header"><div><p class="eyebrow">Top model edges</p><h2>Best leans</h2></div><span class="chip">${top.length ? "ranked" : "empty"}</span></header>
-                ${top.length ? renderEdgeList(top) : emptyState("No real model probabilities found", "Run npm run refresh:startup or npm run refresh:mlb:all.")}
-            </article>
-            <article class="panel">
-                <header class="section-header"><div><p class="eyebrow">Today / Upcoming</p><h2>Board watch</h2></div></header>
-                ${renderUpcoming()}
-            </article>
+        <section class="ll-home-shell">
+            <section class="panel ll-hero-command">
+                <div class="ll-stadium-lights" aria-hidden="true"></div>
+                <div class="ll-hero-copy">
+                    <p class="eyebrow">Sports prediction command center <span class="ll-online-dot" aria-hidden="true"></span></p>
+                    <h2>Live Edge.<br><span>Model Clarity.</span></h2>
+                    <p class="muted">AI-assisted predictions, real exported data, model health, and today's strongest NFL/MLB leans in one desktop-grade command center.</p>
+                    <div class="hero-actions ll-hero-actions">
+                        <button class="btn btn--primary" data-view-link="nfl">Open NFL</button>
+                        <button class="btn" data-view-link="mlb">Open MLB</button>
+                        <button class="btn" data-view-link="reports">Reports</button>
+                        <button class="btn" data-view-link="tracking">Tracking</button>
+                    </div>
+                </div>
+                <div class="ll-hologram-zone" aria-hidden="true">
+                    <div class="ll-orbit ll-orbit--baseball"><span class="ll-hologram-ball ll-baseball"></span></div>
+                    <div class="ll-orbit ll-orbit--football"><span class="ll-hologram-ball ll-football"></span></div>
+                    <div class="ll-field-ring"></div>
+                </div>
+                ${renderBestPickSpotlight(best)}
+            </section>
+            <section class="ll-metric-grid">
+                ${homeMetricCard("NFL", "NFL Games", String(state.nfl.games.length), dataMode(state.nfl.payload, state.nfl.games), "blue")}
+                ${homeMetricCard("MLB", "MLB Games", String(state.mlb.games.length), dataMode(state.mlb.payload, state.mlb.games), "purple")}
+                ${homeMetricCard("EDGE", "Strong Edges", String(strongEdges), "confidence distance > 10%", "green")}
+                ${homeMetricCard("PICK", "Best Pick", best ? best.pick : "-", best ? `${best.game.away} @ ${best.game.home}` : "no pick loaded", "orange")}
+                ${homeMetricCard("TIME", "Latest Export", latest ? formatDate(latest) : "-", latest ? timestamp(latest) : "no timestamp", "blue")}
+            </section>
+            <section class="ll-home-grid">
+                ${renderBestPickFeature(best)}
+                ${renderLivePulsePanel(top)}
+                ${renderEdgeLeaderboardPanel(top)}
+                <article class="panel ll-model-health-panel">
+                    <header class="section-header">
+                        <div><p class="eyebrow">Model health</p><h2>System readout</h2></div>
+                        <span class="ll-live-pill ll-live-pill--green"><span></span> online</span>
+                    </header>
+                    <div class="ll-health-grid">
+                        <div><span>MLB record</span><strong>${escapeHtml(recordLine(mlbRecord))}</strong><small>${formatProbability(mlbRecord.accuracy)}</small></div>
+                        <div><span>Current model</span><strong>${escapeHtml(selectedModel?.model_name || normalizeMeta(state.mlb.payload).model_type || "-")}</strong><small>${escapeHtml(selectedModel?.selected_by || "selected by report")}</small></div>
+                        <div><span>Odds status</span><strong>${escapeHtml(oddsStatusLabel())}</strong><small>${escapeHtml(oddsStatusMessage())}</small></div>
+                        <div><span>Active modules</span><strong>2</strong><small>NFL spread / MLB moneyline</small></div>
+                    </div>
+                </article>
+            </section>
+            ${renderSportsPulseTicker(top)}
+            <details class="ll-ops-drawer">
+                <summary>Runtime automation and refresh console</summary>
+                <div class="ll-ops-stack">
+                    ${renderStartupAutomationCard()}
+                    ${renderRefreshPanel("home")}
+                    ${renderCommandConsole("home")}
+                </div>
+            </details>
         </section>
     `;
 }

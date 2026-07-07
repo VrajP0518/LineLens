@@ -2,11 +2,11 @@
   "metadata": {
     "app": "LineLens Sports",
     "version": "v0.6.0",
-    "generated_at": "2026-07-06T17:49:33Z",
+    "generated_at": "2026-07-07T14:17:57Z",
     "real_data": true,
-    "predictions_logged": 24,
+    "predictions_logged": 40,
     "predictions_scored_this_run": 0,
-    "pending_predictions": 24
+    "pending_predictions": 40
   },
   "sports": {
     "MLB": {
@@ -14,9 +14,9 @@
         "wins": 0,
         "losses": 0,
         "pushes": 0,
-        "pending": 24,
+        "pending": 40,
         "accuracy": null,
-        "sample_size": 24
+        "sample_size": 40
       },
       "by_model_version": {
         "v0.6.0": {
@@ -26,6 +26,14 @@
           "pending": 24,
           "accuracy": null,
           "sample_size": 24
+        },
+        "v0.7.0": {
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "pending": 16,
+          "accuracy": null,
+          "sample_size": 16
         }
       },
       "by_confidence": {
@@ -33,41 +41,41 @@
           "wins": 0,
           "losses": 0,
           "pushes": 0,
-          "pending": 6,
+          "pending": 11,
           "accuracy": null,
-          "sample_size": 6
+          "sample_size": 11
         },
         "52.5-55%": {
           "wins": 0,
           "losses": 0,
           "pushes": 0,
-          "pending": 6,
+          "pending": 12,
           "accuracy": null,
-          "sample_size": 6
+          "sample_size": 12
         },
         "55-57.5%": {
           "wins": 0,
           "losses": 0,
           "pushes": 0,
-          "pending": 6,
+          "pending": 7,
           "accuracy": null,
-          "sample_size": 6
+          "sample_size": 7
         },
         "57.5-60%": {
           "wins": 0,
           "losses": 0,
           "pushes": 0,
-          "pending": 3,
+          "pending": 5,
           "accuracy": null,
-          "sample_size": 3
+          "sample_size": 5
         },
         "65%+": {
           "wins": 0,
           "losses": 0,
           "pushes": 0,
-          "pending": 3,
+          "pending": 5,
           "accuracy": null,
-          "sample_size": 3
+          "sample_size": 5
         }
       },
       "by_month": {
@@ -75,26 +83,26 @@
           "wins": 0,
           "losses": 0,
           "pushes": 0,
-          "pending": 24,
+          "pending": 40,
           "accuracy": null,
-          "sample_size": 24
+          "sample_size": 40
         }
       },
       "recent_7_days": {
         "wins": 0,
         "losses": 0,
         "pushes": 0,
-        "pending": 24,
+        "pending": 40,
         "accuracy": null,
-        "sample_size": 24
+        "sample_size": 40
       },
       "recent_30_days": {
         "wins": 0,
         "losses": 0,
         "pushes": 0,
-        "pending": 24,
+        "pending": 40,
         "accuracy": null,
-        "sample_size": 24
+        "sample_size": 40
       }
     },
     "NFL": {

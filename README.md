@@ -1,12 +1,14 @@
-# LineLens Sports v0.6.0
+# LineLens Sports v0.7.0
 
-LineLens Sports is a Tauri-ready desktop sports prediction dashboard for NFL spread and MLB moneyline modeling. Version v0.6.0 focuses on the MLB prediction engine: richer real features, model comparison, pick explanations, model registry, and ongoing model record tracking.
+LineLens Sports is a Tauri-ready desktop sports prediction dashboard for NFL spread and MLB moneyline modeling. Version v0.7.0 adds a premium animated Home command center with a stadium-style hero, hologram sports visuals, best-pick spotlight, model-health readout, and sports pulse ticker.
+
+The v0.6.0 MLB model-intelligence foundation remains in place: richer real features, model comparison, pick explanations, model registry, and ongoing model record tracking.
 
 Predictions are experimental research outputs for analysis and portfolio demonstration only. They are not financial or betting advice.
 
 ## Current Modules
 
-- Home command center with startup automation, data readiness, model record summary, and refresh console.
+- Home command center with animated stadium visuals, highlighted best current pick, data readiness, model record summary, sports pulse ticker, and a collapsed refresh console.
 - NFL spread predictor that preserves the existing NFL pipeline and real exported rows when source/processed data is available.
 - MLB moneyline predictor with real model probabilities, pitcher matchup display, top factors, and data-quality badges.
 - Reports page for current model, model record, model comparison, confidence buckets, calibration, global features, prediction log, and feature summary.

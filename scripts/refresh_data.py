@@ -36,7 +36,7 @@ NFL_FEATURES = ROOT / "data" / "processed" / "nfl" / "spread_dataset.parquet"
 NFL_IMPORT_FEATURES = ROOT / "data" / "imports" / "nfl" / "spread_dataset.parquet"
 NFL_IMPORT_FEATURES_CSV = ROOT / "data" / "imports" / "nfl" / "spread_dataset.csv"
 VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
-APP_VERSION = "v0.6.0"
+APP_VERSION = "v0.7.0"
 
 
 def pipeline_python() -> str:

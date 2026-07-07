@@ -912,3 +912,955 @@ code {
         flex-direction: column;
     }
 }
+
+/* ==========================================================
+   LineLens v0.7.0 premium Home redesign
+   Scope: Home page only, using ll-* classes.
+   ========================================================== */
+
+:root {
+    --ll-blue: #19b7ff;
+    --ll-cyan: #67e8f9;
+    --ll-purple: #a855f7;
+    --ll-pink: #e879f9;
+    --ll-green: #39ff88;
+    --ll-orange: #ff8a1f;
+    --ll-gold: #ffd166;
+    --ll-red: #ff4664;
+    --ll-border: rgba(122, 203, 255, 0.18);
+    --ll-radius-lg: 18px;
+}
+
+body {
+    background:
+        radial-gradient(ellipse at 52% -12%, rgba(64, 130, 255, 0.24), transparent 34%),
+        radial-gradient(ellipse at 88% 2%, rgba(168, 85, 247, 0.18), transparent 30%),
+        linear-gradient(180deg, #050711 0%, #06101d 45%, #03050a 100%);
+}
+
+.workspace {
+    position: relative;
+    overflow: hidden;
+}
+
+.workspace::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 0 260px;
+    z-index: -2;
+    pointer-events: none;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 18%),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.024) 0 1px, transparent 1px 90px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.016) 0 1px, transparent 1px 58px);
+    opacity: 0.72;
+}
+
+.workspace::after {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto 260px;
+    z-index: -1;
+    height: 300px;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse at 45% 8%, rgba(255, 255, 255, 0.40), transparent 5%),
+        radial-gradient(ellipse at 70% 10%, rgba(255, 255, 255, 0.28), transparent 4%),
+        linear-gradient(100deg, transparent 0%, rgba(25, 183, 255, 0.13) 42%, rgba(168, 85, 247, 0.16) 60%, transparent 100%);
+    opacity: 0.92;
+    animation: llLightSweep 9s ease-in-out infinite alternate;
+}
+
+.ll-sidebar-engine {
+    display: grid;
+    gap: 0.5rem;
+    border: 1px solid rgba(168, 85, 247, 0.28);
+    border-radius: 16px;
+    padding: 0.85rem;
+    background: linear-gradient(180deg, rgba(30, 27, 75, 0.48), rgba(3, 7, 18, 0.7));
+    box-shadow: 0 0 26px rgba(168, 85, 247, 0.12);
+}
+
+.ll-sidebar-engine strong {
+    color: #d8b4fe;
+}
+
+.ll-sidebar-engine span {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+.ll-sidebar-engine i {
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(90deg, transparent, var(--ll-purple), var(--ll-blue), transparent);
+    clip-path: polygon(0 70%, 8% 42%, 16% 60%, 24% 35%, 32% 80%, 40% 45%, 48% 58%, 56% 22%, 64% 66%, 72% 32%, 80% 50%, 88% 18%, 100% 40%, 100% 100%, 0 100%);
+    animation: llGlowBreathe 3s ease-in-out infinite;
+}
+
+.ll-home-shell {
+    display: grid;
+    gap: 1rem;
+    padding-bottom: 76px;
+}
+
+.ll-hero-command {
+    position: relative;
+    min-height: 285px;
+    display: grid;
+    grid-template-columns: minmax(360px, 0.95fr) minmax(340px, 1fr) minmax(260px, 0.55fr);
+    align-items: center;
+    gap: 1rem;
+    overflow: hidden;
+    border-color: rgba(103, 232, 249, 0.26);
+    border-radius: var(--ll-radius-lg);
+    background:
+        linear-gradient(180deg, rgba(3, 7, 18, 0.36), rgba(3, 7, 18, 0.92)),
+        radial-gradient(ellipse at 52% 38%, rgba(25, 183, 255, 0.20), transparent 25%),
+        radial-gradient(ellipse at 78% 44%, rgba(255, 138, 31, 0.15), transparent 25%),
+        linear-gradient(125deg, rgba(9, 18, 34, 0.98), rgba(4, 8, 20, 0.82));
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.ll-hero-command::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(100deg, transparent 12%, rgba(25, 183, 255, 0.18) 42%, rgba(168, 85, 247, 0.20) 54%, transparent 75%),
+        repeating-linear-gradient(100deg, transparent 0 44px, rgba(255, 255, 255, 0.035) 45px 46px, transparent 47px 90px);
+    mask-image: linear-gradient(180deg, black, transparent 82%);
+    animation: llGradientDrift 12s linear infinite;
+}
+
+.ll-hero-command::after {
+    content: "";
+    position: absolute;
+    inset: auto -5% -38% -5%;
+    height: 180px;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse at center, rgba(25, 183, 255, 0.20), transparent 58%),
+        repeating-radial-gradient(ellipse at center, rgba(103, 232, 249, 0.24) 0 1px, transparent 2px 18px);
+    transform: perspective(500px) rotateX(62deg);
+    opacity: 0.85;
+}
+
+.ll-stadium-lights {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse at 30% 8%, rgba(255, 255, 255, 0.72), transparent 3%),
+        radial-gradient(ellipse at 38% 9%, rgba(255, 255, 255, 0.50), transparent 2.5%),
+        radial-gradient(ellipse at 46% 8%, rgba(255, 255, 255, 0.46), transparent 2.3%),
+        radial-gradient(ellipse at 58% 8%, rgba(255, 255, 255, 0.42), transparent 2.3%),
+        radial-gradient(ellipse at 66% 9%, rgba(255, 255, 255, 0.36), transparent 2.2%);
+    opacity: 0.72;
+    animation: llStadiumFlicker 5s ease-in-out infinite;
+}
+
+.ll-hero-copy {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.ll-hero-copy h2 {
+    margin: 0;
+    max-width: 720px;
+    font-size: clamp(2.4rem, 5vw, 5.2rem);
+    line-height: 0.98;
+    letter-spacing: 0;
+    text-shadow: 0 0 30px rgba(25, 183, 255, 0.22);
+}
+
+.ll-hero-copy h2 span {
+    background: linear-gradient(95deg, #ffffff 0%, var(--ll-blue) 34%, var(--ll-purple) 72%, var(--ll-pink) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.ll-online-dot {
+    display: inline-block;
+    width: 0.55rem;
+    height: 0.55rem;
+    margin-left: 0.45rem;
+    border-radius: 999px;
+    background: var(--ll-green);
+    box-shadow: 0 0 18px rgba(57, 255, 136, 0.85);
+    animation: llPulse 1.6s ease-in-out infinite;
+}
+
+.ll-hero-actions .btn,
+.ll-wide-action {
+    position: relative;
+    overflow: hidden;
+}
+
+.ll-hero-actions .btn::after,
+.ll-wide-action::after {
+    content: "";
+    position: absolute;
+    inset: -40% auto -40% -70%;
+    width: 55%;
+    transform: skewX(-18deg);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+    transition: left 0.5s ease;
+}
+
+.ll-hero-actions .btn:hover::after,
+.ll-wide-action:hover::after {
+    left: 125%;
+}
+
+.ll-hologram-zone {
+    position: relative;
+    z-index: 1;
+    min-height: 235px;
+}
+
+.ll-orbit {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    filter: drop-shadow(0 0 26px rgba(25, 183, 255, 0.48));
+}
+
+.ll-orbit::after {
+    content: "";
+    position: absolute;
+    width: 185%;
+    height: 42%;
+    border: 2px solid currentColor;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-radius: 50%;
+    transform: rotate(-12deg);
+    opacity: 0.62;
+    animation: llOrbitSpin 8s linear infinite;
+}
+
+.ll-orbit--baseball {
+    color: var(--ll-blue);
+    top: 18px;
+    left: 8%;
+    width: 132px;
+    height: 132px;
+    animation: llFloat 5.6s ease-in-out infinite;
+}
+
+.ll-orbit--football {
+    color: var(--ll-orange);
+    top: 48px;
+    right: 9%;
+    width: 168px;
+    height: 112px;
+    animation: llFloat 6.4s ease-in-out infinite reverse;
+}
+
+.ll-hologram-ball {
+    position: relative;
+    display: block;
+    background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.95), rgba(124, 201, 255, 0.78) 32%, rgba(37, 99, 235, 0.35) 70%, rgba(7, 16, 31, 0.3));
+    box-shadow: inset -16px -18px 28px rgba(0, 0, 0, 0.28), 0 0 45px currentColor;
+}
+
+.ll-baseball {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+}
+
+.ll-baseball::before,
+.ll-baseball::after {
+    content: "";
+    position: absolute;
+    top: 18%;
+    width: 34%;
+    height: 68%;
+    border: 2px dashed rgba(255, 70, 100, 0.88);
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+}
+
+.ll-baseball::before {
+    left: 15%;
+    transform: rotate(15deg);
+}
+
+.ll-baseball::after {
+    right: 15%;
+    transform: rotate(15deg);
+}
+
+.ll-football {
+    width: 126px;
+    height: 76px;
+    border-radius: 50%;
+    transform: rotate(-18deg);
+    background: radial-gradient(circle at 35% 30%, #ffb86c, #9a3412 62%, #451a03 100%);
+}
+
+.ll-football::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 18%;
+    width: 2px;
+    height: 62%;
+    transform: translateX(-50%) rotate(84deg);
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: -12px 0 rgba(255, 255, 255, 0.7), 12px 0 rgba(255, 255, 255, 0.7);
+}
+
+.ll-field-ring {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    width: 78%;
+    height: 84px;
+    transform: translateX(-50%) perspective(420px) rotateX(62deg);
+    border-radius: 50%;
+    background:
+        radial-gradient(ellipse at center, rgba(25, 183, 255, 0.30), transparent 62%),
+        repeating-radial-gradient(ellipse at center, rgba(25, 183, 255, 0.55) 0 2px, transparent 3px 20px);
+    animation: llRingPulse 2.6s ease-in-out infinite;
+}
+
+.ll-top-edge-card,
+.ll-metric-card,
+.ll-best-pick-panel,
+.ll-live-pulse-panel,
+.ll-edge-leaderboard-panel,
+.ll-model-health-panel {
+    backdrop-filter: blur(18px);
+}
+
+.ll-top-edge-card {
+    position: relative;
+    z-index: 3;
+    align-self: stretch;
+    min-height: 210px;
+    display: grid;
+    align-content: center;
+    gap: 0.85rem;
+    padding: 1rem;
+    border: 1px solid rgba(103, 232, 249, 0.24);
+    border-radius: var(--ll-radius-lg);
+    background: linear-gradient(160deg, rgba(12, 21, 38, 0.76), rgba(10, 10, 25, 0.92));
+    box-shadow: 0 0 48px rgba(25, 183, 255, 0.15), inset 0 0 28px rgba(168, 85, 247, 0.06);
+}
+
+.ll-empty-spotlight h3 {
+    margin: 0;
+}
+
+.ll-card-live,
+.ll-live-pill {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    color: #fecaca;
+}
+
+.ll-card-live span,
+.ll-live-pill span {
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: var(--ll-red);
+    box-shadow: 0 0 12px rgba(255, 70, 100, 0.8);
+}
+
+.ll-live-pill--green {
+    color: #bbf7d0;
+}
+
+.ll-live-pill--green span {
+    background: var(--ll-green);
+    box-shadow: 0 0 12px rgba(57, 255, 136, 0.75);
+}
+
+.ll-top-matchup,
+.ll-best-matchup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.ll-at {
+    color: var(--muted);
+    font-weight: 800;
+}
+
+.ll-team-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+    font-weight: 800;
+}
+
+.ll-top-pick {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.15rem 0.7rem;
+    align-items: end;
+}
+
+.ll-top-pick span {
+    grid-column: 1 / -1;
+    color: var(--muted);
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0;
+}
+
+.ll-top-pick strong {
+    font-size: clamp(2.2rem, 4vw, 4rem);
+    line-height: 0.95;
+}
+
+.ll-top-pick em {
+    color: var(--ll-gold);
+    font-style: normal;
+    font-weight: 900;
+    text-shadow: 0 0 18px rgba(255, 209, 102, 0.42);
+}
+
+.ll-top-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.ll-top-meta span {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    padding: 0.24rem 0.55rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--muted);
+    font-size: 0.74rem;
+}
+
+.ll-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(150px, 1fr));
+    gap: 0.85rem;
+}
+
+.ll-metric-card {
+    position: relative;
+    min-height: 112px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.8rem;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid var(--ll-border);
+    border-radius: 16px;
+    padding: 0.9rem;
+    background: linear-gradient(180deg, rgba(14, 25, 45, 0.82), rgba(6, 12, 24, 0.9));
+    transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    animation: llCardEnter 0.5s ease both;
+}
+
+.ll-metric-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(103, 232, 249, 0.46);
+    box-shadow: 0 18px 42px rgba(25, 183, 255, 0.12);
+}
+
+.ll-metric-card i {
+    position: absolute;
+    inset: auto 10px 8px auto;
+    width: 88px;
+    height: 26px;
+    opacity: 0.55;
+    background: linear-gradient(90deg, transparent, currentColor, transparent);
+    clip-path: polygon(0 70%, 10% 55%, 20% 72%, 30% 42%, 40% 60%, 50% 50%, 60% 64%, 70% 28%, 80% 45%, 90% 22%, 100% 34%, 100% 100%, 0 100%);
+}
+
+.ll-metric-icon {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.04), 0 0 18px currentColor;
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.ll-metric-card span,
+.ll-metric-card small {
+    display: block;
+    color: var(--muted);
+}
+
+.ll-metric-card strong {
+    display: block;
+    font-size: 1.55rem;
+    letter-spacing: 0;
+}
+
+.ll-metric-card--blue {
+    color: var(--ll-blue);
+}
+
+.ll-metric-card--purple {
+    color: var(--ll-purple);
+}
+
+.ll-metric-card--green {
+    color: var(--ll-green);
+}
+
+.ll-metric-card--orange {
+    color: var(--ll-orange);
+}
+
+.ll-home-grid {
+    display: grid;
+    grid-template-columns: minmax(380px, 1.05fr) minmax(340px, 0.95fr) minmax(340px, 0.95fr);
+    gap: 1rem;
+}
+
+.ll-best-pick-panel,
+.ll-live-pulse-panel,
+.ll-edge-leaderboard-panel,
+.ll-model-health-panel {
+    border-radius: var(--ll-radius-lg);
+    background: linear-gradient(180deg, rgba(11, 20, 36, 0.88), rgba(6, 11, 22, 0.94));
+}
+
+.ll-best-pick-panel {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(255, 138, 31, 0.38);
+    background:
+        linear-gradient(145deg, rgba(38, 16, 5, 0.34), transparent 45%),
+        linear-gradient(180deg, rgba(13, 22, 38, 0.90), rgba(7, 11, 22, 0.96));
+    box-shadow: 0 0 46px rgba(255, 138, 31, 0.10);
+}
+
+.ll-panel-glow {
+    position: absolute;
+    inset: -40% -40% auto auto;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 138, 31, 0.24), transparent 64%);
+    pointer-events: none;
+    animation: llGlowBreathe 4s ease-in-out infinite;
+}
+
+.ll-best-readout,
+.ll-health-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+    margin-top: 0.9rem;
+}
+
+.ll-best-readout div,
+.ll-health-grid div {
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 14px;
+    padding: 0.75rem;
+    background: rgba(3, 7, 18, 0.36);
+}
+
+.ll-best-readout span,
+.ll-health-grid span,
+.ll-health-grid small {
+    display: block;
+    color: var(--muted);
+    font-size: 0.75rem;
+}
+
+.ll-best-readout strong,
+.ll-health-grid strong {
+    display: block;
+    margin-top: 0.18rem;
+}
+
+.ll-probability-bar {
+    height: 8px;
+    margin: 1rem 0;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.10);
+}
+
+.ll-probability-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--ll-blue), var(--ll-purple), var(--ll-orange));
+    box-shadow: 0 0 22px rgba(25, 183, 255, 0.45);
+    animation: llBarGrow 0.9s ease both;
+}
+
+.ll-wide-action {
+    width: 100%;
+    justify-content: center;
+}
+
+.ll-pulse-list,
+.ll-edge-bars {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.ll-pulse-row {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) 54px 72px;
+    gap: 0.65rem;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.62rem;
+    background: rgba(3, 7, 18, 0.28);
+}
+
+.ll-pulse-row span,
+.ll-pulse-row small {
+    color: var(--muted);
+}
+
+.ll-pulse-row em {
+    color: var(--text);
+    font-style: normal;
+    font-weight: 900;
+}
+
+.ll-edge-bar-row {
+    display: grid;
+    grid-template-columns: 24px minmax(120px, 1fr) minmax(110px, 0.8fr) 74px;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.ll-edge-bar-row > span {
+    color: var(--muted);
+    font-weight: 900;
+}
+
+.ll-edge-bar-row small {
+    display: block;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.ll-edge-bar-row em {
+    color: var(--ll-green);
+    font-style: normal;
+    font-weight: 900;
+    text-align: right;
+}
+
+.ll-edge-bar {
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.ll-edge-bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--ll-blue), var(--ll-purple), var(--ll-green));
+    box-shadow: 0 0 18px rgba(57, 255, 136, 0.28);
+    animation: llBarGrow 0.8s ease both;
+}
+
+.ll-bottom-ticker {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    min-height: 54px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 70, 100, 0.32);
+    border-radius: 14px;
+    background: linear-gradient(90deg, rgba(9, 13, 24, 0.98), rgba(15, 23, 42, 0.96));
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35), 0 0 30px rgba(255, 70, 100, 0.08);
+    backdrop-filter: blur(18px);
+}
+
+.ll-ticker-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    height: 100%;
+    padding: 0 1rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.10);
+    color: #fecaca;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.ll-ticker-label i {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--ll-red);
+    box-shadow: 0 0 12px rgba(255, 70, 100, 0.8);
+}
+
+.ll-ticker-window {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.ll-ticker-track {
+    display: inline-flex;
+    width: max-content;
+    animation: llTicker 42s linear infinite;
+}
+
+.ll-ticker-window:hover .ll-ticker-track,
+.ll-ticker-window:focus .ll-ticker-track {
+    animation-play-state: paused;
+}
+
+.ll-ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0 1.15rem;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ll-ticker-item b {
+    color: var(--ll-blue);
+}
+
+.ll-ticker-item span {
+    color: var(--muted);
+}
+
+.ll-ticker-item em {
+    color: var(--ll-green);
+    font-style: normal;
+    font-weight: 900;
+}
+
+.ll-ticker-empty {
+    padding: 0 1rem;
+    color: var(--muted);
+}
+
+.ll-ops-drawer {
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: var(--ll-radius-lg);
+    background: rgba(3, 7, 18, 0.45);
+}
+
+.ll-ops-drawer summary {
+    cursor: pointer;
+    padding: 0.9rem 1rem;
+    color: var(--muted);
+    font-weight: 800;
+}
+
+.ll-ops-stack {
+    display: grid;
+    gap: 1rem;
+    padding: 0 1rem 1rem;
+}
+
+@keyframes llGradientDrift {
+    from {
+        transform: translateX(-10%);
+        opacity: 0.65;
+    }
+    to {
+        transform: translateX(10%);
+        opacity: 0.95;
+    }
+}
+
+@keyframes llLightSweep {
+    from {
+        transform: translateX(-3%);
+        opacity: 0.65;
+    }
+    to {
+        transform: translateX(3%);
+        opacity: 1;
+    }
+}
+
+@keyframes llStadiumFlicker {
+    0%,
+    100% {
+        opacity: 0.58;
+    }
+    50% {
+        opacity: 0.88;
+    }
+}
+
+@keyframes llFloat {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        transform: translate3d(0, -14px, 0);
+    }
+}
+
+@keyframes llOrbitSpin {
+    from {
+        transform: rotate(-12deg);
+    }
+    to {
+        transform: rotate(348deg);
+    }
+}
+
+@keyframes llRingPulse {
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: translateX(-50%) perspective(420px) rotateX(62deg) scale(0.96);
+    }
+    50% {
+        opacity: 0.95;
+        transform: translateX(-50%) perspective(420px) rotateX(62deg) scale(1.02);
+    }
+}
+
+@keyframes llPulse {
+    0%,
+    100% {
+        transform: scale(0.86);
+        opacity: 0.65;
+    }
+    50% {
+        transform: scale(1.14);
+        opacity: 1;
+    }
+}
+
+@keyframes llGlowBreathe {
+    0%,
+    100% {
+        opacity: 0.45;
+        transform: scale(0.9);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.08);
+    }
+}
+
+@keyframes llBarGrow {
+    from {
+        width: 0;
+    }
+}
+
+@keyframes llCardEnter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes llTicker {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@media (max-width: 1280px) {
+    .ll-hero-command,
+    .ll-home-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ll-hologram-zone {
+        min-height: 180px;
+    }
+
+    .ll-metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .workspace::before,
+    .workspace::after {
+        left: 0;
+    }
+
+    .ll-metric-grid,
+    .ll-best-readout,
+    .ll-health-grid,
+    .ll-pulse-row,
+    .ll-edge-bar-row {
+        grid-template-columns: 1fr;
+    }
+
+    .ll-bottom-ticker {
+        position: relative;
+        grid-template-columns: 1fr;
+    }
+
+    .ll-ticker-label {
+        min-height: 44px;
+        border-right: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .workspace::after,
+    .ll-hero-command::before,
+    .ll-stadium-lights,
+    .ll-orbit,
+    .ll-orbit::after,
+    .ll-field-ring,
+    .ll-online-dot,
+    .ll-sidebar-engine i,
+    .ll-panel-glow,
+    .ll-ticker-track,
+    .ll-metric-card,
+    .ll-probability-bar span,
+    .ll-edge-bar i {
+        animation: none !important;
+    }
+
+    .ll-metric-card:hover {
+        transform: none;
+    }
+}
