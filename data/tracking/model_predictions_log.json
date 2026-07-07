@@ -2,11 +2,11 @@
   "metadata": {
     "app": "LineLens Sports",
     "version": "v0.7.0",
-    "generated_at": "2026-07-07T15:44:51Z",
+    "generated_at": "2026-07-07T17:51:50Z",
     "real_data": true,
     "row_count": 40,
-    "scored_this_run": 0,
-    "pending": 40
+    "scored_this_run": 24,
+    "pending": 16
   },
   "predictions": [
     {
@@ -28,9 +28,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "WASHINGTON NATIONALS",
+      "model_result": "loss",
+      "home_score": 12,
+      "away_score": 11
     },
     {
       "prediction_id": "MLB-822958-mlb_moneyline_v0.6.0_20260706T173322-2026-07-06",
@@ -51,9 +53,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NEW YORK YANKEES",
+      "model_result": "loss",
+      "home_score": 1,
+      "away_score": 5
     },
     {
       "prediction_id": "MLB-823036-mlb_moneyline_v0.6.0_20260706T173322-2026-07-06",
@@ -74,9 +78,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "MILWAUKEE BREWERS",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 4
     },
     {
       "prediction_id": "MLB-824089-mlb_moneyline_v0.6.0_20260706T173322-2026-07-06",
@@ -97,9 +103,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Pre-Game",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "KANSAS CITY ROYALS",
+      "model_result": "loss",
+      "home_score": 15,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-824900-mlb_moneyline_v0.6.0_20260706T173322-2026-07-06",
@@ -120,9 +128,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NEW YORK METS",
+      "model_result": "loss",
+      "home_score": 6,
+      "away_score": 7
     },
     {
       "prediction_id": "MLB-823205-mlb_moneyline_v0.6.0_20260706T173322-2026-07-06",
@@ -143,9 +153,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "SAN FRANCISCO GIANTS",
+      "model_result": "loss",
+      "home_score": 10,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-823282-mlb_moneyline_v0.6.0_20260706T173322-2026-07-06",
@@ -166,9 +178,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "ARIZONA DIAMONDBACKS",
+      "model_result": "loss",
+      "home_score": 0,
+      "away_score": 8
     },
     {
       "prediction_id": "MLB-823930-mlb_moneyline_v0.6.0_20260706T173322-2026-07-06",
@@ -189,9 +203,11 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "LOS ANGELES DODGERS",
+      "model_result": "loss",
+      "home_score": 8,
+      "away_score": 7
     },
     {
       "prediction_id": "MLB-822712-mlb_moneyline_v0.6.0_20260706T174112-2026-07-06",
@@ -212,9 +228,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "WASHINGTON NATIONALS",
+      "model_result": "loss",
+      "home_score": 12,
+      "away_score": 11
     },
     {
       "prediction_id": "MLB-822958-mlb_moneyline_v0.6.0_20260706T174112-2026-07-06",
@@ -235,9 +253,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NEW YORK YANKEES",
+      "model_result": "loss",
+      "home_score": 1,
+      "away_score": 5
     },
     {
       "prediction_id": "MLB-823036-mlb_moneyline_v0.6.0_20260706T174112-2026-07-06",
@@ -258,9 +278,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "MILWAUKEE BREWERS",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 4
     },
     {
       "prediction_id": "MLB-824089-mlb_moneyline_v0.6.0_20260706T174112-2026-07-06",
@@ -281,9 +303,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Pre-Game",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "KANSAS CITY ROYALS",
+      "model_result": "loss",
+      "home_score": 15,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-824900-mlb_moneyline_v0.6.0_20260706T174112-2026-07-06",
@@ -304,9 +328,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NEW YORK METS",
+      "model_result": "loss",
+      "home_score": 6,
+      "away_score": 7
     },
     {
       "prediction_id": "MLB-823205-mlb_moneyline_v0.6.0_20260706T174112-2026-07-06",
@@ -327,9 +353,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "SAN FRANCISCO GIANTS",
+      "model_result": "loss",
+      "home_score": 10,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-823282-mlb_moneyline_v0.6.0_20260706T174112-2026-07-06",
@@ -350,9 +378,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "ARIZONA DIAMONDBACKS",
+      "model_result": "loss",
+      "home_score": 0,
+      "away_score": 8
     },
     {
       "prediction_id": "MLB-823930-mlb_moneyline_v0.6.0_20260706T174112-2026-07-06",
@@ -373,9 +403,11 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "LOS ANGELES DODGERS",
+      "model_result": "loss",
+      "home_score": 8,
+      "away_score": 7
     },
     {
       "prediction_id": "MLB-822712-mlb_moneyline_v0.6.0_20260706T174744-2026-07-06",
@@ -396,9 +428,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "WASHINGTON NATIONALS",
+      "model_result": "loss",
+      "home_score": 12,
+      "away_score": 11
     },
     {
       "prediction_id": "MLB-822958-mlb_moneyline_v0.6.0_20260706T174744-2026-07-06",
@@ -419,9 +453,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NEW YORK YANKEES",
+      "model_result": "loss",
+      "home_score": 1,
+      "away_score": 5
     },
     {
       "prediction_id": "MLB-823036-mlb_moneyline_v0.6.0_20260706T174744-2026-07-06",
@@ -442,9 +478,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "MILWAUKEE BREWERS",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 4
     },
     {
       "prediction_id": "MLB-824089-mlb_moneyline_v0.6.0_20260706T174744-2026-07-06",
@@ -465,9 +503,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Warmup",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "KANSAS CITY ROYALS",
+      "model_result": "loss",
+      "home_score": 15,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-824900-mlb_moneyline_v0.6.0_20260706T174744-2026-07-06",
@@ -488,9 +528,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NEW YORK METS",
+      "model_result": "loss",
+      "home_score": 6,
+      "away_score": 7
     },
     {
       "prediction_id": "MLB-823205-mlb_moneyline_v0.6.0_20260706T174744-2026-07-06",
@@ -511,9 +553,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "SAN FRANCISCO GIANTS",
+      "model_result": "loss",
+      "home_score": 10,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-823282-mlb_moneyline_v0.6.0_20260706T174744-2026-07-06",
@@ -534,9 +578,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "ARIZONA DIAMONDBACKS",
+      "model_result": "loss",
+      "home_score": 0,
+      "away_score": 8
     },
     {
       "prediction_id": "MLB-823930-mlb_moneyline_v0.6.0_20260706T174744-2026-07-06",
@@ -557,9 +603,11 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "LOS ANGELES DODGERS",
+      "model_result": "loss",
+      "home_score": 8,
+      "away_score": 7
     },
     {
       "prediction_id": "MLB-822713-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",

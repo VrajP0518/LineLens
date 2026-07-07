@@ -44,6 +44,7 @@ const state = {
         teamSport: "MLB",
         teamCode: "TOR",
         reportSport: "MLB",
+        recordSport: "MLB",
         mlbFilter: "all",
         homeSport: "MLB",
         homeMlbDate: null,
@@ -1180,6 +1181,7 @@ function switchView(view) {
         nfl: ["NFL Spread Predictor", "spread module"],
         mlb: ["MLB Moneyline Predictor", "moneyline module"],
         reports: ["Model Reports", "calibration and comparison"],
+        record: ["Model Record", "live and historical performance"],
         teams: ["Team Profiles", "team-level model context"],
         tracking: ["Tracking", "local analysis ledger"],
         settings: ["Settings / Data Status", "environment and exports"],
@@ -1585,6 +1587,7 @@ function renderQuickActionsV2() {
             <button class="btn btn--primary" data-view-link="mlb">Open MLB</button>
             <button class="btn" data-view-link="nfl">Open NFL</button>
             <button class="btn" data-view-link="reports">Reports</button>
+            <button class="btn" data-view-link="record">Record</button>
             <button class="btn" data-view-link="settings">Refresh Tools</button>
         </div>
     `;
@@ -2207,8 +2210,8 @@ function renderReports() {
     const comparisonRows = getComparisonRows(sport);
     $("#view-reports").innerHTML = `
         <section class="module-header panel">
-            <div><p class="eyebrow">Reports / Backtesting</p><h2>Model evaluation center</h2><p class="muted">Calibration checks whether games predicted around 60% actually win around 60% of the time.</p></div>
-            <select id="report-sport-select"><option ${sport === "MLB" ? "selected" : ""}>MLB</option><option ${sport === "NFL" ? "selected" : ""}>NFL</option></select>
+            <div><p class="eyebrow">Reports / Backtesting</p><h2>Model evaluation center</h2><p class="muted">Calibration checks whether games predicted around 60% actually win around 60% of the time. Use Record for live/historical performance tracking.</p></div>
+            <div class="report-actions"><select id="report-sport-select"><option ${sport === "MLB" ? "selected" : ""}>MLB</option><option ${sport === "NFL" ? "selected" : ""}>NFL</option></select><button class="btn" data-view-link="record">Open Record</button></div>
         </section>
         <section class="dashboard-grid">
             <article class="panel">${renderCurrentModelPanel(sport)}</article>
@@ -2239,6 +2242,142 @@ function renderReports() {
         </section>
     `;
     renderCalibrationChart(report.calibration || []);
+}
+
+function renderRecord() {
+    const sport = state.selected.recordSport || "MLB";
+    $("#view-record").innerHTML = `
+        <section class="module-header panel">
+            <div>
+                <p class="eyebrow">Record</p>
+                <h2>Model Record</h2>
+                <p class="muted">Track how LineLens has actually performed. Live records, backtests, and historical cached exports stay separated.</p>
+            </div>
+            <div class="segmented-control">
+                ${["MLB", "NFL"].map(value => `<button class="${sport === value ? "is-active" : ""}" data-record-sport="${value}">${value}</button>`).join("")}
+            </div>
+        </section>
+        ${sport === "MLB" ? renderMlbRecordView() : renderNflRecordView()}
+    `;
+}
+
+function recordCard(label, record, note) {
+    const accuracy = safeNumber(record?.accuracy);
+    return card(label, recordLine(record || {}), `${accuracy === null ? "Accuracy pending" : formatProbability(accuracy)}${note ? ` / ${note}` : ""}`);
+}
+
+function renderMlbRecordView() {
+    const record = getModelRecord("MLB");
+    const live = record.live_record || record.overall || {};
+    const backtest = record.backtest_record || {};
+    const recentRows = record.recent_predictions || getLogEntries().filter(row => row.sport === "MLB").slice(0, 12);
+    const scored = safeNumber(live.scored, 0);
+    return `
+        <section class="dashboard-grid">
+            <article class="panel record-hero-card">
+                <header><p class="eyebrow">MLB Live Record</p><h2>${recordLine(live)}</h2></header>
+                <p class="muted">${escapeHtml(live.note || "Only logged LineLens MLB predictions are counted here. Schedule-only games do not count.")}</p>
+                <div class="summary-grid summary-grid--compact">
+                    ${card("Accuracy", formatProbability(live.accuracy), `${safeNumber(live.scored, 0)} scored`)}
+                    ${card("Pending", safeNumber(live.pending, 0), "awaiting final score")}
+                    ${card("Today", recordLine(record.today_record || {}), formatProbability(record.today_record?.accuracy))}
+                    ${card("Yesterday", recordLine(record.yesterday_record || {}), formatProbability(record.yesterday_record?.accuracy))}
+                </div>
+                ${scored ? "" : emptyState("No completed live MLB predictions scored yet", "Predictions are being logged starting now. Run npm run score:models after games complete.")}
+            </article>
+            <article class="panel">
+                <header><p class="eyebrow">Recent Form</p><h2>Last 7 / 30 days</h2></header>
+                <div class="summary-grid summary-grid--compact">
+                    ${recordCard("Last 7 days", record.recent_7_days || {}, "")}
+                    ${recordCard("Last 30 days", record.recent_30_days || {}, "")}
+                    ${card("Last scored", record.last_scored_game ? `${record.last_scored_game.away} @ ${record.last_scored_game.home}` : "-", record.last_scored_game?.model_result || "none yet")}
+                    ${card("Last scoring run", timestamp(state.modelRecord?.metadata?.last_scoring_run || state.modelRecord?.metadata?.generated_at), "model_record.json")}
+                </div>
+            </article>
+        </section>
+        <section class="dashboard-grid">
+            <article class="panel">
+                <header><p class="eyebrow">Live Prediction Log</p><h2>Recent logged MLB picks</h2></header>
+                ${recentRows.length ? renderRecordPredictionTable(recentRows, "MLB") : emptyState("No MLB prediction log rows", "Run npm run refresh:mlb, then npm run score:models.")}
+            </article>
+            <article class="panel">
+                <header><p class="eyebrow">MLB Backtest Record</p><h2>${escapeHtml(backtest.label || "2025 Backtest")}</h2></header>
+                <p class="muted">${escapeHtml(backtest.note || "Backtest results are separate from the live model record.")}</p>
+                <div class="summary-grid summary-grid--compact">
+                    ${card("Record", recordLine(backtest), formatProbability(backtest.accuracy))}
+                    ${card("Rows", safeNumber(backtest.row_count, backtest.sample_size || 0), "backtest export")}
+                    ${card("Model", backtest.model_type || backtest.metrics?.model_name || "-", `Season ${backtest.test_season || "-"}`)}
+                    ${card("Log loss", formatNumber(backtest.metrics?.log_loss, 3), `Brier ${formatNumber(backtest.metrics?.brier_score, 3)}`)}
+                </div>
+            </article>
+        </section>
+    `;
+}
+
+function bestConfidenceBucket(rows = []) {
+    const eligible = rows.filter(row => safeNumber(row.accuracy) !== null && safeNumber(row.scored, 0) > 0);
+    return eligible.sort((a, b) => safeNumber(b.accuracy, 0) - safeNumber(a.accuracy, 0))[0] || null;
+}
+
+function renderNflRecordView() {
+    const record = getModelRecord("NFL");
+    const historical = record.historical_record || record.overall || {};
+    const latest = record.latest_season_record || {};
+    const bestBucket = bestConfidenceBucket(record.by_confidence || []);
+    const missing = record.missing_fields || historical.missing_fields || [];
+    const scorable = safeNumber(historical.scored, historical.rows_scored || 0);
+    return `
+        <section class="dashboard-grid">
+            <article class="panel record-hero-card">
+                <header><p class="eyebrow">NFL Historical Record</p><h2>${recordLine(historical)}</h2></header>
+                <p class="muted">${escapeHtml(record.note || "NFL rows are historical/backtest exports, not current live NFL record.")}</p>
+                <div class="summary-grid summary-grid--compact">
+                    ${card("Accuracy", formatProbability(historical.accuracy), `${scorable} scored`)}
+                    ${card("Rows found", safeNumber(historical.rows_found, 0), "nfl_predictions.json")}
+                    ${card("Latest season", recordLine(latest), latest.label || "")}
+                    ${card("Pushes", safeNumber(historical.pushes, 0), "spread ties")}
+                </div>
+                ${missing.length ? `<p class="data-status" data-variant="warning">NFL historical rows found, but some scoring fields are missing: <code>${escapeHtml(missing.join(", "))}</code>.</p>` : ""}
+                ${scorable ? "" : emptyState("NFL rows are not scorable yet", "Run npm run score:models after exporting rows with model_result fields.")}
+            </article>
+            <article class="panel">
+                <header><p class="eyebrow">Confidence</p><h2>${escapeHtml(bestBucket?.bucket || "No bucket yet")}</h2></header>
+                <div class="summary-grid summary-grid--compact">
+                    ${card("Best bucket", bestBucket ? recordLine(bestBucket) : "-", bestBucket ? formatProbability(bestBucket.accuracy) : "missing")}
+                    ${card("Prediction mode", historical.prediction_mode || "-", historical.source || "")}
+                    ${card("Rows scored", scorable, "real exported outcomes")}
+                    ${card("Record label", historical.label || "Historical Backtest", "not live")}
+                </div>
+            </article>
+        </section>
+        <section class="dashboard-grid">
+            <article class="panel">
+                <header><p class="eyebrow">By Season</p><h2>NFL record by season</h2></header>
+                ${renderRecordGroupTable(record.by_season || [], "season")}
+            </article>
+            <article class="panel">
+                <header><p class="eyebrow">By Confidence</p><h2>NFL bucket record</h2></header>
+                ${renderRecordGroupTable(record.by_confidence || [], "bucket")}
+            </article>
+        </section>
+        <section class="panel">
+            <header><p class="eyebrow">Recent Historical Rows</p><h2>Latest NFL export rows</h2></header>
+            ${(record.recent_games || []).length ? renderRecordPredictionTable(record.recent_games, "NFL") : emptyState("No recent NFL rows", "NFL historical record depends on data/predictions/nfl_predictions.json.")}
+        </section>
+    `;
+}
+
+function renderRecordPredictionTable(rows, sport) {
+    return `<div class="table-wrapper"><table class="data-table"><thead><tr><th>Date</th><th>Game</th><th>Pick</th><th>Probability</th><th>Result</th><th>Score</th></tr></thead><tbody>${rows.map(row => {
+        const probability = safeNumber(row.confidence ?? row.confidence_score ?? Math.max(safeNumber(row.home_win_probability, 0), safeNumber(row.away_win_probability, 0)));
+        const score = safeNumber(row.away_score) !== null && safeNumber(row.home_score) !== null ? `${row.away} ${row.away_score}, ${row.home} ${row.home_score}` : "-";
+        return `<tr><td>${formatDate(row.game_date || row.generated_at)}</td><td>${escapeHtml(row.away || "-")} @ ${escapeHtml(row.home || "-")}</td><td><strong>${escapeHtml(row.model_pick || "-")}</strong></td><td>${formatProbability(probability)}</td><td>${resultChip(row.model_result || row.result_status || "pending")}</td><td>${escapeHtml(score)}</td></tr>`;
+    }).join("")}</tbody></table></div>`;
+}
+
+function renderRecordGroupTable(rows, labelKey) {
+    if (!rows.length) return emptyState("No grouped record rows", "Run npm run score:models.");
+    return `<div class="table-wrapper"><table class="data-table"><thead><tr><th>${escapeHtml(labelKey.replaceAll("_", " "))}</th><th>Record</th><th>Accuracy</th><th>Scored</th><th>Pending</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${escapeHtml(row[labelKey] ?? row.bucket ?? "-")}</strong></td><td>${recordLine(row)}</td><td>${formatProbability(row.accuracy)}</td><td>${safeNumber(row.scored, 0)}</td><td>${safeNumber(row.pending, 0)}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 function renderCurrentModelPanel(sport) {
@@ -2616,6 +2755,7 @@ function renderAll() {
     renderNFL();
     renderMLB();
     renderReports();
+    renderRecord();
     renderTeams();
     renderTracking();
     renderSettings();
@@ -2631,6 +2771,13 @@ function bindEvents() {
         if (nav) switchView(nav.dataset.view);
 
         if (event.target.closest("[data-open-live-widget]")) openLiveWidget();
+
+        const recordSport = event.target.closest("[data-record-sport]");
+        if (recordSport) {
+            state.selected.recordSport = recordSport.dataset.recordSport;
+            persistSettings();
+            renderRecord();
+        }
 
         const homeSport = event.target.closest("[data-home-sport]");
         if (homeSport) {

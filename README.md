@@ -1,3 +1,5 @@
+![alt text](image-1.png)
+
 # LineLens Sports v0.7.0
 
 LineLens Sports is a Tauri-ready desktop sports prediction dashboard for NFL spread and MLB moneyline modeling. Version v0.7.0 adds a premium Home command center plus a LineLens Live desktop mini widget for compact sports scores, live MLB context, and model-pick visibility.
@@ -12,6 +14,7 @@ Predictions are experimental research outputs for analysis and portfolio demonst
 - NFL spread predictor that preserves the existing NFL pipeline and real exported rows when source/processed data is available.
 - MLB moneyline predictor with real model probabilities, pitcher matchup display, top factors, and data-quality badges.
 - Reports page for current model, model record, model comparison, confidence buckets, calibration, global features, prediction log, and feature summary.
+- Record page for live MLB record, MLB backtest record, and historical NFL cached/backtest record.
 - Teams page using team metadata and logo fallbacks.
 - Tracking page for local-only analysis.
 - Settings/Data Status page with bootstrap, refresh, registry, prediction log, and file status guidance.
@@ -22,15 +25,17 @@ Predictions are experimental research outputs for analysis and portfolio demonst
 LineLens Live is a small desktop widget window opened from the Tauri app. It is designed to sit on the side of the screen like a sports mini-player:
 
 - Compact mode shows one featured game, score/status, latest play, model pick, edge, and previous/next controls.
-- Expanded mode shows sport/mode filters, a game list, selected-game detail, and a play-by-play feed when MLB Stats API supplies it.
+- Expanded mode shows sport/mode filters, yesterday/today/tomorrow date navigation, a game list, selected-game detail, and a play-by-play feed when MLB Stats API supplies it.
 - Work Mode mutes motion and keeps the panel quieter for office use.
 - Widget preferences are stored locally under `linelens.liveWidget.v1`.
 
 The widget uses real exported data only:
 
-- MLB live/today data comes from the public MLB Stats API where available.
+- MLB live/today/nearby schedule data comes from the public MLB Stats API where available. The live refresh requests a seven-day window: three days back, today, and three days forward.
+- If the live API is unavailable, the widget keeps showing cached schedule files from `data/raw/mlb/` when present, then current exported MLB schedule/prediction rows, then other real exported rows.
 - MLB pitch/play context is shown only when the live feed supplies it.
 - LineLens model picks are joined from `data/predictions/mlb_predictions.json`.
+- Schedule-only games are allowed in the widget, but they are labeled `Schedule only` / `No model pick` and are not counted in model record.
 - NFL live play data is not sourced in this iteration; the widget can show exported NFL prediction rows when available and labels NFL live feed as unavailable.
 - Browser/static mode cannot open a separate desktop widget window. It shows the manual command path instead of pretending.
 
@@ -49,6 +54,22 @@ data/live/live_scores.js
 ```
 
 Packaged desktop builds may show cached live data if Python scripts are unavailable. Full model training remains separate from the widget refresh path.
+
+## Model Record Page
+
+The Record tab is the dedicated place to inspect performance without mixing incompatible record types:
+
+- MLB Live Record uses only real logged LineLens MLB predictions from `data/tracking/model_predictions_log.json`. If no completed logged predictions have been scored yet, the page says so and keeps rows as pending.
+- MLB Backtest Record is shown separately as `2025 Backtest` from `data/predictions/mlb_backtest_predictions.json`. It is not counted as live model performance.
+- NFL Historical Record uses the cached/exported NFL prediction rows from `data/predictions/nfl_predictions.json` when real `model_result` fields are present. It is labeled as historical/backtest, not live NFL record.
+- Schedule-only games and games without model picks never count as wins/losses.
+
+Refresh and score records:
+
+```powershell
+npm run refresh:live
+npm run score:models
+```
 
 ## Improved MLB Model
 

@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-07T14:17:57Z",
-  "mode": "predict",
+  "generated_at": "2026-07-07T16:39:19Z",
+  "mode": "history",
   "sports": {
     "NFL": {
       "status": "real_fresh",
       "message": "Found existing NFL processed dataset. Exported 1777 real historical predictions.",
-      "last_success_at": "2026-07-06T17:04:34Z",
+      "last_success_at": "2026-07-07T16:38:13Z",
       "used_cache": false,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     },
     "MLB": {
-      "status": "model_generated",
-      "message": "MLB model predictions generated from current schedule.",
-      "last_success_at": "2026-07-07T14:17:55Z",
+      "status": "real_cached",
+      "message": "MLB historical regular-season data cache is available for 2021-2025.",
+      "last_success_at": "2026-07-07T16:39:19Z",
       "used_cache": false,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     }

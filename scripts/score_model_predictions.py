@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -12,21 +13,40 @@ ROOT = Path(__file__).resolve().parents[1]
 TRACKING_DIR = ROOT / "data" / "tracking"
 RAW_MLB_DIR = ROOT / "data" / "raw" / "mlb"
 PREDICTIONS_DIR = ROOT / "data" / "predictions"
+REPORTS_DIR = ROOT / "data" / "reports"
 LOG_JSON = TRACKING_DIR / "model_predictions_log.json"
 LOG_JS = TRACKING_DIR / "model_predictions_log.js"
 RECORD_JSON = TRACKING_DIR / "model_record.json"
 RECORD_JS = TRACKING_DIR / "model_record.js"
+MLB_BACKTEST = PREDICTIONS_DIR / "mlb_backtest_predictions.json"
+NFL_PREDICTIONS = PREDICTIONS_DIR / "nfl_predictions.json"
+MLB_COMPARISON = REPORTS_DIR / "mlb_model_comparison.json"
 APP_VERSION = "v0.7.0"
+SCORED_RESULTS = {"win", "loss", "push"}
 
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
+def clean(value: Any) -> Any:
+    if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+        return None
+    if isinstance(value, dict):
+        return {key: clean(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [clean(item) for item in value]
+    return value
+
+
 def write_json_and_js(payload: dict[str, Any], json_path: Path, js_path: Path, variable: str) -> None:
+    cleaned = clean(payload)
     json_path.parent.mkdir(parents=True, exist_ok=True)
-    json_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    js_path.write_text(f"window.{variable} = {json.dumps(payload, separators=(',', ':'))};\n", encoding="utf-8")
+    json_path.write_text(json.dumps(cleaned, indent=2, allow_nan=False), encoding="utf-8")
+    js_path.write_text(
+        f"window.{variable} = {json.dumps(cleaned, separators=(',', ':'), allow_nan=False)};\n",
+        encoding="utf-8",
+    )
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -38,14 +58,52 @@ def load_json(path: Path) -> dict[str, Any]:
         return {}
 
 
+def safe_float(value: Any) -> float | None:
+    if value is None or value == "":
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    if math.isnan(number) or math.isinf(number):
+        return None
+    return number
+
+
+def normalize_result(value: Any) -> str:
+    result = str(value or "").strip().lower()
+    if result in {"won", "w"}:
+        return "win"
+    if result in {"lost", "l"}:
+        return "loss"
+    if result in {"tie"}:
+        return "push"
+    return result
+
+
 def team_abbrev(side: dict[str, Any]) -> str:
     team = side.get("team", {})
-    return team.get("abbreviation") or team.get("teamCode") or team.get("fileCode") or team.get("name", "UNK")
+    return (team.get("abbreviation") or team.get("teamCode") or team.get("fileCode") or team.get("name", "UNK")).upper()
 
 
 def status_label(game: dict[str, Any]) -> str:
     status = game.get("status", {})
     return status.get("detailedState") or status.get("abstractGameState") or "Pending"
+
+
+def parse_datetime(value: Any) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        try:
+            parsed = datetime.fromisoformat(f"{value}T12:00:00+00:00")
+        except ValueError:
+            return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def mlb_result_map() -> dict[str, dict[str, Any]]:
@@ -73,15 +131,16 @@ def mlb_result_map() -> dict[str, dict[str, Any]]:
                     "away_score": int(away_score),
                     "actual_winner": home_code if int(home_score) > int(away_score) else away_code,
                     "status": label,
+                    "game_date": game.get("officialDate") or str(game.get("gameDate", ""))[:10],
                 }
     return results
 
 
 def summarize_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    wins = sum(1 for row in rows if row.get("model_result") == "win")
-    losses = sum(1 for row in rows if row.get("model_result") == "loss")
-    pushes = sum(1 for row in rows if row.get("model_result") == "push")
-    pending = sum(1 for row in rows if row.get("model_result") in {None, "pending", "no_result"})
+    wins = sum(1 for row in rows if normalize_result(row.get("model_result")) == "win")
+    losses = sum(1 for row in rows if normalize_result(row.get("model_result")) == "loss")
+    pushes = sum(1 for row in rows if normalize_result(row.get("model_result")) == "push")
+    pending = sum(1 for row in rows if normalize_result(row.get("model_result")) not in SCORED_RESULTS)
     decided = wins + losses
     return {
         "wins": wins,
@@ -90,7 +149,14 @@ def summarize_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "pending": pending,
         "accuracy": None if decided == 0 else wins / decided,
         "sample_size": len(rows),
+        "scored": wins + losses + pushes,
     }
+
+
+def labeled_record(rows: list[dict[str, Any]], label: str, **extra: Any) -> dict[str, Any]:
+    summary = summarize_rows(rows)
+    summary.update({"label": label, **extra})
+    return summary
 
 
 def grouped_record(rows: list[dict[str, Any]], key: str) -> dict[str, Any]:
@@ -101,12 +167,29 @@ def grouped_record(rows: list[dict[str, Any]], key: str) -> dict[str, Any]:
     return {value: summarize_rows(group) for value, group in sorted(groups.items())}
 
 
+def grouped_list(rows: list[dict[str, Any]], key: str, label_key: str | None = None, reverse: bool = False) -> list[dict[str, Any]]:
+    groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        value = row.get(key) or "unknown"
+        groups[str(value)].append(row)
+    output = []
+    for value, group in groups.items():
+        summary = summarize_rows(group)
+        summary[label_key or key] = value
+        output.append(summary)
+    return sorted(output, key=lambda row: str(row.get(label_key or key)), reverse=reverse)
+
+
 def confidence_group(row: dict[str, Any]) -> str:
     confidence = row.get("confidence")
-    try:
-        value = float(confidence)
-    except (TypeError, ValueError):
+    if confidence is None:
+        confidence = row.get("confidence_score") or row.get("home_cover_probability") or row.get("model_home_cover")
+    value = safe_float(confidence)
+    if value is None:
         return row.get("confidence_label") or "unknown"
+    if value > 1:
+        value /= 100
+    value = max(value, 1 - value)
     if value >= 0.65:
         return "65%+"
     if value >= 0.60:
@@ -124,34 +207,33 @@ def recent_rows(rows: list[dict[str, Any]], days: int) -> list[dict[str, Any]]:
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     kept = []
     for row in rows:
-        value = row.get("game_date") or row.get("generated_at")
-        if not value:
-            continue
-        try:
-            parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-        except ValueError:
-            continue
-        if parsed.tzinfo is None:
-            parsed = parsed.replace(tzinfo=timezone.utc)
-        if parsed >= cutoff:
+        parsed = parse_datetime(row.get("game_date") or row.get("generated_at"))
+        if parsed and parsed >= cutoff:
             kept.append(row)
     return kept
 
 
+def date_rows(rows: list[dict[str, Any]], days_offset: int) -> list[dict[str, Any]]:
+    target = (datetime.now(timezone.utc).date() + timedelta(days=days_offset)).isoformat()
+    return [row for row in rows if str(row.get("game_date") or row.get("generated_at", ""))[:10] == target]
+
+
 def score_mlb_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
     results = mlb_result_map()
-    scored = 0
+    scored_this_run = 0
     pending = 0
     for row in rows:
         if row.get("sport") != "MLB":
             continue
+        existing_result = normalize_result(row.get("model_result"))
         result = results.get(str(row.get("game_id")))
         if not result:
+            # Preserve previously scored real records. Missing local cache should
+            # never erase a win/loss/push that was already established.
+            if existing_result in SCORED_RESULTS:
+                row["result_status"] = row.get("result_status") or "scored"
+                continue
             row["result_status"] = "pending"
-            if str(row.get("model_result", "")).lower() in {"win", "loss", "push"}:
-                row["actual_winner"] = None
-                row.pop("home_score", None)
-                row.pop("away_score", None)
             row["model_result"] = "pending"
             pending += 1
             continue
@@ -160,32 +242,71 @@ def score_mlb_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
         row["away_score"] = result["away_score"]
         row["result_status"] = "scored"
         row["model_result"] = "win" if row.get("model_pick") == result["actual_winner"] else "loss"
-        scored += 1
-    return scored, pending
+        scored_this_run += 1
+    return scored_this_run, pending
 
 
-def nfl_record() -> dict[str, Any]:
-    payload = load_json(PREDICTIONS_DIR / "nfl_predictions.json")
+def mlb_backtest_record() -> dict[str, Any]:
+    payload = load_json(MLB_BACKTEST)
     games = payload.get("games", [])
-    rows = []
-    for game in games:
-        result = str(game.get("model_result") or "").lower()
-        if result not in {"win", "loss", "push"}:
-            continue
-        rows.append(
+    rows = [
+        {
+            "sport": "MLB",
+            "game_date": game.get("game_date"),
+            "model_result": normalize_result(game.get("model_result")),
+            "model_pick": game.get("model_pick"),
+            "home": game.get("home"),
+            "away": game.get("away"),
+        }
+        for game in games
+        if normalize_result(game.get("model_result")) in SCORED_RESULTS and game.get("model_pick")
+    ]
+    comparison = load_json(MLB_COMPARISON)
+    selected = next((row for row in comparison.get("models", []) if row.get("selected")), None)
+    if selected is None and comparison.get("models"):
+        selected = comparison["models"][0]
+    meta = payload.get("metadata", {})
+    return labeled_record(
+        rows,
+        "2025 Backtest",
+        source=str(MLB_BACKTEST.relative_to(ROOT)),
+        model_type=meta.get("model_name") or meta.get("model_type"),
+        test_season=meta.get("test_season"),
+        row_count=meta.get("row_count") or len(games),
+        metrics=(selected or {}),
+        note="Backtest record is separate from live MLB prediction record.",
+    )
+
+
+def recent_prediction_table(rows: list[dict[str, Any]], limit: int = 12) -> list[dict[str, Any]]:
+    sorted_rows = sorted(
+        rows,
+        key=lambda row: str(row.get("generated_at") or row.get("game_date") or ""),
+        reverse=True,
+    )
+    output = []
+    for row in sorted_rows[:limit]:
+        output.append(
             {
-                "sport": "NFL",
-                "model_result": result,
-                "confidence_label": game.get("confidence"),
-                "model_version": (payload.get("metadata") or payload.get("meta") or {}).get("version"),
-                "game_date": str(game.get("season") or ""),
+                "sport": row.get("sport"),
+                "generated_at": row.get("generated_at"),
+                "game_date": row.get("game_date"),
+                "away": row.get("away"),
+                "home": row.get("home"),
+                "model_pick": row.get("model_pick"),
+                "home_win_probability": row.get("home_win_probability"),
+                "away_win_probability": row.get("away_win_probability"),
+                "confidence": row.get("confidence"),
+                "model_result": row.get("model_result"),
+                "result_status": row.get("result_status"),
+                "home_score": row.get("home_score"),
+                "away_score": row.get("away_score"),
             }
         )
-    return {"overall": summarize_rows(rows), "source": "data/predictions/nfl_predictions.json", "real_data": bool(rows)}
+    return output
 
 
-def build_record(log_payload: dict[str, Any], scored: int, pending: int) -> dict[str, Any]:
-    rows = log_payload.get("predictions", [])
+def mlb_live_record(rows: list[dict[str, Any]]) -> dict[str, Any]:
     mlb_rows = [row for row in rows if row.get("sport") == "MLB"]
     by_confidence: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in mlb_rows:
@@ -194,6 +315,98 @@ def build_record(log_payload: dict[str, Any], scored: int, pending: int) -> dict
     for row in mlb_rows:
         month = str(row.get("game_date", ""))[:7] or "unknown"
         by_month[month].append(row)
+    scored_rows = [row for row in mlb_rows if normalize_result(row.get("model_result")) in SCORED_RESULTS]
+    last_scored = sorted(scored_rows, key=lambda row: str(row.get("game_date") or row.get("generated_at") or ""), reverse=True)
+    live = labeled_record(
+        mlb_rows,
+        "Live Record",
+        source=str(LOG_JSON.relative_to(ROOT)),
+        note="Only logged LineLens MLB predictions are counted here.",
+    )
+    return {
+        "overall": live,
+        "live_record": live,
+        "today_record": labeled_record(date_rows(mlb_rows, 0), "Today"),
+        "yesterday_record": labeled_record(date_rows(mlb_rows, -1), "Yesterday"),
+        "recent_7_days": labeled_record(recent_rows(mlb_rows, 7), "Last 7 Days"),
+        "recent_30_days": labeled_record(recent_rows(mlb_rows, 30), "Last 30 Days"),
+        "pending_predictions": [row for row in recent_prediction_table(mlb_rows, 20) if normalize_result(row.get("model_result")) not in SCORED_RESULTS],
+        "last_scored_game": recent_prediction_table(last_scored, 1)[0] if last_scored else None,
+        "by_model_version": grouped_record(mlb_rows, "model_version"),
+        "by_confidence": {key: summarize_rows(group) for key, group in sorted(by_confidence.items())},
+        "by_month": {key: summarize_rows(group) for key, group in sorted(by_month.items())},
+        "recent_predictions": recent_prediction_table(mlb_rows),
+        "backtest_record": mlb_backtest_record(),
+    }
+
+
+def nfl_record() -> dict[str, Any]:
+    payload = load_json(NFL_PREDICTIONS)
+    games = payload.get("games", [])
+    required_fields = ["model_pick", "model_result", "season", "week", "home", "away"]
+    missing_fields = [
+        field
+        for field in required_fields
+        if not any(game.get(field) not in {None, ""} for game in games)
+    ]
+    rows = []
+    for game in games:
+        result = normalize_result(game.get("model_result"))
+        if result not in SCORED_RESULTS:
+            continue
+        rows.append(
+            {
+                "sport": "NFL",
+                "model_result": result,
+                "confidence": game.get("confidence")
+                or game.get("home_cover_probability")
+                or game.get("model_home_cover"),
+                "confidence_label": game.get("confidence"),
+                "season": game.get("season"),
+                "week": game.get("week"),
+                "game_date": game.get("game_date") or game.get("season"),
+                "home": game.get("home"),
+                "away": game.get("away"),
+                "home_score": game.get("home_score"),
+                "away_score": game.get("away_score"),
+                "model_pick": game.get("model_pick"),
+                "spread_line": game.get("spread_line"),
+            }
+        )
+    by_confidence: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        by_confidence[confidence_group(row)].append(row)
+    latest_season = max((row.get("season") for row in rows if row.get("season") is not None), default=None)
+    latest_rows = [row for row in rows if row.get("season") == latest_season] if latest_season is not None else []
+    historical = labeled_record(
+        rows,
+        "Historical NFL Backtest / Cached Real Export",
+        source=str(NFL_PREDICTIONS.relative_to(ROOT)),
+        rows_found=len(games),
+        rows_scored=len(rows),
+        missing_fields=missing_fields,
+        prediction_mode=(payload.get("metadata") or payload.get("meta") or {}).get("prediction_mode"),
+    )
+    return {
+        "overall": historical,
+        "historical_record": historical,
+        "latest_season_record": labeled_record(latest_rows, f"Latest Season {latest_season}" if latest_season else "Latest Season"),
+        "by_season": grouped_list(rows, "season", "season", reverse=True),
+        "by_week": grouped_list(rows, "week", "week"),
+        "by_confidence": [
+            {"bucket": key, **summarize_rows(group)}
+            for key, group in sorted(by_confidence.items())
+        ],
+        "recent_games": recent_prediction_table(rows, 12),
+        "missing_fields": missing_fields,
+        "note": "NFL rows are historical/backtest exports, not current live NFL record.",
+    }
+
+
+def build_record(log_payload: dict[str, Any], scored: int, pending: int) -> dict[str, Any]:
+    rows = log_payload.get("predictions", [])
+    mlb = mlb_live_record(rows)
+    nfl = nfl_record()
     return {
         "metadata": {
             "app": "LineLens Sports",
@@ -203,17 +416,11 @@ def build_record(log_payload: dict[str, Any], scored: int, pending: int) -> dict
             "predictions_logged": len(rows),
             "predictions_scored_this_run": scored,
             "pending_predictions": pending,
+            "last_scoring_run": utc_now(),
         },
         "sports": {
-            "MLB": {
-                "overall": summarize_rows(mlb_rows),
-                "by_model_version": grouped_record(mlb_rows, "model_version"),
-                "by_confidence": {key: summarize_rows(group) for key, group in sorted(by_confidence.items())},
-                "by_month": {key: summarize_rows(group) for key, group in sorted(by_month.items())},
-                "recent_7_days": summarize_rows(recent_rows(mlb_rows, 7)),
-                "recent_30_days": summarize_rows(recent_rows(mlb_rows, 30)),
-            },
-            "NFL": nfl_record(),
+            "MLB": mlb,
+            "NFL": nfl,
         },
     }
 

@@ -2495,6 +2495,38 @@ body {
     background: rgba(3, 7, 18, 0.64);
 }
 
+.segmented-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 999px;
+    padding: 0.25rem;
+    background: rgba(255, 255, 255, 0.045);
+}
+
+.segmented-control button {
+    border: 0;
+    border-radius: 999px;
+    padding: 0.45rem 0.8rem;
+    color: var(--muted);
+    background: transparent;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.segmented-control button.is-active {
+    color: #04111d;
+    background: linear-gradient(90deg, var(--ll-blue), var(--ll-green));
+}
+
+.record-hero-card {
+    border-color: rgba(39, 217, 255, 0.20);
+    background:
+        radial-gradient(ellipse at 10% 0%, rgba(39, 217, 255, 0.08), transparent 42%),
+        linear-gradient(180deg, rgba(9, 18, 34, 0.96), rgba(3, 7, 18, 0.92));
+}
+
 .btn--small {
     min-height: 34px;
     padding: 0.35rem 0.7rem;

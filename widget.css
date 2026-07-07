@@ -120,6 +120,27 @@ button {
     gap: 0.35rem;
 }
 
+.widget-segments--modes {
+    gap: 0.28rem;
+}
+
+.widget-date-nav {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.widget-date-nav input {
+    min-width: 0;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 999px;
+    min-height: 30px;
+    padding: 0.3rem 0.55rem;
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.055);
+}
+
 .widget-icon-btn,
 .widget-segments button,
 .widget-footer button {
@@ -164,6 +185,13 @@ button {
     background: var(--cyan);
     box-shadow: 0 0 14px rgba(39, 217, 255, 0.75);
     animation: pulse 1.9s ease-in-out infinite;
+}
+
+.live-dot.is-muted {
+    background: var(--muted);
+    box-shadow: none;
+    opacity: 0.52;
+    animation: none;
 }
 
 .featured-game {
@@ -373,6 +401,26 @@ button {
     color: var(--muted);
     background: var(--panel);
     text-align: center;
+}
+
+.widget-empty--inline {
+    place-items: start;
+    min-height: auto;
+    padding: 0.7rem;
+    text-align: left;
+}
+
+.widget-empty code {
+    display: inline-flex;
+    justify-content: center;
+    width: max-content;
+    max-width: 100%;
+    margin: 0.1rem auto;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 999px;
+    padding: 0.25rem 0.55rem;
+    color: #cffafe;
+    background: rgba(39, 217, 255, 0.08);
 }
 
 .widget-empty strong,

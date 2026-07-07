@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at": "2026-07-06T17:04:34Z",
+    "generated_at": "2026-07-07T16:38:12Z",
     "features_file": "data\\processed\\nfl\\spread_dataset.parquet",
     "model_file": "models\\nfl_spread_model.joblib",
     "row_count": 1777
@@ -81752,10 +81752,10 @@
   "metadata": {
     "sport": "NFL",
     "app": "LineLens Sports",
-    "version": "v0.5.0",
+    "version": "v0.7.0",
     "real_data": true,
     "prediction_mode": "historical_backtest",
-    "generated_at": "2026-07-06T17:04:34Z",
+    "generated_at": "2026-07-07T16:38:13Z",
     "model_type": "existing_project_pipeline",
     "source": "nfl-data-py / existing project pipeline",
     "season_min": 2018,
