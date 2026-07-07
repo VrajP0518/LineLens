@@ -1,1 +1,1 @@
-window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v0.7.0","release":"Premium animated Home command center redesign","generated_at":"2026-07-07T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};
+window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v0.7.0","release":"Premium Home command center and live sports widget","generated_at":"2026-07-07T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};

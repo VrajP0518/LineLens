@@ -1,6 +1,6 @@
 # LineLens Sports v0.7.0
 
-LineLens Sports is a Tauri-ready desktop sports prediction dashboard for NFL spread and MLB moneyline modeling. Version v0.7.0 adds a premium animated Home command center with a stadium-style hero, hologram sports visuals, best-pick spotlight, model-health readout, and sports pulse ticker.
+LineLens Sports is a Tauri-ready desktop sports prediction dashboard for NFL spread and MLB moneyline modeling. Version v0.7.0 adds a premium Home command center plus a LineLens Live desktop mini widget for compact sports scores, live MLB context, and model-pick visibility.
 
 The v0.6.0 MLB model-intelligence foundation remains in place: richer real features, model comparison, pick explanations, model registry, and ongoing model record tracking.
 
@@ -15,6 +15,40 @@ Predictions are experimental research outputs for analysis and portfolio demonst
 - Teams page using team metadata and logo fallbacks.
 - Tracking page for local-only analysis.
 - Settings/Data Status page with bootstrap, refresh, registry, prediction log, and file status guidance.
+- LineLens Live widget window for compact live/today/final score cards, MLB play context when available, and joined LineLens model picks.
+
+## LineLens Live Widget
+
+LineLens Live is a small desktop widget window opened from the Tauri app. It is designed to sit on the side of the screen like a sports mini-player:
+
+- Compact mode shows one featured game, score/status, latest play, model pick, edge, and previous/next controls.
+- Expanded mode shows sport/mode filters, a game list, selected-game detail, and a play-by-play feed when MLB Stats API supplies it.
+- Work Mode mutes motion and keeps the panel quieter for office use.
+- Widget preferences are stored locally under `linelens.liveWidget.v1`.
+
+The widget uses real exported data only:
+
+- MLB live/today data comes from the public MLB Stats API where available.
+- MLB pitch/play context is shown only when the live feed supplies it.
+- LineLens model picks are joined from `data/predictions/mlb_predictions.json`.
+- NFL live play data is not sourced in this iteration; the widget can show exported NFL prediction rows when available and labels NFL live feed as unavailable.
+- Browser/static mode cannot open a separate desktop widget window. It shows the manual command path instead of pretending.
+
+Commands:
+
+```powershell
+npm run refresh:live
+npm run refresh:widget
+```
+
+Outputs:
+
+```text
+data/live/live_scores.json
+data/live/live_scores.js
+```
+
+Packaged desktop builds may show cached live data if Python scripts are unavailable. Full model training remains separate from the widget refresh path.
 
 ## Improved MLB Model
 
@@ -193,6 +227,7 @@ nfl_real      -> python scripts/refresh_data.py --sport nfl --mode real
 data_real     -> python scripts/refresh_data.py --sport all --mode real
 check_data    -> python scripts/check_data_status.py
 score_models  -> python scripts/score_model_predictions.py
+live_scores   -> python scripts/live_scores.py
 ```
 
 Browser/static mode cannot run terminal commands. It shows the manual command instead of pretending to refresh.
@@ -203,6 +238,7 @@ Browser/static mode cannot run terminal commands. It shows the manual command in
 npm run check:js
 python -m compileall src scripts
 npm run build:web
+npm run refresh:live
 npm run refresh:mlb:all
 npm run refresh:mlb
 npm run score:models

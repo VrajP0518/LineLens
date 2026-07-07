@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LineLens Live</title>
+    <link rel="stylesheet" href="widget.css">
+</head>
+<body>
+    <main id="widget-root" class="live-widget-shell">
+        <section class="widget-loading">
+            <strong>LineLens Live</strong>
+            <span>Loading live scores...</span>
+        </section>
+    </main>
+    <div id="widget-toast" class="widget-toast" role="status" aria-live="polite"></div>
+    <script src="data/live/live_scores.js"></script>
+    <script src="data/team_metadata.js"></script>
+    <script src="widget.js"></script>
+</body>
+</html>

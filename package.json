@@ -7,7 +7,7 @@
     "build:web": "python scripts/build_web_dist.py",
     "app": "npx http-server . -p 4173",
     "app:dist": "npm run build:web && npx http-server dist-web -p 4174",
-    "check:js": "node --check app.js",
+    "check:js": "node --check app.js && node --check widget.js",
     "check:python": "python -m compileall src scripts",
     "generate:icons": "python scripts/generate_app_icons.py",
     "bootstrap:env": "python scripts/bootstrap_env.py",
@@ -26,6 +26,8 @@
     "score:models": "python scripts/score_model_predictions.py",
     "record:models": "python scripts/score_model_predictions.py",
     "check:data": "python scripts/check_data_status.py",
+    "refresh:live": "python scripts/live_scores.py",
+    "refresh:widget": "python scripts/live_scores.py",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"

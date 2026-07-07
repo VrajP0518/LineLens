@@ -15,6 +15,7 @@ const DATA_SOURCES = {
     bootstrap: ["data/bootstrap_status.json"],
     startup: ["data/startup_status.json"],
     refresh: ["data/refresh_status.json"],
+    live: ["data/live/live_scores.json"],
     nfl: ["data/predictions/nfl_predictions.json", "data/predictions.json"],
     mlb: ["data/predictions/mlb_predictions.json"],
     mlbBacktest: ["data/predictions/mlb_backtest_predictions.json"],
@@ -32,6 +33,7 @@ const state = {
     bootstrapStatus: window.__BOOTSTRAP_STATUS__ || null,
     startupStatus: window.__STARTUP_STATUS__ || null,
     refreshStatus: window.__REFRESH_STATUS__ || null,
+    live: { payload: window.__LIVE_SCORES__ || null, games: [], error: null },
     refreshRuntime: { available: false, active: false, message: "Checking refresh availability..." },
     nfl: { payload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null, games: [], error: null },
     mlb: { payload: window.__MLB_PREDICTIONS__ || null, games: [], error: null },
@@ -104,6 +106,11 @@ const REFRESH_COMMANDS = {
         label: "Score Model Predictions",
         manual: "npm run score:models",
         description: "Score logged model predictions against completed results when available.",
+    },
+    live_scores: {
+        label: "Live Scores",
+        manual: "npm run refresh:live",
+        description: "Refresh compact live score data for the LineLens Live desktop widget.",
     },
 };
 
@@ -894,6 +901,7 @@ async function loadAll() {
         bootstrap,
         startup,
         refresh,
+        live,
         nfl,
         mlb,
         mlbBacktest,
@@ -909,6 +917,7 @@ async function loadAll() {
         loadOptional("bootstrap", ["__BOOTSTRAP_STATUS__"]),
         loadOptional("startup", ["__STARTUP_STATUS__"]),
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
+        loadOptional("live", ["__LIVE_SCORES__"]),
         loadOptional("nfl", ["__NFL_PREDICTIONS__", "__PREDICTIONS__"]),
         loadOptional("mlb", ["__MLB_PREDICTIONS__"]),
         loadOptional("mlbBacktest", ["__MLB_BACKTEST_PREDICTIONS__"]),
@@ -925,6 +934,9 @@ async function loadAll() {
     state.bootstrapStatus = bootstrap || state.bootstrapStatus;
     state.startupStatus = startup || state.startupStatus;
     state.refreshStatus = refresh || state.refreshStatus;
+    state.live.payload = live;
+    state.live.games = normalizeGames(live);
+    state.live.error = live ? null : "No live widget export found. Run npm run refresh:live.";
     state.nfl.payload = nfl;
     state.nfl.games = normalizeGames(nfl);
     state.nfl.error = nfl ? null : "No NFL predictions found. Run the NFL export command.";
@@ -973,6 +985,19 @@ function refreshCommandLabel(commandName) {
     return REFRESH_COMMANDS[commandName]?.label || commandName;
 }
 
+async function openLiveWidget() {
+    if (!isTauriRefreshAvailable()) {
+        showToast("Live widget is available in the Tauri desktop app. Browser mode: run npm run refresh:live.");
+        return;
+    }
+    try {
+        await tauriInvoke("open_live_widget", {});
+        showToast("Opening LineLens Live widget");
+    } catch (error) {
+        showToast(String(error?.message || error || "Live widget could not be opened."));
+    }
+}
+
 async function runRefreshCommand(commandName = "startup", options = {}) {
     const config = REFRESH_COMMANDS[commandName] || REFRESH_COMMANDS.startup;
     if (!isTauriRefreshAvailable()) {
@@ -997,7 +1022,7 @@ async function runRefreshCommand(commandName = "startup", options = {}) {
     state.refreshRuntime.available = true;
     state.refreshRuntime.active = true;
     state.refreshRuntime.command = commandName;
-    state.refreshRuntime.message = `Running ${config.label}: python scripts/refresh_data.py`;
+    state.refreshRuntime.message = `Running ${config.label}: ${config.manual}`;
     if (!options.background) showToast(`Running ${config.label}...`);
     renderAll();
     try {
@@ -1075,10 +1100,11 @@ async function runStartupAutomation(options = {}) {
 }
 
 async function loadAllAfterRefresh() {
-    const [bootstrap, startup, refresh, report, modelComparison, featureSummary, modelRegistry, modelRecord, predictionLog, nfl, mlb, mlbBacktest] = await Promise.all([
+    const [bootstrap, startup, refresh, live, report, modelComparison, featureSummary, modelRegistry, modelRecord, predictionLog, nfl, mlb, mlbBacktest] = await Promise.all([
         loadOptional("bootstrap", []),
         loadOptional("startup", []),
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
+        loadOptional("live", ["__LIVE_SCORES__"]),
         loadOptional("reports", []),
         loadOptional("modelComparison", []),
         loadOptional("featureSummary", []),
@@ -1100,6 +1126,11 @@ async function loadAllAfterRefresh() {
     if (refresh) {
         state.refreshStatus = refresh;
         window.__REFRESH_STATUS__ = refresh;
+    }
+    if (live) {
+        state.live.payload = live;
+        state.live.games = normalizeGames(live);
+        window.__LIVE_SCORES__ = live;
     }
     if (report) {
         state.report = report;
@@ -1550,11 +1581,56 @@ function renderHomeReadoutV2(rows) {
 function renderQuickActionsV2() {
     return `
         <div class="quick-actions-v2">
+            <button class="btn btn--primary" data-open-live-widget>Open Live Widget</button>
             <button class="btn btn--primary" data-view-link="mlb">Open MLB</button>
             <button class="btn" data-view-link="nfl">Open NFL</button>
             <button class="btn" data-view-link="reports">Reports</button>
             <button class="btn" data-view-link="settings">Refresh Tools</button>
         </div>
+    `;
+}
+
+function isLiveScoreGame(game) {
+    const status = String(game?.status || game?.status_detail || "").toLowerCase();
+    return status.includes("progress") || status.includes("live") || status.includes("warmup");
+}
+
+function liveWidgetPreviewData() {
+    const games = state.live.games || [];
+    const liveGames = games.filter(isLiveScoreGame);
+    const modelGames = games.filter(game => game.model?.pick);
+    const nextGame = liveGames[0] || games.find(game => !String(game.status || "").toLowerCase().includes("final")) || games[0] || null;
+    const topModel = modelGames
+        .map(game => ({
+            game,
+            edge: safeNumber(game.model?.edge, 0),
+            probability: safeNumber(game.model?.home_win_probability ?? game.model?.away_win_probability, null),
+        }))
+        .sort((a, b) => Math.abs(b.edge) - Math.abs(a.edge))[0];
+    return { games, liveGames, nextGame, topModel };
+}
+
+function renderLiveWidgetPreview() {
+    const meta = normalizeMeta(state.live.payload);
+    const { games, liveGames, nextGame, topModel } = liveWidgetPreviewData();
+    const status = meta.source_status || (state.live.payload ? "cached" : "missing");
+    return `
+        <section class="panel home-live-widget-preview">
+            <div>
+                <p class="eyebrow">LineLens Live</p>
+                <h2>${liveGames.length} live / ${games.length} loaded</h2>
+                <p class="muted">${nextGame ? `${escapeHtml(nextGame.sport)} ${escapeHtml(nextGame.away)} @ ${escapeHtml(nextGame.home)} - ${escapeHtml(nextGame.status_detail || nextGame.status || "Status pending")}` : "No live widget export loaded."}</p>
+            </div>
+            <div class="home-live-widget-preview__pick">
+                <span>${escapeHtml(status)}</span>
+                <strong>${topModel ? `${escapeHtml(topModel.game.model.pick)} ${formatProbability(topModel.probability)}` : "No model pick"}</strong>
+                <small>${topModel ? formatEdge(topModel.edge) : "Run npm run refresh:live"}</small>
+            </div>
+            <div class="home-live-widget-preview__actions">
+                <button class="btn btn--primary" data-open-live-widget>Open Live Widget</button>
+                <button class="btn" data-refresh-command="live_scores">Refresh Live</button>
+            </div>
+        </section>
     `;
 }
 
@@ -1631,6 +1707,7 @@ function renderHome() {
                 ${renderHomeDailyBoard(scopedRows)}
                 ${renderHomeReadoutV2(top)}
             </section>
+            ${renderLiveWidgetPreview()}
             <section class="home-v2-system-note">
                 <span>${escapeHtml(refreshSportStatus(state.selected.homeSport || "MLB").status)} · Full refresh console is in Settings.</span>
                 <button class="btn btn--small" data-view-link="settings">Open Settings</button>
@@ -2449,6 +2526,56 @@ function exportTrackerCsv() {
     URL.revokeObjectURL(url);
 }
 
+function liveWidgetPrefs() {
+    try {
+        return JSON.parse(localStorage.getItem("linelens.liveWidget.v1") || "{}");
+    } catch (_error) {
+        return {};
+    }
+}
+
+function saveLiveWidgetPrefs(prefs) {
+    localStorage.setItem("linelens.liveWidget.v1", JSON.stringify({ ...liveWidgetPrefs(), ...prefs }));
+}
+
+function renderLiveWidgetSettings() {
+    const prefs = liveWidgetPrefs();
+    const meta = normalizeMeta(state.live.payload);
+    const interval = safeNumber(prefs.refreshInterval, 30);
+    return `
+        <section class="panel live-widget-settings">
+            <header class="section-header">
+                <div>
+                    <p class="eyebrow">Live Widget</p>
+                    <h2>Mini live scores window</h2>
+                    <p class="muted">${state.refreshRuntime.available ? "Desktop widget commands are available." : "Live widget is available in the Tauri desktop app. Browser mode uses manual refresh commands."}</p>
+                </div>
+                <span class="chip">${escapeHtml(meta.source_status || "missing")}</span>
+            </header>
+            <div class="settings-grid">
+                <div class="setting-row"><strong>Live games loaded</strong><span>${escapeHtml(String(state.live.games.length))}</span><code>data/live/live_scores.json</code></div>
+                <div class="setting-row"><strong>Last live refresh</strong><span>${escapeHtml(timestamp(meta.generated_at))}</span><code>${escapeHtml(meta.source || "npm run refresh:live")}</code></div>
+                <div class="setting-row"><strong>Manual command</strong><span>Browser/static fallback</span><code>npm run refresh:live</code></div>
+                <div class="setting-row"><strong>Auto refresh</strong><span>${interval ? `${interval}s` : "Off"}</span><code>Widget preference</code></div>
+            </div>
+            <div class="report-actions">
+                <button class="btn btn--primary" data-open-live-widget>Open Live Widget</button>
+                <button class="btn" data-refresh-command="live_scores">Refresh Live Scores Now</button>
+                <label class="inline-control">Interval
+                    <select id="live-widget-interval">
+                        ${[[30, "30s"], [60, "60s"], [120, "2m"], [0, "Off"]].map(([value, label]) => `<option value="${value}" ${interval === value ? "selected" : ""}>${label}</option>`).join("")}
+                    </select>
+                </label>
+                <label class="inline-control">
+                    <input id="live-widget-work-mode" type="checkbox" ${prefs.workMode ? "checked" : ""}>
+                    Work Mode
+                </label>
+            </div>
+            ${state.refreshRuntime.available ? "" : `<p class="data-status" data-variant="warning">Live widget windows open from the Tauri desktop app. In browser/static mode, run <code>npm run refresh:live</code> to update cached live scores.</p>`}
+        </section>
+    `;
+}
+
 function renderSettings() {
     const modes = [
         ["App version", state.app.version || APP_VERSION, "Visible release metadata"],
@@ -2463,6 +2590,7 @@ function renderSettings() {
         ["Model registry", state.modelRegistry ? `${(state.modelRegistry.models || []).length} model runs` : "missing", "data/models/model_registry.json"],
         ["Prediction log", state.predictionLog ? `${getLogEntries().length} snapshots` : "missing", "data/tracking/model_predictions_log.json"],
         ["Model record", state.modelRecord ? timestamp(state.modelRecord.metadata?.generated_at) : "missing", "data/tracking/model_record.json"],
+        ["Live widget", state.live.payload ? `${state.live.games.length} games` : "missing", "data/live/live_scores.json"],
         ["Team metadata", state.teamPayload?.teams?.length ? `${state.teamPayload.teams.length} teams` : "missing", "data/team_metadata.json"],
         ["Bootstrap status", state.bootstrapStatus?.status || "missing", state.bootstrapStatus?.python_version ? `Python ${state.bootstrapStatus.python_version}` : "data/bootstrap_status.json"],
         ["Startup automation", state.startupStatus?.status || "missing", state.startupStatus?.error || "data/startup_status.json"],
@@ -2474,6 +2602,7 @@ function renderSettings() {
             <div><p class="eyebrow">Settings / Data Status</p><h2>Environment, data files, and build path</h2><p class="muted">Local native Tauri build is optional. This work machine can use GitHub Actions for Windows bundles.</p></div>
             <span class="chip">${escapeHtml(state.app.version || APP_VERSION)}</span>
         </section>
+        ${renderLiveWidgetSettings()}
         ${renderRefreshPanel("settings")}
         ${renderCommandConsole("settings")}
         <section class="panel"><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>
@@ -2500,6 +2629,8 @@ function bindEvents() {
 
         const nav = event.target.closest(".nav__item");
         if (nav) switchView(nav.dataset.view);
+
+        if (event.target.closest("[data-open-live-widget]")) openLiveWidget();
 
         const homeSport = event.target.closest("[data-home-sport]");
         if (homeSport) {
@@ -2655,6 +2786,16 @@ function bindEvents() {
             state.selected.teamCode = event.target.value;
             persistSettings();
             renderTeams();
+        }
+        if (event.target.id === "live-widget-interval") {
+            saveLiveWidgetPrefs({ refreshInterval: safeNumber(event.target.value, 30) });
+            showToast("Live widget interval saved");
+            renderSettings();
+        }
+        if (event.target.id === "live-widget-work-mode") {
+            saveLiveWidgetPrefs({ workMode: event.target.checked });
+            showToast("Live widget work mode saved");
+            renderSettings();
         }
         const trackerInput = event.target.closest("[data-tracker-field]");
         if (trackerInput) {

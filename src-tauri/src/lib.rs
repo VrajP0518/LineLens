@@ -3,6 +3,7 @@ use std::process::Command;
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
+use tauri::Manager;
 
 #[derive(Serialize)]
 struct CommandResult {
@@ -45,6 +46,7 @@ fn scripts_detected(root: &PathBuf) -> bool {
             .join("scripts")
             .join("score_model_predictions.py")
             .exists()
+        && root.join("scripts").join("live_scores.py").exists()
 }
 
 fn python_candidates(root: &PathBuf) -> Vec<(String, Vec<String>)> {
@@ -99,6 +101,10 @@ fn command_spec(command_name: &str) -> Result<CommandSpec, String> {
         }),
         "score_models" => Ok(CommandSpec {
             script: "scripts/score_model_predictions.py",
+            args: Vec::new(),
+        }),
+        "live_scores" => Ok(CommandSpec {
+            script: "scripts/live_scores.py",
             args: Vec::new(),
         }),
         _ => Err(format!("Unsupported refresh command: {}", command_name)),
@@ -205,7 +211,7 @@ fn execute_refresh_command(command_name: &str) -> Result<CommandResult, String> 
     let root = project_root()?;
     let scripts_ok = scripts_detected(&root);
     if !scripts_ok {
-        return Err("Automatic refresh requires scripts/bootstrap_env.py, scripts/startup_orchestrator.py, and scripts/refresh_data.py.".to_string());
+        return Err("Automatic refresh requires scripts/bootstrap_env.py, scripts/startup_orchestrator.py, scripts/refresh_data.py, scripts/score_model_predictions.py, and scripts/live_scores.py.".to_string());
     }
     let spec = command_spec(command_name)?;
     let started_at = timestamp();
@@ -338,6 +344,41 @@ async fn run_startup_refresh() -> Result<String, String> {
         .map_err(|error| format!("Startup refresh task failed: {}", error))?
 }
 
+#[tauri::command]
+async fn open_live_widget(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("live-widget") {
+        window.show().map_err(|error| error.to_string())?;
+        window.set_focus().map_err(|error| error.to_string())?;
+        return Ok(());
+    }
+
+    let window = tauri::WebviewWindowBuilder::new(
+        &app,
+        "live-widget",
+        tauri::WebviewUrl::App("widget.html".into()),
+    )
+    .title("LineLens Live")
+    .inner_size(390.0, 180.0)
+    .min_inner_size(360.0, 160.0)
+    .resizable(true)
+    .always_on_top(true)
+    .build()
+    .map_err(|error| error.to_string())?;
+
+    window.set_focus().map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+async fn focus_main_window(app: tauri::AppHandle) -> Result<(), String> {
+    let window = app
+        .get_webview_window("main")
+        .ok_or_else(|| "Main LineLens window was not found.".to_string())?;
+    window.show().map_err(|error| error.to_string())?;
+    window.set_focus().map_err(|error| error.to_string())?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -346,7 +387,9 @@ pub fn run() {
             run_refresh_command,
             run_startup_automation,
             refresh_sports_data,
-            run_startup_refresh
+            run_startup_refresh,
+            open_live_widget,
+            focus_main_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running LineLens Sports");

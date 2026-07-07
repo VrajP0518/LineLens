@@ -19,6 +19,9 @@ data/predictions/data/
 !data/tracking/
 !data/tracking/*.json
 !data/tracking/*.js
+!data/live/
+!data/live/*.json
+!data/live/*.js
 !data/models/
 !data/models/*.json
 !data/models/*.js
