@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T17:03:18Z",
+    "generated_at": "2026-07-08T18:33:44Z",
     "features_file": "data\\processed\\nfl\\spread_dataset.parquet",
     "model_file": "models\\nfl_spread_model.joblib",
     "row_count": 1777
@@ -81747,6 +81747,49 @@
       "prediction_mode": "historical_backtest",
       "model_result": "Win",
       "completed": true
+    },
+    {
+      "id": "2025_POST_SB_LX_SEA_NE",
+      "game_id": "2025_POST_SB_LX_SEA_NE",
+      "sport": "NFL",
+      "season": 2025,
+      "week": 23,
+      "week_label": "Super Bowl LX",
+      "season_type": "POST",
+      "game_date": "2026-02-08",
+      "status": "Final",
+      "status_detail": "Super Bowl LX",
+      "home": "NE",
+      "away": "SEA",
+      "home_display": "New England Patriots",
+      "away_display": "Seattle Seahawks",
+      "home_score": 13.0,
+      "away_score": 29.0,
+      "spread_line": 4.5,
+      "home_cover": 0,
+      "cover_margin": -11.5,
+      "home_cover_probability": null,
+      "away_cover_probability": null,
+      "model_home_cover": null,
+      "model_pick": "-",
+      "result": "Seattle won",
+      "actual_result": "Seattle won 29-13",
+      "model_result": "No logged pick",
+      "completed": true,
+      "prediction_mode": "postseason_result_supplement",
+      "source": "Verified postseason result supplement",
+      "source_url": "https://en.wikipedia.org/wiki/Super_Bowl_LX",
+      "trend": {
+        "labels": [
+          "Win %",
+          "Point diff",
+          "Off EPA",
+          "Def EPA",
+          "Pass rate"
+        ],
+        "home": [],
+        "away": []
+      }
     }
   ],
   "metadata": {
@@ -81755,11 +81798,11 @@
     "version": "v1.0.0",
     "real_data": true,
     "prediction_mode": "historical_backtest",
-    "generated_at": "2026-07-08T17:03:19Z",
+    "generated_at": "2026-07-08T18:33:44Z",
     "model_type": "existing_project_pipeline",
     "source": "nfl-data-py / existing project pipeline",
     "season_min": 2018,
-    "season_max": 2024,
-    "row_count": 1777
+    "season_max": 2025,
+    "row_count": 1778
   }
 }

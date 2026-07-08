@@ -48,6 +48,7 @@ const state = {
         reportSport: "MLB",
         recordSport: "MLB",
         mlbFilter: "all",
+        nflFilter: "all",
         homeSport: "MLB",
         homeMlbDate: null,
         homeMlbRange: "today",
@@ -247,6 +248,13 @@ function gameSeason(game, sport = game?.sport) {
 function gameWeek(game) {
     const explicit = safeNumber(game?.week ?? game?.game_week ?? game?.season_week ?? game?.week_number);
     return explicit === null ? null : explicit;
+}
+
+function gameWeekLabel(game) {
+    const label = firstPresent(game?.week_label, game?.round, game?.postseason_round);
+    if (label) return String(label);
+    const week = gameWeek(game);
+    return week === null ? "-" : `Week ${week}`;
 }
 
 function uniqueSortedNumbers(values, direction = "asc") {
@@ -1463,6 +1471,10 @@ function renderNflWeekControls(context = "home") {
     const seasons = nflSeasons();
     const weeks = scope.weeks.map(item => typeof item === "object" ? item.week : item);
     const weekAttr = context === "home" ? "data-home-nfl-week" : "data-nfl-week";
+    const labelForWeek = week => {
+        const row = scope.games.find(game => gameWeek(game) === week && game.week_label);
+        return row?.week_label || `Week ${week}`;
+    };
     return `
         <div class="home-board-controls">
             <select id="${context}-nfl-season" aria-label="NFL season">
@@ -1470,7 +1482,7 @@ function renderNflWeekControls(context = "home") {
             </select>
             <button class="icon-btn" type="button" ${weekAttr}="-1" aria-label="Previous NFL week">‹</button>
             <select id="${context}-nfl-week" aria-label="NFL week">
-                ${weeks.map(week => `<option value="${week}" ${week === scope.week ? "selected" : ""}>Week ${week}</option>`).join("")}
+                ${weeks.map(week => `<option value="${week}" ${week === scope.week ? "selected" : ""}>${escapeHtml(labelForWeek(week))}</option>`).join("")}
             </select>
             <button class="icon-btn" type="button" ${weekAttr}="1" aria-label="Next NFL week">›</button>
         </div>
@@ -1504,7 +1516,7 @@ function renderHomeSportTabs() {
 function renderDailyRecordStrip(rows, sport) {
     if (sport === "NFL") {
         const scope = ensureNflScope();
-        return `<div class="daily-record-strip"><span>Season ${escapeHtml(scope.season || "-")}</span><span>Week ${escapeHtml(scope.week || "-")}</span><span>${rows.length} games</span></div>`;
+        return `<div class="daily-record-strip"><span>Season ${escapeHtml(scope.season || "-")}</span><span>${escapeHtml(gameWeekLabel(rows[0] || { week: scope.week }))}</span><span>${rows.length} games</span></div>`;
     }
     const record = dailyRecord(rows);
     const decided = record.wins + record.losses + record.pushes;
@@ -1557,7 +1569,7 @@ function renderHomeDailyBoard(rows) {
             <header class="section-header">
                 <div>
                     <p class="eyebrow">${sport === "MLB" ? "Daily Review" : "Weekly Board"}</p>
-                    <h2>${sport === "MLB" ? formatDate(ensureMlbReviewDate()) : `NFL ${ensureNflScope().season} Week ${ensureNflScope().week}`}</h2>
+                    <h2>${sport === "MLB" ? formatDate(ensureMlbReviewDate()) : `NFL ${ensureNflScope().season} ${gameWeekLabel((ensureNflScope().games || [])[0] || { week: ensureNflScope().week })}`}</h2>
                 </div>
                 ${renderHomeSportTabs()}
             </header>
@@ -2022,29 +2034,58 @@ function mlbFilterLabel() {
     return labels[value] || value;
 }
 
+function nflFilterLabel() {
+    const value = state.selected.nflFilter || "all";
+    const labels = {
+        all: "All",
+        high: "High confidence",
+        home: "Home covers",
+        away: "Away covers",
+        scored: "Scored",
+    };
+    return labels[value] || value;
+}
+
+function filterNflGames(games) {
+    const filter = state.selected.nflFilter || "all";
+    return games.filter(game => {
+        const pick = getGamePick(game, "NFL");
+        const result = modelResultLabel({ ...game, sport: "NFL" });
+        if (filter === "high") return getGameConfidence(game, "NFL") === "High";
+        if (filter === "home") return pick === game.home;
+        if (filter === "away") return pick === game.away;
+        if (filter === "scored") return ["Won", "Lost", "Push"].includes(result);
+        return true;
+    });
+}
+
 function renderNFL() {
     const scope = ensureNflScope();
-    const games = scope.games;
+    const rawGames = scope.games;
+    const games = filterNflGames(rawGames);
     const selectedStillVisible = games.some(game => gameKey(game) === gameKey(state.selected.nfl));
-    const selected = selectedStillVisible ? state.selected.nfl : defaultNflGame();
+    const selected = selectedStillVisible ? state.selected.nfl : games[0] || defaultNflGame();
     state.selected.nfl = selected;
+    const top = rankRowsByEdge(games.map(game => ({ ...game, sport: "NFL" })), 1)[0]?.game || selected;
     $("#view-nfl").innerHTML = `
-        <section class="module-header panel">
-            <div><p class="eyebrow">NFL Spread Predictor</p><h2>Spread, injury, CLV, and line movement workspace</h2><p class="muted">NFL data source: ${escapeHtml(refreshSportStatus("NFL").status)}. Showing latest valid season/week by default, not earliest historical rows.</p></div>
-            <div class="report-actions"><button class="btn" data-refresh-command="nfl_real">Refresh NFL</button>
-            <span class="chip">${dataMode(state.nfl.payload, state.nfl.games)}</span>
+        <section class="predictor-hero predictor-hero--nfl">
+            <div>
+                <div class="title-row"><h2>NFL Spread Predictor</h2><span class="sport-pill">NFL</span></div>
+                <p>AI-powered spread review for every loaded NFL matchup.</p>
+            </div>
+            <div class="predictor-actions">
+                <button class="btn btn--primary" data-refresh-command="nfl_real">Reload exports</button>
+                <span class="chip">${dataMode(state.nfl.payload, state.nfl.games)}</span>
             </div>
         </section>
-        ${sportSummaryCards("NFL", games, state.nfl.payload)}
-        <section class="dashboard-grid">
-            <article class="panel panel--wide">
-                <header class="section-header">
-                    <div><p class="eyebrow">Board</p><h2>Season ${escapeHtml(scope.season || "-")} / Week ${escapeHtml(scope.week || "-")}</h2></div>
-                    ${renderNflWeekControls("nfl")}
-                </header>
-                ${games.length ? renderGameTable("NFL", games) : `${emptyState("No NFL predictions found", "Run the NFL real refresh command. Existing NFL model files are preserved.")}${renderNflManualRecoveryCard()}`}
+        <section class="prediction-desk">
+            <article class="panel prediction-board">
+                ${renderNflDeskHeader(scope, rawGames)}
+                ${rawGames.length && games.length !== rawGames.length ? `<p class="data-status prediction-board__notice" data-variant="info">Showing ${games.length} of ${rawGames.length}. Filter: ${escapeHtml(nflFilterLabel())}.</p>` : ""}
+                ${games.length ? renderPredictionCards("NFL", games, "NFL") : `${emptyState("No NFL predictions found", "Run the NFL real refresh command. Existing NFL model files are preserved.")}${renderNflManualRecoveryCard()}`}
+                ${renderAnalysisDrawer("NFL", selected)}
             </article>
-            <article class="panel">${renderMatchupDetail("NFL", selected)}</article>
+            ${renderPredictionRail("NFL", games, top, state.nfl.payload)}
         </section>
     `;
 }
@@ -2077,26 +2118,257 @@ function renderMLB() {
     const selectedStillVisible = games.some(game => gameKey(game) === gameKey(state.selected.mlb));
     const selected = selectedStillVisible ? state.selected.mlb : games[0] || null;
     state.selected.mlb = selected;
+    const top = rankRowsByEdge(games.map(game => ({ ...game, sport: "MLB" })), 1)[0]?.game || selected;
     $("#view-mlb").innerHTML = `
-        <section class="module-header panel">
-            <div><p class="eyebrow">MLB Moneyline Predictor</p><h2>Daily moneyline board with pitcher and market-readiness context</h2><p class="muted">MLB schedule source: MLB Stats API. Model status: ${escapeHtml(mlbModelStatus())}.${usingBacktest ? " Showing labeled historical backtest rows for this date." : ""}</p></div>
-            <div class="report-actions"><button class="btn" data-refresh-command="mlb_current">Refresh MLB</button>
-            <span class="chip">${usingBacktest ? "historical backtest" : dataMode(payload, games)}</span>
+        <section class="predictor-hero predictor-hero--mlb">
+            <div>
+                <div class="title-row"><h2>MLB Moneyline Predictor</h2><span class="sport-pill">MLB</span></div>
+                <p>Daily board with pitcher and market-readiness context.</p>
+            </div>
+            <div class="predictor-actions">
+                <button class="btn btn--primary" data-refresh-command="mlb_current">Reload exports</button>
+                <span class="chip">${usingBacktest ? "historical backtest" : dataMode(payload, games)}</span>
             </div>
         </section>
-        ${sportSummaryCards("MLB", rawGames, payload)}
-        ${rawGames.length && games.length !== rawGames.length ? `<p class="data-status" data-variant="info">Showing ${games.length} of ${rawGames.length} MLB rows for ${escapeHtml(selectedDate)}. Filter: ${escapeHtml(mlbFilterLabel())}.</p>` : ""}
-        ${renderMlbDailyLedger(rawGames, selectedDate)}
-        <section class="dashboard-grid">
-            <article class="panel panel--wide">
-                <header class="section-header">
-                    <div><p class="eyebrow">${usingBacktest ? "Historical backtest" : "Daily review"}</p><h2>${escapeHtml(formatDate(selectedDate) || "MLB board")}</h2></div>
-                    <div class="board-toolbar">${renderMlbDateControls("mlb")}${renderMlbFilter()}</div>
-                </header>
-                ${games.length ? renderGameTable("MLB", games, "MLB_REVIEW") : emptyState("No MLB rows match this filter", rawGames.length ? "Change the MLB filter or refresh current predictions." : "Run npm run refresh:mlb:all.")}
+        <section class="prediction-desk">
+            <article class="panel prediction-board">
+                ${renderMlbDeskHeader(rawGames, selectedDate, usingBacktest)}
+                ${rawGames.length && games.length !== rawGames.length ? `<p class="data-status prediction-board__notice" data-variant="info">Showing ${games.length} of ${rawGames.length}. Filter: ${escapeHtml(mlbFilterLabel())}.</p>` : ""}
+                ${games.length ? renderPredictionCards("MLB", games, "MLB_REVIEW") : emptyState("No MLB rows match this filter", rawGames.length ? "Change the MLB filter or refresh current predictions." : "Run npm run refresh:mlb:all.")}
+                ${renderAnalysisDrawer("MLB", selected)}
             </article>
-            <article class="panel">${renderMatchupDetail("MLB", selected)}</article>
+            ${renderPredictionRail("MLB", games, top, payload)}
         </section>
+    `;
+}
+
+function recordSummaryText(summary) {
+    const record = `${summary.wins}-${summary.losses}${summary.pushes ? `-${summary.pushes}` : ""}`;
+    const decided = summary.wins + summary.losses + summary.pushes;
+    return `${record} · ${decided} decided`;
+}
+
+function renderMlbFilterPills() {
+    const options = [
+        ["all", "All"],
+        ["high55", "Strong"],
+        ["model", "Model picks"],
+        ["schedule", "Schedule-only"],
+    ];
+    return `
+        <div class="desk-filter-pills" role="tablist" aria-label="MLB board filters">
+            ${options.map(([value, label]) => `<button type="button" data-mlb-filter="${value}" class="${state.selected.mlbFilter === value ? "is-active" : ""}">${escapeHtml(label)} <span>${escapeHtml(value === "all" ? String(mlbRowsForDate().length) : "")}</span></button>`).join("")}
+        </div>
+    `;
+}
+
+function renderMlbDeskHeader(rawGames, selectedDate, usingBacktest) {
+    const modelRows = rawGames.filter(row => !isScheduleOnly(row, state.mlb.payload) && (row.model_pick || getGameProbability(row, "MLB") !== null));
+    const summary = summarizeRecordRows(modelRows);
+    const decided = summary.wins + summary.losses + summary.pushes;
+    return `
+        <header class="desk-header desk-header--mlb">
+            <div class="desk-date-block">
+                <div class="desk-date-controls">${renderMlbDateControls("mlb")}</div>
+                <div>
+                    <p class="eyebrow">${usingBacktest ? "Historical backtest day" : "Selected MLB day"}</p>
+                    <h2>${escapeHtml(formatDate(selectedDate) || selectedDate || "MLB board")}</h2>
+                    <div class="desk-record-line">
+                        <strong>${escapeHtml(`${summary.wins}-${summary.losses}${summary.pushes ? `-${summary.pushes}` : ""}`)}</strong>
+                        <span>${decided ? `${decided} decided picks` : "0 decided picks"}</span>
+                        <span>${summary.pending} pending</span>
+                    </div>
+                </div>
+            </div>
+            <div class="desk-toolbar">
+                ${renderMlbFilterPills()}
+                ${renderMlbFilter()}
+            </div>
+        </header>
+    `;
+}
+
+function renderNflDeskHeader(scope, games) {
+    const record = summarizeRecordRows(games);
+    const label = gameWeekLabel(games[0] || { week: scope.week });
+    return `
+        <header class="desk-header desk-header--nfl">
+            <div class="desk-date-block">
+                <div class="desk-date-controls">${renderNflWeekControls("nfl")}</div>
+                <div>
+                    <p class="eyebrow">NFL board</p>
+                    <h2>${escapeHtml(label)}</h2>
+                    <div class="desk-record-line">
+                        <strong>${escapeHtml(`Season ${scope.season || "-"}`)}</strong>
+                        <span>${games.length} games loaded</span>
+                        <span>${record.wins + record.losses} scored</span>
+                    </div>
+                </div>
+            </div>
+            <div class="desk-toolbar">
+                ${renderNflFilterPills(games)}
+            </div>
+        </header>
+    `;
+}
+
+function renderNflFilterPills(games) {
+    const options = [
+        ["all", "All"],
+        ["high", "High"],
+        ["home", "Home"],
+        ["away", "Away"],
+        ["scored", "Scored"],
+    ];
+    const counts = {
+        all: games.length,
+        high: games.filter(game => getGameConfidence(game, "NFL") === "High").length,
+        home: games.filter(game => getGamePick(game, "NFL") === game.home).length,
+        away: games.filter(game => getGamePick(game, "NFL") === game.away).length,
+        scored: games.filter(game => ["Won", "Lost", "Push"].includes(modelResultLabel({ ...game, sport: "NFL" }))).length,
+    };
+    return `
+        <div class="desk-filter-pills" role="tablist" aria-label="NFL board filters">
+            ${options.map(([value, label]) => `<button type="button" data-nfl-filter="${value}" class="${state.selected.nflFilter === value ? "is-active" : ""}">${escapeHtml(label)} <span>${counts[value] || 0}</span></button>`).join("")}
+        </div>
+    `;
+}
+
+function projectionLine(game, sport) {
+    if (sport === "NFL") return `Spread ${formatLine(game.spread_line, sport)}`;
+    const homeLine = firstPresent(game.moneyline_home_current, game.moneyline_home);
+    return `Proj: ${formatLine(homeLine, sport)}`;
+}
+
+function teamBoardBlock(sport, game, side) {
+    const code = game?.[side] || "---";
+    const meta = getTeamMeta(sport, code, game?.[`${side}_display`]);
+    const pitcher = sport === "MLB" ? game?.[`${side}_probable_pitcher`] : null;
+    return `
+        <div class="desk-team">
+            ${renderTeamLogo(sport, meta.abbreviation, "md", meta.full_name)}
+            <div>
+                <strong>${escapeHtml(meta.full_name)}</strong>
+                <small>${sport === "MLB" ? escapeHtml(pitcher || "Pitcher TBD") : escapeHtml(code)}</small>
+            </div>
+        </div>
+    `;
+}
+
+function renderPredictionCards(sport, games, source) {
+    return `<div class="prediction-card-list">${games.map((game, index) => renderPredictionCard(sport, game, source, index)).join("")}</div>`;
+}
+
+function renderPredictionCard(sport, game, source, index) {
+    const probability = getGameProbability(game, sport);
+    const pick = getGamePick(game, sport);
+    const confidence = getGameConfidence(game, sport);
+    const result = modelResultLabel({ ...game, sport });
+    const selected = gameKey(game) === gameKey(state.selected[sport.toLowerCase()]);
+    return `
+        <article class="prediction-row-card ${selected ? "is-selected" : ""}" data-select-game="${source}" data-game-index="${index}" data-game-id="${escapeHtml(gameKey({ ...game, sport }))}">
+            <div class="desk-time">
+                <span>${escapeHtml(getGameTimeLabel(game))}</span>
+                <small>${escapeHtml(game.status_detail || game.status || gameWeekLabel(game))}</small>
+            </div>
+            ${teamBoardBlock(sport, game, "away")}
+            <span class="desk-at">@</span>
+            ${teamBoardBlock(sport, game, "home")}
+            <div class="desk-pick">
+                <strong>${escapeHtml(pick)}</strong>
+                <span>${formatProbability(probability)}</span>
+                <small>${escapeHtml(projectionLine(game, sport))}</small>
+            </div>
+            <div class="desk-edge">
+                <span>Edge</span>
+                <strong>${formatEdge(getGameEdge(game, sport))}</strong>
+            </div>
+            <div class="desk-confidence">
+                <span>Confidence</span>
+                ${confidenceTag(confidence)}
+                <small>${escapeHtml(formatConfidencePercent(game, sport))}</small>
+            </div>
+            <div class="desk-result">
+                ${resultChip(result)}
+                <small>${escapeHtml(finalScoreLabel(game) || "")}</small>
+            </div>
+            <div class="desk-factor">
+                <span>Top factor</span>
+                <strong>${escapeHtml(sport === "MLB" ? (game.top_factor_label || game.explanation?.top_factors?.[0]?.label || "Model signal") : (game.top_factor_label || "Spread signal"))}</strong>
+            </div>
+        </article>
+    `;
+}
+
+function renderPredictionRail(sport, games, topGame, payload) {
+    const modelRecord = getModelRecord(sport);
+    const overall = sport === "MLB" ? (modelRecord.live_record || modelRecord.overall || {}) : (modelRecord.historical_record || modelRecord.overall || {});
+    return `
+        <aside class="prediction-rail">
+            ${renderTopEdgeCard(sport, topGame)}
+            <section class="rail-card">
+                <header><h3>Model Performance</h3><span class="chip chip--soft">${sport === "MLB" ? "Live" : "Historical"}</span></header>
+                <div class="rail-performance">
+                    <div><span>${sport === "MLB" ? "Live Record" : "Backtest Record"}</span><strong>${escapeHtml(recordLine(overall))}</strong></div>
+                    <div><span>Accuracy</span><strong>${formatProbability(overall.accuracy)}</strong></div>
+                </div>
+                <div class="rail-sparkline" aria-hidden="true"><span></span></div>
+                <div class="rail-kpis">
+                    <div><span>Games</span><strong>${games.length}</strong></div>
+                    <div><span>High</span><strong>${games.filter(game => getGameConfidence(game, sport) === "High").length}</strong></div>
+                    <div><span>Loaded</span><strong>${escapeHtml(dataMode(payload, games))}</strong></div>
+                </div>
+            </section>
+            <section class="rail-card">
+                <header><h3>Board View</h3><button class="btn btn--small" ${sport === "MLB" ? "data-mlb-filter=\"all\"" : "data-nfl-filter=\"all\""}>Reset</button></header>
+                <div class="rail-filter-stack">
+                    <span>${sport === "MLB" ? escapeHtml(mlbFilterLabel()) : escapeHtml(nflFilterLabel())}</span>
+                    <span>Odds: ${escapeHtml(oddsStatusLabel())}</span>
+                    <span>${games.length} rows in view</span>
+                </div>
+            </section>
+        </aside>
+    `;
+}
+
+function renderTopEdgeCard(sport, game) {
+    if (!game) {
+        return `<section class="rail-card rail-card--top">${emptyState("No top edge loaded", "Refresh predictions to populate the edge card.")}</section>`;
+    }
+    const home = getTeamMeta(sport, game.home, game.home_display);
+    const away = getTeamMeta(sport, game.away, game.away_display);
+    const statusText = String(game.status_detail || game.status || "").toLowerCase();
+    const statusLabel = statusText.includes("final") ? "Final" : statusText.includes("progress") || statusText.includes("live") ? "Live" : "Board";
+    return `
+        <section class="rail-card rail-card--top">
+            <header><h3>Top Edge Right Now</h3><span class="rail-status-pill">${escapeHtml(statusLabel)}</span></header>
+            <div class="rail-matchup">
+                <div>${renderTeamLogo(sport, away.abbreviation, "md", away.full_name)}<span>${escapeHtml(away.abbreviation)}</span></div>
+                <strong>@</strong>
+                <div>${renderTeamLogo(sport, home.abbreviation, "md", home.full_name)}<span>${escapeHtml(home.abbreviation)}</span></div>
+            </div>
+            <div class="rail-pick-line">
+                <strong>${escapeHtml(getGamePick(game, sport))}</strong>
+                <span>${formatProbability(getConfidenceScore(game, sport))}</span>
+                <b>${formatEdge(getGameEdge(game, sport))}</b>
+            </div>
+            <div class="rail-chip-row">
+                <span class="chip chip--soft">${sport}</span>
+                <span class="chip chip--soft">${escapeHtml(getGameConfidence(game, sport))}</span>
+                <span class="chip chip--soft">${escapeHtml(normalizeMeta(sport === "MLB" ? state.mlb.payload : state.nfl.payload).model_type || "model")}</span>
+            </div>
+            <button class="btn btn--primary full-width" data-select-game="${sport === "MLB" ? "MLB_REVIEW" : "NFL"}" data-game-id="${escapeHtml(gameKey({ ...game, sport }))}">View Full Analysis</button>
+        </section>
+    `;
+}
+
+function renderAnalysisDrawer(sport, selected) {
+    if (!selected) return "";
+    return `
+        <details class="analysis-drawer">
+            <summary>View selected matchup analysis</summary>
+            ${renderMatchupDetail(sport, selected)}
+        </details>
     `;
 }
 
@@ -2105,10 +2377,16 @@ function renderMlbDailyLedger(rows, selectedDate) {
     const summary = summarizeRecordRows(modelRows);
     const decided = summary.wins + summary.losses + summary.pushes;
     const latest = modelRows.slice(0, 8);
+    const recordText = `${summary.wins}-${summary.losses}${summary.pushes ? `-${summary.pushes}` : ""}`;
     return `
-        <section class="panel daily-ledger">
+        <section class="panel daily-ledger daily-ledger--hero">
             <header class="section-header">
-                <div><p class="eyebrow">Daily Pick Ledger</p><h2>${escapeHtml(formatDate(selectedDate) || selectedDate)}</h2></div>
+                <div>
+                    <p class="eyebrow">Selected MLB Day</p>
+                    <h2>${escapeHtml(formatDate(selectedDate) || selectedDate)}</h2>
+                    <strong class="daily-ledger__record">${escapeHtml(recordText)}</strong>
+                    <span class="daily-ledger__note">${summary.pending ? `${summary.pending} pending` : decided ? `${decided} decided picks` : "No scored picks yet"}</span>
+                </div>
                 <div class="ledger-pills">
                     <span class="chip chip--success">Correct ${summary.wins}</span>
                     <span class="chip chip--danger">Wrong ${summary.losses}</span>
@@ -2181,11 +2459,9 @@ function renderGameTable(sport, games, source = sport) {
 
 function renderTopFactorCell(game) {
     const factor = game.top_factor_label || game.explanation?.top_factors?.[0]?.label;
-    const quality = featureQualityForGame(game);
     return `
         <div class="factor-cell">
             <strong>${escapeHtml(factor || "Model drivers pending")}</strong>
-            <span>${escapeHtml(`P:${quality.pitcher} / T:${quality.travel}`)}</span>
         </div>
     `;
 }
@@ -2200,7 +2476,8 @@ function shortDisplayName(value) {
 function compactQualityValue(value) {
     const normalized = String(value || "unknown").replaceAll("_", " ").trim().toLowerCase();
     if (normalized === "partial proxy") return "partial";
-    if (normalized === "estimated") return "est.";
+    if (normalized === "proxy") return "proxy";
+    if (normalized === "estimated") return "estimated";
     if (normalized === "unavailable") return "missing";
     return normalized || "unknown";
 }
@@ -2280,9 +2557,9 @@ function renderMLBImpact(game) {
         ? "Team model only"
         : (game.pitcher_edge || "Pitcher context");
     const qualityChips = [
-        `Pitcher ${compactQualityValue(quality.pitcher)}`,
-        `Travel ${compactQualityValue(quality.travel)}`,
-        `${quality.missing} gaps`,
+        `Pitcher: ${compactQualityValue(quality.pitcher)}`,
+        `Travel: ${compactQualityValue(quality.travel)}`,
+        `${quality.missing} missing`,
     ];
     return `
         <div class="detail-card detail-card--compact">
@@ -3113,6 +3390,20 @@ function bindEvents() {
         if (mlbDay) {
             moveMlbReviewDate(Number(mlbDay.dataset.mlbDay));
             renderMLB();
+        }
+
+        const mlbFilterButton = event.target.closest("[data-mlb-filter]");
+        if (mlbFilterButton) {
+            state.selected.mlbFilter = mlbFilterButton.dataset.mlbFilter;
+            persistSettings();
+            renderMLB();
+        }
+
+        const nflFilterButton = event.target.closest("[data-nfl-filter]");
+        if (nflFilterButton) {
+            state.selected.nflFilter = nflFilterButton.dataset.nflFilter;
+            persistSettings();
+            renderNFL();
         }
 
         const homeNflWeek = event.target.closest("[data-home-nfl-week]");

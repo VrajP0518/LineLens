@@ -661,16 +661,16 @@ def refresh_nfl(status: dict[str, Any], *, require_real: bool = False) -> None:
 
 def rebuild_nfl_processed_dataset(status: dict[str, Any]) -> bool:
     steps = [
-        (["data_ingest.py", "schedules", "--start-season", "2018", "--end-season", "2024"], 300),
-        (["data_ingest.py", "pbp", "--start-season", "2018", "--end-season", "2024"], 1200),
-        (["data_ingest.py", "weekly", "--start-season", "2018", "--end-season", "2024"], 600),
+        (["data_ingest.py", "schedules", "--start-season", "2018", "--end-season", "2025"], 300),
+        (["data_ingest.py", "pbp", "--start-season", "2018", "--end-season", "2025"], 1200),
+        (["data_ingest.py", "weekly", "--start-season", "2018", "--end-season", "2025"], 600),
         (
             [
                 "feature_builder.py",
                 "--start-season",
                 "2018",
                 "--end-season",
-                "2024",
+                "2025",
                 "--output-file",
                 "data/processed/nfl/spread_dataset.parquet",
             ],
@@ -707,6 +707,7 @@ def normalize_nfl_export(json_path: Path, js_path: Path) -> None:
             actual_home = int(game["home_cover"]) == 1
             game["model_result"] = "Win" if picked_home == actual_home else "Loss"
             game["completed"] = True
+    games = append_nfl_postseason_supplements(games)
     payload["metadata"] = {
         "sport": "NFL",
         "app": "LineLens Sports",
@@ -721,6 +722,49 @@ def normalize_nfl_export(json_path: Path, js_path: Path) -> None:
         "row_count": len(games),
     }
     write_json_and_js(payload, json_path, js_path, "__NFL_PREDICTIONS__")
+
+
+def append_nfl_postseason_supplements(games: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    existing_ids = {str(game.get("id") or game.get("game_id")) for game in games}
+    supplements = [
+        {
+            "id": "2025_POST_SB_LX_SEA_NE",
+            "game_id": "2025_POST_SB_LX_SEA_NE",
+            "sport": "NFL",
+            "season": 2025,
+            "week": 23,
+            "week_label": "Super Bowl LX",
+            "season_type": "POST",
+            "game_date": "2026-02-08",
+            "status": "Final",
+            "status_detail": "Super Bowl LX",
+            "home": "NE",
+            "away": "SEA",
+            "home_display": "New England Patriots",
+            "away_display": "Seattle Seahawks",
+            "home_score": 13.0,
+            "away_score": 29.0,
+            "spread_line": 4.5,
+            "home_cover": 0,
+            "cover_margin": -11.5,
+            "home_cover_probability": None,
+            "away_cover_probability": None,
+            "model_home_cover": None,
+            "model_pick": "-",
+            "result": "Seattle won",
+            "actual_result": "Seattle won 29-13",
+            "model_result": "No logged pick",
+            "completed": True,
+            "prediction_mode": "postseason_result_supplement",
+            "source": "Verified postseason result supplement",
+            "source_url": "https://en.wikipedia.org/wiki/Super_Bowl_LX",
+            "trend": {"labels": ["Win %", "Point diff", "Off EPA", "Def EPA", "Pass rate"], "home": [], "away": []},
+        }
+    ]
+    for row in supplements:
+        if row["id"] not in existing_ids:
+            games.append(row)
+    return games
 
 
 def refresh_startup(status: dict[str, Any]) -> None:

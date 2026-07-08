@@ -171,6 +171,14 @@ FEATURE_GROUPS = {
         "estimated_travel_km",
         "away_travel_km_from_previous_game",
         "home_travel_km_from_previous_game",
+        "away_road_trip_game_number",
+        "home_road_trip_game_number",
+        "away_is_road_trip_opener",
+        "home_is_road_trip_opener",
+        "road_trip_opener_diff",
+        "away_travel_fatigue_km",
+        "home_travel_fatigue_km",
+        "travel_fatigue_km_diff",
         "travel_km_diff",
         "away_cross_country_trip",
         "home_cross_country_trip",
@@ -385,7 +393,8 @@ def _count_recent(days: int):
 
 def _add_rolling_team_features(log: pd.DataFrame) -> pd.DataFrame:
     log = log.copy()
-    log["prev_game_date"] = log.groupby("team")["game_date"].shift(1)
+    season_team = log.groupby(["season", "team"], group_keys=False)
+    log["prev_game_date"] = season_team["game_date"].shift(1)
     log["rest_days"] = (log["game_date"] - log["prev_game_date"]).dt.days.fillna(3).clip(lower=0)
     log["game_number"] = log.groupby(["season", "team"]).cumcount() + 1
     # Leakage guard: all rolling features shift by one game before averaging.
@@ -416,12 +425,23 @@ def _add_rolling_team_features(log: pd.DataFrame) -> pd.DataFrame:
     log["streak"] = log.groupby("team", group_keys=False)["win"].apply(_streak)
     log["games_last_4_days"] = log.groupby("team", group_keys=False).apply(_count_recent(4))
     log["games_last_7_days"] = log.groupby("team", group_keys=False).apply(_count_recent(7))
-    log["prev_venue_lat"] = log.groupby("team")["venue_lat"].shift(1)
-    log["prev_venue_lon"] = log.groupby("team")["venue_lon"].shift(1)
+    log["prev_venue_lat"] = season_team["venue_lat"].shift(1)
+    log["prev_venue_lon"] = season_team["venue_lon"].shift(1)
+    log["prev_is_home"] = season_team["is_home"].shift(1)
     log["travel_km_from_previous_game"] = log.apply(
         lambda row: _haversine(row["prev_venue_lat"], row["prev_venue_lon"], row["venue_lat"], row["venue_lon"]),
         axis=1,
     )
+    log["road_trip_game_number"] = 0
+    for _, group in log.groupby(["season", "team"], sort=False):
+        current_road_count = 0
+        for idx, row in group.iterrows():
+            if int(row["is_home"]) == 0:
+                current_road_count += 1
+                log.at[idx, "road_trip_game_number"] = current_road_count
+            else:
+                current_road_count = 0
+    log["is_road_trip_opener"] = ((log["is_home"].eq(0)) & (log["road_trip_game_number"].eq(1))).astype(int)
     return log
 
 
@@ -439,6 +459,8 @@ def _asof_features(games: pd.DataFrame, team_features: pd.DataFrame) -> pd.DataF
         "games_last_4_days",
         "games_last_7_days",
         "travel_km_from_previous_game",
+        "road_trip_game_number",
+        "is_road_trip_opener",
     ]
     for window in ROLLING_WINDOWS:
         feature_cols.extend(
@@ -476,6 +498,8 @@ def _asof_features(games: pd.DataFrame, team_features: pd.DataFrame) -> pd.DataF
             "games_last_4_days": f"{side}_games_last_4_days",
             "games_last_7_days": f"{side}_games_last_7_days",
             "travel_km_from_previous_game": f"{side}_travel_km_from_previous_game",
+            "road_trip_game_number": f"{side}_road_trip_game_number",
+            "is_road_trip_opener": f"{side}_is_road_trip_opener",
             "runs_scored_std_7": f"{side}_runs_scored_std_7",
             "runs_allowed_std_7": f"{side}_runs_allowed_std_7",
         }
@@ -725,9 +749,37 @@ def _add_derived_features(frame: pd.DataFrame) -> pd.DataFrame:
         lambda row: _haversine(row["away_team_lat"], row["away_team_lon"], row["home_team_lat"], row["home_team_lon"]),
         axis=1,
     )
+    for col in [
+        "home_travel_km_from_previous_game",
+        "away_travel_km_from_previous_game",
+        "home_road_trip_game_number",
+        "away_road_trip_game_number",
+        "home_is_road_trip_opener",
+        "away_is_road_trip_opener",
+    ]:
+        if col not in frame.columns:
+            frame[col] = 0
     frame["home_travel_km_from_previous_game"] = pd.to_numeric(frame["home_travel_km_from_previous_game"], errors="coerce")
     frame["away_travel_km_from_previous_game"] = pd.to_numeric(frame["away_travel_km_from_previous_game"], errors="coerce")
+    frame["home_road_trip_game_number"] = pd.to_numeric(frame["home_road_trip_game_number"], errors="coerce").fillna(0)
+    frame["away_road_trip_game_number"] = pd.to_numeric(frame["away_road_trip_game_number"], errors="coerce").fillna(0)
+    frame["home_is_road_trip_opener"] = pd.to_numeric(frame["home_is_road_trip_opener"], errors="coerce").fillna(0)
+    frame["away_is_road_trip_opener"] = pd.to_numeric(frame["away_is_road_trip_opener"], errors="coerce").fillna(0)
     frame["travel_km_diff"] = frame["away_travel_km_from_previous_game"].fillna(0) - frame["home_travel_km_from_previous_game"].fillna(0)
+    # Travel fatigue is venue-to-venue and season-local. A road trip opener carries
+    # the fly-in signal; later road games use the actual nearby-city movement.
+    frame["away_travel_fatigue_km"] = np.where(
+        frame["away_is_road_trip_opener"].eq(1),
+        frame["away_travel_km_from_previous_game"].fillna(0),
+        frame["away_travel_km_from_previous_game"].fillna(0).clip(upper=750),
+    )
+    frame["home_travel_fatigue_km"] = np.where(
+        frame["home_is_road_trip_opener"].eq(1),
+        frame["home_travel_km_from_previous_game"].fillna(0),
+        frame["home_travel_km_from_previous_game"].fillna(0).clip(upper=750),
+    )
+    frame["travel_fatigue_km_diff"] = frame["away_travel_fatigue_km"] - frame["home_travel_fatigue_km"]
+    frame["road_trip_opener_diff"] = frame["away_is_road_trip_opener"] - frame["home_is_road_trip_opener"]
     frame["away_cross_country_trip"] = (frame["away_travel_km_from_previous_game"].fillna(0) >= 2500).astype(int)
     frame["home_cross_country_trip"] = (frame["home_travel_km_from_previous_game"].fillna(0) >= 2500).astype(int)
     frame["pitcher_win_pct_diff"] = frame["home_pitcher_team_win_pct"].fillna(0.5) - frame["away_pitcher_team_win_pct"].fillna(0.5)

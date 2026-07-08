@@ -33,7 +33,7 @@ FACTOR_DEFS = [
     ("Pitcher team-win proxy", "pitcher_win_pct_diff", "home_pitcher_team_win_pct", "away_pitcher_team_win_pct", True),
     ("Rest advantage", "rest_diff", "home_rest_days", "away_rest_days", True),
     ("Schedule fatigue", "schedule_fatigue_diff", "home_6_games_in_7_days", "away_6_games_in_7_days", True),
-    ("Travel fatigue", "travel_km_diff", "home_travel_km_from_previous_game", "away_travel_km_from_previous_game", True),
+    ("Travel fatigue", "travel_fatigue_km_diff", "home_travel_fatigue_km", "away_travel_fatigue_km", True),
     ("Home/away split", "home_split_advantage", "home_team_home_win_pct_30", "away_team_away_win_pct_30", True),
     ("Volatility edge", "volatility_diff", "home_runs_scored_std_7", "away_runs_scored_std_7", False),
 ]
@@ -264,6 +264,9 @@ def _score_games(df: pd.DataFrame, model_path: Path, limit: Optional[int]) -> tu
                     "pitcher_runs_allowed_diff": safe_float(row.get("pitcher_runs_allowed_diff")),
                     "schedule_fatigue_diff": safe_float(row.get("schedule_fatigue_diff")),
                     "travel_km_diff": safe_float(row.get("travel_km_diff")),
+                    "travel_fatigue_km_diff": safe_float(row.get("travel_fatigue_km_diff")),
+                    "away_road_trip_game_number": safe_float(row.get("away_road_trip_game_number")),
+                    "away_is_road_trip_opener": safe_float(row.get("away_is_road_trip_opener")),
                     "home_split_advantage": safe_float(row.get("home_split_advantage")),
                 },
                 "explanation": _explanation(row, home, away, home_prob, importances, feature_cols),
