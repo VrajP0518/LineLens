@@ -1,7 +1,8 @@
 """Startup automation for LineLens Sports.
 
 This script is the desktop-friendly entrypoint: prepare Python, refresh real MLB
-predictions, and attempt NFL real-data recovery without fabricating rows.
+predictions, refresh NFL/live exports, score records, and check data status
+without fabricating rows.
 """
 
 from __future__ import annotations
@@ -15,6 +16,11 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.shared.version import APP_VERSION
+
 DATA_DIR = ROOT / "data"
 STATUS_JSON = DATA_DIR / "startup_status.json"
 STATUS_JS = DATA_DIR / "startup_status.js"
@@ -24,7 +30,6 @@ MLB_MODEL = ROOT / "models" / "mlb_moneyline_model.joblib"
 MLB_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_features_2021_2025.csv"
 MLB_PREDICTIONS = DATA_DIR / "predictions" / "mlb_predictions.json"
 NFL_PREDICTIONS = DATA_DIR / "predictions" / "nfl_predictions.json"
-APP_VERSION = "v0.7.0"
 VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
 
 
@@ -172,29 +177,11 @@ def orchestrate() -> dict[str, Any]:
         write_json_and_js(status, STATUS_JSON, STATUS_JS, "__STARTUP_STATUS__")
         return status
 
+    steps.append(run_step("Refresh NFL real/cached predictions", [python_path, "scripts/refresh_data.py", "--sport", "nfl", "--mode", "real"], timeout=1800))
+    steps.append(run_step("Refresh live widget scores", [python_path, "scripts/live_scores.py"], timeout=300))
+    steps.append(run_step("Refresh optional odds snapshots", [python_path, "scripts/odds_snapshots.py"], timeout=300))
     steps.append(run_step("Score logged model predictions", [python_path, "scripts/score_model_predictions.py"], timeout=300))
-
-    if has_real_export(NFL_PREDICTIONS):
-        update_refresh_sport_status(
-            "NFL",
-            "real_cached",
-            "NFL real export found; startup reused the cached real prediction export.",
-            used_cache=True,
-        )
-        steps.append(
-            {
-                "name": "Check NFL real export",
-                "command": "data/predictions/nfl_predictions.json",
-                "status": "real_cached",
-                "exit_code": 0,
-                "started_at": utc_now(),
-                "finished_at": utc_now(),
-                "stdout_tail": "NFL real prediction export already exists; startup did not regenerate it.",
-                "stderr_tail": "",
-            }
-        )
-    else:
-        steps.append(run_step("Attempt NFL real-data regeneration", [python_path, "scripts/refresh_data.py", "--sport", "nfl", "--mode", "real"], timeout=1800))
+    steps.append(run_step("Check data status", [python_path, "scripts/check_data_status.py"], timeout=300))
 
     status["nfl_ready"] = has_real_export(NFL_PREDICTIONS)
     status["nfl_requires_import"] = not status["nfl_ready"]

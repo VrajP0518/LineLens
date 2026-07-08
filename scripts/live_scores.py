@@ -26,6 +26,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.shared.mlb_teams import mlb_team_abbreviation
+from src.shared.version import APP_VERSION
 
 LIVE_DIR = ROOT / "data" / "live"
 LIVE_JSON = LIVE_DIR / "live_scores.json"
@@ -37,9 +38,6 @@ MLB_BACKTEST = PREDICTIONS_DIR / "mlb_backtest_predictions.json"
 NFL_PREDICTIONS = PREDICTIONS_DIR / "nfl_predictions.json"
 MLB_SCHEDULE_URL = "https://statsapi.mlb.com/api/v1/schedule"
 MLB_LIVE_URL = "https://statsapi.mlb.com/api/v1.1/game/{game_pk}/feed/live"
-APP_VERSION = "v0.7.0"
-
-
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 

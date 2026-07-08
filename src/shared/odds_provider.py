@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 
 SPORT_KEYS = {
@@ -44,7 +44,7 @@ class OddsResult:
 
 def odds_config_status() -> dict[str, Any]:
     load_dotenv_if_present()
-    provider = os.getenv("ODDS_PROVIDER", "the_odds_api")
+    provider = os.getenv("ODDS_PROVIDER") or os.getenv("MLB_ODDS_PROVIDER") or "the_odds_api"
     key_present = bool(os.getenv("ODDS_API_KEY"))
     return {
         "provider": provider,
@@ -52,6 +52,8 @@ def odds_config_status() -> dict[str, Any]:
         "key_present": key_present,
         "region": os.getenv("ODDS_REGION", "us"),
         "markets": os.getenv("ODDS_MARKETS", "h2h,spreads,totals"),
+        "sports": os.getenv("ODDS_SPORTS", "MLB,NFL"),
+        "timeout_seconds": os.getenv("ODDS_TIMEOUT_SECONDS", "8"),
     }
 
 
@@ -83,8 +85,12 @@ def fetch_odds(sport: str) -> OddsResult:
     }
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds?" + urlencode(params)
     try:
-        with urlopen(url, timeout=20) as response:
+        timeout = max(3.0, float(config.get("timeout_seconds") or 8))
+        request = Request(url, headers={"User-Agent": "LineLensSports/1.0"})
+        with urlopen(request, timeout=timeout) as response:
             data = json.loads(response.read().decode("utf-8"))
         return OddsResult("success", f"Fetched {len(data)} odds events from The Odds API.", provider, True, data)
+    except TimeoutError as exc:
+        return OddsResult("timeout", f"Odds fetch timed out after {config.get('timeout_seconds', '8')} seconds: {exc}", provider, True, [])
     except Exception as exc:  # noqa: BLE001
         return OddsResult("failed", f"Odds fetch failed: {type(exc).__name__}: {exc}", provider, True, [])

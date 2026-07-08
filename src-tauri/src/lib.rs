@@ -47,6 +47,7 @@ fn scripts_detected(root: &PathBuf) -> bool {
             .join("score_model_predictions.py")
             .exists()
         && root.join("scripts").join("live_scores.py").exists()
+        && root.join("scripts").join("odds_snapshots.py").exists()
 }
 
 fn python_candidates(root: &PathBuf) -> Vec<(String, Vec<String>)> {
@@ -72,8 +73,8 @@ fn command_spec(command_name: &str) -> Result<CommandSpec, String> {
             args: Vec::new(),
         }),
         "startup" => Ok(CommandSpec {
-            script: "scripts/refresh_data.py",
-            args: vec!["--sport", "all", "--mode", "startup"],
+            script: "scripts/startup_orchestrator.py",
+            args: Vec::new(),
         }),
         "nfl_real" => Ok(CommandSpec {
             script: "scripts/refresh_data.py",
@@ -105,6 +106,10 @@ fn command_spec(command_name: &str) -> Result<CommandSpec, String> {
         }),
         "live_scores" => Ok(CommandSpec {
             script: "scripts/live_scores.py",
+            args: Vec::new(),
+        }),
+        "odds_snapshots" => Ok(CommandSpec {
+            script: "scripts/odds_snapshots.py",
             args: Vec::new(),
         }),
         _ => Err(format!("Unsupported refresh command: {}", command_name)),
@@ -211,7 +216,7 @@ fn execute_refresh_command(command_name: &str) -> Result<CommandResult, String> 
     let root = project_root()?;
     let scripts_ok = scripts_detected(&root);
     if !scripts_ok {
-        return Err("Automatic refresh requires scripts/bootstrap_env.py, scripts/startup_orchestrator.py, scripts/refresh_data.py, scripts/score_model_predictions.py, and scripts/live_scores.py.".to_string());
+        return Err("Automatic refresh requires scripts/bootstrap_env.py, scripts/startup_orchestrator.py, scripts/refresh_data.py, scripts/score_model_predictions.py, scripts/live_scores.py, and scripts/odds_snapshots.py.".to_string());
     }
     let spec = command_spec(command_name)?;
     let started_at = timestamp();

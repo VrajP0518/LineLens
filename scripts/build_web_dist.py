@@ -27,7 +27,7 @@ DATA_FILES = [
     "refresh_status.js",
     "predictions.js",
 ]
-DATA_DIRS = ["predictions", "reports", "tracking", "models", "live"]
+DATA_DIRS = ["predictions", "reports", "tracking", "models", "live", "odds"]
 
 
 def copy_file(src: Path, dest: Path) -> None:

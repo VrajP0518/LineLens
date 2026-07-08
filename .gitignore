@@ -32,6 +32,7 @@ src-tauri/target/
 dist/
 dist-web/
 *.log
+image.png
 .env
 .agents/
 .vscode/

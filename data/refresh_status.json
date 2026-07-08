@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-07-07T18:29:47Z",
-  "mode": "predict",
+  "generated_at": "2026-07-08T17:03:19Z",
+  "mode": "real",
   "sports": {
     "NFL": {
       "status": "real_fresh",
       "message": "Found existing NFL processed dataset. Exported 1777 real historical predictions.",
-      "last_success_at": "2026-07-07T16:38:13Z",
+      "last_success_at": "2026-07-08T17:03:19Z",
       "used_cache": false,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     },
     "MLB": {
       "status": "model_generated",
-      "message": "MLB model predictions generated from current schedule.",
-      "last_success_at": "2026-07-07T18:29:45Z",
-      "used_cache": false,
+      "message": "MLB model predictions generated from cached schedule after live fetch failed.",
+      "last_success_at": "2026-07-08T17:03:14Z",
+      "used_cache": true,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     }
   },
@@ -26,7 +26,8 @@
   },
   "model_record": {
     "status": "real_fresh",
-    "message": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v0.7.0\",\n  \"generated_at\": \"2026-07-07T18:29:47Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 70,\n  \"predictions_scored_this_run\": 24,\n  \"pending_predictions\": 46,\n  \"last_scoring_run\": \"2026-07-07T18:29:47Z\"\n}",
-    "last_run_at": "2026-07-07T18:29:47Z"
-  }
+    "message": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v1.0.0\",\n  \"generated_at\": \"2026-07-08T17:03:16Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 126,\n  \"predictions_scored_this_run\": 40,\n  \"pending_predictions\": 86,\n  \"last_scoring_run\": \"2026-07-08T17:03:16Z\"\n}",
+    "last_run_at": "2026-07-08T17:03:16Z"
+  },
+  "version": "v1.0.0"
 }

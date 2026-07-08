@@ -82,6 +82,7 @@ textarea {
 .muted,
 .sidebar__note {
     color: var(--muted);
+    line-height: 1.45;
 }
 
 .nav {
@@ -143,6 +144,7 @@ textarea {
 .hero-panel h2 {
     margin: 0;
     letter-spacing: 0;
+    line-height: 1.08;
 }
 
 .topbar__meta,
@@ -323,11 +325,14 @@ textarea {
 
 .summary-card span,
 .summary-card small {
+    display: block;
     color: var(--muted);
+    line-height: 1.4;
 }
 
 .summary-card strong {
     font-size: 1.55rem;
+    line-height: 1.08;
 }
 
 .summary-card--accent {
@@ -383,6 +388,13 @@ textarea {
     border-radius: var(--radius);
     background: var(--panel-3);
     padding: 0.75rem;
+}
+
+.stat-list > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.9rem;
 }
 
 .factor-cell {
@@ -616,6 +628,11 @@ textarea {
     color: var(--gold);
 }
 
+.chip--danger {
+    border-color: rgba(248, 113, 113, 0.38);
+    color: #fecaca;
+}
+
 button:disabled {
     cursor: not-allowed;
     opacity: 0.55;
@@ -645,6 +662,27 @@ button:disabled {
     color: var(--muted);
 }
 
+.detail-card span,
+.detail-card small,
+.stat-list span,
+.empty-state p,
+.setting-row code {
+    display: block;
+    line-height: 1.45;
+}
+
+.detail-card span {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.empty-state strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    line-height: 1.25;
+}
+
 .table-wrapper {
     overflow-x: auto;
 }
@@ -667,6 +705,7 @@ button:disabled {
     color: var(--muted);
     font-size: 0.76rem;
     text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
 .selectable-row:hover {
@@ -754,6 +793,10 @@ button:disabled {
     align-items: center;
 }
 
+.matchup-head > div strong {
+    line-height: 1.2;
+}
+
 .matchup-head > div:last-child {
     justify-content: flex-end;
     text-align: right;
@@ -764,6 +807,10 @@ button:disabled {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.7rem;
+}
+
+.detail-grid {
+    align-items: stretch;
 }
 
 .metric-grid > div {
@@ -784,6 +831,7 @@ button:disabled {
     display: block;
     margin-top: 0.2rem;
     font-size: 1.25rem;
+    line-height: 1.15;
 }
 
 .prob-row {
@@ -808,6 +856,56 @@ button:disabled {
     display: block;
     height: 100%;
     border-radius: inherit;
+}
+
+.detail-card {
+    display: grid;
+    gap: 0.35rem;
+    align-content: start;
+    min-height: 104px;
+}
+
+.detail-card strong {
+    display: block;
+    font-size: 1rem;
+    line-height: 1.28;
+    word-break: break-word;
+}
+
+.detail-card small {
+    max-width: 28ch;
+}
+
+.detail-card small {
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.detail-card--compact {
+    padding: 0.85rem;
+}
+
+.detail-card__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.detail-card__chips .chip {
+    min-height: 24px;
+    padding: 0.16rem 0.5rem;
+    font-size: 0.74rem;
+}
+
+.panel p,
+.panel li,
+.panel code,
+.panel small {
+    line-height: 1.45;
+}
+
+.setting-row {
+    align-items: start;
 }
 
 .trend-chart {
@@ -914,7 +1012,7 @@ code {
 }
 
 /* ==========================================================
-   LineLens v0.7.0 premium Home redesign
+   LineLens v1.0.0 premium Home redesign
    Scope: Home page only, using ll-* classes.
    ========================================================== */
 
@@ -1743,7 +1841,7 @@ body {
 }
 
 /* ==========================================================
-   LineLens v0.7.0 Home v2 command center
+   LineLens v1.0.0 Home v2 command center
    The rendered Home view now uses inline SVG line art instead of CSS ball objects.
    ========================================================== */
 
@@ -2527,6 +2625,160 @@ body {
         linear-gradient(180deg, rgba(9, 18, 34, 0.96), rgba(3, 7, 18, 0.92));
 }
 
+.refresh-health-strip,
+.trust-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.health-chip,
+.doctor-row {
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 14px;
+    padding: 0.8rem 0.9rem;
+    background: rgba(15, 23, 42, 0.70);
+    min-width: 0;
+}
+
+.health-chip span,
+.doctor-row span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0;
+}
+
+.health-chip strong,
+.doctor-row strong {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--text);
+    font-size: 0.98rem;
+    line-height: 1.25;
+}
+
+.health-chip small,
+.doctor-row small,
+.doctor-row code {
+    display: block;
+    margin-top: 0.28rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.health-chip[data-variant="success"],
+.doctor-row[data-variant="success"],
+.record-day[data-variant="success"] {
+    border-color: rgba(78, 204, 163, 0.26);
+    background: rgba(20, 83, 45, 0.14);
+}
+
+.health-chip[data-variant="warning"],
+.doctor-row[data-variant="warning"],
+.record-day[data-variant="warning"] {
+    border-color: rgba(243, 201, 105, 0.26);
+    background: rgba(120, 53, 15, 0.12);
+}
+
+.health-chip[data-variant="error"],
+.doctor-row[data-variant="error"],
+.record-day[data-variant="error"] {
+    border-color: rgba(248, 113, 113, 0.26);
+    background: rgba(127, 29, 29, 0.12);
+}
+
+.doctor-list,
+.ledger-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+}
+
+.ledger-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    justify-content: flex-end;
+}
+
+.ledger-strip article {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 0.6rem;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.7rem 0.75rem;
+    background: rgba(3, 7, 18, 0.34);
+}
+
+.ledger-strip strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.record-calendar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 0.6rem;
+}
+
+.record-day {
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 12px;
+    padding: 0.65rem;
+    text-align: left;
+    color: var(--text);
+    background: rgba(15, 23, 42, 0.65);
+}
+
+.record-day span,
+.record-day strong {
+    display: block;
+    line-height: 1.25;
+}
+
+.record-day span {
+    color: var(--muted);
+    font-size: 0.76rem;
+}
+
+.record-day strong {
+    margin-top: 0.22rem;
+    font-size: 0.88rem;
+}
+
+.ui-preferences-panel .inline-control {
+    min-height: 38px;
+}
+
+.presentation-mode .home-v2-system-note,
+.presentation-mode .command-console:not(.settings-keep-visible) {
+    display: none;
+}
+
+.density-compact .panel {
+    padding: 0.85rem;
+}
+
+.density-compact .data-table th,
+.density-compact .data-table td {
+    padding: 0.48rem 0.55rem;
+}
+
+.density-compact .summary-card,
+.density-compact .metric-card-v2,
+.density-compact .detail-card {
+    min-height: auto;
+    padding: 0.7rem;
+}
+
 .btn--small {
     min-height: 34px;
     padding: 0.35rem 0.7rem;
@@ -2637,6 +2889,11 @@ body {
     .metric-strip-v2 {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .refresh-health-strip,
+    .trust-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 760px) {
@@ -2646,6 +2903,13 @@ body {
     .home-board-row,
     .edge-leaderboard-v2__row,
     .home-live-widget-preview {
+        grid-template-columns: 1fr;
+    }
+
+    .refresh-health-strip,
+    .trust-grid,
+    .doctor-list,
+    .ledger-strip {
         grid-template-columns: 1fr;
     }
 

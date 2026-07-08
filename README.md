@@ -1,181 +1,70 @@
-![alt text](image-1.png)
+# LineLens Sports v1.0.0
 
-# LineLens Sports v0.7.0
+LineLens Sports is a Tauri desktop sports analytics dashboard for model-based NFL and MLB prediction review. It is built as a plain HTML/CSS/JavaScript frontend with Python data/modeling pipelines and a Tauri shell for a real desktop app experience.
 
-LineLens Sports is a Tauri-ready desktop sports prediction dashboard for NFL spread and MLB moneyline modeling. Version v0.7.0 adds a premium Home command center plus a LineLens Live desktop mini widget for compact sports scores, live MLB context, and model-pick visibility.
+This v1.0.0 demo release is designed to open with bundled real exports so a reviewer can immediately see the app working without first running a live data refresh.
 
-The v0.6.0 MLB model-intelligence foundation remains in place: richer real features, model comparison, pick explanations, model registry, and ongoing model record tracking.
+Predictions are experimental educational outputs for project demonstration only. LineLens Sports is not betting advice.
 
-Predictions are experimental research outputs for analysis and portfolio demonstration only. They are not financial or betting advice.
+## Feature Highlights
 
-## Current Modules
+- Tauri desktop app with GitHub Actions Windows builds.
+- Home command center with Best Pick Spotlight, dashboard cards, and ESPN-style ticker.
+- MLB moneyline prediction model with real probabilities and current schedule exports.
+- 119+ MLB feature set covering team form, run differential, rest/fatigue, travel estimate, pitcher proxy, home/away splits, series context, and volatility.
+- Model comparison and selected model metadata.
+- "Why this pick?" explanations with top factors and data-quality badges.
+- Model record tracking with live MLB record separated from MLB backtest.
+- LineLens Live widget for compact live/today/final score cards and joined model picks.
+- Record page for MLB live/backtest and NFL historical record review.
+- Reports page with model comparison, calibration/report cards, global factors, and registry.
+- Optional real odds snapshot capture through `ODDS_API_KEY`, with market lines shown only when fetched successfully.
+- Data Doctor and Presentation Mode controls for cleaner demo review.
+- NFL historical spread predictor support from cached/exported real rows.
+- Settings refresh console for safe Tauri command refreshes.
+- No fake prediction policy. Missing data is labeled honestly.
 
-- Home command center with animated stadium visuals, highlighted best current pick, data readiness, model record summary, sports pulse ticker, and a collapsed refresh console.
-- NFL spread predictor that preserves the existing NFL pipeline and real exported rows when source/processed data is available.
-- MLB moneyline predictor with real model probabilities, pitcher matchup display, top factors, and data-quality badges.
-- Reports page for current model, model record, model comparison, confidence buckets, calibration, global features, prediction log, and feature summary.
-- Record page for live MLB record, MLB backtest record, and historical NFL cached/backtest record.
-- Teams page using team metadata and logo fallbacks.
-- Tracking page for local-only analysis.
-- Settings/Data Status page with bootstrap, refresh, registry, prediction log, and file status guidance.
-- LineLens Live widget window for compact live/today/final score cards, MLB play context when available, and joined LineLens model picks.
+## Demo Flow
 
-## LineLens Live Widget
+1. Open Home and show the Best Pick Spotlight, summary cards, ticker, and Live Widget preview.
+2. Open MLB and show the daily board, probabilities, pitcher context, result chips, and "Why this pick?" factors.
+3. Click Open Live Widget to show the compact sports mini-widget. Expand it if you want the game list and detail panel.
+4. Open Record and show MLB live record, MLB backtest record, and NFL historical record as separate sections.
+5. Open Reports and show model comparison, selected model, feature summary, calibration/report cards, and registry.
+6. Open Settings and show the refresh console, data file presence, app version, and build/runtime status.
+7. Use Settings -> Presentation Mode when you want a cleaner professor/TA walkthrough with diagnostic noise reduced.
 
-LineLens Live is a small desktop widget window opened from the Tauri app. It is designed to sit on the side of the screen like a sports mini-player:
+## Download The Windows App
 
-- Compact mode shows one featured game, score/status, latest play, model pick, edge, and previous/next controls.
-- Expanded mode shows sport/mode filters, yesterday/today/tomorrow date navigation, a game list, selected-game detail, and a play-by-play feed when MLB Stats API supplies it.
-- Work Mode mutes motion and keeps the panel quieter for office use.
-- Widget preferences are stored locally under `linelens.liveWidget.v1`.
+The Windows desktop artifact is built in GitHub Actions.
 
-The widget uses real exported data only:
+1. Go to the GitHub repo: `https://github.com/VrajP0518/LineLens`
+2. Open the Actions tab.
+3. Select the latest `Tauri Windows Build` run.
+4. Download the `LineLens-Sports-Windows` artifact.
+5. Extract it and run the bundled LineLens Sports executable or installer output.
 
-- MLB live/today/nearby schedule data comes from the public MLB Stats API where available. The live refresh requests a seven-day window: three days back, today, and three days forward.
-- If the live API is unavailable, the widget keeps showing cached schedule files from `data/raw/mlb/` when present, then current exported MLB schedule/prediction rows, then other real exported rows.
-- MLB pitch/play context is shown only when the live feed supplies it.
-- LineLens model picks are joined from `data/predictions/mlb_predictions.json`.
-- Schedule-only games are allowed in the widget, but they are labeled `Schedule only` / `No model pick` and are not counted in model record.
-- NFL live play data is not sourced in this iteration; the widget can show exported NFL prediction rows when available and labels NFL live feed as unavailable.
-- Browser/static mode cannot open a separate desktop widget window. It shows the manual command path instead of pretending.
+If a v1.0.0 GitHub Release is created, download the Windows installer/artifact from the release page instead.
 
-Commands:
+## First Open Behavior
 
-```powershell
-npm run refresh:live
-npm run refresh:widget
-```
+The app loads bundled JSON exports immediately:
 
-Outputs:
+- `data/predictions/mlb_predictions.json`
+- `data/predictions/mlb_backtest_predictions.json`
+- `data/predictions/nfl_predictions.json`
+- `data/live/live_scores.json`
+- `data/reports/*.json`
+- `data/tracking/*.json`
+- `data/models/model_registry.json`
 
-```text
-data/live/live_scores.json
-data/live/live_scores.js
-```
+If Python scripts are not available in the installed app environment, the UI stays usable and says that bundled exports are being shown. Command refresh requires the project repo/dev environment.
 
-Packaged desktop builds may show cached live data if Python scripts are unavailable. Full model training remains separate from the widget refresh path.
+When the Tauri desktop app opens in the repo/dev environment, it automatically runs the same safe startup path as `npm run refresh:startup`: bootstrap Python, refresh MLB, refresh NFL, refresh live widget data, score model records, and check data status.
 
-## Model Record Page
+## Developer Setup
 
-The Record tab is the dedicated place to inspect performance without mixing incompatible record types:
-
-- MLB Live Record uses only real logged LineLens MLB predictions from `data/tracking/model_predictions_log.json`. If no completed logged predictions have been scored yet, the page says so and keeps rows as pending.
-- MLB Backtest Record is shown separately as `2025 Backtest` from `data/predictions/mlb_backtest_predictions.json`. It is not counted as live model performance.
-- NFL Historical Record uses the cached/exported NFL prediction rows from `data/predictions/nfl_predictions.json` when real `model_result` fields are present. It is labeled as historical/backtest, not live NFL record.
-- Schedule-only games and games without model picks never count as wins/losses.
-
-Refresh and score records:
-
-```powershell
-npm run refresh:live
-npm run score:models
-```
-
-## Improved MLB Model
-
-The MLB model is built from historical MLB game results with no fabricated rows. Feature engineering keeps strict no-leakage rules: games are sorted by date, rolling windows are shifted by one game, and same-game scores are used only for target/result/backtest scoring.
-
-Feature groups now include:
-
-- Team form: 3/7/14/30-game win percentage and matchup diffs.
-- Run scoring: rolling runs scored and allowed over 3/7/14 games.
-- Run differential and momentum: rolling run differential, streaks, and diffs.
-- Home/away splits: recent home team home form and away team road form.
-- Rest/fatigue: rest days, back-to-back flags, 3-in-4, 6-in-7, and fatigue diff.
-- Series context: doubleheaders, series game number, previous head-to-head winner, and recent head-to-head rate.
-- Pitcher proxy: probable pitcher names when supplied by MLB Stats API, plus prior-start team-result proxy features. This is not ERA/WHIP modeling unless richer pitcher stat joins are added.
-- Travel estimate: approximate city/venue distance using team coordinates. This is not an exact travel itinerary.
-- Season context: game number, month, day of week, late-season flag, interleague/division metadata when available.
-- Volatility: recent scoring and prevention standard deviation.
-
-Feature summaries are exported to:
-
-```text
-data/reports/mlb_feature_summary.json
-data/reports/mlb_feature_summary.js
-```
-
-Large raw and processed files stay local-only under ignored folders.
-
-## Why This Pick?
-
-MLB prediction exports include an explanation object for each model-backed row:
-
-- Summary text using careful language such as "Model leans".
-- Top factors with feature name, home value, away value, impact direction, and strength.
-- Data-quality badges for pitcher data, estimated travel, and missing feature count.
-- Feature values for audit/debugging.
-
-Logistic regression uses local coefficient-style contributions. Tree models use global feature importance plus row values when local explanations are not available. SHAP is not required.
-
-## Model Training And Registry
-
-Default MLB training uses 2021-2024 for training and 2025 for test/backtest. The trainer compares:
-
-- Logistic Regression
-- Random Forest
-- Gradient Boosting
-- HistGradientBoostingClassifier
-- Baseline Home Team
-- Baseline Recent Form
-- Baseline 50/50
-
-The selected model is chosen by test log loss, with Brier score as a secondary quality check. The active model is saved to:
-
-```text
-models/mlb_moneyline_model.joblib
-```
-
-Model comparison and registry outputs:
-
-```text
-data/reports/mlb_model_comparison.json
-data/reports/mlb_model_comparison.js
-data/models/model_registry.json
-data/models/model_registry.js
-```
-
-Run the full train/backtest/export path:
-
-```powershell
-npm run refresh:mlb:all
-```
-
-## Model Record Tracking
-
-Current MLB exports append real prediction snapshots to:
-
-```text
-data/tracking/model_predictions_log.json
-data/tracking/model_predictions_log.js
-```
-
-Scoring reads completed MLB results from cached/live MLB Stats API schedule data when available and writes:
-
-```text
-data/tracking/model_record.json
-data/tracking/model_record.js
-```
-
-Commands:
-
-```powershell
-npm run refresh:mlb
-npm run score:models
-```
-
-No historical prediction records are fabricated. The registry and prediction log start from real runs.
-
-## Data Honesty
-
-- No fake predictions.
-- Missing feature sources are marked missing and the model continues with available real features.
-- Cached data is labeled cached.
-- Pitcher proxy means pitcher-team-result proxy from prior starts, not invented pitcher stats.
-- Estimated travel is approximate team/city distance.
-- Odds are optional only through environment configuration such as `ODDS_API_KEY`; odds are not required.
-
-## Recommended First Run
+Use Python 3.11 for the local pipeline.
 
 ```powershell
 cd C:\Users\Vraj.Patel\Downloads\coop\LineLens
@@ -185,116 +74,169 @@ py -3.11 -m venv .venv
 pip install -r requirements.txt
 
 npm install
-npm run startup:auto
-npm run refresh:mlb:all
+npm run demo:check
 npm run app
 ```
 
-Use Python 3.11 for this app. `nfl-data-py` depends on an older numpy/pandas stack, and newer Python versions can force fragile local source builds on machines without MSVC/C++ Build Tools.
-
-## MLB Pipeline
-
-Manual workflow:
+`npm run app` serves the static app at `http://localhost:4173`. The Tauri desktop dev shell is available with:
 
 ```powershell
-python -m src.mlb.data_ingest_mlb history --start-season 2021 --end-season 2025 --force
-python -m src.mlb.feature_builder_mlb build-history --start-season 2021 --end-season 2025
-python -m src.mlb.train_model_mlb --features-file data/processed/mlb/mlb_features_2021_2025.csv --train-start-season 2021 --train-end-season 2024 --test-season 2025
-python -m src.mlb.export_predictions_mlb backtest --features-file data/processed/mlb/mlb_features_2021_2025.csv --season 2025
-python -m src.mlb.export_predictions_mlb export --features-file data/processed/mlb/mlb_current_features.csv --model-file models/mlb_moneyline_model.joblib --season 2026
-python scripts/score_model_predictions.py
+npm run tauri:dev
 ```
 
-Package scripts:
+Local native Tauri builds require Rust, WebView2, and Microsoft C++ Build Tools/MSVC. This project is configured so GitHub Actions can build the Windows desktop artifact even when local MSVC is unavailable.
+
+## Useful Commands
 
 ```powershell
 npm run refresh:mlb
-npm run refresh:mlb:all
-npm run refresh:mlb:train
+npm run refresh:live
+npm run refresh:odds
 npm run score:models
+npm run refresh:startup
 npm run check:data
-```
-
-## NFL Pipeline And Recovery
-
-NFL functionality is preserved, but NFL real-data refresh still depends on source access or local processed artifacts.
-
-Preferred refresh wrapper:
-
-```powershell
-npm run refresh:nfl:real
-```
-
-Manual NFL recovery from an older local project:
-
-```powershell
-mkdir data\imports\nfl
-copy C:\path\to\old\spread_dataset.parquet data\imports\nfl\spread_dataset.parquet
-npm run refresh:nfl:real
-```
-
-The app does not fabricate offseason NFL rows. If NFL source access is refused, the NFL page and Settings page show the manual import path.
-
-## Desktop Commands
-
-The Tauri command bridge only runs allow-listed operations:
-
-```text
-startup_auto  -> python scripts/startup_orchestrator.py
-bootstrap_env -> python scripts/bootstrap_env.py
-mlb_current   -> python scripts/refresh_data.py --sport mlb --mode predict
-mlb_all       -> python scripts/refresh_data.py --sport mlb --mode all
-nfl_real      -> python scripts/refresh_data.py --sport nfl --mode real
-data_real     -> python scripts/refresh_data.py --sport all --mode real
-check_data    -> python scripts/check_data_status.py
-score_models  -> python scripts/score_model_predictions.py
-live_scores   -> python scripts/live_scores.py
-```
-
-Browser/static mode cannot run terminal commands. It shows the manual command instead of pretending to refresh.
-
-## Local Validation
-
-```powershell
 npm run check:js
 python -m compileall src scripts
 npm run build:web
-npm run refresh:live
-npm run refresh:mlb:all
-npm run refresh:mlb
-npm run score:models
-npm run check:data
+npm run demo:check
 npm run tauri -- info
 ```
 
-Do not require `npm run tauri:build` locally on this machine. Local native builds require Rust, WebView2, and Microsoft C++ Build Tools/MSVC. The Windows desktop bundle is built by GitHub Actions.
+Full MLB train/backtest/current refresh:
+
+```powershell
+npm run refresh:mlb:all
+```
+
+NFL real/cached refresh:
+
+```powershell
+npm run refresh:nfl:real
+```
+
+All-in startup refresh:
+
+```powershell
+npm run refresh:startup
+```
+
+Optional odds refresh:
+
+```powershell
+copy .env.example .env
+# Add your key locally. Do not commit .env.
+# ODDS_API_KEY=your_key_here
+npm run refresh:odds
+```
+
+Line movement and CLV are only calculated from real odds snapshots when enough market history exists. If odds are missing, stale, or unavailable, LineLens shows a missing/cached state instead of fabricating lines.
+
+## MLB Model
+
+The MLB model predicts `home_win` for moneyline-style matchup review. The current selected model is trained from historical MLB results and exported into `models/mlb_moneyline_model.joblib`.
+
+Training uses 2021-2024 for training and 2025 for test/backtest by default. The trainer compares:
+
+- Logistic Regression
+- Random Forest
+- Gradient Boosting
+- HistGradientBoostingClassifier
+- Baseline Home Team
+- Baseline Recent Form
+- Baseline 50/50
+
+The selected model is chosen primarily by log loss, with Brier score as an additional quality check.
+
+## Data Policy
+
+- No fake predictions.
+- No fabricated model records.
+- No fabricated scores or game results.
+- Schedule-only games can appear in the widget or boards, but they are labeled `No model pick` and do not count in model record.
+- MLB live record uses logged LineLens predictions only.
+- MLB backtest is clearly separated from live record.
+- NFL exported rows are labeled historical/backtest unless a true current export is available.
+- Cached data is labeled cached.
+- Pitcher proxy features are based on available probable pitcher names and prior team-result context, not invented ERA/WHIP.
+- Estimated travel is approximate team/venue distance, not exact itinerary.
+- Odds APIs are optional and not required.
+- Local secrets belong in `.env`, which is ignored by git.
+
+## Project Structure
+
+```text
+app.js / styles.css / index.html   Static dashboard frontend
+widget.html / widget.js / widget.css   LineLens Live mini widget
+src/mlb/                          MLB ingestion, features, training, exports
+src/nfl/                          NFL compatibility modules
+src/shared/                       Shared paths, modeling, metadata, export helpers
+scripts/                          Refresh, scoring, startup, validation scripts
+src-tauri/                        Tauri desktop app wrapper
+data/predictions/                 Compact bundled prediction exports
+data/live/                        Compact bundled live/widget export
+data/reports/                     Compact bundled model reports
+data/tracking/                    Prediction log and model record
+data/models/                      Model registry
+data/odds/                        Optional compact odds snapshots
+models/                           Small model artifacts
+```
+
+Large generated inputs stay local and ignored:
+
+- `data/raw/`
+- `data/processed/`
+- `data/imports/`
+- `.venv/`
+- `node_modules/`
+- `dist-web/`
+- `src-tauri/target/`
 
 ## GitHub Actions Build
 
-The production bundle uses:
+The workflow `.github/workflows/tauri-windows-build.yml` runs on:
 
-```text
-src-tauri/tauri.conf.json > build.frontendDist = ../dist-web
-```
+- Push to `main`
+- Push of tags matching `v*`
+- Manual `workflow_dispatch`
 
-GitHub Actions uploads the Windows artifact as:
+It runs:
+
+- `npm ci`
+- `npm run check:js`
+- `python -m compileall src scripts`
+- `npm run build:web`
+- `npm run tauri:build`
+
+The artifact is uploaded as:
 
 ```text
 LineLens-Sports-Windows
 ```
 
-## Push Workflow
+The build uses bundled compact exports and does not require live sports API refresh.
+
+## Known Limitations
+
+- Local native Tauri build may fail without MSVC/C++ Build Tools, even though GitHub Actions can build the artifact.
+- MLB live feed may fall back to cached schedule data if the public MLB Stats API is unavailable.
+- MLB pitcher features are proxy/context features, not full pitcher-stat modeling.
+- Odds, injuries, and closing-line value are optional data sources. Line movement/CLV stay unavailable until real snapshots exist.
+- NFL current-season refresh depends on source access or cached processed rows.
+
+## Release Checklist
 
 ```powershell
-npm run refresh:mlb:all
 npm run refresh:mlb
+npm run refresh:live
 npm run score:models
+npm run refresh:startup
 npm run check:data
-npm run check:js
-python -m compileall src scripts
-npm run build:web
+npm run demo:check
+npm run tauri -- info
 git status
 git add .
-git commit -m "Improve MLB model features explanations and record tracking"
+git commit -m "Prepare LineLens Sports v1.0.0 demo release"
+git tag v1.0.0
 git push origin main
+git push origin v1.0.0
 ```

@@ -24,6 +24,7 @@ if str(ROOT) not in sys.path:
 
 from src.shared.odds_provider import fetch_odds, odds_config_status
 from src.shared.mlb_teams import mlb_team_abbreviation, mlb_team_display_name
+from src.shared.version import APP_VERSION
 
 DATA_DIR = ROOT / "data"
 RAW_MLB_DIR = DATA_DIR / "raw" / "mlb"
@@ -37,9 +38,6 @@ NFL_FEATURES = ROOT / "data" / "processed" / "nfl" / "spread_dataset.parquet"
 NFL_IMPORT_FEATURES = ROOT / "data" / "imports" / "nfl" / "spread_dataset.parquet"
 NFL_IMPORT_FEATURES_CSV = ROOT / "data" / "imports" / "nfl" / "spread_dataset.csv"
 VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
-APP_VERSION = "v0.7.0"
-
-
 def pipeline_python() -> str:
     return str(VENV_PYTHON) if VENV_PYTHON.exists() else sys.executable
 
@@ -67,6 +65,7 @@ def load_status() -> dict[str, Any]:
 
 def write_status(status: dict[str, Any]) -> None:
     status["generated_at"] = utc_now()
+    status["version"] = APP_VERSION
     status["odds"] = odds_config_status()
     STATUS_JSON.parent.mkdir(parents=True, exist_ok=True)
     STATUS_JSON.write_text(json.dumps(status, indent=2), encoding="utf-8")

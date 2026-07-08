@@ -17,6 +17,11 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.shared.version import APP_VERSION
+
 DATA_DIR = ROOT / "data"
 STATUS_JSON = DATA_DIR / "bootstrap_status.json"
 STATUS_JS = DATA_DIR / "bootstrap_status.js"
@@ -24,8 +29,6 @@ ENV_STATE_JSON = DATA_DIR / "env_state.json"
 REQUIREMENTS = ROOT / "requirements.txt"
 VENV_DIR = ROOT / ".venv"
 VENV_PYTHON = VENV_DIR / "Scripts" / "python.exe"
-APP_VERSION = "v0.7.0"
-
 CORE_IMPORTS = ["pandas", "numpy", "sklearn", "joblib", "typer", "requests"]
 NFL_IMPORT = "nfl_data_py"
 PYTHON_TOO_NEW_MESSAGE = (

@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.shared.mlb_teams import mlb_team_abbreviation, normalize_mlb_abbrev
+from src.shared.version import APP_VERSION
 
 TRACKING_DIR = ROOT / "data" / "tracking"
 RAW_MLB_DIR = ROOT / "data" / "raw" / "mlb"
@@ -27,7 +28,6 @@ RECORD_JS = TRACKING_DIR / "model_record.js"
 MLB_BACKTEST = PREDICTIONS_DIR / "mlb_backtest_predictions.json"
 NFL_PREDICTIONS = PREDICTIONS_DIR / "nfl_predictions.json"
 MLB_COMPARISON = REPORTS_DIR / "mlb_model_comparison.json"
-APP_VERSION = "v0.7.0"
 SCORED_RESULTS = {"win", "loss", "push"}
 
 

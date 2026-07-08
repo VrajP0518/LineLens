@@ -56,6 +56,7 @@ def main() -> int:
     registry = load_json(DATA_DIR / "models" / "model_registry.json")
     prediction_log = load_json(DATA_DIR / "tracking" / "model_predictions_log.json")
     model_record = load_json(DATA_DIR / "tracking" / "model_record.json")
+    odds = load_json(DATA_DIR / "odds" / "odds_snapshots.json")
     selected_models = [row for row in registry.get("models", []) if row.get("selected")]
     log_rows = prediction_log.get("predictions", [])
     scored_rows = [
@@ -122,6 +123,13 @@ def main() -> int:
                 "nfl_overall": ((model_record.get("sports") or {}).get("NFL") or {}).get("overall"),
                 "error": model_record.get("_error"),
             },
+        },
+        "odds": {
+            "status": (odds.get("metadata") or {}).get("source_status", "missing") if odds else "missing",
+            "provider": (odds.get("metadata") or {}).get("provider") if odds else None,
+            "snapshot_count": (odds.get("metadata") or {}).get("snapshot_count", 0) if odds else 0,
+            "new_snapshot_count": (odds.get("metadata") or {}).get("new_snapshot_count", 0) if odds else 0,
+            "error": odds.get("_error"),
         },
     }
     print(json.dumps(summary, indent=2))

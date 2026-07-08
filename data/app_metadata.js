@@ -1,1 +1,1 @@
-window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v0.7.0","release":"Live widget schedule coverage and model record page","generated_at":"2026-07-07T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};
+window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v1.0.0","release":"Demo release","generated_at":"2026-07-08T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};
