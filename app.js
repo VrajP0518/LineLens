@@ -2,6 +2,7 @@ const APP_VERSION = "v1.0.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
+const FAVORITES_KEY = "linelens.favorites.v1";
 
 const DATA_SOURCES = {
     app: ["data/app_metadata.json"],
@@ -57,6 +58,8 @@ const state = {
         presentationMode: false,
         tableDensity: "comfortable",
     },
+    favorites: { teams: [], games: [] },
+    gamecast: { open: false, sport: null, gameId: null },
     tracker: [],
     refreshLogs: [],
     charts: {},
@@ -329,6 +332,11 @@ function loadSettings() {
 function setBodyModes() {
     document.body.classList.toggle("presentation-mode", Boolean(state.selected.presentationMode));
     document.body.classList.toggle("density-compact", state.selected.tableDensity === "compact");
+    const toggle = $("#presentation-toggle");
+    if (toggle) {
+        toggle.classList.toggle("is-active", Boolean(state.selected.presentationMode));
+        toggle.textContent = state.selected.presentationMode ? "Demo Mode On" : "Demo Mode";
+    }
 }
 
 function loadTracker() {
@@ -341,6 +349,22 @@ function loadTracker() {
 
 function saveTracker() {
     localStorage.setItem(TRACKER_KEY, JSON.stringify(state.tracker));
+}
+
+function loadFavorites() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "{}");
+        state.favorites = {
+            teams: Array.isArray(saved.teams) ? saved.teams : [],
+            games: Array.isArray(saved.games) ? saved.games : [],
+        };
+    } catch (_error) {
+        state.favorites = { teams: [], games: [] };
+    }
+}
+
+function saveFavorites() {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(state.favorites));
 }
 
 function loadRefreshLogs() {
@@ -417,6 +441,49 @@ function teamCell(sport, code, display) {
             <span>${escapeHtml(display || meta.full_name)}</span>
         </button>
     `;
+}
+
+function teamFavoriteId(sport, code) {
+    return `${sport}:${String(code || "").toUpperCase()}`;
+}
+
+function gameFavoriteId(game) {
+    const sport = game?.sport || "MLB";
+    return `${sport}:${gameKey(game)}`;
+}
+
+function isFavoriteTeam(sport, code) {
+    return state.favorites.teams.includes(teamFavoriteId(sport, code));
+}
+
+function isWatchedGame(game) {
+    return state.favorites.games.includes(gameFavoriteId(game));
+}
+
+function renderFavoriteButton(sport, code, label = "Favorite team") {
+    const active = isFavoriteTeam(sport, code);
+    return `<button class="favorite-btn ${active ? "is-active" : ""}" type="button" data-favorite-team="${escapeHtml(teamFavoriteId(sport, code))}" aria-label="${escapeHtml(label)}">${active ? "★" : "☆"}</button>`;
+}
+
+function renderWatchButton(game, label = "Watch game") {
+    const active = isWatchedGame(game);
+    return `<button class="favorite-btn favorite-btn--game ${active ? "is-active" : ""}" type="button" data-watch-game="${escapeHtml(gameFavoriteId(game))}" aria-label="${escapeHtml(label)}">${active ? "★" : "☆"}</button>`;
+}
+
+function toggleFavoriteTeam(id) {
+    const exists = state.favorites.teams.includes(id);
+    state.favorites.teams = exists ? state.favorites.teams.filter(item => item !== id) : [id, ...state.favorites.teams];
+    saveFavorites();
+    renderAll();
+    showToast(exists ? "Team removed from favorites" : "Team added to favorites");
+}
+
+function toggleWatchedGame(id) {
+    const exists = state.favorites.games.includes(id);
+    state.favorites.games = exists ? state.favorites.games.filter(item => item !== id) : [id, ...state.favorites.games];
+    saveFavorites();
+    renderAll();
+    showToast(exists ? "Game removed from watchlist" : "Game added to watchlist");
 }
 
 function getGameProbability(game, sport) {
@@ -527,6 +594,10 @@ function currentGames() {
     ];
 }
 
+function liveGames() {
+    return state.live.games.map(game => ({ ...game, sport: game.sport || "MLB" }));
+}
+
 function topEdges(limit = 5, options = {}) {
     const source = options.includeBacktest ? allGames() : currentGames();
     return source
@@ -577,6 +648,56 @@ function getComparisonRows(sport = "MLB") {
 
 function gameKey(game) {
     return String(game?.game_id || game?.id || `${game?.sport || ""}-${gameIsoDate(game)}-${game?.away || ""}-${game?.home || ""}`);
+}
+
+function teamsMatch(a, b) {
+    return String(a?.home || "").toUpperCase() === String(b?.home || "").toUpperCase()
+        && String(a?.away || "").toUpperCase() === String(b?.away || "").toUpperCase();
+}
+
+function sameGame(a, b) {
+    if (!a || !b) return false;
+    const aId = String(a.game_id || a.id || "");
+    const bId = String(b.game_id || b.id || "");
+    if (aId && bId && aId === bId) return true;
+    return teamsMatch(a, b) && gameIsoDate(a) === gameIsoDate(b);
+}
+
+function mergedGameRows() {
+    return [
+        ...currentGames(),
+        ...liveGames(),
+        ...state.mlbBacktest.games.map(game => ({ ...game, sport: "MLB", source_type: game.source_type || "backtest" })),
+    ];
+}
+
+function findGameByKey(sport, key) {
+    const normalizedSport = sport || "";
+    const rows = mergedGameRows();
+    return rows.find(game => (normalizedSport ? game.sport === normalizedSport : true) && gameKey(game) === String(key))
+        || rows.find(game => (normalizedSport ? game.sport === normalizedSport : true) && String(game.game_id || game.id || "") === String(key))
+        || null;
+}
+
+function liveGameFor(game) {
+    return liveGames().find(row => row.sport === (game?.sport || "MLB") && sameGame(row, game)) || null;
+}
+
+function latestLogForGame(game) {
+    return getLogEntries()
+        .filter(row => row.sport === (game?.sport || "MLB") && sameGame(row, game))
+        .sort((a, b) => String(b.generated_at || "").localeCompare(String(a.generated_at || "")))[0] || null;
+}
+
+function oddsSnapshotsForGame(game) {
+    const snapshots = Array.isArray(state.odds?.snapshots) ? state.odds.snapshots : [];
+    return snapshots
+        .filter(row => row.sport === (game?.sport || "MLB") && sameGame(row, game))
+        .sort((a, b) => String(b.snapshot_at || "").localeCompare(String(a.snapshot_at || "")));
+}
+
+function latestOddsForGame(game) {
+    return oddsSnapshotsForGame(game)[0] || null;
 }
 
 function sortedGamesByTime(games, direction = "asc") {
@@ -912,6 +1033,7 @@ async function loadAll() {
     setStatus("Loading prediction exports...", "info");
     loadSettings();
     loadTracker();
+    loadFavorites();
     loadRefreshLogs();
     const [
         app,
@@ -1203,9 +1325,17 @@ async function loadAllAfterRefresh() {
 }
 
 function switchView(view) {
+    const previous = state.selected.view;
     state.selected.view = view;
     persistSettings();
-    $$(".view").forEach(el => el.classList.toggle("is-active", el.id === `view-${view}`));
+    $$(".view").forEach(el => {
+        const active = el.id === `view-${view}`;
+        el.classList.toggle("is-active", active);
+        el.classList.toggle("view--entering", active && previous !== view);
+        if (active && previous !== view) {
+            window.setTimeout(() => el.classList.remove("view--entering"), 420);
+        }
+    });
     $$(".nav__item").forEach(btn => btn.classList.toggle("is-active", btn.dataset.view === view));
     const titles = {
         home: ["LineLens Sports", "sports prediction command center"],
@@ -1220,6 +1350,7 @@ function switchView(view) {
     const [title, kicker] = titles[view] || titles.home;
     $("#view-title").textContent = title;
     $("#view-kicker").textContent = kicker;
+    renderGlobalTicker();
 }
 
 function card(label, value, note, extraClass = "") {
@@ -1449,7 +1580,11 @@ function renderBestPickFeatureV2(row) {
             <div class="home-probability-bar" aria-label="Model probability ${probability}">
                 <span style="width:${width}%"></span>
             </div>
-            <button class="btn btn--primary best-pick-v2__cta" data-view-link="${game.sport === "NFL" ? "nfl" : "mlb"}">Open Full Analysis</button>
+            <div class="best-pick-v2__actions">
+                <button class="btn btn--primary best-pick-v2__cta" data-open-gamecast="${game.sport}" data-game-id="${escapeHtml(gameKey(game))}">Open GameCast</button>
+                <button class="btn best-pick-v2__cta" data-view-link="${game.sport === "NFL" ? "nfl" : "mlb"}">Full board</button>
+                ${renderWatchButton(game, "Watch this best pick")}
+            </div>
         </article>
     `;
 }
@@ -1684,17 +1819,42 @@ function renderTickerItem(game) {
             <b>${escapeHtml(sport)}</b>
             <span>${escapeHtml(time)}</span>
             <strong>${escapeHtml(game?.away || "AWAY")} @ ${escapeHtml(game?.home || "HOME")}</strong>
-            <em>${escapeHtml(pick)} ${edge}</em>
+            <em>${pick === "-" ? "No model pick" : `${escapeHtml(pick)} ${edge}`}</em>
             ${resultChip(result)}
             ${score ? `<span>${escapeHtml(score)}</span>` : ""}
         </button>
     `;
 }
 
-function renderSportsTickerV2(rows) {
-    const tickerGames = uniqueRowsByGame(homeBoardGames()).slice(0, 16);
-    const fallbackGames = rows.map(row => row.game);
-    const games = tickerGames.length ? tickerGames : uniqueRowsByGame(fallbackGames);
+function tickerPriority(game) {
+    const sport = game?.sport || "MLB";
+    const status = String(game?.status || game?.status_detail || "").toLowerCase();
+    const date = gameIsoDate(game);
+    let score = 0;
+    if (isWatchedGame(game)) score += 10000;
+    if (isFavoriteTeam(sport, game.home) || isFavoriteTeam(sport, game.away)) score += 5000;
+    if (status.includes("progress") || status.includes("live")) score += 2500;
+    if (date === dateOffsetIso(0)) score += 1000;
+    if (status.includes("scheduled")) score += 350;
+    if (status.includes("final")) score += 150;
+    score += Math.round(safeNumber(getGameEdge(game, sport), 0) * 1000);
+    const time = gameTimestamp(game);
+    if (time !== null) score -= Math.max(0, Math.abs(Date.now() - time) / 100000000);
+    return score;
+}
+
+function tickerGames() {
+    const rows = uniqueRowsByGame([
+        ...liveGames(),
+        ...currentGames(),
+        ...homeBoardGames(),
+    ]).sort((a, b) => tickerPriority(b) - tickerPriority(a));
+    return rows.slice(0, 18);
+}
+
+function renderSportsTickerV2(rows = []) {
+    const fallbackGames = rows.map(row => row.game).filter(Boolean);
+    const games = tickerGames().length ? tickerGames() : uniqueRowsByGame(fallbackGames);
     if (!games.length) {
         return `
             <section class="sports-ticker-v2 sports-ticker-v2--empty">
@@ -1709,6 +1869,133 @@ function renderSportsTickerV2(rows) {
             <span class="ticker-label-v2"><i></i> LineLens Board</span>
             <div class="ticker-window-v2" tabindex="0">
                 <div class="ticker-track-v2">${items}${items}</div>
+            </div>
+        </section>
+    `;
+}
+
+function renderGlobalTicker() {
+    const mount = $("#global-ticker");
+    if (!mount) return;
+    mount.innerHTML = renderSportsTickerV2(topEdges(8));
+}
+
+function rowsForDateFromLogs(date, sport = "MLB") {
+    return getLogEntries().filter(row => row.sport === sport && String(row.game_date || row.generated_at || "").slice(0, 10) === date);
+}
+
+function latestScoredLog(result) {
+    return getLogEntries()
+        .filter(row => String(row.model_result || "").toLowerCase() === result)
+        .sort((a, b) => String(b.generated_at || "").localeCompare(String(a.generated_at || "")))[0] || null;
+}
+
+function dailyBriefData() {
+    const top = topEdges(1)[0] || homeTopEdges(1)[0] || null;
+    const today = dateOffsetIso(0);
+    const yesterday = dateOffsetIso(-1);
+    const todayRecord = summarizeRecordRows(rowsForDateFromLogs(today));
+    const yesterdayRecord = summarizeRecordRows(rowsForDateFromLogs(yesterday));
+    const pending = getLogEntries().filter(row => String(row.model_result || row.result_status || "").toLowerCase() === "pending").length;
+    const bestRecent = latestScoredLog("win");
+    const worstRecent = latestScoredLog("loss");
+    const liveMeta = normalizeMeta(state.live.payload);
+    const oddsMeta = normalizeMeta(state.odds);
+    return {
+        top,
+        today,
+        yesterday,
+        todayRecord,
+        yesterdayRecord,
+        pending,
+        bestRecent,
+        worstRecent,
+        liveStatus: liveMeta.source_status || (state.live.games.length ? "loaded" : "missing"),
+        oddsStatus: oddsMeta.source_status || oddsMeta.status || oddsStatusLabel(),
+    };
+}
+
+function recordSummaryCopy(record) {
+    return `${record.wins}-${record.losses}${record.pushes ? `-${record.pushes}` : ""}${record.pending ? ` / ${record.pending} pending` : ""}`;
+}
+
+function dailyBriefText() {
+    const data = dailyBriefData();
+    const top = data.top?.game;
+    const sport = top?.sport || "MLB";
+    const topLine = top
+        ? `${getGamePick(top, sport)} in ${top.away} @ ${top.home} (${formatProbability(getConfidenceScore(top, sport))}, ${formatEdge(getGameEdge(top, sport))})`
+        : "No current model pick loaded";
+    const best = data.bestRecent ? `${data.bestRecent.model_pick} won ${data.bestRecent.away} @ ${data.bestRecent.home}` : "No scored win loaded";
+    const miss = data.worstRecent ? `${data.worstRecent.model_pick} missed ${data.worstRecent.away} @ ${data.worstRecent.home}` : "No scored miss loaded";
+    return [
+        "LineLens Daily Brief",
+        `Generated: ${timestamp(new Date().toISOString())}`,
+        `Top model lean: ${topLine}`,
+        `Today record: ${recordSummaryCopy(data.todayRecord)}`,
+        `Yesterday record: ${recordSummaryCopy(data.yesterdayRecord)}`,
+        `Pending picks: ${data.pending}`,
+        `Recent win: ${best}`,
+        `Recent miss: ${miss}`,
+        `Live data: ${data.liveStatus}`,
+        `Odds: ${data.oddsStatus}`,
+    ].join("\n");
+}
+
+function copyDailyBrief() {
+    navigator.clipboard?.writeText(dailyBriefText());
+    showToast("Daily Brief copied");
+}
+
+function renderDailyBrief() {
+    const data = dailyBriefData();
+    const top = data.top?.game;
+    const sport = top?.sport || "MLB";
+    const topCopy = top ? `${top.away} @ ${top.home}` : "No current pick";
+    const recap = top
+        ? `LineLens is watching ${getGamePick(top, sport)} as the top lean, with ${formatEdge(getGameEdge(top, sport))} of model separation and ${data.pending} picks still waiting on finals.`
+        : "Load current predictions to populate today’s model brief.";
+    return `
+        <section class="panel daily-brief-card">
+            <header class="section-header">
+                <div>
+                    <p class="eyebrow">LineLens Daily Brief</p>
+                    <h2>SportsDesk rundown</h2>
+                </div>
+                <button class="btn btn--small" type="button" data-copy-daily-brief>Copy brief</button>
+            </header>
+            <div class="brief-grid">
+                <article><span>Top lean</span><strong>${escapeHtml(top ? getGamePick(top, sport) : "-")}</strong><small>${escapeHtml(topCopy)}</small></article>
+                <article><span>Today</span><strong>${escapeHtml(recordSummaryCopy(data.todayRecord))}</strong><small>${escapeHtml(data.today)}</small></article>
+                <article><span>Yesterday</span><strong>${escapeHtml(recordSummaryCopy(data.yesterdayRecord))}</strong><small>${escapeHtml(data.yesterday)}</small></article>
+                <article><span>Odds</span><strong>${escapeHtml(data.oddsStatus)}</strong><small>${escapeHtml(oddsStatusLabel())}</small></article>
+            </div>
+            <p class="brief-recap">${escapeHtml(recap)}</p>
+        </section>
+    `;
+}
+
+function renderModelTrustCenterCompact() {
+    const model = selectedModelEntry("MLB");
+    const record = getModelRecord("MLB");
+    const live = record.live_record || record.overall || {};
+    const backtest = record.backtest_record || {};
+    const registry = (state.modelRegistry?.models || []).filter(row => row.sport === "MLB");
+    const previous = registry.filter(row => !row.selected).sort((a, b) => String(b.trained_at || "").localeCompare(String(a.trained_at || "")))[0];
+    const selectedLogLoss = safeNumber(model?.metrics?.log_loss);
+    const previousLogLoss = safeNumber(previous?.metrics?.log_loss);
+    const improved = selectedLogLoss !== null && previousLogLoss !== null && selectedLogLoss < previousLogLoss;
+    return `
+        <section class="panel trust-compact-card">
+            <header class="section-header">
+                <div><p class="eyebrow">Model Trust</p><h2>${escapeHtml(model?.model_name || "MLB model")}</h2></div>
+                <span class="chip ${improved ? "chip--success" : "chip--soft"}">${previous ? (improved ? "improved" : "watch") : "baseline"}</span>
+            </header>
+            <div class="brief-grid brief-grid--trust">
+                <article><span>Features</span><strong>${escapeHtml(model?.feature_count || state.featureSummary?.feature_count || "-")}</strong><small>active model</small></article>
+                <article><span>Live</span><strong>${escapeHtml(recordLine(live))}</strong><small>${formatProbability(live.accuracy)}</small></article>
+                <article><span>Backtest</span><strong>${escapeHtml(recordLine(backtest))}</strong><small>${formatProbability(backtest.accuracy)}</small></article>
+                <article><span>Trained</span><strong>${escapeHtml(timestamp(model?.trained_at))}</strong><small>${escapeHtml(model?.version || state.app.version || APP_VERSION)}</small></article>
             </div>
         </section>
     `;
@@ -1741,17 +2028,18 @@ function renderHome() {
                 ${homeMetricCard("TIME", "Latest Export", latest ? formatDate(latest) : "-", latest ? timestamp(latest) : "no timestamp", "blue")}
             </section>
             ${renderRefreshHealthBanner()}
+            ${renderDailyBrief()}
             <section class="home-v2-grid">
                 ${renderBestPickFeatureV2(best)}
                 ${renderHomeDailyBoard(scopedRows)}
                 ${renderHomeReadoutV2(top)}
             </section>
+            ${renderModelTrustCenterCompact()}
             ${renderLiveWidgetPreview()}
             <section class="home-v2-system-note">
                 <span>${escapeHtml(refreshSportStatus(state.selected.homeSport || "MLB").status)} · Full refresh console is in Settings.</span>
                 <button class="btn btn--small" data-view-link="settings">Open Settings</button>
             </section>
-            ${renderSportsTickerV2(top)}
         </section>
     `;
 }
@@ -2246,6 +2534,7 @@ function teamBoardBlock(sport, game, side) {
     const pitcher = sport === "MLB" ? game?.[`${side}_probable_pitcher`] : null;
     return `
         <div class="desk-team">
+            ${renderFavoriteButton(sport, meta.abbreviation, `Favorite ${meta.full_name}`)}
             ${renderTeamLogo(sport, meta.abbreviation, "md", meta.full_name)}
             <div>
                 <strong>${escapeHtml(meta.full_name)}</strong>
@@ -2295,6 +2584,7 @@ function renderPredictionCard(sport, game, source, index) {
             <div class="desk-factor">
                 <span>Top factor</span>
                 <strong>${escapeHtml(sport === "MLB" ? (game.top_factor_label || game.explanation?.top_factors?.[0]?.label || "Model signal") : (game.top_factor_label || "Spread signal"))}</strong>
+                <button class="btn btn--micro" type="button" data-open-gamecast="${sport}" data-game-id="${escapeHtml(gameKey({ ...game, sport }))}">GameCast</button>
             </div>
         </article>
     `;
@@ -2649,6 +2939,247 @@ function renderCLV(game, sport) {
     return `<div class="detail-card detail-card--compact"><span>Closing line value</span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(note)}</small></div>`;
 }
 
+function openGameCast(sport, gameOrKey) {
+    const game = typeof gameOrKey === "object" ? gameOrKey : findGameByKey(sport, gameOrKey);
+    if (!game) {
+        showToast("GameCast could not find that matchup in loaded exports.");
+        return;
+    }
+    state.gamecast = { open: true, sport: sport || game.sport || "MLB", gameId: gameKey(game) };
+    renderGameCastRoot();
+}
+
+function closeGameCast() {
+    state.gamecast.open = false;
+    renderGameCastRoot();
+}
+
+function gamecastGame() {
+    if (!state.gamecast.open) return null;
+    return findGameByKey(state.gamecast.sport, state.gamecast.gameId);
+}
+
+function gameStatusLine(game, live) {
+    const source = live || game;
+    const parts = [source?.status_detail || source?.status || getGameTimeLabel(game)].filter(Boolean);
+    if (source?.inning) parts.push(`${source.inning_state || ""} ${source.inning}`.trim());
+    if (safeNumber(source?.outs) !== null) parts.push(`${source.outs} out${safeNumber(source.outs) === 1 ? "" : "s"}`);
+    if (safeNumber(source?.balls) !== null && safeNumber(source?.strikes) !== null) parts.push(`${source.balls}-${source.strikes} count`);
+    return parts.join(" · ") || "Status pending";
+}
+
+function basesLabel(bases) {
+    if (!bases || typeof bases !== "object") return "Bases unavailable";
+    const labels = [];
+    if (bases.first) labels.push("1st");
+    if (bases.second) labels.push("2nd");
+    if (bases.third) labels.push("3rd");
+    return labels.length ? `Runners: ${labels.join(" + ")}` : "Bases empty";
+}
+
+function renderGameCastScore(game, live) {
+    const sport = game?.sport || "MLB";
+    const source = live || game;
+    const away = getTeamMeta(sport, game.away, game.away_display);
+    const home = getTeamMeta(sport, game.home, game.home_display);
+    const awayScore = safeNumber(source?.away_score);
+    const homeScore = safeNumber(source?.home_score);
+    return `
+        <section class="gamecast-score">
+            <div>${renderTeamLogo(sport, away.abbreviation, "md", away.full_name)}<span>${escapeHtml(away.abbreviation)}</span><strong>${awayScore === null ? "-" : awayScore}</strong></div>
+            <span>@</span>
+            <div>${renderTeamLogo(sport, home.abbreviation, "md", home.full_name)}<span>${escapeHtml(home.abbreviation)}</span><strong>${homeScore === null ? "-" : homeScore}</strong></div>
+        </section>
+        <p class="gamecast-status">${escapeHtml(gameStatusLine(game, live))}</p>
+    `;
+}
+
+function renderModelReaction(game) {
+    const log = latestLogForGame(game);
+    const label = accountabilityLabel(log || game);
+    if (label === "Correct") return `<span class="chip chip--success">Model Won</span>`;
+    if (label === "Wrong") return `<span class="chip chip--danger">Model Lost</span>`;
+    if (label === "Push") return `<span class="chip chip--warning">Push</span>`;
+    if (getGamePick(game, game?.sport || "MLB") === "-") return `<span class="chip chip--soft">No Logged Pick</span>`;
+    return `<span class="chip chip--warning">Pending</span>`;
+}
+
+function renderKeyPlays(game) {
+    const live = liveGameFor(game);
+    const plays = Array.isArray(live?.plays) ? live.plays : [];
+    const latestPlay = live?.latest_play || game.latest_play;
+    if (!plays.length && !latestPlay) {
+        return emptyState("No play feed available", game.sport === "NFL" ? "NFL live play feed is not connected yet." : "MLB live feed did not include play-by-play for this game.");
+    }
+    const rows = plays.length
+        ? plays.slice(-12).reverse()
+        : [{ description: latestPlay, event: "Latest play", inning: live?.inning, half: live?.inning_state, outs: live?.outs }];
+    return `
+        <div class="key-play-list">
+            ${rows.map(play => `
+                <article>
+                    <span>${escapeHtml([play.half, play.inning ? `Inning ${play.inning}` : "", play.count, safeNumber(play.outs) !== null ? `${play.outs} out${safeNumber(play.outs) === 1 ? "" : "s"}` : ""].filter(Boolean).join(" · ") || play.event || "Play")}</span>
+                    <strong>${escapeHtml(play.description || play.event || "Play detail unavailable")}</strong>
+                    <small>${escapeHtml(play.timestamp ? timestamp(play.timestamp) : "Source play feed")}</small>
+                </article>
+            `).join("")}
+        </div>
+    `;
+}
+
+function timelineItem(label, value, status = "neutral") {
+    return `<li data-status="${escapeHtml(status)}"><span></span><div><strong>${escapeHtml(label)}</strong><small>${escapeHtml(value)}</small></div></li>`;
+}
+
+function renderPredictionTimeline(game) {
+    const log = latestLogForGame(game);
+    const odds = latestOddsForGame(game);
+    const live = liveGameFor(game);
+    const final = finalScoreLabel(live || game);
+    const items = [
+        timelineItem("Prediction exported", log?.generated_at ? timestamp(log.generated_at) : "No logged prediction", log ? "done" : "missing"),
+        timelineItem("Odds snapshot", odds?.snapshot_at ? `${timestamp(odds.snapshot_at)} · ${safeNumber(odds.bookmakers_count, 0)} books` : "No odds snapshot", odds ? "done" : "missing"),
+        timelineItem("Game status", gameStatusLine(game, live), "done"),
+        timelineItem("Final score", final || "Result pending", final ? "done" : "pending"),
+        timelineItem("Model scored", log?.model_result ? accountabilityLabel(log) : "Pending or no logged pick", log?.model_result ? "done" : "pending"),
+    ];
+    return `<ol class="prediction-timeline">${items.join("")}</ol>`;
+}
+
+function renderGameCastMarket(game) {
+    const sport = game?.sport || "MLB";
+    const odds = latestOddsForGame(game);
+    if (!odds) return emptyState("No market snapshot", "Run npm run refresh:odds when an ODDS_API_KEY is configured.");
+    return `
+        <div class="gamecast-market">
+            ${card("Books", safeNumber(odds.bookmakers_count, 0), "snapshot consensus")}
+            ${card("Home line", formatLine(odds.moneyline_home_current ?? odds.best_home_moneyline, sport), odds.home_display || game.home)}
+            ${card("Away line", formatLine(odds.moneyline_away_current ?? odds.best_away_moneyline, sport), odds.away_display || game.away)}
+            ${card("Implied home", formatProbability(odds.market_implied_home), timestamp(odds.snapshot_at))}
+        </div>
+    `;
+}
+
+function renderGameCastWhy(game) {
+    const sport = game?.sport || "MLB";
+    if (sport !== "MLB") {
+        return `<p class="muted">NFL explanations depend on exported spread feature fields. Historical rows show the scored pick and spread context when available.</p>`;
+    }
+    const explanation = game.explanation || {};
+    const factors = explanation.top_factors || [];
+    return `
+        <p class="muted">${escapeHtml(explanation.summary || "No exported explanation for this row.")}</p>
+        ${factors.length ? `<div class="factor-list factor-list--compact">${factors.slice(0, 3).map(renderFactorRow).join("")}</div>` : ""}
+    `;
+}
+
+function renderGameCast(game, sport) {
+    const live = liveGameFor(game);
+    const quality = featureQualityForGame(game);
+    const prediction = getGamePick(game, sport);
+    return `
+        <div class="gamecast-backdrop" data-close-gamecast></div>
+        <aside class="gamecast-drawer" role="dialog" aria-modal="true" aria-label="LineLens GameCast">
+            <header class="gamecast-header">
+                <div>
+                    <p class="eyebrow">LineLens GameCast</p>
+                    <h2>${escapeHtml(game.away || "Away")} @ ${escapeHtml(game.home || "Home")}</h2>
+                </div>
+                <div class="gamecast-actions">
+                    ${renderWatchButton({ ...game, sport }, "Watch this matchup")}
+                    <button class="icon-btn" type="button" data-close-gamecast aria-label="Close GameCast">×</button>
+                </div>
+            </header>
+            ${renderGameCastScore(game, live)}
+            <section class="gamecast-grid">
+                <article class="gamecast-panel gamecast-panel--pick">
+                    <span>Model pick</span>
+                    <strong>${escapeHtml(prediction)}</strong>
+                    <small>${formatProbability(getConfidenceScore(game, sport))} · ${formatEdge(getGameEdge(game, sport))}</small>
+                    ${renderModelReaction(game)}
+                </article>
+                <article class="gamecast-panel">
+                    <span>Live context</span>
+                    <strong>${escapeHtml(live?.latest_play || game.latest_play || "No latest play loaded")}</strong>
+                    <small>${sport === "MLB" ? escapeHtml(basesLabel(live?.bases)) : "NFL live play feed unavailable"}</small>
+                </article>
+                <article class="gamecast-panel">
+                    <span>${sport === "MLB" ? "Pitchers" : "Injuries"}</span>
+                    <strong>${sport === "MLB" ? `${escapeHtml(shortDisplayName(game.away_probable_pitcher || live?.probable_pitchers?.away))} vs ${escapeHtml(shortDisplayName(game.home_probable_pitcher || live?.probable_pitchers?.home))}` : escapeHtml(game.injury_note || "Unavailable")}</strong>
+                    <small>${sport === "MLB" ? `Pitcher ${compactQualityValue(quality.pitcher)} · Travel ${compactQualityValue(quality.travel)}` : "Real injury export dependent"}</small>
+                </article>
+            </section>
+            <section class="gamecast-section">
+                <header><h3>Why this pick?</h3></header>
+                ${renderGameCastWhy(game)}
+            </section>
+            <section class="gamecast-section">
+                <header><h3>Market / Odds</h3></header>
+                ${renderGameCastMarket(game)}
+            </section>
+            <section class="gamecast-section">
+                <header><h3>Prediction Timeline</h3></header>
+                ${renderPredictionTimeline(game)}
+            </section>
+            <section class="gamecast-section">
+                <header><h3>Key Plays</h3></header>
+                ${renderKeyPlays(game)}
+            </section>
+        </aside>
+    `;
+}
+
+function renderGameCastRoot() {
+    const root = $("#gamecast-root");
+    if (!root) return;
+    const game = gamecastGame();
+    root.innerHTML = state.gamecast.open && game ? renderGameCast(game, state.gamecast.sport || game.sport || "MLB") : "";
+    document.body.classList.toggle("gamecast-open", Boolean(state.gamecast.open && game));
+}
+
+function renderOddsMovementBoard() {
+    const snapshots = Array.isArray(state.odds?.snapshots) ? state.odds.snapshots : [];
+    const latest = snapshots
+        .slice()
+        .sort((a, b) => String(b.snapshot_at || "").localeCompare(String(a.snapshot_at || "")))
+        .slice(0, 10);
+    if (!latest.length) {
+        return `
+            <header><p class="eyebrow">Market Board</p><h2>Odds snapshots</h2></header>
+            ${emptyState("Odds disabled or missing", "Add ODDS_API_KEY locally, then run npm run refresh:odds. No lines are fabricated.")}
+        `;
+    }
+    const joined = latest.filter(snapshot => currentGames().some(game => sameGame(game, snapshot)));
+    return `
+        <header class="section-header">
+            <div><p class="eyebrow">Market Board</p><h2>Odds movement snapshot</h2></div>
+            <span class="chip ${normalizeMeta(state.odds).source_status === "success" ? "chip--success" : "chip--warning"}">${escapeHtml(normalizeMeta(state.odds).source_status || "cached")}</span>
+        </header>
+        <div class="market-strip">
+            ${card("Snapshots", snapshots.length, `${joined.length} joined to current board`)}
+            ${card("Provider", normalizeMeta(state.odds).provider || "optional", normalizeMeta(state.odds).source || "odds feed")}
+            ${card("Generated", timestamp(normalizeMeta(state.odds).generated_at), "cached export")}
+        </div>
+        <div class="market-board-list">
+            ${latest.map(snapshot => {
+                const match = currentGames().find(game => sameGame(game, snapshot));
+                const sport = snapshot.sport || match?.sport || "MLB";
+                const pick = match ? getGamePick(match, sport) : "No model pick";
+                const edge = match ? formatEdge(getGameEdge(match, sport)) : "No edge";
+                return `
+                    <article>
+                        <div><strong>${escapeHtml(snapshot.away || "-")} @ ${escapeHtml(snapshot.home || "-")}</strong><span>${escapeHtml(formatDate(snapshot.game_date || snapshot.commence_time))}</span></div>
+                        <div><span>Home</span><strong>${formatLine(snapshot.moneyline_home_current ?? snapshot.best_home_moneyline, sport)}</strong></div>
+                        <div><span>Away</span><strong>${formatLine(snapshot.moneyline_away_current ?? snapshot.best_away_moneyline, sport)}</strong></div>
+                        <div><span>Model</span><strong>${escapeHtml(pick)}</strong><small>${edge}</small></div>
+                        <div><span>Books</span><strong>${safeNumber(snapshot.bookmakers_count, 0)}</strong><small>${escapeHtml(timestamp(snapshot.snapshot_at))}</small></div>
+                    </article>
+                `;
+            }).join("")}
+        </div>
+    `;
+}
+
 function renderReports() {
     const sport = state.selected.reportSport || "MLB";
     const report = state.report?.sports?.[sport] || {};
@@ -2682,6 +3213,7 @@ function renderReports() {
             <article class="panel">${renderPredictionLogSummary(sport)}</article>
             <article class="panel">${renderFeatureSummary(sport)}</article>
         </section>
+        <section class="panel">${renderOddsMovementBoard()}</section>
         <section class="dashboard-grid">
             <article class="panel">${renderModelRegistryPanel(sport)}</article>
             <article class="panel"><header><p class="eyebrow">Auto report</p><h2>Generated report text</h2></header><div class="report-actions"><button class="btn" data-generate-report="NFL">Generate NFL Weekly Report</button><button class="btn" data-generate-report="MLB">Generate MLB Daily Report</button><button class="btn btn--primary" id="copy-report-btn">Copy Report</button></div><textarea id="generated-report" readonly>${escapeHtml(generateReportText(sport))}</textarea></article>
@@ -3115,6 +3647,7 @@ function renderTeamProfile(team) {
             <div class="team-profile__hero" style="--team-color:${team.primary}">
                 ${renderTeamLogo(team.sport, team.abbreviation, "lg", team.full_name)}
                 <div><p class="eyebrow">${team.sport}</p><h2>${escapeHtml(team.full_name)}</h2><p class="muted">${escapeHtml(team.city)} profile generated from loaded prediction exports.</p></div>
+                ${renderFavoriteButton(team.sport, team.abbreviation, `Favorite ${team.full_name}`)}
             </div>
             <div class="summary-grid summary-grid--compact">
                 ${card("Loaded games", games.length, "prediction rows")}
@@ -3338,6 +3871,7 @@ function renderSettings() {
 }
 
 function renderAll() {
+    setBodyModes();
     renderHome();
     renderNFL();
     renderMLB();
@@ -3346,6 +3880,8 @@ function renderAll() {
     renderTeams();
     renderTracking();
     renderSettings();
+    renderGlobalTicker();
+    renderGameCastRoot();
     switchView(state.selected.view || "home");
 }
 
@@ -3358,6 +3894,43 @@ function bindEvents() {
         if (nav) switchView(nav.dataset.view);
 
         if (event.target.closest("[data-open-live-widget]")) openLiveWidget();
+
+        if (event.target.id === "presentation-toggle") {
+            state.selected.presentationMode = !state.selected.presentationMode;
+            setBodyModes();
+            persistSettings();
+            renderAll();
+            showToast(state.selected.presentationMode ? "Presentation Mode on" : "Presentation Mode off");
+            return;
+        }
+
+        const favoriteButton = event.target.closest("[data-favorite-team]");
+        if (favoriteButton) {
+            toggleFavoriteTeam(favoriteButton.dataset.favoriteTeam);
+            return;
+        }
+
+        const watchButton = event.target.closest("[data-watch-game]");
+        if (watchButton) {
+            toggleWatchedGame(watchButton.dataset.watchGame);
+            return;
+        }
+
+        const gamecastButton = event.target.closest("[data-open-gamecast]");
+        if (gamecastButton) {
+            openGameCast(gamecastButton.dataset.openGamecast, gamecastButton.dataset.gameId);
+            return;
+        }
+
+        if (event.target.closest("[data-close-gamecast]")) {
+            closeGameCast();
+            return;
+        }
+
+        if (event.target.closest("[data-copy-daily-brief]")) {
+            copyDailyBrief();
+            return;
+        }
 
         const recordSport = event.target.closest("[data-record-sport]");
         if (recordSport) {
@@ -3432,12 +4005,12 @@ function bindEvents() {
         const tickerOpenGame = event.target.closest("[data-ticker-open-game]");
         if (tickerOpenGame) {
             const sport = tickerOpenGame.dataset.tickerOpenGame;
-            const source = sport === "NFL" ? ensureNflScope().games : homeBoardGames();
-            const game = source.find(item => gameKey({ ...item, sport }) === tickerOpenGame.dataset.gameId);
+            const game = findGameByKey(sport, tickerOpenGame.dataset.gameId);
             if (game) state.selected[sport.toLowerCase()] = game;
             persistSettings();
             sport === "NFL" ? renderNFL() : renderMLB();
             switchView(sport.toLowerCase());
+            if (game) openGameCast(sport, game);
         }
 
         const team = event.target.closest("[data-team-code]");
@@ -3566,6 +4139,12 @@ function bindEvents() {
             state.tracker[index][field] = ["units", "profit"].includes(field) ? safeNumber(trackerInput.value, 0) : trackerInput.value;
             saveTracker();
             renderTracking();
+        }
+    });
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && state.gamecast.open) {
+            closeGameCast();
         }
     });
 
