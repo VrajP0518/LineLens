@@ -39,7 +39,7 @@ textarea {
 
 .app-shell {
     display: grid;
-    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-columns: clamp(214px, 15vw, 260px) minmax(0, 1fr);
     min-height: 100vh;
 }
 
@@ -128,6 +128,7 @@ textarea {
 .workspace {
     min-width: 0;
     padding: 1.1rem 1.35rem 5.6rem;
+    overflow-x: hidden;
 }
 
 .topbar {
@@ -145,6 +146,10 @@ textarea {
     margin: 0;
     letter-spacing: 0;
     line-height: 1.08;
+}
+
+.topbar .eyebrow {
+    display: none;
 }
 
 .topbar__meta,
@@ -261,6 +266,10 @@ textarea {
     border-radius: var(--radius);
     background: rgba(17, 24, 35, 0.78);
     color: var(--muted);
+}
+
+.data-status:empty {
+    display: none;
 }
 
 .data-status[data-variant="success"] {
@@ -919,9 +928,18 @@ button:disabled {
 
 .detail-card {
     display: grid;
-    gap: 0.35rem;
+    gap: 0.42rem;
     align-content: start;
     min-height: 104px;
+}
+
+.detail-card > span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 850;
+    line-height: 1.25;
+    text-transform: uppercase;
 }
 
 .detail-card strong {
@@ -933,11 +951,9 @@ button:disabled {
 
 .detail-card small {
     max-width: 28ch;
-}
-
-.detail-card small {
     font-size: 0.82rem;
     line-height: 1.45;
+    color: var(--muted);
 }
 
 .detail-card--compact {
@@ -1037,6 +1053,119 @@ code {
     transform: translateY(0);
 }
 
+.live-notification-root {
+    position: fixed;
+    top: 1rem;
+    left: calc(260px + 1.1rem);
+    z-index: 75;
+    width: min(390px, calc(100vw - 2rem));
+    pointer-events: none;
+}
+
+.live-alert-stack {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.live-alert,
+.live-alert-clear {
+    pointer-events: auto;
+}
+
+.live-alert {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.85rem;
+    align-items: start;
+    border: 1px solid rgba(92, 200, 255, 0.28);
+    border-radius: 12px;
+    background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(8, 13, 23, 0.94)),
+        var(--panel-3);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), 0 0 26px rgba(92, 200, 255, 0.12);
+    padding: 0.78rem 0.82rem;
+    animation: liveAlertEnter 0.28s ease both;
+    backdrop-filter: blur(16px);
+}
+
+.live-alert--score {
+    border-color: rgba(100, 214, 162, 0.38);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), 0 0 26px rgba(100, 214, 162, 0.14);
+}
+
+.live-alert--final {
+    border-color: rgba(244, 203, 106, 0.42);
+}
+
+.live-alert span,
+.live-alert strong,
+.live-alert small {
+    display: block;
+}
+
+.live-alert span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    color: #bde9ff;
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.live-alert span i {
+    width: 0.46rem;
+    height: 0.46rem;
+    border-radius: 999px;
+    background: var(--success);
+    box-shadow: 0 0 12px rgba(100, 214, 162, 0.8);
+}
+
+.live-alert strong {
+    margin-top: 0.2rem;
+    color: var(--text);
+    font-size: 0.98rem;
+    line-height: 1.22;
+}
+
+.live-alert small {
+    margin-top: 0.28rem;
+    color: var(--muted);
+    line-height: 1.35;
+}
+
+.live-alert button,
+.live-alert-clear {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.live-alert button {
+    width: 1.7rem;
+    height: 1.7rem;
+    padding: 0;
+}
+
+.live-alert-clear {
+    justify-self: start;
+    padding: 0.32rem 0.7rem;
+    font-size: 0.78rem;
+}
+
+@keyframes liveAlertEnter {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (max-width: 1100px) {
     .app-shell {
         grid-template-columns: 1fr;
@@ -1067,6 +1196,10 @@ code {
     .topbar {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .live-notification-root {
+        left: 1rem;
     }
 }
 
@@ -1939,7 +2072,7 @@ body {
 
 /* ==========================================================
    LineLens v1.0.0 Home v2 command center
-   The rendered Home view now uses inline SVG line art instead of CSS ball objects.
+   Home now uses a local generated bitmap hero instead of CSS/SVG sports objects.
    ========================================================== */
 
 .home-v2-shell {
@@ -2041,33 +2174,35 @@ body {
     place-items: center;
 }
 
-.hero-holo svg {
-    width: min(100%, 520px);
-    height: auto;
-    overflow: visible;
-    filter: drop-shadow(0 0 30px rgba(25, 183, 255, 0.24));
+.hero-holo--image {
+    position: relative;
+    align-self: stretch;
+    min-height: clamp(230px, 26vw, 360px);
+    overflow: hidden;
+    border: 1px solid rgba(103, 232, 249, 0.18);
+    border-radius: 18px;
+    background: #050914;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.38), inset 0 0 40px rgba(92, 200, 255, 0.08);
 }
 
-.hero-holo__lights {
-    animation: llStadiumFlicker 5.8s ease-in-out infinite;
+.hero-holo--image img {
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+    object-fit: cover;
+    object-position: 62% center;
+    opacity: 0.95;
+    transform: scale(1.01);
 }
 
-.hero-holo__baseball,
-.hero-holo__football {
-    animation: llFloat 7.5s ease-in-out infinite;
-}
-
-.hero-holo__football {
-    animation-delay: -3.2s;
-}
-
-.hero-holo__rings {
-    animation: llRingPulse 4.4s ease-in-out infinite;
-    transform-origin: 280px 238px;
-}
-
-.hero-holo__sweep {
-    animation: llGlowBreathe 4.6s ease-in-out infinite;
+.hero-holo--image::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(90deg, rgba(3, 7, 18, 0.40), transparent 48%),
+        radial-gradient(ellipse at 85% 20%, rgba(92, 200, 255, 0.18), transparent 34%);
 }
 
 .top-edge-mini {
@@ -2985,7 +3120,7 @@ body {
 
 .prediction-desk {
     display: grid;
-    grid-template-columns: minmax(760px, 1fr) minmax(315px, 390px);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
     align-items: start;
     gap: 1rem;
 }
@@ -3094,11 +3229,12 @@ body {
 .prediction-card-list {
     display: grid;
     gap: 0.45rem;
+    min-width: 0;
 }
 
 .prediction-row-card {
     display: grid;
-    grid-template-columns: 72px minmax(170px, 1.25fr) 22px minmax(170px, 1.25fr) minmax(100px, 0.72fr) minmax(88px, 0.52fr) minmax(100px, 0.58fr) minmax(92px, 0.52fr) minmax(130px, 0.8fr);
+    grid-template-columns: 68px minmax(150px, 1.15fr) 20px minmax(150px, 1.15fr) minmax(88px, 0.64fr) minmax(78px, 0.48fr) minmax(92px, 0.52fr) minmax(86px, 0.46fr) minmax(118px, 0.7fr);
     align-items: center;
     gap: 0.8rem;
     min-height: 86px;
@@ -3460,7 +3596,7 @@ body {
 
 .market-strip {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.7rem;
     margin-bottom: 0.85rem;
 }
@@ -3472,7 +3608,7 @@ body {
 
 .market-board-list article {
     display: grid;
-    grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(110px, 0.7fr));
+    grid-template-columns: minmax(220px, 1.4fr) repeat(5, minmax(100px, 0.7fr));
     align-items: center;
     gap: 0.7rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -3662,6 +3798,55 @@ body {
     color: var(--muted);
 }
 
+.accountability-center {
+    border-color: rgba(100, 214, 162, 0.20);
+}
+
+.accountability-grid,
+.accountability-strip {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.accountability-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 0.9rem;
+}
+
+.accountability-strip {
+    grid-template-columns: repeat(7, minmax(130px, 1fr));
+    margin-top: 0.85rem;
+}
+
+.accountability-grid article {
+    min-height: 96px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 12px;
+    padding: 0.85rem;
+    background: rgba(3, 7, 18, 0.32);
+}
+
+.accountability-grid span,
+.accountability-strip .summary-card span {
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.accountability-grid strong {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 1.05rem;
+    line-height: 1.25;
+}
+
+.accountability-grid small {
+    display: block;
+    margin-top: 0.4rem;
+    color: var(--muted);
+}
+
 .btn--small {
     min-height: 34px;
     padding: 0.35rem 0.7rem;
@@ -3759,6 +3944,20 @@ body {
     color: var(--muted);
 }
 
+@media (max-width: 1700px) {
+    .prediction-desk {
+        grid-template-columns: 1fr;
+    }
+
+    .prediction-rail {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .rail-card--top {
+        grid-column: span 1;
+    }
+}
+
 @media (max-width: 1300px) {
     .home-v2-hero,
     .home-v2-grid {
@@ -3774,20 +3973,13 @@ body {
     }
 
     .refresh-health-strip,
-    .trust-grid {
+    .trust-grid,
+    .accountability-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .prediction-desk {
-        grid-template-columns: 1fr;
-    }
-
-    .prediction-rail {
+    .accountability-strip {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .rail-card--top {
-        grid-column: span 1;
     }
 
     .brief-grid,
@@ -3802,13 +3994,49 @@ body {
 }
 
 @media (max-width: 1120px) {
-    .prediction-card-list {
-        overflow-x: auto;
-        padding-bottom: 0.2rem;
+    .prediction-row-card {
+        grid-template-columns: 62px minmax(0, 1fr) 20px minmax(0, 1fr) minmax(86px, auto);
+        grid-template-areas:
+            "time away at home pick"
+            "edge confidence result factor factor";
+        gap: 0.65rem 0.75rem;
+        min-height: auto;
     }
 
-    .prediction-row-card {
-        min-width: 980px;
+    .prediction-row-card .desk-time {
+        grid-area: time;
+    }
+
+    .prediction-row-card > .desk-team:nth-child(2) {
+        grid-area: away;
+    }
+
+    .prediction-row-card .desk-at {
+        grid-area: at;
+    }
+
+    .prediction-row-card > .desk-team:nth-child(4) {
+        grid-area: home;
+    }
+
+    .prediction-row-card .desk-pick {
+        grid-area: pick;
+    }
+
+    .prediction-row-card .desk-edge {
+        grid-area: edge;
+    }
+
+    .prediction-row-card .desk-confidence {
+        grid-area: confidence;
+    }
+
+    .prediction-row-card .desk-result {
+        grid-area: result;
+    }
+
+    .prediction-row-card .desk-factor {
+        grid-area: factor;
     }
 
     .desk-header {
@@ -3840,6 +4068,26 @@ body {
 }
 
 @media (max-width: 760px) {
+    .prediction-row-card {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "time"
+            "away"
+            "at"
+            "home"
+            "pick"
+            "edge"
+            "confidence"
+            "result"
+            "factor";
+    }
+
+    .desk-at {
+        text-align: left;
+    }
+}
+
+@media (max-width: 760px) {
     .metric-strip-v2,
     .best-pick-v2__readout,
     .readout-grid-v2,
@@ -3852,7 +4100,9 @@ body {
     .refresh-health-strip,
     .trust-grid,
     .doctor-list,
-    .ledger-strip {
+    .ledger-strip,
+    .accountability-grid,
+    .accountability-strip {
         grid-template-columns: 1fr;
     }
 
@@ -3891,11 +4141,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
     .home-v2-hero::before,
-    .hero-holo__baseball,
-    .hero-holo__football,
-    .hero-holo__lights,
-    .hero-holo__rings,
-    .hero-holo__sweep,
+    .hero-holo--image img,
     .best-pick-v2::before,
     .home-probability-bar span,
     .ticker-track-v2,
@@ -3907,7 +4153,8 @@ body {
     .record-day,
     .rail-card,
     .gamecast-backdrop,
-    .gamecast-drawer {
+    .gamecast-drawer,
+    .live-alert {
         animation: none !important;
     }
 

@@ -10,7 +10,7 @@ const state = {
     modelRecord: window.__MODEL_RECORD__ || null,
     games: [],
     sport: "All",
-    mode: "Today",
+    mode: "Now",
     selectedDate: null,
     selectedIndex: 0,
     expanded: false,
@@ -121,9 +121,10 @@ function savePrefs() {
 function loadPrefs() {
     try {
         const saved = JSON.parse(localStorage.getItem(WIDGET_KEY) || "{}");
+        const modeAliases = { Live: "Now", Today: "Now", Upcoming: "Next", Finals: "Final" };
         Object.assign(state, {
             sport: saved.sport || state.sport,
-            mode: saved.mode || state.mode,
+            mode: modeAliases[saved.mode] || saved.mode || state.mode,
             selectedDate: saved.selectedDate || state.selectedDate,
             selectedIndex: safeNumber(saved.selectedIndex, state.selectedIndex),
             expanded: Boolean(saved.expanded),
@@ -396,10 +397,10 @@ function scopedGamesForDate(date = state.selectedDate) {
 function filteredGames() {
     const games = state.games.filter(game => state.sport === "All" || game.sport === state.sport);
     const today = todayIso();
-    if (state.mode === "Live") return games.filter(isLiveGame);
+    if (state.mode === "Now" || state.mode === "Live") return games.filter(isLiveGame);
     if (state.mode === "Today") return games.filter(game => gameDate(game) === today);
-    if (state.mode === "Upcoming") return games.filter(game => !isFinalGame(game) && gameDate(game) >= (state.selectedDate || today));
-    if (state.mode === "Finals") return scopedGamesForDate().filter(isFinalGame);
+    if (state.mode === "Next" || state.mode === "Upcoming") return games.filter(game => !isFinalGame(game) && gameDate(game) >= (state.selectedDate || today));
+    if (state.mode === "Final" || state.mode === "Finals") return scopedGamesForDate().filter(isFinalGame);
     if (state.mode === "Predictions") return scopedGamesForDate().filter(hasPrediction);
     return scopedGamesForDate();
 }
@@ -407,7 +408,7 @@ function filteredGames() {
 function displayGames() {
     const filtered = filteredGames();
     if (filtered.length) return filtered;
-    if (state.mode === "Live") {
+    if (state.mode === "Now" || state.mode === "Live") {
         const todayRows = state.games.filter(game => gameDate(game) === todayIso() && (state.sport === "All" || game.sport === state.sport));
         if (todayRows.length) return todayRows;
         const upcoming = state.games.filter(game => !isFinalGame(game) && (state.sport === "All" || game.sport === state.sport));
@@ -514,7 +515,7 @@ function pickProbability(game) {
 
 function modelLine(game) {
     const model = game.model || {};
-    if (!model.pick) return `<span class="model-line"><strong>No model pick</strong> · schedule only</span>`;
+    if (!model.pick) return `<span class="model-line"><strong>No model pick</strong></span>`;
     return `<span class="model-line">Model: <strong>${escapeHtml(model.pick)}</strong> ${formatProbability(pickProbability(game))} · ${formatEdge(model.edge)}</span>`;
 }
 
@@ -583,7 +584,7 @@ function renderFilters() {
             ${["All", "MLB", "NFL"].map(value => `<button data-sport="${value}" class="${state.sport === value ? "is-active" : ""}">${value}</button>`).join("")}
         </div>
         <div class="widget-segments widget-segments--modes">
-            ${["All", "Live", "Today", "Upcoming", "Finals", "Predictions"].map(value => `<button data-mode="${value}" class="${state.mode === value ? "is-active" : ""}">${value}</button>`).join("")}
+            ${["Now", "Next", "Final", "Predictions"].map(value => `<button data-mode="${value}" class="${state.mode === value ? "is-active" : ""}">${value}</button>`).join("")}
         </div>
         ${renderDateNav()}
     `;
@@ -616,8 +617,8 @@ function renderIntervalSelect() {
 
 function emptyScopeMessage() {
     if (state.mode === "Predictions") return "No model picks for this date.";
-    if (state.mode === "Finals") return "No final games found for this date.";
-    if (state.mode === "Live") return "No live games right now. Showing cached schedule when available.";
+    if (state.mode === "Final" || state.mode === "Finals") return "No final games found for this date.";
+    if (state.mode === "Now" || state.mode === "Live") return "No live games right now. Showing cached schedule when available.";
     return `No ${state.sport === "All" ? "" : `${state.sport} `}games found for ${formatDateLabel(state.selectedDate)}.`;
 }
 
@@ -704,7 +705,7 @@ function renderEmpty() {
             ${renderHeader()}
             ${renderFilters()}
             <div class="widget-empty">
-                <strong>No real schedule or prediction rows loaded</strong>
+                <strong>No schedule or prediction rows loaded</strong>
                 <span>${escapeHtml(manual)}</span>
                 <code>npm run refresh:live</code>
                 <code>npm run refresh:mlb</code>
@@ -788,14 +789,14 @@ function bindEvents() {
         const dateStep = event.target.closest("[data-date-step]");
         if (dateStep) {
             state.selectedDate = addDaysIso(state.selectedDate || todayIso(), safeNumber(dateStep.dataset.dateStep, 0));
-            state.mode = state.mode === "Live" ? "All" : state.mode;
+            state.mode = state.mode === "Live" ? "Now" : state.mode;
             state.selectedIndex = 0;
             savePrefs();
             render();
         }
         if (event.target.closest("[data-date-today]")) {
             state.selectedDate = todayIso();
-            state.mode = "Today";
+            state.mode = "Now";
             state.selectedIndex = 0;
             savePrefs();
             render();
@@ -835,7 +836,7 @@ function bindEvents() {
         const dateInput = event.target.closest("[data-widget-date]");
         if (dateInput) {
             state.selectedDate = dateInput.value || todayIso();
-            state.mode = state.mode === "Live" ? "All" : state.mode;
+            state.mode = state.mode === "Live" ? "Now" : state.mode;
             state.selectedIndex = 0;
             savePrefs();
             render();

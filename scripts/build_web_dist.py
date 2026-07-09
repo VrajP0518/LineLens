@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist-web"
 
 REQUIRED_ROOT_FILES = ["index.html", "app.js", "styles.css", "widget.html", "widget.js", "widget.css"]
+ASSET_DIRS = ["assets"]
 DATA_FILES = [
     "app_metadata.json",
     "app_metadata.js",
@@ -56,6 +57,10 @@ def main() -> None:
     for filename in REQUIRED_ROOT_FILES:
         copy_file(ROOT / filename, DIST / filename)
         copied.append(filename)
+
+    for dirname in ASSET_DIRS:
+        copy_tree(ROOT / dirname, DIST / dirname)
+        copied.append(f"{dirname}/")
 
     for filename in DATA_FILES:
         copy_file(ROOT / "data" / filename, DIST / "data" / filename)

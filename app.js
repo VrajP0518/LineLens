@@ -3,6 +3,7 @@ const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
 const FAVORITES_KEY = "linelens.favorites.v1";
+const LIVE_ALERTS_KEY = "linelens.liveAlerts.v1";
 
 const DATA_SOURCES = {
     app: ["data/app_metadata.json"],
@@ -57,9 +58,20 @@ const state = {
         homeNflWeek: null,
         presentationMode: false,
         tableDensity: "comfortable",
+        liveHeartbeatEnabled: true,
+        liveHeartbeatSeconds: 15,
     },
     favorites: { teams: [], games: [] },
     gamecast: { open: false, sport: null, gameId: null },
+    liveRefresh: {
+        intervalId: null,
+        refreshing: false,
+        lastRunAt: null,
+        lastStatus: "waiting",
+        lastMessage: "Live heartbeat will start after exports load.",
+        signatures: {},
+        notifications: [],
+    },
     tracker: [],
     refreshLogs: [],
     charts: {},
@@ -329,13 +341,26 @@ function loadSettings() {
     setBodyModes();
 }
 
+function loadLiveAlerts() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(LIVE_ALERTS_KEY) || "[]");
+        state.liveRefresh.notifications = Array.isArray(saved) ? saved.slice(0, 12) : [];
+    } catch (_error) {
+        state.liveRefresh.notifications = [];
+    }
+}
+
+function saveLiveAlerts() {
+    localStorage.setItem(LIVE_ALERTS_KEY, JSON.stringify(state.liveRefresh.notifications.slice(0, 12)));
+}
+
 function setBodyModes() {
     document.body.classList.toggle("presentation-mode", Boolean(state.selected.presentationMode));
     document.body.classList.toggle("density-compact", state.selected.tableDensity === "compact");
     const toggle = $("#presentation-toggle");
     if (toggle) {
         toggle.classList.toggle("is-active", Boolean(state.selected.presentationMode));
-        toggle.textContent = state.selected.presentationMode ? "Demo Mode On" : "Demo Mode";
+        toggle.textContent = state.selected.presentationMode ? "Clean UI On" : "Clean UI";
     }
 }
 
@@ -571,8 +596,8 @@ function dataMode(payload, games) {
     if (!payload) return "missing";
     const meta = normalizeMeta(payload);
     if (meta.real_data === false) return "missing";
-    if (meta.prediction_mode === "schedule_only") return "schedule only";
-    return games.length ? "real" : "missing";
+    if (meta.prediction_mode === "schedule_only") return "schedule";
+    return games.length ? "available" : "missing";
 }
 
 function isScheduleOnly(game, payload) {
@@ -596,6 +621,226 @@ function currentGames() {
 
 function liveGames() {
     return state.live.games.map(game => ({ ...game, sport: game.sport || "MLB" }));
+}
+
+function liveHeartbeatSeconds() {
+    const raw = safeNumber(state.selected.liveHeartbeatSeconds, 30);
+    if (!raw || raw <= 0) return 0;
+    return Math.max(15, Math.min(300, raw));
+}
+
+function liveAlertGameId(game) {
+    return `${game?.sport || "MLB"}:${gameKey(game)}`;
+}
+
+function liveAlertScore(game, side) {
+    return safeNumber(game?.[`${side}_score`], null);
+}
+
+function liveAlertTeamLabel(game, side) {
+    const code = game?.[side] || "";
+    return String(code || game?.[`${side}_display`] || side).toUpperCase();
+}
+
+function liveAlertTeamDisplay(game, side) {
+    return game?.[`${side}_display`] || game?.[side] || side;
+}
+
+function liveAlertStatus(game) {
+    return String(game?.status || game?.status_detail || "").toLowerCase();
+}
+
+function isLiveAlertCandidate(game) {
+    const status = liveAlertStatus(game);
+    const iso = gameIsoDate(game);
+    return game?.sport === "MLB"
+        && (status.includes("progress") || status.includes("live") || status.includes("final") || iso === dateOffsetIso(0));
+}
+
+function liveGameSignature(game) {
+    return [
+        game?.status,
+        game?.status_detail,
+        liveAlertScore(game, "away"),
+        liveAlertScore(game, "home"),
+        game?.inning,
+        game?.inning_state,
+        game?.balls,
+        game?.strikes,
+        game?.outs,
+        game?.latest_play,
+    ].map(value => value ?? "").join("|");
+}
+
+function liveGameSignatureMap(games = liveGames()) {
+    return Object.fromEntries(games.map(game => [liveAlertGameId(game), liveGameSignature(game)]));
+}
+
+function scoreStateLabel(game, scoringSide = null) {
+    const awayScore = liveAlertScore(game, "away");
+    const homeScore = liveAlertScore(game, "home");
+    if (awayScore === null || homeScore === null) return game?.status_detail || game?.status || "Score updated";
+    const score = `${awayScore}-${homeScore}`;
+    if (awayScore === homeScore) return `game tied ${score}`;
+    const leaderSide = awayScore > homeScore ? "away" : "home";
+    const leader = liveAlertTeamLabel(game, leaderSide);
+    if (scoringSide && scoringSide !== leaderSide) return `${liveAlertTeamLabel(game, scoringSide)} cuts it to ${score}`;
+    return `${leader} leads ${score}`;
+}
+
+function scoringSide(prev, next) {
+    const awayDiff = (liveAlertScore(next, "away") ?? 0) - (liveAlertScore(prev, "away") ?? 0);
+    const homeDiff = (liveAlertScore(next, "home") ?? 0) - (liveAlertScore(prev, "home") ?? 0);
+    if (awayDiff <= 0 && homeDiff <= 0) return null;
+    return awayDiff >= homeDiff ? "away" : "home";
+}
+
+function scoringRuns(prev, next, side) {
+    if (!side) return 0;
+    return Math.max(0, (liveAlertScore(next, side) ?? 0) - (liveAlertScore(prev, side) ?? 0));
+}
+
+function livePlayLooksLikeHomer(text) {
+    return /\b(home run|homers|hr)\b/i.test(String(text || ""));
+}
+
+function buildLiveAlert(prev, next) {
+    if (!prev || !next || !isLiveAlertCandidate(next)) return null;
+    const prevAway = liveAlertScore(prev, "away");
+    const prevHome = liveAlertScore(prev, "home");
+    const nextAway = liveAlertScore(next, "away");
+    const nextHome = liveAlertScore(next, "home");
+    let scoreChanged = prevAway !== nextAway || prevHome !== nextHome;
+    const latestPlay = String(next.latest_play || "").trim();
+    const playChanged = latestPlay && latestPlay !== String(prev.latest_play || "").trim();
+    const becameFinal = !liveAlertStatus(prev).includes("final") && liveAlertStatus(next).includes("final");
+    const side = scoreChanged ? scoringSide(prev, next) : null;
+    if (scoreChanged && !side && !becameFinal) scoreChanged = false;
+
+    if (!scoreChanged && !playChanged && !becameFinal) return null;
+
+    const runs = scoringRuns(prev, next, side);
+    const scoringTeam = side ? liveAlertTeamLabel(next, side) : "";
+    const homer = scoreChanged && livePlayLooksLikeHomer(latestPlay);
+    const title = becameFinal
+        ? `Final: ${liveAlertTeamLabel(next, "away")} @ ${liveAlertTeamLabel(next, "home")}`
+        : homer
+            ? `${scoringTeam} ${runs || 1}-run HR`
+            : scoreChanged
+                ? `${scoringTeam || "MLB"} scores`
+                : "MLB play update";
+    const statusLine = scoreChanged ? scoreStateLabel(next, side) : (next.status_detail || next.status || "");
+    const message = latestPlay
+        ? `${latestPlay}${statusLine ? ` • ${statusLine}` : ""}`
+        : statusLine || `${liveAlertTeamDisplay(next, "away")} @ ${liveAlertTeamDisplay(next, "home")} updated.`;
+    return {
+        id: `${liveAlertGameId(next)}:${Date.now()}`,
+        sport: next.sport || "MLB",
+        game_id: gameKey(next),
+        title,
+        message,
+        matchup: `${liveAlertTeamLabel(next, "away")} @ ${liveAlertTeamLabel(next, "home")}`,
+        created_at: new Date().toISOString(),
+        tone: becameFinal ? "final" : scoreChanged ? "score" : "play",
+    };
+}
+
+function pushLiveAlert(alert) {
+    if (!alert) return;
+    state.liveRefresh.notifications = [alert, ...state.liveRefresh.notifications].slice(0, 8);
+    saveLiveAlerts();
+    renderLiveNotifications();
+}
+
+function detectLiveAlerts(beforeGames, afterGames) {
+    const beforeById = new Map(beforeGames.map(game => [liveAlertGameId(game), game]));
+    afterGames.forEach(game => {
+        const previous = beforeById.get(liveAlertGameId(game));
+        const alert = buildLiveAlert(previous, game);
+        if (alert) pushLiveAlert(alert);
+    });
+    state.liveRefresh.signatures = liveGameSignatureMap(afterGames);
+}
+
+function renderLiveNotifications() {
+    const mount = $("#live-notification-root");
+    if (!mount) return;
+    const alerts = state.liveRefresh.notifications || [];
+    mount.innerHTML = alerts.length ? `
+        <div class="live-alert-stack">
+            ${alerts.slice(0, 4).map(alert => `
+                <article class="live-alert live-alert--${escapeHtml(alert.tone || "play")}" data-live-alert-id="${escapeHtml(alert.id)}">
+                    <div>
+                        <span><i></i>${escapeHtml(alert.sport || "MLB")} Live</span>
+                        <strong>${escapeHtml(alert.title)}</strong>
+                        <small>${escapeHtml(alert.message)}</small>
+                    </div>
+                    <button type="button" aria-label="Dismiss live alert" data-dismiss-live-alert="${escapeHtml(alert.id)}">×</button>
+                </article>
+            `).join("")}
+            <button class="live-alert-clear" type="button" data-clear-live-alerts>Clear alerts</button>
+        </div>
+    ` : "";
+}
+
+async function refreshLiveHeartbeat(options = {}) {
+    if (!state.selected.liveHeartbeatEnabled || state.liveRefresh.refreshing) return;
+    if (state.refreshRuntime.active && !options.force) return;
+    const before = liveGames();
+    state.liveRefresh.refreshing = true;
+    state.liveRefresh.lastStatus = "refreshing";
+    state.liveRefresh.lastMessage = "Refreshing live scores...";
+
+    try {
+        if (isTauriRefreshAvailable()) {
+            const result = await tauriInvoke("run_refresh_command", { commandName: "live_scores" });
+            if (!result?.success) {
+                throw new Error(result?.stderr || result?.stdout || "Live score refresh failed.");
+            }
+            state.refreshRuntime.available = true;
+            state.refreshRuntime.message = "Live heartbeat refreshed scores in the background.";
+            state.liveRefresh.lastStatus = "fresh";
+        } else {
+            state.liveRefresh.lastStatus = "cached";
+        }
+        await loadAllAfterRefresh();
+        const after = liveGames();
+        detectLiveAlerts(before, after);
+        state.liveRefresh.lastMessage = isTauriRefreshAvailable()
+            ? `Live heartbeat updated ${after.length} games.`
+            : `Browser mode reloaded cached live export with ${after.length} games.`;
+    } catch (error) {
+        state.liveRefresh.lastStatus = "cached";
+        state.liveRefresh.lastMessage = `Showing cached live data - ${String(error?.message || error || "refresh failed")}`;
+    } finally {
+        state.liveRefresh.lastRunAt = new Date().toISOString();
+        state.liveRefresh.refreshing = false;
+        renderAll();
+    }
+}
+
+function startLiveHeartbeat() {
+    if (state.liveRefresh.intervalId) {
+        window.clearInterval(state.liveRefresh.intervalId);
+        state.liveRefresh.intervalId = null;
+    }
+    state.liveRefresh.signatures = liveGameSignatureMap();
+    if (!state.selected.liveHeartbeatEnabled) {
+        state.liveRefresh.lastStatus = "off";
+        state.liveRefresh.lastMessage = "Live heartbeat is off.";
+        renderLiveNotifications();
+        return;
+    }
+    const seconds = liveHeartbeatSeconds();
+    if (!seconds) return;
+    state.liveRefresh.lastStatus = isTauriRefreshAvailable() ? "waiting" : "cached";
+    state.liveRefresh.lastMessage = isTauriRefreshAvailable()
+        ? `Live heartbeat ready every ${seconds}s.`
+        : `Browser/static mode can reload cached live data every ${seconds}s; desktop mode runs npm run refresh:live.`;
+    state.liveRefresh.intervalId = window.setInterval(() => {
+        refreshLiveHeartbeat({ source: "interval" });
+    }, seconds * 1000);
+    window.setTimeout(() => refreshLiveHeartbeat({ source: "startup" }), isTauriRefreshAvailable() ? 6000 : 15000);
 }
 
 function topEdges(limit = 5, options = {}) {
@@ -698,6 +943,112 @@ function oddsSnapshotsForGame(game) {
 
 function latestOddsForGame(game) {
     return oddsSnapshotsForGame(game)[0] || null;
+}
+
+function oddsContextForGame(game) {
+    const snapshots = oddsSnapshotsForGame(game);
+    const sorted = [...snapshots].sort((a, b) => String(a.snapshot_at || "").localeCompare(String(b.snapshot_at || "")));
+    const opening = sorted.length > 1 ? sorted[0] : null;
+    const current = sorted.at(-1) || null;
+    const isFinal = String((liveGameFor(game) || game)?.status || (liveGameFor(game) || game)?.status_detail || "").toLowerCase().includes("final");
+    const closing = isFinal ? current : null;
+    return { snapshots: sorted, opening, current, closing, isFinal };
+}
+
+function marketLine(snapshot, side, sport = "MLB") {
+    if (!snapshot) return null;
+    if (sport === "NFL") {
+        return safeNumber(
+            snapshot[`spread_${side}_current`]
+            ?? snapshot[`spread_${side}`]
+            ?? snapshot.spread_current
+            ?? snapshot[`moneyline_${side}_current`]
+            ?? snapshot[`best_${side}_moneyline`]
+        );
+    }
+    return safeNumber(snapshot[`moneyline_${side}_current`] ?? snapshot[`best_${side}_moneyline`]);
+}
+
+function marketImplied(snapshot, side) {
+    return safeNumber(snapshot?.[`market_implied_${side}`]);
+}
+
+function marketSideForPick(game, sport = game?.sport || "MLB") {
+    const pick = String(getGamePick(game, sport) || "").toUpperCase();
+    if (pick && pick === String(game?.home || "").toUpperCase()) return "home";
+    if (pick && pick === String(game?.away || "").toUpperCase()) return "away";
+    return "home";
+}
+
+function modelProbabilityForSide(game, side, sport = game?.sport || "MLB") {
+    const homeProb = getGameProbability(game, sport);
+    if (homeProb === null) return null;
+    return side === "home" ? homeProb : 1 - homeProb;
+}
+
+function marketEdgeForGame(game, snapshot = latestOddsForGame(game), sport = game?.sport || "MLB") {
+    const side = marketSideForPick(game, sport);
+    const modelProbability = modelProbabilityForSide(game, side, sport);
+    const implied = marketImplied(snapshot, side);
+    if (modelProbability === null || implied === null) return null;
+    return modelProbability - implied;
+}
+
+function oddsFreshness(snapshot) {
+    if (!snapshot?.snapshot_at) return "No odds";
+    const ageMs = Date.now() - new Date(snapshot.snapshot_at).getTime();
+    if (!Number.isFinite(ageMs)) return timestamp(snapshot.snapshot_at);
+    const minutes = Math.max(0, Math.round(ageMs / 60000));
+    if (minutes < 2) return "fresh";
+    if (minutes < 60) return `${minutes}m old`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 48) return `${hours}h old`;
+    return `${Math.round(hours / 24)}d old`;
+}
+
+function lineMovementSummary(game, sport = game?.sport || "MLB") {
+    const { opening, current, closing } = oddsContextForGame(game);
+    const openHome = marketLine(opening, "home", sport);
+    const currentHome = marketLine(current, "home", sport);
+    const openImplied = marketImplied(opening, "home");
+    const currentImplied = marketImplied(current, "home");
+    const impliedMove = currentImplied !== null && openImplied !== null ? currentImplied - openImplied : null;
+    let direction = current ? "Current odds" : "Movement unavailable";
+    if (impliedMove !== null) {
+        if (Math.abs(impliedMove) < 0.005) direction = "Little market movement";
+        else direction = impliedMove > 0 ? "Market toward home" : "Market toward away";
+    }
+    return {
+        available: Boolean(current),
+        opening,
+        current,
+        closing,
+        openHome,
+        currentHome,
+        closeHome: marketLine(closing, "home", sport),
+        openImplied,
+        currentImplied,
+        closeImplied: marketImplied(closing, "home"),
+        direction,
+        freshness: oddsFreshness(current),
+        marketEdge: marketEdgeForGame(game, current, sport),
+    };
+}
+
+function clvSummaryForGame(game, sport = game?.sport || "MLB") {
+    const context = oddsContextForGame(game);
+    if (!context.isFinal || context.snapshots.length < 2 || !context.closing || !context.current) {
+        return { label: "Unavailable", value: null, note: "Needs close" };
+    }
+    const side = marketSideForPick(game, sport);
+    const currentImplied = marketImplied(context.current, side);
+    const closeImplied = marketImplied(context.closing, side);
+    if (currentImplied === null || closeImplied === null) {
+        return { label: "Unavailable", value: null, note: "No implied close" };
+    }
+    const value = closeImplied - currentImplied;
+    const label = value > 0.005 ? "Beat close" : value < -0.005 ? "Lost value" : "Matched close";
+    return { label, value, note: `${formatEdge(value)} CLV` };
 }
 
 function sortedGamesByTime(games, direction = "asc") {
@@ -1035,6 +1386,7 @@ async function loadAll() {
     loadTracker();
     loadFavorites();
     loadRefreshLogs();
+    loadLiveAlerts();
     const [
         app,
         teams,
@@ -1097,11 +1449,11 @@ async function loadAll() {
     teamIndex = buildTeamIndex();
 
     $("#sidebar-version").textContent = state.app.version || APP_VERSION;
-    $("#app-version-chip").textContent = state.app.version || APP_VERSION;
+    if ($("#app-version-chip")) $("#app-version-chip").textContent = state.app.version || APP_VERSION;
     renderAll();
 
     const modes = [`NFL ${dataMode(state.nfl.payload, state.nfl.games)}`, `MLB ${dataMode(state.mlb.payload, state.mlb.games)}`];
-    setStatus(`Ready. ${modes.join(" / ")}.`, allGames().length ? "success" : "warning");
+    setStatus(allGames().length ? "" : `No prediction exports loaded. ${modes.join(" / ")}.`, allGames().length ? "success" : "warning");
     if (!state.refreshRuntime.checked) {
         state.refreshRuntime.checked = true;
         state.refreshRuntime.available = isTauriRefreshAvailable();
@@ -1113,6 +1465,7 @@ async function loadAll() {
             runStartupAutomation({ background: true });
         }
     }
+    startLiveHeartbeat();
 }
 
 function isTauriRefreshAvailable() {
@@ -1407,85 +1760,8 @@ function homeMetricCard(icon, label, value, note, tone = "blue") {
 
 function renderHeroHologram() {
     return `
-        <div class="hero-holo" aria-hidden="true">
-            <svg viewBox="0 0 560 360" role="img" aria-label="Hologram stadium with baseball and football">
-                <defs>
-                    <radialGradient id="hero-holo-glow" cx="50%" cy="45%" r="68%">
-                        <stop offset="0%" stop-color="#67e8f9" stop-opacity="0.50" />
-                        <stop offset="38%" stop-color="#7c3aed" stop-opacity="0.20" />
-                        <stop offset="100%" stop-color="#020617" stop-opacity="0" />
-                    </radialGradient>
-                    <linearGradient id="hero-holo-line" x1="0" x2="1">
-                        <stop offset="0" stop-color="#19b7ff" />
-                        <stop offset="0.55" stop-color="#a855f7" />
-                        <stop offset="1" stop-color="#ff8a1f" />
-                    </linearGradient>
-                    <filter id="hero-holo-blur">
-                        <feGaussianBlur stdDeviation="2.2" result="blur" />
-                        <feMerge>
-                            <feMergeNode in="blur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                    </filter>
-                    <linearGradient id="hero-holo-field" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0" stop-color="#0f2d3a" stop-opacity="0.35" />
-                        <stop offset="1" stop-color="#04111d" stop-opacity="0.92" />
-                    </linearGradient>
-                    <radialGradient id="hero-baseball-fill" cx="38%" cy="28%" r="70%">
-                        <stop offset="0" stop-color="#f8fbff" stop-opacity="0.95" />
-                        <stop offset="0.42" stop-color="#a7f3ff" stop-opacity="0.58" />
-                        <stop offset="1" stop-color="#0ea5e9" stop-opacity="0.12" />
-                    </radialGradient>
-                    <radialGradient id="hero-football-fill" cx="34%" cy="24%" r="82%">
-                        <stop offset="0" stop-color="#ffd166" stop-opacity="0.84" />
-                        <stop offset="0.50" stop-color="#ff8a1f" stop-opacity="0.32" />
-                        <stop offset="1" stop-color="#7c2d12" stop-opacity="0.08" />
-                    </radialGradient>
-                </defs>
-                <rect width="560" height="360" fill="url(#hero-holo-glow)" />
-                <g class="hero-holo__crowd">
-                    <path d="M48 110 C146 54 416 54 512 110 L486 148 C396 108 166 108 74 148Z" fill="#0b1225" opacity="0.72" />
-                    <path d="M74 124 C174 84 386 84 486 124" stroke="#67e8f9" stroke-opacity="0.20" stroke-width="2" fill="none" />
-                    <path d="M98 136 C192 108 368 108 462 136" stroke="#a855f7" stroke-opacity="0.20" stroke-width="2" fill="none" />
-                </g>
-                <g class="hero-holo__lights" filter="url(#hero-holo-blur)">
-                    <path d="M82 50 L152 218" stroke="#e0f2fe" stroke-opacity="0.20" stroke-width="28" />
-                    <path d="M478 50 L400 220" stroke="#e0f2fe" stroke-opacity="0.18" stroke-width="30" />
-                    <circle cx="82" cy="50" r="13" fill="#f8fafc" opacity="0.72" />
-                    <circle cx="478" cy="50" r="13" fill="#f8fafc" opacity="0.60" />
-                </g>
-                <g class="hero-holo__field">
-                    <path d="M54 306 C142 206 416 206 506 306 Z" fill="url(#hero-holo-field)" stroke="#67e8f9" stroke-opacity="0.22" />
-                    <path d="M96 286 C176 226 384 226 464 286" stroke="#67e8f9" stroke-opacity="0.28" fill="none" />
-                    <path d="M142 304 C200 260 360 260 420 304" stroke="#67e8f9" stroke-opacity="0.20" fill="none" />
-                    <path d="M280 226 L280 320 M218 236 L172 316 M342 236 L388 316" stroke="#67e8f9" stroke-opacity="0.18" />
-                    <path d="M124 266 H436 M158 246 H402 M200 232 H360" stroke="#67e8f9" stroke-opacity="0.13" />
-                </g>
-                <g class="hero-holo__rings" fill="none" stroke="url(#hero-holo-line)" filter="url(#hero-holo-blur)">
-                    <ellipse cx="280" cy="238" rx="178" ry="48" stroke-opacity="0.62" />
-                    <ellipse cx="280" cy="238" rx="126" ry="34" stroke-opacity="0.42" />
-                    <ellipse cx="280" cy="238" rx="74" ry="20" stroke-opacity="0.34" />
-                </g>
-                <g class="hero-holo__baseball" transform="translate(120 76)" stroke-linecap="round">
-                    <circle cx="78" cy="78" r="56" fill="url(#hero-baseball-fill)" stroke="#bff7ff" stroke-width="2.5" />
-                    <circle cx="78" cy="78" r="63" fill="none" stroke="#67e8f9" stroke-opacity="0.32" stroke-width="1.5" />
-                    <path d="M47 31 C72 56 72 100 47 125" stroke="#ff4664" stroke-width="2.6" fill="none" />
-                    <path d="M109 31 C84 56 84 100 109 125" stroke="#ff4664" stroke-width="2.6" fill="none" />
-                    <path d="M43 48 l13 6 M40 66 l15 3 M40 88 l15 -3 M43 108 l13 -6" stroke="#fecaca" stroke-width="2" />
-                    <path d="M113 48 l-13 6 M116 66 l-15 3 M116 88 l-15 -3 M113 108 l-13 -6" stroke="#fecaca" stroke-width="2" />
-                </g>
-                <g class="hero-holo__football" transform="translate(302 96) rotate(-13 78 46)" stroke-linecap="round">
-                    <path d="M8 46 C38 6 118 6 150 46 C118 86 38 86 8 46Z" fill="url(#hero-football-fill)" stroke="#ffb86c" stroke-width="2.8" />
-                    <path d="M34 46 C62 28 96 28 124 46" stroke="#ffd166" stroke-width="2.4" fill="none" />
-                    <path d="M79 31 L79 61" stroke="#fff7ed" stroke-width="2.5" />
-                    <path d="M62 40 L96 40 M62 50 L96 50" stroke="#fff7ed" stroke-width="2" />
-                    <path d="M22 46 H140" stroke="#fed7aa" stroke-opacity="0.28" stroke-width="1.5" />
-                </g>
-                <g class="hero-holo__sweep" stroke="url(#hero-holo-line)" stroke-width="2" stroke-opacity="0.38">
-                    <path d="M84 74 C206 10 374 18 482 90" />
-                    <path d="M76 122 C196 56 374 62 492 132" />
-                </g>
-            </svg>
+        <div class="hero-holo hero-holo--image" aria-hidden="true">
+            <img src="assets/sportsdesk-hero.png" alt="" loading="eager" />
         </div>
     `;
 }
@@ -2021,13 +2297,12 @@ function renderHome() {
                 ${renderBestPickMini(best)}
             </section>
             <section class="metric-strip-v2">
-                ${homeMetricCard("NFL", "NFL Games", String(state.nfl.games.length), dataMode(state.nfl.payload, state.nfl.games), "blue")}
-                ${homeMetricCard("MLB", "MLB Games", String(state.mlb.games.length), dataMode(state.mlb.payload, state.mlb.games), "purple")}
-                ${homeMetricCard("EDGE", "Strong Edges", String(strongEdges), "scoped board", "green")}
+                ${homeMetricCard("NFL", "NFL Games", String(state.nfl.games.length), "loaded rows", "blue")}
+                ${homeMetricCard("MLB", "MLB Games", String(state.mlb.games.length), "loaded rows", "purple")}
+                ${homeMetricCard("EDGE", "Strong Edges", String(strongEdges), "current board", "green")}
                 ${homeMetricCard("REC", "Model Record", formatBoardRecord(mlbRecord), formatProbability(mlbRecord.accuracy), "orange")}
                 ${homeMetricCard("TIME", "Latest Export", latest ? formatDate(latest) : "-", latest ? timestamp(latest) : "no timestamp", "blue")}
             </section>
-            ${renderRefreshHealthBanner()}
             ${renderDailyBrief()}
             <section class="home-v2-grid">
                 ${renderBestPickFeatureV2(best)}
@@ -2036,10 +2311,6 @@ function renderHome() {
             </section>
             ${renderModelTrustCenterCompact()}
             ${renderLiveWidgetPreview()}
-            <section class="home-v2-system-note">
-                <span>${escapeHtml(refreshSportStatus(state.selected.homeSport || "MLB").status)} · Full refresh console is in Settings.</span>
-                <button class="btn btn--small" data-view-link="settings">Open Settings</button>
-            </section>
         </section>
     `;
 }
@@ -2077,8 +2348,8 @@ function renderStartupAutomationCard() {
             <header class="section-header">
                 <div>
                     <p class="eyebrow">Startup automation</p>
-                    <h2>${running ? "Preparing environment and real data..." : "Python, models, and real-data refresh"}</h2>
-                    <p class="muted">${escapeHtml(startup.error || bootstrap.error || "Desktop startup loads cached JSON first, then bootstraps Python and refreshes real data.")}</p>
+                    <h2>${running ? "Preparing environment and data..." : "Python, models, and refresh"}</h2>
+                    <p class="muted">${escapeHtml(startup.error || bootstrap.error || "Desktop startup loads cached JSON first, then refreshes the data pipeline.")}</p>
                 </div>
                 <div class="report-actions">
                     <button class="btn btn--primary" data-refresh-command="startup_auto">Run Startup Automation Again</button>
@@ -2087,8 +2358,8 @@ function renderStartupAutomationCard() {
             </header>
             <div class="automation-steps">
                 ${renderAutomationStep("Checking Python environment", bootstrap.status || "pending", bootstrapCopy)}
-                ${renderAutomationStep("Creating virtual environment", bootstrap.venv_created ? "done" : bootstrap.venv_detected ? "real_cached" : "pending", bootstrap.venv_detected ? ".venv detected" : ".venv will be created when automation runs")}
-                ${renderAutomationStep("Installing requirements", bootstrap.requirements_installed ? "done" : bootstrap.requirements_skipped ? "real_cached" : bootstrap.status === "install_failed" ? "install_failed" : "pending", bootstrap.requirements_skipped ? "requirements hash current; install skipped" : "installs only when missing or outdated")}
+                ${renderAutomationStep("Creating virtual environment", bootstrap.venv_created ? "done" : bootstrap.venv_detected ? "cached" : "pending", bootstrap.venv_detected ? ".venv detected" : ".venv will be created when automation runs")}
+                ${renderAutomationStep("Installing requirements", bootstrap.requirements_installed ? "done" : bootstrap.requirements_skipped ? "cached" : bootstrap.status === "install_failed" ? "install_failed" : "pending", bootstrap.requirements_skipped ? "requirements hash current; install skipped" : "installs only when missing or outdated")}
                 ${renderAutomationStep("Refreshing MLB predictions", mlbStatus, refresh.MLB?.message || "Uses trained model when available; trains if missing during startup automation.")}
                 ${renderAutomationStep("Rebuilding NFL data if needed", nflStatus, refresh.NFL?.message || "Attempts local import, processed parquet, nfl-data-py, and source fallbacks.")}
                 ${renderAutomationStep("Done", startup.status || "pending", startup.status ? `Last startup status: ${startup.status}` : "Run the Tauri app or npm run startup:auto.")}
@@ -2100,7 +2371,7 @@ function renderStartupAutomationCard() {
 
 function oddsStatusLabel() {
     const snapshot = state.odds?.metadata;
-    if (snapshot?.source_status === "success") return "real odds";
+    if (snapshot?.source_status === "success") return "linked";
     if (snapshot?.source_status === "missing_key") return "missing key";
     if (snapshot?.snapshot_count) return "cached";
     const odds = state.refreshStatus?.odds;
@@ -2131,7 +2402,7 @@ function refreshSportStatus(sport) {
 
 function healthTone(status) {
     const normalized = String(status || "").toLowerCase();
-    if (["real odds", "real_fresh", "model_generated", "success", "available", "ready", "real"].includes(normalized)) return "success";
+    if (["linked", "real odds", "real_fresh", "model_generated", "success", "available", "ready", "real"].includes(normalized)) return "success";
     if (["cached", "real_cached", "schedule_only", "missing key", "pending", "manual"].some(token => normalized.includes(token))) return "warning";
     if (["failed", "missing", "unavailable", "error"].some(token => normalized.includes(token))) return "error";
     return "info";
@@ -2299,7 +2570,7 @@ function sportSummaryCards(sport, games, payload) {
     const top = games.map(game => ({ game, edge: getGameEdge(game, sport), confidence: getGameConfidence(game, sport) })).sort((a, b) => (b.edge ?? 0) - (a.edge ?? 0));
     return `
         <section class="summary-grid summary-grid--compact">
-            ${card("Games loaded", games.length, dataMode(payload, games))}
+            ${card("Games loaded", games.length, "current view")}
             ${card("High confidence", top.filter(row => row.confidence === "High").length, "current export")}
             ${card("Best edge", top[0] ? formatEdge(top[0].edge) : "-", top[0] ? `${top[0].game.away} @ ${top[0].game.home}` : "none")}
             ${card("Latest export", timestamp(normalizeMeta(payload).generated_at), normalizeMeta(payload).model_type || "not available")}
@@ -2363,7 +2634,6 @@ function renderNFL() {
             </div>
             <div class="predictor-actions">
                 <button class="btn btn--primary" data-refresh-command="nfl_real">Reload exports</button>
-                <span class="chip">${dataMode(state.nfl.payload, state.nfl.games)}</span>
             </div>
         </section>
         <section class="prediction-desk">
@@ -2415,7 +2685,6 @@ function renderMLB() {
             </div>
             <div class="predictor-actions">
                 <button class="btn btn--primary" data-refresh-command="mlb_current">Reload exports</button>
-                <span class="chip">${usingBacktest ? "historical backtest" : dataMode(payload, games)}</span>
             </div>
         </section>
         <section class="prediction-desk">
@@ -2606,14 +2875,14 @@ function renderPredictionRail(sport, games, topGame, payload) {
                 <div class="rail-kpis">
                     <div><span>Games</span><strong>${games.length}</strong></div>
                     <div><span>High</span><strong>${games.filter(game => getGameConfidence(game, sport) === "High").length}</strong></div>
-                    <div><span>Loaded</span><strong>${escapeHtml(dataMode(payload, games))}</strong></div>
+                    <div><span>View</span><strong>${games.length}</strong></div>
                 </div>
             </section>
             <section class="rail-card">
                 <header><h3>Board View</h3><button class="btn btn--small" ${sport === "MLB" ? "data-mlb-filter=\"all\"" : "data-nfl-filter=\"all\""}>Reset</button></header>
                 <div class="rail-filter-stack">
                     <span>${sport === "MLB" ? escapeHtml(mlbFilterLabel()) : escapeHtml(nflFilterLabel())}</span>
-                    <span>Odds: ${escapeHtml(oddsStatusLabel())}</span>
+                    <span>Market ${escapeHtml(oddsStatusLabel())}</span>
                     <span>${games.length} rows in view</span>
                 </div>
             </section>
@@ -2641,11 +2910,6 @@ function renderTopEdgeCard(sport, game) {
                 <strong>${escapeHtml(getGamePick(game, sport))}</strong>
                 <span>${formatProbability(getConfidenceScore(game, sport))}</span>
                 <b>${formatEdge(getGameEdge(game, sport))}</b>
-            </div>
-            <div class="rail-chip-row">
-                <span class="chip chip--soft">${sport}</span>
-                <span class="chip chip--soft">${escapeHtml(getGameConfidence(game, sport))}</span>
-                <span class="chip chip--soft">${escapeHtml(normalizeMeta(sport === "MLB" ? state.mlb.payload : state.nfl.payload).model_type || "model")}</span>
             </div>
             <button class="btn btn--primary full-width" data-select-game="${sport === "MLB" ? "MLB_REVIEW" : "NFL"}" data-game-id="${escapeHtml(gameKey({ ...game, sport }))}">View Full Analysis</button>
         </section>
@@ -2794,7 +3058,7 @@ function renderMatchupDetail(sport, game) {
     const isNfl = sport === "NFL";
     const scheduleOnly = isScheduleOnly(game, sport === "MLB" ? state.mlb.payload : state.nfl.payload);
     const canTrack = !scheduleOnly && getGamePick(game, sport) !== "-" && homeProb !== null;
-    const probabilityRows = scheduleOnly ? `<div class="empty-state"><strong>Schedule only</strong><p>Train the model to generate probabilities.</p></div>` : `
+    const probabilityRows = scheduleOnly ? `<div class="empty-state"><strong>No model pick</strong><p>Schedule row only.</p></div>` : `
             <div class="prob-row"><div class="prob-row__header"><span>${escapeHtml(homeMeta.abbreviation)}</span><strong>${formatProbability(homeProb)}</strong></div><div class="prob-bar"><span style="width:${homeProb === null ? 0 : homeProb * 100}%;background:${homeMeta.primary}"></span></div></div>
             <div class="prob-row"><div class="prob-row__header"><span>${escapeHtml(awayMeta.abbreviation)}</span><strong>${formatProbability(awayProb)}</strong></div><div class="prob-bar"><span style="width:${awayProb === null ? 0 : awayProb * 100}%;background:${awayMeta.primary}"></span></div></div>`;
     return `
@@ -2830,12 +3094,12 @@ function renderNFLImpact(game) {
         <div class="detail-card detail-card--compact">
             <span>Injury impact</span>
             <strong>${escapeHtml(game.injury_note || "Unavailable")}</strong>
-            <small>Home ${escapeHtml(game.home_injury_impact || "Unknown")} · Away ${escapeHtml(game.away_injury_impact || "Unknown")}</small>
+            <small>${escapeHtml(game.home_injury_impact || "Home unknown")} / ${escapeHtml(game.away_injury_impact || "Away unknown")}</small>
         </div>
         <div class="detail-card detail-card--compact">
             <span>Key injuries</span>
-            <strong>${escapeHtml(homeInjuries || "No home injuries loaded")}</strong>
-            <small>${escapeHtml(awayInjuries || "No away injuries loaded")}</small>
+            <strong>${escapeHtml(homeInjuries || "None loaded")}</strong>
+            <small>${escapeHtml(awayInjuries || "Away none loaded")}</small>
         </div>
     `;
 }
@@ -2846,11 +3110,14 @@ function renderMLBImpact(game) {
     const pitcherNote = game.pitcher_data_status === "missing"
         ? "Team model only"
         : (game.pitcher_edge || "Pitcher context");
-    const qualityChips = [
-        `Pitcher: ${compactQualityValue(quality.pitcher)}`,
-        `Travel: ${compactQualityValue(quality.travel)}`,
-        `${quality.missing} missing`,
-    ];
+    const pitcherQuality = compactQualityValue(quality.pitcher);
+    const travelQuality = compactQualityValue(quality.travel);
+    const qualityTitle = pitcherQuality === "available"
+        ? "Pitcher data"
+        : pitcherQuality === "missing"
+            ? "Team-only model"
+            : "Partial pitcher data";
+    const qualityLine = `${travelQuality === "estimated" ? "Estimated travel" : "Travel pending"}${quality.missing ? ` / ${quality.missing} gaps` : ""}`;
     return `
         <div class="detail-card detail-card--compact">
             <span>Pitchers</span>
@@ -2858,9 +3125,9 @@ function renderMLBImpact(game) {
             <small>${escapeHtml(pitcherNote)}</small>
         </div>
         <div class="detail-card detail-card--compact">
-            <span>Data quality</span>
-            <strong>${escapeHtml(compactQualityValue(quality.pitcher))}</strong>
-            ${renderDetailChips(qualityChips)}
+            <span>Data</span>
+            <strong>${escapeHtml(qualityTitle)}</strong>
+            <small>${escapeHtml(qualityLine)}</small>
         </div>
     `;
 }
@@ -2878,9 +3145,9 @@ function renderPredictionExplanation(game) {
                     <h3>${escapeHtml(explanation.summary || "Model explanation unavailable for this row.")}</h3>
                 </div>
                 <div class="quality-badges">
-                    <span class="chip">pitcher ${escapeHtml(quality.pitcher)}</span>
-                    <span class="chip">travel ${escapeHtml(quality.travel)}</span>
-                    <span class="chip chip--soft">${escapeHtml(quality.missing)} missing</span>
+                    <span class="chip">${escapeHtml(compactQualityValue(quality.pitcher) === "missing" ? "team-only" : "pitcher data")}</span>
+                    <span class="chip">${escapeHtml(compactQualityValue(quality.travel) === "estimated" ? "travel estimate" : "travel pending")}</span>
+                    ${quality.missing ? `<span class="chip chip--soft">${escapeHtml(quality.missing)} gaps</span>` : ""}
                 </div>
             </div>
             ${factors.length ? `<div class="factor-list">${factors.slice(0, 5).map(factor => renderFactorRow(factor)).join("")}</div>` : emptyState("No factor export found", "Run npm run refresh:mlb:all to regenerate explanations.")}
@@ -2919,24 +3186,22 @@ function renderFeatureValueList(values) {
 }
 
 function renderLineMovement(game, sport) {
-    const open = sport === "NFL" ? game.spread_open : game.moneyline_home_open;
-    const current = sport === "NFL" ? game.spread_current ?? game.spread_line : game.moneyline_home_current ?? game.moneyline_home;
-    const close = sport === "NFL" ? game.spread_close : game.moneyline_home_close;
-    const hasAnyLine = [open, current, close].some(value => safeNumber(value) !== null);
-    const headline = hasAnyLine ? formatLine(current, sport) : "Unavailable";
-    const note = hasAnyLine
-        ? `Open ${formatLine(open, sport)} / Close ${formatLine(close, sport)}`
-        : "Add odds feed";
-    return `<div class="detail-card detail-card--compact"><span>Line movement</span><strong>${escapeHtml(headline)}</strong><small>${escapeHtml(note)}</small></div>`;
+    const movement = lineMovementSummary(game, sport);
+    if (!movement.available) {
+        return `<div class="detail-card detail-card--compact"><span>Market</span><strong>Unavailable</strong><small>No odds snapshot</small></div>`;
+    }
+    return `
+        <div class="detail-card detail-card--compact">
+            <span>Line movement</span>
+            <strong>${escapeHtml(movement.direction)}</strong>
+            <small>Open ${formatLine(movement.openHome, sport)} / Now ${formatLine(movement.currentHome, sport)}</small>
+        </div>
+    `;
 }
 
 function renderCLV(game, sport) {
-    const pickLine = sport === "NFL" ? game.spread_current ?? game.spread_line : game.moneyline_home_current ?? game.moneyline_home;
-    const closeLine = sport === "NFL" ? game.spread_close : game.moneyline_home_close;
-    const hasClose = safeNumber(closeLine) !== null || safeNumber(pickLine) !== null;
-    const note = hasClose ? `Pick ${formatLine(pickLine, sport)} / Close ${formatLine(closeLine, sport)}` : "Needs close line";
-    const label = hasClose ? getCLVSummary(game) : "Unavailable";
-    return `<div class="detail-card detail-card--compact"><span>Closing line value</span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(note)}</small></div>`;
+    const clv = clvSummaryForGame(game, sport);
+    return `<div class="detail-card detail-card--compact"><span>CLV</span><strong>${escapeHtml(clv.label)}</strong><small>${escapeHtml(clv.note)}</small></div>`;
 }
 
 function openGameCast(sport, gameOrKey) {
@@ -3000,7 +3265,23 @@ function renderModelReaction(game) {
     if (label === "Correct") return `<span class="chip chip--success">Model Won</span>`;
     if (label === "Wrong") return `<span class="chip chip--danger">Model Lost</span>`;
     if (label === "Push") return `<span class="chip chip--warning">Push</span>`;
-    if (getGamePick(game, game?.sport || "MLB") === "-") return `<span class="chip chip--soft">No Logged Pick</span>`;
+    const sport = game?.sport || "MLB";
+    const pick = getGamePick(game, sport);
+    if (pick === "-") return `<span class="chip chip--soft">No model pick</span>`;
+    const live = liveGameFor(game) || game;
+    const awayScore = safeNumber(live?.away_score);
+    const homeScore = safeNumber(live?.home_score);
+    if (awayScore !== null && homeScore !== null && String(live?.status || live?.status_detail || "").toLowerCase().includes("progress")) {
+        const pickedHome = String(pick).toUpperCase() === String(game.home).toUpperCase();
+        const pickedAway = String(pick).toUpperCase() === String(game.away).toUpperCase();
+        const pickedScore = pickedHome ? homeScore : pickedAway ? awayScore : null;
+        const opponentScore = pickedHome ? awayScore : pickedAway ? homeScore : null;
+        if (pickedScore !== null && opponentScore !== null) {
+            if (pickedScore > opponentScore) return `<span class="chip chip--success">Pick alive</span>`;
+            if (pickedScore < opponentScore) return `<span class="chip chip--danger">Needs rally</span>`;
+            return `<span class="chip chip--warning">Pick tied</span>`;
+        }
+    }
     return `<span class="chip chip--warning">Pending</span>`;
 }
 
@@ -3048,14 +3329,20 @@ function renderPredictionTimeline(game) {
 
 function renderGameCastMarket(game) {
     const sport = game?.sport || "MLB";
-    const odds = latestOddsForGame(game);
+    const movement = lineMovementSummary(game, sport);
+    const odds = movement.current;
     if (!odds) return emptyState("No market snapshot", "Run npm run refresh:odds when an ODDS_API_KEY is configured.");
+    const side = marketSideForPick(game, sport);
+    const modelProbability = modelProbabilityForSide(game, side, sport);
+    const implied = marketImplied(odds, side);
     return `
         <div class="gamecast-market">
             ${card("Books", safeNumber(odds.bookmakers_count, 0), "snapshot consensus")}
-            ${card("Home line", formatLine(odds.moneyline_home_current ?? odds.best_home_moneyline, sport), odds.home_display || game.home)}
-            ${card("Away line", formatLine(odds.moneyline_away_current ?? odds.best_away_moneyline, sport), odds.away_display || game.away)}
-            ${card("Implied home", formatProbability(odds.market_implied_home), timestamp(odds.snapshot_at))}
+            ${card("Opening", formatLine(movement.openHome, sport), odds.home_display || game.home)}
+            ${card("Current", formatLine(movement.currentHome, sport), movement.direction)}
+            ${card("Market implied", formatProbability(implied), `${side} side`)}
+            ${card("Model probability", formatProbability(modelProbability), getGamePick(game, sport))}
+            ${card("Model edge", formatEdge(movement.marketEdge), movement.freshness)}
         </div>
     `;
 }
@@ -3100,8 +3387,8 @@ function renderGameCast(game, sport) {
                 </article>
                 <article class="gamecast-panel">
                     <span>Live context</span>
-                    <strong>${escapeHtml(live?.latest_play || game.latest_play || "No latest play loaded")}</strong>
-                    <small>${sport === "MLB" ? escapeHtml(basesLabel(live?.bases)) : "NFL live play feed unavailable"}</small>
+                    <strong>${escapeHtml(live?.latest_play || game.latest_play || live?.down_distance || live?.status_detail || "No latest play loaded")}</strong>
+                    <small>${sport === "MLB" ? escapeHtml(basesLabel(live?.bases)) : escapeHtml(live?.down_distance || live?.clock || "Scoreboard context only")}</small>
                 </article>
                 <article class="gamecast-panel">
                     <span>${sport === "MLB" ? "Pitchers" : "Injuries"}</span>
@@ -3139,43 +3426,42 @@ function renderGameCastRoot() {
 
 function renderOddsMovementBoard() {
     const snapshots = Array.isArray(state.odds?.snapshots) ? state.odds.snapshots : [];
-    const latest = snapshots
-        .slice()
-        .sort((a, b) => String(b.snapshot_at || "").localeCompare(String(a.snapshot_at || "")))
-        .slice(0, 10);
-    if (!latest.length) {
+    const gamesWithOdds = currentGames()
+        .map(game => ({ game, sport: game.sport || "MLB", movement: lineMovementSummary(game, game.sport || "MLB") }))
+        .filter(row => row.movement.available)
+        .sort((a, b) => Math.abs(safeNumber(b.movement.marketEdge, 0)) - Math.abs(safeNumber(a.movement.marketEdge, 0)))
+        .slice(0, 12);
+    if (!snapshots.length) {
         return `
-            <header><p class="eyebrow">Market Board</p><h2>Odds snapshots</h2></header>
+            <header><p class="eyebrow">Market Center</p><h2>Line movement + CLV</h2></header>
             ${emptyState("Odds disabled or missing", "Add ODDS_API_KEY locally, then run npm run refresh:odds. No lines are fabricated.")}
         `;
     }
-    const joined = latest.filter(snapshot => currentGames().some(game => sameGame(game, snapshot)));
     return `
         <header class="section-header">
-            <div><p class="eyebrow">Market Board</p><h2>Odds movement snapshot</h2></div>
-            <span class="chip ${normalizeMeta(state.odds).source_status === "success" ? "chip--success" : "chip--warning"}">${escapeHtml(normalizeMeta(state.odds).source_status || "cached")}</span>
+            <div><p class="eyebrow">Market Center</p><h2>Line movement + CLV</h2></div>
         </header>
         <div class="market-strip">
-            ${card("Snapshots", snapshots.length, `${joined.length} joined to current board`)}
+            ${card("Snapshots", snapshots.length, `${gamesWithOdds.length} joined games`)}
             ${card("Provider", normalizeMeta(state.odds).provider || "optional", normalizeMeta(state.odds).source || "odds feed")}
             ${card("Generated", timestamp(normalizeMeta(state.odds).generated_at), "cached export")}
+            ${card("Freshness", oddsFreshness(gamesWithOdds[0]?.movement.current), "latest joined line")}
         </div>
         <div class="market-board-list">
-            ${latest.map(snapshot => {
-                const match = currentGames().find(game => sameGame(game, snapshot));
-                const sport = snapshot.sport || match?.sport || "MLB";
-                const pick = match ? getGamePick(match, sport) : "No model pick";
-                const edge = match ? formatEdge(getGameEdge(match, sport)) : "No edge";
+            ${gamesWithOdds.map(({ game, sport, movement }) => {
+                const side = marketSideForPick(game, sport);
+                const clv = clvSummaryForGame(game, sport);
                 return `
                     <article>
-                        <div><strong>${escapeHtml(snapshot.away || "-")} @ ${escapeHtml(snapshot.home || "-")}</strong><span>${escapeHtml(formatDate(snapshot.game_date || snapshot.commence_time))}</span></div>
-                        <div><span>Home</span><strong>${formatLine(snapshot.moneyline_home_current ?? snapshot.best_home_moneyline, sport)}</strong></div>
-                        <div><span>Away</span><strong>${formatLine(snapshot.moneyline_away_current ?? snapshot.best_away_moneyline, sport)}</strong></div>
-                        <div><span>Model</span><strong>${escapeHtml(pick)}</strong><small>${edge}</small></div>
-                        <div><span>Books</span><strong>${safeNumber(snapshot.bookmakers_count, 0)}</strong><small>${escapeHtml(timestamp(snapshot.snapshot_at))}</small></div>
+                        <div><strong>${escapeHtml(game.away || "-")} @ ${escapeHtml(game.home || "-")}</strong><span>${escapeHtml(formatDate(gameIsoDate(game)))} · ${escapeHtml(movement.freshness)}</span></div>
+                        <div><span>Open</span><strong>${formatLine(movement.openHome, sport)}</strong><small>home</small></div>
+                        <div><span>Current</span><strong>${formatLine(movement.currentHome, sport)}</strong><small>${escapeHtml(movement.direction)}</small></div>
+                        <div><span>Close</span><strong>${formatLine(movement.closeHome, sport)}</strong><small>${escapeHtml(clv.label)}</small></div>
+                        <div><span>Market</span><strong>${formatProbability(marketImplied(movement.current, side))}</strong><small>${escapeHtml(side)} implied</small></div>
+                        <div><span>Model</span><strong>${formatProbability(modelProbabilityForSide(game, side, sport))}</strong><small>${formatEdge(movement.marketEdge)}</small></div>
                     </article>
                 `;
-            }).join("")}
+            }).join("") || emptyState("No joined odds rows", "Odds snapshots exist, but no current board games matched them.")}
         </div>
     `;
 }
@@ -3196,7 +3482,7 @@ function renderReports() {
         </section>
         <section class="dashboard-grid">
             <article class="panel">
-                <header class="section-header"><div><p class="eyebrow">Calibration</p><h2>${sport} calibration</h2></div><span class="chip">${state.report?.metadata?.real_data === false ? "missing" : "real"}</span></header>
+                <header class="section-header"><div><p class="eyebrow">Calibration</p><h2>${sport} calibration</h2></div><span class="chip">${state.report?.metadata?.real_data === false ? "missing" : "ready"}</span></header>
                 <div class="trend-chart"><canvas id="calibration-chart"></canvas></div>
                 ${renderCalibrationTable(report.calibration || [])}
             </article>
@@ -3243,7 +3529,87 @@ function renderModelTrustCenter(sport) {
             ${card(sport === "MLB" ? "Live record" : "Historical record", recordLine(live), formatProbability(live.accuracy))}
             ${card("Backtest", sport === "MLB" ? recordLine(backtest) : "NFL export", sport === "MLB" ? formatProbability(backtest.accuracy) : "scored from rows")}
         </div>
-        <p class="muted">Trust comes from real exported predictions, logged results, and registry metrics. Missing odds or source data are shown as missing, not estimated.</p>
+        <p class="muted">Trust comes from exported predictions, logged results, and registry metrics. Missing odds or source data stay marked as missing.</p>
+    `;
+}
+
+function confidenceValue(row, sport = row?.sport || "MLB") {
+    const explicit = safeNumber(row?.confidence_score);
+    if (explicit !== null) return explicit;
+    const home = safeNumber(row?.home_win_probability ?? row?.home_cover_probability);
+    const away = safeNumber(row?.away_win_probability);
+    if (home !== null && away !== null) return Math.max(home, away);
+    if (home !== null) return Math.max(home, 1 - home);
+    return safeNumber(getConfidenceScore(row, sport), 0);
+}
+
+function recordSummaryLine(summary) {
+    const decided = summary.wins + summary.losses + summary.pushes;
+    const accuracy = decided ? `${((summary.wins / decided) * 100).toFixed(1)}%` : "pending";
+    return `${summary.wins}-${summary.losses}${summary.pushes ? `-${summary.pushes}` : ""}${summary.pending ? ` / ${summary.pending} pending` : ""} · ${accuracy}`;
+}
+
+function rowsWithinDays(rows, days) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    return rows.filter(row => {
+        const raw = row.game_date || row.generated_at;
+        if (!raw) return false;
+        const date = new Date(raw);
+        return !Number.isNaN(date.getTime()) && date >= cutoff;
+    });
+}
+
+function bestPickRowsByDay(rows) {
+    const grouped = new Map();
+    rows.forEach(row => {
+        const day = String(row.game_date || row.generated_at || "").slice(0, 10);
+        if (!day || day.length < 10 || !row.model_pick) return;
+        const current = grouped.get(day);
+        if (!current || confidenceValue(row) > confidenceValue(current)) grouped.set(day, row);
+    });
+    return [...grouped.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([, row]) => row);
+}
+
+function renderModelAccountabilityCenter() {
+    const mlbRows = getLogEntries().filter(row => row.sport === "MLB");
+    const bestPicks = bestPickRowsByDay(mlbRows);
+    const yesterdayBest = bestPicks.find(row => String(row.game_date || row.generated_at || "").slice(0, 10) === dateOffsetIso(-1));
+    const last10 = summarizeRecordRows(bestPicks.slice(0, 10));
+    const hotPicks = summarizeRecordRows(mlbRows.filter(row => confidenceValue(row) >= 0.6));
+    const leans = summarizeRecordRows(mlbRows.filter(row => confidenceValue(row) < 0.55));
+    const yesterday = summarizeRecordRows(rowsForDateFromLogs(dateOffsetIso(-1)));
+    const last7 = summarizeRecordRows(rowsWithinDays(mlbRows, 7));
+    const last30 = summarizeRecordRows(rowsWithinDays(mlbRows, 30));
+    const mlbRecord = getModelRecord("MLB");
+    const nflRecord = getModelRecord("NFL");
+    const marketScored = mlbRows.filter(row => ["correct", "wrong", "push"].includes(accountabilityLabel(row).toLowerCase()) && oddsSnapshotsForGame({ ...row, sport: "MLB" }).length);
+    const marketSummary = summarizeRecordRows(marketScored);
+    const bucketRows = [
+        ["Best Pick Yesterday", yesterdayBest ? `${yesterdayBest.model_pick} · ${accountabilityLabel(yesterdayBest)}` : "No logged best pick", yesterdayBest ? `${yesterdayBest.away} @ ${yesterdayBest.home}` : "Run score:models"],
+        ["Last 10 Best Picks", recordSummaryLine(last10), "daily top-confidence picks"],
+        ["Hot Picks", recordSummaryLine(hotPicks), "60%+ confidence"],
+        ["Leans", recordSummaryLine(leans), "below 55% confidence"],
+    ];
+    return `
+        <section class="panel accountability-center">
+            <header class="section-header">
+                <div><p class="eyebrow">Model Accountability</p><h2>Can the model back it up?</h2></div>
+                <button class="btn" data-refresh-command="score_models">Score Records</button>
+            </header>
+            <div class="accountability-grid">
+                ${bucketRows.map(([label, value, note]) => `<article><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(note)}</small></article>`).join("")}
+            </div>
+            <div class="accountability-strip">
+                ${card("Yesterday", recordSummaryLine(yesterday), "MLB live")}
+                ${card("Last 7 days", recordSummaryLine(last7), "MLB live")}
+                ${card("Last 30 days", recordSummaryLine(last30), "MLB live")}
+                ${card("MLB live", recordLine(mlbRecord.live_record || mlbRecord.overall || {}), formatProbability((mlbRecord.live_record || mlbRecord.overall || {}).accuracy))}
+                ${card("MLB backtest", recordLine(mlbRecord.backtest_record || {}), formatProbability((mlbRecord.backtest_record || {}).accuracy))}
+                ${card("NFL historical", recordLine(nflRecord.historical_record || nflRecord.overall || {}), formatProbability((nflRecord.historical_record || nflRecord.overall || {}).accuracy))}
+                ${card("Model vs market", marketScored.length ? recordSummaryLine(marketSummary) : "pending", marketScored.length ? "scored odds-joined picks" : "needs scored odds rows")}
+            </div>
+        </section>
     `;
 }
 
@@ -3260,6 +3626,7 @@ function renderRecord() {
                 ${["MLB", "NFL"].map(value => `<button class="${sport === value ? "is-active" : ""}" data-record-sport="${value}">${value}</button>`).join("")}
             </div>
         </section>
+        ${renderModelAccountabilityCenter()}
         ${sport === "MLB" ? renderMlbRecordView() : renderNflRecordView()}
     `;
 }
@@ -3745,12 +4112,16 @@ function renderLiveWidgetSettings() {
     const prefs = liveWidgetPrefs();
     const meta = normalizeMeta(state.live.payload);
     const interval = safeNumber(prefs.refreshInterval, 30);
+    const heartbeatSeconds = liveHeartbeatSeconds();
+    const heartbeatStatus = state.selected.liveHeartbeatEnabled
+        ? `${heartbeatSeconds || 0}s - ${state.liveRefresh.lastStatus}`
+        : "Off";
     return `
         <section class="panel live-widget-settings">
             <header class="section-header">
                 <div>
-                    <p class="eyebrow">Live Widget</p>
-                    <h2>Mini live scores window</h2>
+                    <p class="eyebrow">Live Scores</p>
+                    <h2>Widget and app heartbeat</h2>
                     <p class="muted">${state.refreshRuntime.available ? "Desktop widget commands are available." : "Live widget is available in the Tauri desktop app. Browser mode uses manual refresh commands."}</p>
                 </div>
                 <span class="chip">${escapeHtml(meta.source_status || "missing")}</span>
@@ -3759,11 +4130,22 @@ function renderLiveWidgetSettings() {
                 <div class="setting-row"><strong>Live games loaded</strong><span>${escapeHtml(String(state.live.games.length))}</span><code>data/live/live_scores.json</code></div>
                 <div class="setting-row"><strong>Last live refresh</strong><span>${escapeHtml(timestamp(meta.generated_at))}</span><code>${escapeHtml(meta.source || "npm run refresh:live")}</code></div>
                 <div class="setting-row"><strong>Manual command</strong><span>Browser/static fallback</span><code>npm run refresh:live</code></div>
+                <div class="setting-row"><strong>Main app heartbeat</strong><span>${escapeHtml(heartbeatStatus)}</span><code>${escapeHtml(state.liveRefresh.lastMessage || "Waiting for app startup")}</code></div>
                 <div class="setting-row"><strong>Auto refresh</strong><span>${interval ? `${interval}s` : "Off"}</span><code>Widget preference</code></div>
             </div>
             <div class="report-actions">
                 <button class="btn btn--primary" data-open-live-widget>Open Live Widget</button>
                 <button class="btn" data-refresh-command="live_scores">Refresh Live Scores Now</button>
+                <button class="btn" data-live-heartbeat-now>Run Heartbeat Now</button>
+                <label class="inline-control">
+                    <input id="live-heartbeat-enabled" type="checkbox" ${state.selected.liveHeartbeatEnabled ? "checked" : ""}>
+                    Main App Heartbeat
+                </label>
+                <label class="inline-control">Heartbeat
+                    <select id="live-heartbeat-interval">
+                        ${[[15, "15s"], [30, "30s"], [60, "60s"], [120, "2m"], [0, "Off"]].map(([value, label]) => `<option value="${value}" ${heartbeatSeconds === value || (!heartbeatSeconds && value === 0) ? "selected" : ""}>${label}</option>`).join("")}
+                    </select>
+                </label>
                 <label class="inline-control">Interval
                     <select id="live-widget-interval">
                         ${[[30, "30s"], [60, "60s"], [120, "2m"], [0, "Off"]].map(([value, label]) => `<option value="${value}" ${interval === value ? "selected" : ""}>${label}</option>`).join("")}
@@ -3819,7 +4201,7 @@ function renderUiPreferencesPanel() {
             <header class="section-header">
                 <div><p class="eyebrow">Presentation</p><h2>Display controls</h2></div>
                 <div class="report-actions">
-                    <label class="inline-control"><input id="presentation-mode-toggle" type="checkbox" ${state.selected.presentationMode ? "checked" : ""}> Presentation Mode</label>
+                    <label class="inline-control"><input id="presentation-mode-toggle" type="checkbox" ${state.selected.presentationMode ? "checked" : ""}> Clean UI</label>
                     <label class="inline-control">Density
                         <select id="table-density-select">
                             <option value="comfortable" ${state.selected.tableDensity !== "compact" ? "selected" : ""}>Comfortable</option>
@@ -3828,7 +4210,7 @@ function renderUiPreferencesPanel() {
                     </label>
                 </div>
             </header>
-            <p class="muted">Presentation Mode keeps the app professor-friendly by reducing status noise on dashboard surfaces. Full diagnostics stay available here.</p>
+            <p class="muted">Clean UI reduces dashboard noise while keeping full diagnostics available in Settings.</p>
         </section>
     `;
 }
@@ -3841,7 +4223,7 @@ function renderSettings() {
         ["MLB Stats API", "No key required", "schedule/probable pitchers/status/scores"],
         ["NFL data", "nfl-data-py/cached pipeline", "exported NFL predictions or offseason cache"],
         ["Odds API", oddsStatusLabel(), oddsStatusMessage()],
-        ["Reports mode", state.report?.metadata?.real_data === false ? "missing" : state.report ? "real" : "missing", "data/reports/model_report.json"],
+        ["Reports mode", state.report?.metadata?.real_data === false ? "missing" : state.report ? "ready" : "missing", "data/reports/model_report.json"],
         ["MLB feature summary", state.featureSummary ? `${state.featureSummary.feature_count || 0} features` : "missing", "data/reports/mlb_feature_summary.json"],
         ["Model comparison", state.modelComparison ? `${(state.modelComparison.models || []).length} rows` : "missing", "data/reports/mlb_model_comparison.json"],
         ["Model registry", state.modelRegistry ? `${(state.modelRegistry.models || []).length} model runs` : "missing", "data/models/model_registry.json"],
@@ -3882,6 +4264,7 @@ function renderAll() {
     renderSettings();
     renderGlobalTicker();
     renderGameCastRoot();
+    renderLiveNotifications();
     switchView(state.selected.view || "home");
 }
 
@@ -3900,7 +4283,7 @@ function bindEvents() {
             setBodyModes();
             persistSettings();
             renderAll();
-            showToast(state.selected.presentationMode ? "Presentation Mode on" : "Presentation Mode off");
+            showToast(state.selected.presentationMode ? "Clean UI on" : "Clean UI off");
             return;
         }
 
@@ -3929,6 +4312,26 @@ function bindEvents() {
 
         if (event.target.closest("[data-copy-daily-brief]")) {
             copyDailyBrief();
+            return;
+        }
+
+        const dismissLiveAlert = event.target.closest("[data-dismiss-live-alert]");
+        if (dismissLiveAlert) {
+            state.liveRefresh.notifications = state.liveRefresh.notifications.filter(alert => alert.id !== dismissLiveAlert.dataset.dismissLiveAlert);
+            saveLiveAlerts();
+            renderLiveNotifications();
+            return;
+        }
+
+        if (event.target.closest("[data-clear-live-alerts]")) {
+            state.liveRefresh.notifications = [];
+            saveLiveAlerts();
+            renderLiveNotifications();
+            return;
+        }
+
+        if (event.target.closest("[data-live-heartbeat-now]")) {
+            refreshLiveHeartbeat({ force: true, source: "manual" });
             return;
         }
 
@@ -4118,11 +4521,27 @@ function bindEvents() {
             showToast("Live widget work mode saved");
             renderSettings();
         }
+        if (event.target.id === "live-heartbeat-enabled") {
+            state.selected.liveHeartbeatEnabled = event.target.checked;
+            persistSettings();
+            startLiveHeartbeat();
+            renderSettings();
+            showToast(state.selected.liveHeartbeatEnabled ? "Main app live heartbeat on" : "Main app live heartbeat off");
+        }
+        if (event.target.id === "live-heartbeat-interval") {
+            const nextSeconds = safeNumber(event.target.value, 30);
+            state.selected.liveHeartbeatSeconds = nextSeconds;
+            state.selected.liveHeartbeatEnabled = nextSeconds > 0;
+            persistSettings();
+            startLiveHeartbeat();
+            renderSettings();
+            showToast(nextSeconds > 0 ? `Live heartbeat every ${nextSeconds}s` : "Main app live heartbeat off");
+        }
         if (event.target.id === "presentation-mode-toggle") {
             state.selected.presentationMode = event.target.checked;
             setBodyModes();
             persistSettings();
-            showToast(state.selected.presentationMode ? "Presentation Mode on" : "Presentation Mode off");
+            showToast(state.selected.presentationMode ? "Clean UI on" : "Clean UI off");
             renderAll();
         }
         if (event.target.id === "table-density-select") {

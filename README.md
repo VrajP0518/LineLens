@@ -62,6 +62,8 @@ If Python scripts are not available in the installed app environment, the UI sta
 
 When the Tauri desktop app opens in the repo/dev environment, it automatically runs the same safe startup path as `npm run refresh:startup`: bootstrap Python, refresh MLB, refresh NFL, refresh live widget data, score model records, and check data status.
 
+Live score refresh is intentionally lighter than model refresh. `npm run refresh:live` pulls fast scoreboard/status data from ESPN public scoreboard endpoints and MLB Stats API, then joins existing LineLens prediction exports. The app heartbeat can poll live scores about every 15 seconds, while model predictions remain daily/on-demand so training is not rerun during live games.
+
 ## Developer Setup
 
 Use Python 3.11 for the local pipeline.
