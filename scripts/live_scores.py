@@ -15,7 +15,6 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
-from zoneinfo import ZoneInfo
 
 try:
     import requests
@@ -28,6 +27,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.shared.mlb_teams import mlb_team_abbreviation
+from src.shared.timezones import safe_zone
 from src.shared.version import APP_VERSION
 
 LIVE_DIR = ROOT / "data" / "live"
@@ -42,7 +42,7 @@ MLB_SCHEDULE_URL = "https://statsapi.mlb.com/api/v1/schedule"
 MLB_LIVE_URL = "https://statsapi.mlb.com/api/v1.1/game/{game_pk}/feed/live"
 ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard"
 ESPN_SUMMARY_URL = "https://site.web.api.espn.com/apis/site/v2/sports/{sport}/{league}/summary"
-LOCAL_TZ = ZoneInfo("America/Toronto")
+LOCAL_TZ = safe_zone("America/Toronto")
 
 ESPN_SPORTS = {
     "MLB": {"sport": "baseball", "league": "mlb"},

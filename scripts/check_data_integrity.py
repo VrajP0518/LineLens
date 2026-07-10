@@ -7,9 +7,12 @@ import re
 import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.shared.timezones import safe_zone
 
 
 class IntegrityError(RuntimeError):
@@ -56,7 +59,7 @@ def live_schedule_date(row: dict) -> str:
             parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
             if parsed.tzinfo is None:
                 parsed = parsed.replace(tzinfo=timezone.utc)
-            return parsed.astimezone(ZoneInfo("America/Toronto")).date().isoformat()
+            return parsed.astimezone(safe_zone("America/Toronto")).date().isoformat()
         except ValueError:
             pass
     return source_date(row)
@@ -84,7 +87,7 @@ def check_calendar_rules() -> None:
     date_value = "2026-07-10"
     check("date-only preservation", date_value == date.fromisoformat(date_value).isoformat(), date_value)
     for zone in ("America/Toronto", "America/New_York", "UTC", "Asia/Tokyo"):
-        local = datetime(2026, 7, 10, 23, 45, tzinfo=ZoneInfo(zone))
+        local = datetime(2026, 7, 10, 23, 45, tzinfo=safe_zone(zone))
         check("local timezone calendar", local_date_iso(local) == date_value, f"{zone} keeps {date_value}")
     check("today default", default_date(["2026-07-09", date_value, "2026-07-11"], date_value) == date_value, "today with games")
     check("future fallback", default_date(["2026-07-11", "2026-07-12"], date_value) == "2026-07-11", "next future date")
