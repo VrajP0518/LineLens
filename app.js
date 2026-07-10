@@ -58,10 +58,13 @@ const state = {
         homeMlbRange: "today",
         homeNflSeason: null,
         homeNflWeek: null,
+        nflSeasonManual: false,
         presentationMode: false,
         tableDensity: "comfortable",
         liveHeartbeatEnabled: true,
         liveHeartbeatSeconds: 15,
+        modelName: null,
+        mlbLifecycleFilter: "all",
     },
     favorites: { teams: [], games: [] },
     gamecast: { open: false, sport: null, gameId: null },
@@ -77,6 +80,13 @@ const state = {
     tracker: [],
     refreshLogs: [],
     charts: {},
+};
+
+const derivedCache = {
+    mlbReviewKey: "",
+    mlbReviewRows: null,
+    modelEntriesKey: "",
+    modelEntries: null,
 };
 
 const REFRESH_COMMANDS = {
@@ -1093,9 +1103,19 @@ function nflSeasons() {
     return uniqueSortedNumbers(state.nfl.games.map(game => gameSeason(game, "NFL")), "desc");
 }
 
+function isNflSupplement(game) {
+    return String(game?.prediction_mode || "") === "postseason_result_supplement"
+        || String(game?.source || "").toLowerCase().includes("postseason result supplement")
+        || String(game?.model_pick || "") === "-";
+}
+
 function nflGamesForSeason(season) {
     const selectedSeason = safeNumber(season);
     return state.nfl.games.filter(game => gameSeason(game, "NFL") === selectedSeason);
+}
+
+function nflModelGamesForSeason(season) {
+    return nflGamesForSeason(season).filter(game => !isNflSupplement(game));
 }
 
 function nflWeeksForSeason(season) {
@@ -1107,7 +1127,7 @@ function nflWeeksForSeason(season) {
 }
 
 function latestNflSeason() {
-    return nflSeasons()[0] ?? null;
+    return nflSeasons().find(season => nflModelGamesForSeason(season).length) ?? nflSeasons()[0] ?? null;
 }
 
 function latestNflWeek(season) {
@@ -1121,7 +1141,7 @@ function ensureNflScope() {
     const seasons = nflSeasons();
     if (!seasons.length) return { season: null, week: null, weeks: [], games: [] };
     let season = safeNumber(state.selected.homeNflSeason);
-    if (!seasons.includes(season)) season = latestNflSeason();
+    if (!seasons.includes(season) || (!state.selected.nflSeasonManual && !nflModelGamesForSeason(season).length)) season = latestNflSeason();
     const weeks = nflWeeksForSeason(season);
     const weekValues = weeks.map(item => typeof item === "object" ? item.week : item);
     let week = safeNumber(state.selected.homeNflWeek);
@@ -1169,18 +1189,29 @@ function predictionLogRowsForMlb() {
 }
 
 function allMlbReviewRows() {
+    const key = [
+        normalizeMeta(state.mlb.payload).generated_at,
+        normalizeMeta(state.mlbBacktest.payload).generated_at,
+        normalizeMeta(state.predictionLog).generated_at,
+        state.mlb.games.length,
+        state.mlbBacktest.games.length,
+        getLogEntries().length,
+    ].join("|");
+    if (derivedCache.mlbReviewRows && derivedCache.mlbReviewKey === key) return derivedCache.mlbReviewRows;
     const seen = new Set();
     const sources = [
         ...state.mlb.games.map(game => ({ ...game, sport: "MLB", source_label: "Current export", source_type: "current" })),
         ...state.mlbBacktest.games.map(game => ({ ...game, sport: "MLB", source_label: "Backtest", source_type: "backtest" })),
         ...predictionLogRowsForMlb(),
     ];
-    return sources.filter(game => {
+    derivedCache.mlbReviewRows = sources.filter(game => {
         const key = `${game.source_type}-${gameKey(game)}`;
         if (!gameIsoDate(game) || seen.has(key)) return false;
         seen.add(key);
         return true;
     });
+    derivedCache.mlbReviewKey = key;
+    return derivedCache.mlbReviewRows;
 }
 
 function mlbReviewDates() {
@@ -1745,7 +1776,23 @@ function switchView(view) {
     const [title, kicker] = titles[view] || titles.home;
     $("#view-title").textContent = title;
     $("#view-kicker").textContent = kicker;
+    if (previous !== view) renderView(view);
     renderGlobalTicker();
+}
+
+function renderView(view = state.selected.view || "home") {
+    const renderers = {
+        home: renderHome,
+        nfl: renderNFL,
+        mlb: renderMLB,
+        models: renderModels,
+        reports: renderReports,
+        record: renderRecord,
+        teams: renderTeams,
+        tracking: renderTracking,
+        settings: renderSettings,
+    };
+    renderers[view]?.();
 }
 
 function card(label, value, note, extraClass = "") {
@@ -2357,20 +2404,43 @@ function renderModelTrustCenterCompact() {
 }
 
 function renderHome() {
-    const games = lifecycleBoardGames();
-    const selected = games.find(game => gameKey(game) === gameKey(state.selected.mlb)) || games[0] || null;
-    state.selected.mlb = selected;
-    const live = games.filter(game => lifecycleStage(game) === "live").length;
-    const finals = games.filter(game => lifecycleStage(game) === "final").length;
-    const pregame = games.filter(game => lifecycleStage(game) === "pregame").length;
+    const scopedRows = homeBoardGames();
+    const top = homeTopEdges(8);
+    const latest = [normalizeMeta(state.nfl.payload).generated_at, normalizeMeta(state.mlb.payload).generated_at, state.report?.metadata?.generated_at].filter(Boolean).sort().at(-1);
+    const best = top[0];
+    const strongEdges = top.filter(row => safeNumber(row.edge, 0) >= 0.1).length;
+    const mlbRecord = getModelRecord("MLB").overall || {};
+    const nflLatest = latestNflSeason();
+    const nflAvailableLatest = nflSeasons()[0];
     $("#view-home").innerHTML = `
-        <section class="lifecycle-shell home-lifecycle-shell">
-            <section class="lifecycle-hero lifecycle-hero--home"><div><p class="eyebrow">LineLens Sports · Daily command center</p><h2>Pregame conviction.<br><span>Live context. Final truth.</span></h2><p>One MLB workspace for the full prediction lifecycle. Production and challenger models stay visible, markets stay honest, and every pick ends with an accountable result.</p></div><div class="lifecycle-hero__actions">${renderMlbDateControls("home")}<button class="btn btn--primary" data-view-link="mlb">Open MLB desk</button><button class="btn" data-view-link="models">Model Observatory</button></div></section>
-            <section class="lifecycle-kpis">${card("Pregame", pregame, "today's board")}${card("Live", live, "live feed joined")}${card("Final", finals, "results available")}${card("MLB model", selectedModelEntry("MLB")?.model_name || "not declared", "production registry")}${card("NFL", state.nfl.games.length, "preserved module")}</section>
-            ${renderPredictionLifecycle(games)}
-            ${renderLifecycleMatchup(selected)}
+        <section class="home-v2-shell">
+            <section class="panel home-v2-hero">
+                <div class="home-v2-hero__copy">
+                    <p class="eyebrow">LineLens Sports ${escapeHtml(state.app.version || APP_VERSION)}</p>
+                    <h2>Live Edge.<br><span>Model Clarity.</span></h2>
+                    <p class="muted">Real MLB/NFL model signals, daily results, and prediction record tracking in one command center. Today’s most important game state stays one click away.</p>
+                    ${renderQuickActionsV2()}
+                    <div class="home-identity-pulse"><span class="lifecycle-status lifecycle-status--live">${lifecycleBoardGames().filter(game => lifecycleStage(game) === "live").length} live</span><span>${lifecycleBoardGames().length} MLB lifecycle rows</span><span>${escapeHtml(selectedModelEntry("MLB")?.model_name || "No production model")}</span></div>
+                </div>
+                ${renderHeroHologram()}
+                ${renderBestPickMini(best)}
+            </section>
+            <section class="metric-strip-v2">
+                ${homeMetricCard("NFL", "NFL Games", String(state.nfl.games.length), "loaded rows", "blue")}
+                ${homeMetricCard("MLB", "MLB Games", String(state.mlb.games.length), "loaded rows", "purple")}
+                ${homeMetricCard("EDGE", "Strong Edges", String(strongEdges), "current board", "green")}
+                ${homeMetricCard("REC", "Model Record", formatBoardRecord(mlbRecord), formatProbability(mlbRecord.accuracy), "orange")}
+                ${homeMetricCard("TIME", "Latest Export", latest ? formatDate(latest) : "-", latest ? timestamp(latest) : "no timestamp", "blue")}
+            </section>
+            ${nflAvailableLatest && nflLatest && nflAvailableLatest !== nflLatest ? `<div class="home-source-strip" data-variant="warning"><strong>NFL source note</strong><span>${nflAvailableLatest} currently has only a verified postseason supplement; Home defaults to the latest complete model season, ${nflLatest}.</span><button class="btn btn--micro" data-view-link="nfl">Inspect NFL</button></div>` : ""}
+            ${renderDailyBrief()}
+            <section class="home-v2-grid">
+                ${renderBestPickFeatureV2(best)}
+                ${renderHomeDailyBoard(scopedRows)}
+                ${renderHomeReadoutV2(top)}
+            </section>
+            ${renderModelTrustCenterCompact()}
             ${renderLiveWidgetPreview()}
-            <section class="lifecycle-cross-sport"><div><p class="eyebrow">NFL remains live</p><strong>Historical spread intelligence is still available.</strong><span>${state.nfl.games.length} real exported rows loaded.</span></div><button class="btn" data-view-link="nfl">Open NFL</button></section>
         </section>
     `;
 }
@@ -2686,6 +2756,8 @@ function renderNFL() {
     const selected = selectedStillVisible ? state.selected.nfl : games[0] || defaultNflGame();
     state.selected.nfl = selected;
     const top = rankRowsByEdge(games.map(game => ({ ...game, sport: "NFL" })), 1)[0]?.game || selected;
+    const supplementOnly = Boolean(scope.season && nflGamesForSeason(scope.season).length && !nflModelGamesForSeason(scope.season).length);
+    const latestComplete = latestNflSeason();
     $("#view-nfl").innerHTML = `
         <section class="predictor-hero predictor-hero--nfl">
             <div>
@@ -2696,6 +2768,7 @@ function renderNFL() {
                 <button class="btn btn--primary" data-refresh-command="nfl_real">Reload exports</button>
             </div>
         </section>
+        ${supplementOnly ? `<p class="data-status nfl-source-notice" data-variant="warning"><strong>${scope.season} source status:</strong> this season contains only a verified postseason result supplement (${rawGames.length} row) and no model prediction slate. It is excluded from model record calculations. Latest complete model season: ${latestComplete || "unavailable"}.</p>` : ""}
         <section class="prediction-desk">
             <article class="panel prediction-board">
                 ${renderNflDeskHeader(scope, rawGames)}
@@ -2807,6 +2880,33 @@ function renderPredictionLifecycle(games = lifecycleBoardGames()) {
     return `<div class="lifecycle-board">${["pregame", "live", "final"].map(stage => renderLifecycleLane(stage, sorted.filter(game => lifecycleStage(game) === stage))).join("")}</div>`;
 }
 
+function renderMlbStageFilters(games) {
+    const options = [["all", "All"], ["pregame", "Pregame"], ["live", "Live"], ["final", "Final"]];
+    return `<div class="mlb-stage-filters" role="tablist" aria-label="MLB lifecycle stage">${options.map(([value, label]) => `<button type="button" data-mlb-stage-filter="${value}" class="${(state.selected.mlbLifecycleFilter || "all") === value ? "is-active" : ""}">${label}<span>${value === "all" ? games.length : games.filter(game => lifecycleStage(game) === value).length}</span></button>`).join("")}</div>`;
+}
+
+function renderMlbLifecycleCard(game) {
+    const stage = lifecycleStage(game);
+    const market = lifecycleMarketRead(game);
+    const live = liveGameFor(game);
+    const selected = gameKey(game) === gameKey(state.selected.mlb);
+    const score = live ? finalScoreLabel(live) : finalScoreLabel(game);
+    const result = modelResultLabel(game);
+    const homeMeta = getTeamMeta("MLB", game.home, game.home_display);
+    const awayMeta = getTeamMeta("MLB", game.away, game.away_display);
+    return `<article class="mlb-game-card mlb-game-card--${stage} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
+        <header class="mlb-game-card__header"><span class="lifecycle-status lifecycle-status--${stage}">${lifecycleStageLabel(stage)}</span><span>${escapeHtml(stage === "pregame" ? getGameTimeLabel(game) : gameStatusLine(game, live))}</span>${renderWatchButton(game, "Watch matchup")}</header>
+        <div class="mlb-game-card__matchup">
+            <div class="mlb-game-card__team">${renderTeamLogo("MLB", awayMeta.abbreviation, "lg", awayMeta.full_name)}<strong>${escapeHtml(awayMeta.abbreviation)}</strong><small>${escapeHtml(awayMeta.full_name)}</small><b>${live && safeNumber(live.away_score) !== null ? live.away_score : "—"}</b></div>
+            <div class="mlb-game-card__at">@<small>${escapeHtml(score || "")}</small></div>
+            <div class="mlb-game-card__team mlb-game-card__team--home">${renderTeamLogo("MLB", homeMeta.abbreviation, "lg", homeMeta.full_name)}<strong>${escapeHtml(homeMeta.abbreviation)}</strong><small>${escapeHtml(homeMeta.full_name)}</small><b>${live && safeNumber(live.home_score) !== null ? live.home_score : "—"}</b></div>
+        </div>
+        <div class="mlb-game-card__signal"><span>Production pick</span><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><b>${formatProbability(market.pickProbability)}</b></div>
+        <div class="mlb-game-card__market"><div><span>Market</span><strong>${market.marketProbability === null ? "Unavailable" : formatProbability(market.marketProbability)}</strong></div><div><span>Edge</span><strong>${market.edge === null ? "—" : formatEdge(market.edge)}</strong></div><small>${market.lineShift === null ? "No real odds movement joined" : `Open → current ${market.lineShift > 0 ? "+" : ""}${formatNumber(market.lineShift, 0)}`}</small></div>
+        <footer class="mlb-game-card__footer"><span>${resultChip(result)}</span><button class="btn btn--micro" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">Open Matchup</button></footer>
+    </article>`;
+}
+
 function renderLifecycleMatchup(game) {
     if (!game) return `<section class="panel lifecycle-matchup lifecycle-matchup--empty">${emptyState("Select a game to inspect the lifecycle", "Open a matchup from the board to see model, market, live, and final accountability in one place.")}</section>`;
     const market = lifecycleMarketRead(game);
@@ -2816,12 +2916,14 @@ function renderLifecycleMatchup(game) {
 
 function renderMlbLifecyclePage() {
     const games = lifecycleBoardGames();
+    const filter = state.selected.mlbLifecycleFilter || "all";
+    const filtered = filter === "all" ? games : games.filter(game => lifecycleStage(game) === filter);
     const selected = games.find(game => gameKey(game) === gameKey(state.selected.mlb)) || games[0] || null;
     state.selected.mlb = selected;
     const liveCount = games.filter(game => lifecycleStage(game) === "live").length;
     const finalCount = games.filter(game => lifecycleStage(game) === "final").length;
     const pregameCount = games.filter(game => lifecycleStage(game) === "pregame").length;
-    return `<section class="lifecycle-shell"><section class="lifecycle-hero"><div><p class="eyebrow">MLB Prediction Lifecycle</p><h2>Every pick has a before, during, and after.</h2><p>Follow today’s real board from pregame conviction to live context and final accountability. ${renderMoltresBadge()}</p></div><div class="lifecycle-hero__actions">${renderMlbDateControls("mlb")}<button class="btn btn--primary" data-refresh-command="mlb_current">Reload exports</button></div></section><section class="lifecycle-kpis">${card("Pregame", pregameCount, "awaiting first pitch")}${card("Live", liveCount, "live feed joined")}${card("Final", finalCount, "accountability ready")}${card("Odds", oddsStatusLabel(), oddsStatusMessage())}${card("Production", selectedModelEntry("MLB")?.model_name || "not declared", "registry selection")}</section>${renderPredictionLifecycle(games)}${renderLifecycleMatchup(selected)}</section>`;
+    return `<section class="lifecycle-shell mlb-lifecycle-shell"><section class="lifecycle-hero"><div><p class="eyebrow">MLB Prediction Lifecycle</p><h2>Pregame → Live → Final.</h2><p>One real game board for conviction, market context, live state, and final accountability. ${renderMoltresBadge()}</p></div><div class="lifecycle-hero__actions">${renderMlbDateControls("mlb")}<button class="btn btn--primary" data-refresh-command="mlb_current">Reload exports</button></div></section><section class="lifecycle-kpis">${card("Pregame", pregameCount, "awaiting first pitch")}${card("Live", liveCount, "live feed joined")}${card("Final", finalCount, "accountability ready")}${card("Odds", oddsStatusLabel(), oddsStatusMessage())}${card("Production", selectedModelEntry("MLB")?.model_name || "not declared", "registry selection")}</section><section class="panel mlb-board-panel"><header class="section-header"><div><p class="eyebrow">Daily game board</p><h2>${escapeHtml(formatDate(ensureMlbReviewDate()) || "MLB board")}</h2><p class="muted">Cards prioritize watchlist and favorite teams. Open a matchup for the full lifecycle timeline, explanation, odds snapshots, and GameCast.</p></div>${renderMlbStageFilters(games)}</header><div class="mlb-game-grid">${filtered.length ? filtered.map(renderMlbLifecycleCard).join("") : emptyState("No games in this lifecycle state", "This filter only shows real rows loaded for the selected date.")}</div></section>${renderLifecycleMatchup(selected)}</section>`;
 }
 
 function renderMLB() {
@@ -3668,13 +3770,21 @@ function modelIdentity(modelName) {
 }
 
 function modelObservatoryEntries() {
-    const entries = (state.modelRegistry?.models || []).filter(model => model.sport === "MLB");
+    const registryEntries = (state.modelRegistry?.models || []).filter(model => model.sport === "MLB");
+    const comparisonEntries = getComparisonRows("MLB").filter(row => row.status === "trained");
+    const key = `${normalizeMeta(state.modelRegistry).generated_at}|${registryEntries.length}|${comparisonEntries.length}|${registryEntries.map(entry => `${entry.model_name}:${entry.trained_at}:${entry.selected}`).join(",")}`;
+    if (derivedCache.modelEntries && derivedCache.modelEntriesKey === key) return derivedCache.modelEntries;
     const latestByName = new Map();
-    entries.forEach(entry => {
+    registryEntries.forEach(entry => {
         const current = latestByName.get(entry.model_name);
         if (!current || String(entry.trained_at || "") > String(current.trained_at || "") || entry.selected) latestByName.set(entry.model_name, entry);
     });
-    return [...latestByName.values()].sort((a, b) => (b.selected ? 1 : 0) - (a.selected ? 1 : 0) || String(a.model_name).localeCompare(String(b.model_name)));
+    comparisonEntries.forEach(entry => {
+        if (!latestByName.has(entry.model_name)) latestByName.set(entry.model_name, { ...entry, comparison_only: true, metrics: { ...entry } });
+    });
+    derivedCache.modelEntries = [...latestByName.values()].sort((a, b) => (b.selected ? 1 : 0) - (a.selected ? 1 : 0) || String(a.model_name).localeCompare(String(b.model_name)));
+    derivedCache.modelEntriesKey = key;
+    return derivedCache.modelEntries;
 }
 
 function modelComparisonFor(name) {
@@ -3696,11 +3806,35 @@ function renderModelProfile(entry) {
     return `<details class="model-profile model-profile--${identity.element}" ${entry.selected ? "open" : ""}><summary><span class="model-profile__crest" aria-hidden="true"><i></i><b>${escapeHtml(identity.legend.slice(0, 2).toUpperCase())}</b></span><span class="model-profile__title"><strong>${escapeHtml(identity.legend)}</strong><small>${escapeHtml(name)}</small></span><span class="model-profile__role">${escapeHtml(identity.role)}</span><span class="model-profile__headline">${formatNumber(metrics.log_loss, 3)}<small>log loss</small></span><span class="model-profile__status ${entry.selected ? "is-selected" : ""}">${entry.selected ? "Production" : "Challenger"}</span></summary><div class="model-profile__body"><div class="model-profile__intro"><p>${escapeHtml(identity.motif)}</p><div><span class="technical-label">Technical model</span><code>${escapeHtml(name)}</code></div></div><div class="model-metric-grid">${renderModelMetric("Accuracy", formatProbability(metrics.accuracy), `N=${metrics.sample_size || entry.test_rows || "-"}`)}${renderModelMetric("Log loss", formatNumber(metrics.log_loss, 3), "lower is better")}${renderModelMetric("Brier", formatNumber(metrics.brier_score, 3), "lower is better")}${renderModelMetric("ROC AUC", formatNumber(metrics.roc_auc, 3), "discrimination")}${renderModelMetric("Calibration", formatEdge(metrics.calibration_error), "absolute error")}${renderModelMetric("Stability", formatNumber(metrics.stability?.stability_score, 3), `${metrics.stability?.blocks || 0} time slices`)}</div><div class="model-profile__facts"><div><span class="eyebrow">Lifecycle</span><p>Trained ${escapeHtml(formatDate(entry.trained_at) || "not exported")}</p><p>Train seasons: ${escapeHtml(trainSeasons)}</p><p>Test season: ${escapeHtml(entry.test_season || "not exported")} · ${escapeHtml(String(entry.feature_count || "-"))} features</p></div><div><span class="eyebrow">Strength / weakness</span><p><strong>Strength:</strong> ${escapeHtml(identity.strength)}</p><p><strong>Weakness:</strong> ${escapeHtml(identity.weakness)}</p></div><div><span class="eyebrow">Top factors</span>${topFactors.length ? `<ul>${topFactors.map(factor => `<li>${escapeHtml(factor.feature || factor.label || "feature")}</li>`).join("")}</ul>` : `<p class="muted">Per-model attribution is not exported for this row. The production feature summary is available in Reports.</p>`}</div></div>${card ? `<div class="model-profile__components"><span class="eyebrow">Moltres components</span>${(card.architecture?.base_models || []).map(component => `<span><strong>${escapeHtml(component)}</strong><em>${safeNumber(card.architecture?.weights?.[component]) === null ? "-" : `${(card.architecture.weights[component] * 100).toFixed(0)}%`}</em></span>`).join("") || `<p class="muted">Moltres has not been manually trained in this bundle.</p>`}</div>` : ""}<p class="model-profile__limitation"><strong>Honest limitation:</strong> ${escapeHtml(card?.limitations?.[0] || "Registry metrics describe this exported evaluation only; they do not guarantee future performance.")}</p></div></details>`;
 }
 
+function renderModelGalleryCard(entry) {
+    const name = entry.model_name || "Unknown model";
+    const identity = modelIdentity(name);
+    const comparison = modelComparisonFor(name);
+    const metrics = { ...(entry.metrics || {}), ...comparison };
+    const selected = Boolean(entry.selected);
+    const pending = !entry.metrics && !Object.keys(comparison).length;
+    const statusLabel = selected ? "SELECTED" : entry.comparison_only ? "EVALUATED" : "CHALLENGER";
+    return `<article class="model-gallery-card model-gallery-card--${identity.element} ${selected ? "is-production" : ""}">
+        <div class="model-gallery-card__visual"><span>${escapeHtml(identity.legend)}</span><i></i><b></b><em></em></div>
+        <div class="model-gallery-card__body"><div class="model-gallery-card__heading"><div><p class="eyebrow">${selected ? "Production model" : entry.comparison_only ? "Comparison export" : "Registry challenger"}</p><h3>${escapeHtml(identity.legend)}</h3><code>${escapeHtml(name)}</code></div><span class="model-gallery-card__badge">${statusLabel}</span></div>
+        <p class="muted">${escapeHtml(identity.role)}</p><div class="model-gallery-card__metrics">${renderModelMetric("Accuracy", pending ? "Pending" : formatProbability(metrics.accuracy))}${renderModelMetric("Log loss", pending ? "Pending" : formatNumber(metrics.log_loss, 3))}${renderModelMetric("Brier", pending ? "Pending" : formatNumber(metrics.brier_score, 3))}${renderModelMetric("ROC AUC", pending ? "Pending" : formatNumber(metrics.roc_auc, 3))}</div>
+        <button type="button" class="btn ${selected ? "btn--primary" : ""}" data-model-open="${escapeHtml(name)}">View model profile</button></div>
+    </article>`;
+}
+
+function renderModelVersionHistory(name) {
+    const versions = (state.modelRegistry?.models || []).filter(model => model.sport === "MLB" && model.model_name === name).sort((a, b) => String(b.trained_at || "").localeCompare(String(a.trained_at || "")));
+    if (versions.length < 2) return `<p class="muted">No prior registry versions exported for this algorithm.</p>`;
+    return `<div class="model-version-list">${versions.slice(0, 5).map((version, index) => `<div><strong>${index === 0 ? "Current export" : `Version ${versions.length - index}`}</strong><span>${escapeHtml(formatDate(version.trained_at) || "date unavailable")}</span><em>${version.selected ? "Production" : "Challenger"}</em></div>`).join("")}</div>`;
+}
+
 function renderModels() {
     const entries = modelObservatoryEntries();
     const selected = selectedModelEntry("MLB");
     const comparison = getComparisonRows("MLB");
-    $("#view-models").innerHTML = `<section class="models-shell"><section class="models-hero"><div><p class="eyebrow">LineLens Model Observatory</p><h2>The model is part of the product.</h2><p>Every MLB candidate has a technical name, a visual identity, a measured role, and an honest boundary. Production selection is evidence-led; Moltres remains a challenger until its real evaluation earns promotion.</p></div><div class="models-hero__orb"><span></span><i></i><b></b></div></section><section class="models-command"><div><span class="eyebrow">Production model</span><strong>${escapeHtml(selected?.model_name || "Not declared")}</strong><small>${selected ? `selected ${formatDate(selected.trained_at)}` : "No registry selection"}</small></div><div><span class="eyebrow">Candidates</span><strong>${entries.length}</strong><small>unique MLB algorithms</small></div><div><span class="eyebrow">Evaluation rows</span><strong>${comparison.length}</strong><small>real comparison exports</small></div><div><span class="eyebrow">Moltres</span><strong>${escapeHtml(moltresStatusLabel())}</strong><small>${moltresCard() ? "card loaded" : "manual training pending"}</small></div></section><section class="models-legend"><span>Metric guide</span><small>Accuracy ↑</small><small>Log loss ↓</small><small>Brier ↓</small><small>ROC AUC ↑</small><small>Calibration ↓</small><small>Stability ↑</small></section><section class="models-list">${entries.length ? entries.map(renderModelProfile).join("") : emptyState("No MLB models in registry", "Train or load a real MLB registry export to populate the Model Observatory.")}</section></section>`;
+    const selectedEntry = state.selected.modelName ? entries.find(entry => entry.model_name === state.selected.modelName) : null;
+    const detail = selectedEntry ? `<section class="model-drawer"><header class="section-header"><div><p class="eyebrow">Model profile</p><h2>${escapeHtml(modelIdentity(selectedEntry.model_name).legend)}</h2><p class="muted">Expanded technical profile and registry history.</p></div><button class="btn btn--small" type="button" data-model-close>Close profile</button></header>${renderModelProfile(selectedEntry)}<div class="model-history"><p class="eyebrow">Registry history</p>${renderModelVersionHistory(selectedEntry.model_name)}</div></section>` : `<div class="models-gallery-hint"><strong>Select a model to inspect its profile.</strong><span>Metrics stay tied to the real registry and comparison exports; pending models remain visibly pending.</span></div>`;
+    $("#view-models").innerHTML = `<section class="models-shell"><section class="models-hero"><div><p class="eyebrow">LineLens Model Observatory</p><h2>Five signals. One accountable system.</h2><p>Every MLB algorithm gets a distinct visual identity, its real technical name, measured metrics, and an honest role. Moltres is the ember-red ensemble challenger; it is not promoted until a manual chronological evaluation proves it belongs in production.</p></div><div class="models-hero__orb"><span></span><i></i><b></b></div></section><section class="models-command"><div><span class="eyebrow">Production model</span><strong>${escapeHtml(selected?.model_name || "Not declared")}</strong><small>${selected ? `selected ${formatDate(selected.trained_at)}` : "No registry selection"}</small></div><div><span class="eyebrow">Model gallery</span><strong>${entries.length}</strong><small>unique MLB algorithms</small></div><div><span class="eyebrow">Evaluation rows</span><strong>${comparison.length}</strong><small>real comparison exports</small></div><div><span class="eyebrow">Moltres</span><strong>${escapeHtml(moltresStatusLabel())}</strong><small>${moltresCard() ? "card loaded" : "manual training pending"}</small></div></section><section class="models-legend"><span>Metric guide</span><small>Accuracy ↑</small><small>Log loss ↓</small><small>Brier ↓</small><small>ROC AUC ↑</small><small>Calibration ↓</small><small>Stability ↑</small></section><section class="models-gallery">${entries.length ? entries.map(renderModelGalleryCard).join("") : emptyState("No MLB models in registry", "Train or load a real MLB registry export to populate the Model Observatory.")}</section>${detail}</section>`;
 }
 
 function renderModelTrustCenter(sport) {
@@ -4487,15 +4621,7 @@ function renderSettings() {
 
 function renderAll() {
     setBodyModes();
-    renderHome();
-    renderNFL();
-    renderMLB();
-    renderModels();
-    renderReports();
-    renderRecord();
-    renderTeams();
-    renderTracking();
-    renderSettings();
+    renderView(state.selected.view || "home");
     renderGlobalTicker();
     renderGameCastRoot();
     renderLiveNotifications();
@@ -4607,6 +4733,29 @@ function bindEvents() {
             state.selected.mlbFilter = mlbFilterButton.dataset.mlbFilter;
             persistSettings();
             renderMLB();
+        }
+
+        const mlbStageButton = event.target.closest("[data-mlb-stage-filter]");
+        if (mlbStageButton) {
+            state.selected.mlbLifecycleFilter = mlbStageButton.dataset.mlbStageFilter;
+            persistSettings();
+            renderMLB();
+            return;
+        }
+
+        const modelOpen = event.target.closest("[data-model-open]");
+        if (modelOpen) {
+            state.selected.modelName = modelOpen.dataset.modelOpen;
+            persistSettings();
+            renderModels();
+            return;
+        }
+
+        if (event.target.closest("[data-model-close]")) {
+            state.selected.modelName = null;
+            persistSettings();
+            renderModels();
+            return;
         }
 
         const nflFilterButton = event.target.closest("[data-nfl-filter]");
@@ -4737,6 +4886,7 @@ function bindEvents() {
         }
         if (event.target.id === "home-nfl-season" || event.target.id === "nfl-nfl-season") {
             state.selected.homeNflSeason = safeNumber(event.target.value);
+            state.selected.nflSeasonManual = true;
             state.selected.homeNflWeek = latestNflWeek(state.selected.homeNflSeason);
             persistSettings();
             event.target.id === "home-nfl-season" ? renderHome() : renderNFL();

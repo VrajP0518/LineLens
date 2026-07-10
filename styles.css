@@ -158,6 +158,148 @@
     .signal-row__actions { justify-self: end; }
 }
 
+/* Prediction Lifecycle desk: one card language for pregame, live, and final. */
+.home-identity-pulse {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.74rem;
+}
+.home-identity-pulse > span:not(.lifecycle-status),
+.home-source-strip {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    padding: 0.28rem 0.55rem;
+    background: rgba(255,255,255,0.045);
+}
+.home-source-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    border-radius: 0.8rem;
+    color: var(--muted);
+}
+.home-source-strip strong { color: #ffe4a2; }
+.home-source-strip .btn { margin-left: auto; }
+.mlb-lifecycle-shell { gap: 1rem; }
+.mlb-board-panel { display: grid; gap: 1rem; }
+.mlb-stage-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.25rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.035);
+}
+.mlb-stage-filters button {
+    border: 0;
+    border-radius: 999px;
+    padding: 0.42rem 0.62rem;
+    color: var(--muted);
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+.mlb-stage-filters button.is-active { color: var(--text); background: rgba(92,200,255,0.16); }
+.mlb-stage-filters span { margin-left: 0.35rem; color: inherit; opacity: 0.7; }
+.mlb-game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(285px, 1fr));
+    gap: 0.8rem;
+}
+.mlb-game-card {
+    display: grid;
+    gap: 0.7rem;
+    min-width: 0;
+    padding: 0.85rem;
+    border: 1px solid rgba(92,200,255,0.2);
+    border-left: 3px solid #5cc8ff;
+    border-radius: 1rem;
+    background: linear-gradient(160deg, rgba(17,29,48,0.92), rgba(7,12,22,0.9));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.mlb-game-card:hover, .mlb-game-card.is-selected { transform: translateY(-2px); border-color: rgba(255,255,255,0.38); box-shadow: 0 15px 36px rgba(0,0,0,0.24); }
+.mlb-game-card--live { border-color: rgba(100,214,162,0.45); border-left-color: #64d6a2; box-shadow: 0 0 24px rgba(100,214,162,0.08); }
+.mlb-game-card--final { border-color: rgba(244,106,106,0.42); border-left-color: #f46a6a; }
+.mlb-game-card--pregame { border-left-color: #5cc8ff; }
+.mlb-game-card.is-watched { box-shadow: inset 0 0 0 1px rgba(244,203,106,0.3), 0 15px 36px rgba(0,0,0,0.18); }
+.mlb-game-card__header, .mlb-game-card__footer { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
+.mlb-game-card__header > span:nth-child(2) { overflow: hidden; margin-left: auto; color: var(--muted); font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
+.mlb-game-card__matchup { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.4rem; padding: 0.45rem 0; }
+.mlb-game-card__team { display: grid; justify-items: start; gap: 0.18rem; min-width: 0; }
+.mlb-game-card__team--home { justify-items: end; text-align: right; }
+.mlb-game-card__team strong { font-size: 1.1rem; letter-spacing: 0.03em; }
+.mlb-game-card__team small { overflow: hidden; max-width: 100%; color: var(--muted); font-size: 0.68rem; text-overflow: ellipsis; white-space: nowrap; }
+.mlb-game-card__team b { font-size: 1.45rem; }
+.mlb-game-card__at { display: grid; gap: 0.55rem; place-items: center; color: var(--muted); font-size: 1rem; font-weight: 900; }
+.mlb-game-card__at small { max-width: 74px; color: var(--muted); font-size: 0.64rem; text-align: center; }
+.mlb-game-card__signal { display: grid; grid-template-columns: 1fr auto auto; align-items: end; gap: 0.5rem; padding-top: 0.65rem; border-top: 1px solid rgba(255,255,255,0.08); }
+.mlb-game-card__signal span, .mlb-game-card__market span, .mlb-game-card__market small { color: var(--muted); font-size: 0.68rem; }
+.mlb-game-card__signal strong { color: #ffbd91; font-size: 1.05rem; }
+.mlb-game-card__signal b { color: #b8f4d5; }
+.mlb-game-card__market { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+.mlb-game-card__market > div { display: grid; gap: 0.12rem; }
+.mlb-game-card__market > div:nth-child(2) { text-align: right; }
+.mlb-game-card__market small { grid-column: 1 / -1; }
+.mlb-game-card__footer { justify-content: space-between; }
+.models-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0.8rem;
+}
+.model-gallery-card { overflow: hidden; border: 1px solid rgba(255,255,255,0.1); border-radius: 1.05rem; background: rgba(10,15,24,0.82); }
+.model-gallery-card.is-production { border-color: rgba(100,214,162,0.42); }
+.model-gallery-card__visual { position: relative; display: grid; place-items: end start; min-height: 132px; overflow: hidden; padding: 0.9rem; color: var(--model-accent); background: radial-gradient(circle at 70% 30%, color-mix(in srgb, var(--model-accent) 40%, transparent), transparent 35%), linear-gradient(135deg, color-mix(in srgb, var(--model-accent) 18%, #0a0f18), #0a0f18); }
+.model-gallery-card__visual::before, .model-gallery-card__visual::after { content: ""; position: absolute; border: 1px solid currentColor; border-radius: 50%; opacity: 0.5; }
+.model-gallery-card__visual::before { width: 150px; height: 80px; right: -24px; top: 12px; transform: rotate(-25deg); }
+.model-gallery-card__visual::after { width: 110px; height: 56px; right: 35px; top: 32px; transform: rotate(35deg); }
+.model-gallery-card__visual i, .model-gallery-card__visual b, .model-gallery-card__visual em { position: absolute; width: 0.38rem; height: 0.38rem; border-radius: 50%; background: currentColor; box-shadow: 0 0 16px currentColor; }
+.model-gallery-card__visual i { right: 24%; top: 24%; }.model-gallery-card__visual b { right: 38%; top: 66%; }.model-gallery-card__visual em { right: 12%; top: 54%; }
+.model-gallery-card__visual span { position: relative; z-index: 1; font-size: 1.7rem; font-weight: 900; letter-spacing: -0.04em; }
+.model-gallery-card__body { display: grid; gap: 0.7rem; padding: 0.9rem; }
+.model-gallery-card__heading { display: flex; justify-content: space-between; gap: 0.5rem; }
+.model-gallery-card__heading h3 { margin: 0.15rem 0 0.1rem; font-size: 1.35rem; }
+.model-gallery-card__heading code { color: var(--model-accent); font-size: 0.7rem; }
+.model-gallery-card__badge { align-self: start; padding: 0.24rem 0.4rem; border-radius: 999px; color: var(--model-accent); background: color-mix(in srgb, var(--model-accent) 12%, transparent); font-size: 0.62rem; font-weight: 900; }
+.model-gallery-card__metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.45rem; }
+.model-gallery-card .model-metric { min-height: 54px; }
+.model-gallery-card .btn { width: 100%; }
+.model-gallery-card--ember { --model-accent: #ff8054; }.model-gallery-card--frost { --model-accent: #83d9ff; }.model-gallery-card--storm { --model-accent: #c7b0ff; }.model-gallery-card--tide { --model-accent: #65ded7; }.model-gallery-card--phoenix { --model-accent: #ffd166; }.model-gallery-card--neutral { --model-accent: #c7ccd8; }
+.models-gallery-hint { grid-column: 1 / -1; padding: 0.8rem 1rem; border: 1px dashed rgba(255,255,255,0.16); border-radius: 0.8rem; color: var(--muted); }
+.models-gallery-hint strong { display: block; color: var(--text); }
+.model-drawer { display: grid; gap: 0.8rem; padding: 1rem; border: 1px solid rgba(255,135,82,0.3); border-radius: 1rem; background: linear-gradient(145deg, rgba(33,17,24,0.74), rgba(8,13,22,0.84)); }
+.model-drawer .model-profile { border: 0; background: transparent; }
+.model-drawer .model-profile summary { cursor: default; }
+.model-history { display: grid; gap: 0.45rem; }
+.model-version-list { display: grid; gap: 0.35rem; }
+.model-version-list > div { display: grid; grid-template-columns: 1fr auto auto; gap: 0.6rem; align-items: center; padding: 0.5rem 0.65rem; border-radius: 0.55rem; background: rgba(255,255,255,0.04); font-size: 0.75rem; }
+.model-version-list span, .model-version-list em { color: var(--muted); font-style: normal; }
+
+@media (max-width: 900px) {
+    .home-v2-hero { grid-template-columns: 1fr 1fr; }
+    .home-v2-hero .top-edge-mini { grid-column: 1 / -1; }
+    .home-v2-grid { grid-template-columns: 1fr 1fr; }
+    .home-v2-grid > :first-child { grid-row: span 2; }
+}
+@media (max-width: 680px) {
+    .home-v2-hero, .home-v2-grid { grid-template-columns: 1fr; }
+    .home-v2-grid > :first-child { grid-row: auto; }
+    .home-source-strip .btn { width: 100%; margin-left: 0; }
+    .mlb-game-grid { grid-template-columns: 1fr; }
+    .mlb-board-panel .section-header { align-items: stretch; flex-direction: column; }
+    .mlb-stage-filters { width: 100%; justify-content: space-between; }
+    .mlb-stage-filters button { flex: 1; }
+    .model-version-list > div { grid-template-columns: 1fr 1fr; }
+    .model-version-list em { grid-column: 2; }
+}
+
 @media (max-width: 1050px) {
     .lifecycle-board { grid-template-columns: 1fr; }
     .lifecycle-lane { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
