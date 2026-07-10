@@ -8,7 +8,7 @@
     --panel-3: #0c121c;
     --border: rgba(255, 255, 255, 0.11);
     --text: #f6f8ff;
-    --muted: #9aa7ba;
+    --muted: #b7c3d4;
     --primary: #5cc8ff;
     --accent: #f4cb6a;
     --danger: #f06a7a;
@@ -418,6 +418,36 @@ textarea {
     border-color: var(--border);
     background: var(--panel-2);
 }
+
+/* Sport rail: compact, border-led navigation with a distinct visual signal per desk. */
+.sidebar { gap: 0.8rem; padding: 1rem 0.85rem; }
+.nav { display: grid; flex: 1 1 auto; gap: 0.75rem; min-height: 0; overflow-y: auto; padding-right: 0.15rem; }
+.nav__section { display: grid; overflow: hidden; border: 1px solid rgba(226, 235, 249, 0.13); border-radius: 0.7rem; background: rgba(4, 8, 15, 0.32); }
+.nav__section-label { margin: 0; padding: 0.38rem 0.6rem; border-bottom: 1px solid rgba(226, 235, 249, 0.1); color: #8fa1ba; font-size: 0.61rem; font-weight: 900; letter-spacing: 0.13em; text-transform: uppercase; }
+.nav__item { position: relative; display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: center; gap: 0.52rem; min-height: 36px; margin-top: -1px; padding: 0.48rem 0.6rem; border: 1px solid transparent; border-radius: 0; color: #c6d2e2; font-size: 0.79rem; font-weight: 820; letter-spacing: 0.015em; }
+.nav__item + .nav__item { border-top-color: rgba(226, 235, 249, 0.12); }
+.nav__item:hover { border-color: rgba(119, 211, 255, 0.36); background: rgba(92, 200, 255, 0.07); }
+.nav__item.is-active { color: #f8fbff; border-color: rgba(138, 223, 255, 0.52); background: linear-gradient(90deg, rgba(92, 200, 255, 0.17), rgba(92, 200, 255, 0.035)); box-shadow: inset 3px 0 0 #66d2ff; }
+.nav__section--sports .nav__item::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 2px; background: var(--nav-sport-accent, #66d2ff); opacity: 0.8; }
+.nav-sport-mark { display: grid; place-items: center; width: 20px; height: 20px; overflow: hidden; border: 1px solid rgba(215, 228, 245, 0.25); border-radius: 0.42rem; color: #dce9f7; background: rgba(255,255,255,0.055); font-family: ui-monospace, "Cascadia Code", monospace; font-size: 0.56rem; font-weight: 950; line-height: 1; }
+.nav__item--home .nav-sport-mark { color: #07131e; background: linear-gradient(135deg, #8ce6f4, #6ca9ff); }
+.nav__item--models .nav-sport-mark { color: #ffd4bc; border-color: rgba(255, 143, 80, 0.45); background: rgba(255, 110, 55, 0.15); }
+.nav__item--reports .nav-sport-mark { color: #c9edff; border-color: rgba(92,200,255,0.42); background: rgba(92,200,255,0.12); }
+.nav__item--record .nav-sport-mark { color: #c7f4d8; border-color: rgba(100,214,162,0.42); background: rgba(100,214,162,0.12); }
+.nav__item--teams .nav-sport-mark { color: #ffe6a8; border-color: rgba(244,203,106,0.4); background: rgba(244,203,106,0.1); }
+.nav__item--tracking .nav-sport-mark { color: #e1c8ff; border-color: rgba(193,126,255,0.42); background: rgba(193,126,255,0.1); }
+.nav__item--settings .nav-sport-mark { color: #ced7e5; }
+.nav__item--nfl { --nav-sport-accent: #69b8ff; }.nav__item--mlb { --nav-sport-accent: #f16a72; }.nav__item--nba { --nav-sport-accent: #ff9a56; }.nav__item--nhl { --nav-sport-accent: #72d8ff; }.nav__item--wnba { --nav-sport-accent: #ef8dff; }.nav__item--soccer { --nav-sport-accent: #70e7c0; }
+.nav__item--nfl .nav-sport-mark { border-radius: 46% 54% 46% 54%; color: #d9edff; border-color: rgba(91,175,255,0.52); background: linear-gradient(135deg, #133a67, #224e7a); transform: rotate(-18deg); }
+.nav__item--mlb .nav-sport-mark { width: 22px; color: white; border-radius: 0.32rem; border-color: rgba(255,255,255,0.56); background: linear-gradient(90deg, #c92739 0 33%, #f4f7fb 33% 66%, #215ca6 66%); font-size: 0.44rem; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
+.nav-mlb-word { background: linear-gradient(90deg, #ff7782, #edf5ff 48%, #72b7ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.nav__item--nba .nav-sport-mark { border-radius: 50%; color: #2a1206; border-color: #ffa966; background: radial-gradient(circle at 38% 32%, #ffd082, #ed712e); }
+.nav__item--nhl .nav-sport-mark { border-radius: 0.42rem 0.8rem; color: #d9f8ff; border-color: rgba(121,224,255,0.55); background: linear-gradient(135deg, #075e8b, #172e60); transform: rotate(8deg); }
+.nav__item--wnba .nav-sport-mark { border-radius: 50%; color: #2a1240; border-color: rgba(237,136,255,0.55); background: radial-gradient(circle at 35% 30%, #ffdc8b, #c66bdf); }
+.nav-sport-mark--soccer, .nav-soccer-o { position: relative; display: inline-grid; place-items: center; width: 18px; height: 18px; border: 1px solid #f4f7fb; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #161d27 0 19%, transparent 21%), conic-gradient(from 18deg, #edf4fb 0 10%, #1f2937 10% 17%, #edf4fb 17% 33%, #1f2937 33% 40%, #edf4fb 40% 56%, #1f2937 56% 63%, #edf4fb 63% 79%, #1f2937 79% 86%, #edf4fb 86%); box-shadow: 0 0 12px rgba(112, 231, 192, 0.25); }
+.nav-soccer-o { width: 0.9em; height: 0.9em; margin: 0 0.04em; vertical-align: -0.08em; color: transparent; font-size: 0.88em; }
+.nav__item--soccer.is-active { border-color: rgba(112,231,192,0.5); box-shadow: inset 3px 0 0 #70e7c0; background: linear-gradient(90deg, rgba(112,231,192,0.15), rgba(92,200,255,0.035)); }
+@media (max-height: 850px) { .ll-sidebar-engine { display: none; }.sidebar__note { font-size: 0.72rem; }.nav { gap: 0.5rem; } }
 
 .sidebar__note {
     margin-top: auto;
@@ -2406,11 +2436,101 @@ body {
 .mlb-game-card__signal { grid-template-columns: auto 1fr auto; align-items: center; padding-top: 0.52rem; border-top: 1px solid rgba(255,255,255,0.08); }.mlb-game-card__signal span { font-size: 0.69rem; }.mlb-game-card__signal strong { justify-self: center; color: #ffcfac; }.mlb-game-card__signal b { color: #d8f9ea; }
 .mlb-game-card__market { display: flex; justify-content: space-between; align-items: center; padding: 0.38rem 0.5rem; border: 1px solid rgba(255,255,255,0.07); border-radius: 0.55rem; background: rgba(0,0,0,0.14); }.mlb-game-card__market span { font-size: 0.67rem; }.mlb-game-card__market strong { color: #a7dfef; font-size: 0.72rem; }.mlb-game-card__play { overflow: hidden; padding-left: 0.55rem; border-left: 2px solid #64d6a2; color: var(--muted); font-size: 0.67rem; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .mlb-game-card__footer { margin-top: auto; }.mlb-game-card__footer .btn { min-width: 104px; }.mlb-game-card__footer .result-chip { font-size: 0.65rem; }.mlb-game-card--final .result-chip--loss { color: #ffb7b7; border-color: rgba(244,106,106,0.34); background: rgba(244,106,106,0.12); }
+.mlb-game-card--stale { border-color: rgba(148,163,184,0.32); border-top-color: #8291a5; background: linear-gradient(100deg, rgba(22,29,41,0.97), rgba(8,13,22,0.98)); }
+.mlb-game-card--stale .mlb-game-card__status { color: #d4dce8; background: rgba(148,163,184,0.14); }
 @keyframes mlbLivePulse { 0%,100% { box-shadow: 0 0 16px rgba(100,214,162,0.08), inset 0 1px 0 rgba(255,255,255,0.07); } 50% { box-shadow: 0 0 28px rgba(100,214,162,0.2), inset 0 1px 0 rgba(255,255,255,0.08); } }
 @media (max-width: 1450px) { .mlb-game-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 1120px) { .mlb-page-header__controls { flex-wrap: wrap; align-items: flex-start; }.mlb-filter-wrap { margin-left: 0; }.mlb-game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 700px) { .mlb-lifecycle-shell { padding-bottom: 128px; }.mlb-page-header__top, .mlb-page-header__controls { align-items: flex-start; flex-direction: column; }.mlb-page-header__actions { width: 100%; justify-content: space-between; }.mlb-freshness { max-width: none; text-align: left; }.mlb-date-controls { width: 100%; }.mlb-date-quick-nav { width: 100%; }.mlb-date-quick-nav .btn { flex: 1; }.mlb-production { border-left: 0; padding-left: 0; }.mlb-filter-wrap, .mlb-stage-filters { width: 100%; }.mlb-stage-filters button { flex: 1; }.mlb-game-grid { grid-template-columns: 1fr; }.mlb-game-card { min-height: 286px; }.mlb-game-card__play { white-space: normal; } }
 @media (prefers-reduced-motion: reduce) { .mlb-game-card--live { animation: none; } }
+
+/* MLB presentation correction: let verified team identity drive the card atmosphere. */
+:root { --muted: #c1ccda; }
+.mlb-game-card {
+    background:
+        radial-gradient(circle at 0% 48%, color-mix(in srgb, var(--away-color) 34%, transparent), transparent 52%),
+        radial-gradient(circle at 100% 48%, color-mix(in srgb, var(--home-color) 34%, transparent), transparent 52%),
+        linear-gradient(100deg, rgba(15, 23, 37, 0.97), rgba(7, 12, 20, 0.98) 48%, rgba(15, 19, 30, 0.97));
+}
+.mlb-game-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: linear-gradient(90deg, color-mix(in srgb, var(--away-color) 9%, transparent), transparent 44%, color-mix(in srgb, var(--home-color) 9%, transparent)); opacity: 0.95; }
+.mlb-game-card > * { position: relative; z-index: 1; }
+.mlb-game-card__team strong, .mlb-game-card__at b, .mlb-game-card__signal strong { text-shadow: 0 1px 18px rgba(0,0,0,0.45); }
+.mlb-game-card__team strong { color: #f8fbff; }
+.mlb-game-card__team small, .mlb-game-card__time, .mlb-game-card__signal span, .mlb-game-card__market span { color: #c6d1df; }
+.mlb-game-card__market { background: rgba(5, 9, 16, 0.26); border-color: rgba(255,255,255,0.12); }
+
+/* Optional World Cup scoreboard, intentionally separate from model-driven MLB cards. */
+.soccer-shell { display: grid; gap: 1rem; padding-bottom: 132px; }
+.soccer-header { display: flex; justify-content: space-between; gap: 1rem; align-items: end; padding: 1.2rem 1.3rem; border-color: rgba(103,232,249,0.25); background: linear-gradient(135deg, rgba(15,30,49,0.96), rgba(8,13,23,0.98)); }
+.soccer-header h2 { margin: 0.2rem 0; font-size: clamp(1.6rem, 3vw, 2.35rem); letter-spacing: -0.04em; }
+.soccer-header p:not(.eyebrow) { max-width: 58ch; margin: 0.35rem 0 0; color: #c1ccda; }
+.soccer-header__meta { display: grid; gap: 0.25rem; min-width: 150px; text-align: right; color: #c1ccda; font-size: 0.74rem; }
+.soccer-header__meta strong { color: #8ce6f4; font-size: 1.2rem; }
+.soccer-board { display: grid; gap: 0.85rem; padding: 1rem; }
+.soccer-source-pill { padding: 0.32rem 0.55rem; border: 1px solid rgba(103,232,249,0.22); border-radius: 999px; color: #bcecf7; background: rgba(103,232,249,0.08); font-size: 0.7rem; }
+.soccer-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+.soccer-game { display: grid; gap: 0.8rem; min-width: 0; padding: 1rem; border: 1px solid rgba(150,170,195,0.22); border-top: 3px solid #8291a5; border-radius: 0.9rem; background: linear-gradient(135deg, rgba(26,35,51,0.96), rgba(8,13,23,0.98)); }
+.soccer-game--live { border-color: rgba(100,214,162,0.64); border-top-color: #64d6a2; box-shadow: 0 0 24px rgba(100,214,162,0.11); }
+.soccer-game--upcoming { border-top-color: #5cc8ff; }
+.soccer-game header, .soccer-game footer { display: flex; justify-content: space-between; gap: 0.5rem; align-items: center; color: #c1ccda; font-size: 0.7rem; }
+.soccer-game__status { padding: 0.22rem 0.45rem; border-radius: 999px; color: #e4ebf5; background: rgba(148,163,184,0.15); font-weight: 900; letter-spacing: 0.08em; }
+.soccer-game--live .soccer-game__status { color: #bff3d9; background: rgba(100,214,162,0.15); }
+.soccer-game--upcoming .soccer-game__status { color: #c9edff; background: rgba(92,200,255,0.13); }
+.soccer-game__matchup { display: grid; grid-template-columns: 1fr 100px 1fr; align-items: center; gap: 0.6rem; }
+.soccer-game__team { display: grid; gap: 0.4rem; align-items: center; min-width: 0; }
+.soccer-game__team:last-child { justify-items: end; text-align: right; }
+.soccer-team-mark { display: grid; place-items: center; width: 58px; height: 58px; border: 1px solid color-mix(in srgb, var(--soccer-color) 70%, white); border-radius: 50%; color: white; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--soccer-color) 65%, white), var(--soccer-color)); font-size: 0.78rem; font-weight: 900; }
+.soccer-game__team strong { overflow: hidden; color: #f3f7fd; font-size: 0.86rem; text-overflow: ellipsis; }
+.soccer-game__score { display: grid; gap: 0.35rem; place-items: center; text-align: center; }
+.soccer-game__score strong { color: #f8fbff; font-size: 1.35rem; }
+.soccer-game__score small, .soccer-game__note { overflow: hidden; color: #c1ccda; font-size: 0.7rem; text-overflow: ellipsis; }
+.soccer-game__note { margin: 0; min-height: 1.2em; }
+@media (max-width: 1200px) { .soccer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .soccer-header { align-items: flex-start; flex-direction: column; }.soccer-header__meta { text-align: left; }.soccer-grid { grid-template-columns: 1fr; }.soccer-game__matchup { grid-template-columns: 1fr 78px 1fr; } }
+
+/* Reusable, model-free ESPN scoreboards for NBA, NHL, WNBA, and Soccer. */
+.scoreboard-shell { display: grid; gap: 1rem; padding-bottom: 132px; }
+.scoreboard-header { display: flex; justify-content: space-between; gap: 1rem; align-items: end; padding: 1.2rem 1.3rem; border-color: color-mix(in srgb, var(--scoreboard-accent) 32%, transparent); background: linear-gradient(135deg, color-mix(in srgb, var(--scoreboard-accent) 12%, #0f1e31), rgba(8,13,23,0.98)); }
+.scoreboard-header h2 { margin: 0.2rem 0; font-size: clamp(1.6rem, 3vw, 2.35rem); letter-spacing: -0.04em; }
+.scoreboard-header p:not(.eyebrow) { max-width: 58ch; margin: 0.35rem 0 0; color: #c1ccda; }
+.scoreboard-header__meta { display: grid; gap: 0.25rem; min-width: 150px; text-align: right; color: #c1ccda; font-size: 0.74rem; }
+.scoreboard-header__meta strong { color: var(--scoreboard-accent); font-size: 1.2rem; }
+.scoreboard-board { display: grid; gap: 0.85rem; padding: 1rem; }
+.scoreboard-source-pill { padding: 0.32rem 0.55rem; border: 1px solid color-mix(in srgb, var(--scoreboard-accent) 34%, transparent); border-radius: 999px; color: color-mix(in srgb, var(--scoreboard-accent) 72%, white); background: color-mix(in srgb, var(--scoreboard-accent) 10%, transparent); font-size: 0.7rem; }
+.scoreboard-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.8rem; }
+.scoreboard-game { display: grid; gap: 0.8rem; min-width: 0; padding: 1rem; border: 1px solid rgba(150,170,195,0.22); border-top: 3px solid var(--scoreboard-accent); border-radius: 0.9rem; background: linear-gradient(135deg, color-mix(in srgb, var(--scoreboard-accent) 9%, #1a2333), rgba(8,13,23,0.98)); }
+.scoreboard-game--live { border-color: rgba(100,214,162,0.64); border-top-color: #64d6a2; box-shadow: 0 0 24px rgba(100,214,162,0.11); }
+.scoreboard-game--final { border-top-color: #9ba7b8; }
+.scoreboard-game header, .scoreboard-game footer { display: flex; justify-content: space-between; gap: 0.5rem; align-items: center; color: #c1ccda; font-size: 0.7rem; }
+.scoreboard-game__status { padding: 0.22rem 0.45rem; border-radius: 999px; color: color-mix(in srgb, var(--scoreboard-accent) 60%, white); background: color-mix(in srgb, var(--scoreboard-accent) 13%, transparent); font-weight: 900; letter-spacing: 0.08em; }
+.scoreboard-game--live .scoreboard-game__status { color: #bff3d9; background: rgba(100,214,162,0.15); }
+.scoreboard-game--final .scoreboard-game__status { color: #dce4ed; background: rgba(180,190,204,0.12); }
+.scoreboard-game__matchup { display: grid; grid-template-columns: 1fr 100px 1fr; align-items: center; gap: 0.6rem; }
+.scoreboard-game__team { display: grid; gap: 0.4rem; align-items: center; min-width: 0; }
+.scoreboard-game__team:last-child { justify-items: end; text-align: right; }
+.scoreboard-team-mark { display: grid; place-items: center; width: 58px; height: 58px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--scoreboard-color) 70%, white); border-radius: 50%; color: white; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--scoreboard-color) 65%, white), var(--scoreboard-color)); font-size: 0.78rem; font-weight: 900; }
+.scoreboard-team-mark img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }.scoreboard-team-mark i { font-style: normal; }
+.scoreboard-team-mark img[hidden], .scoreboard-team-mark i[hidden] { display: none; }
+.scoreboard-game__team strong { overflow: hidden; color: #f3f7fd; font-size: 0.86rem; text-overflow: ellipsis; }
+.scoreboard-game__score { display: grid; gap: 0.35rem; place-items: center; text-align: center; }.scoreboard-game__score strong { color: #f8fbff; font-size: 1.35rem; }
+.scoreboard-game__score small, .scoreboard-game__note { overflow: hidden; color: #c1ccda; font-size: 0.7rem; text-overflow: ellipsis; }.scoreboard-game__note { margin: 0; min-height: 1.2em; }
+@media (max-width: 1200px) { .scoreboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .scoreboard-header { align-items: flex-start; flex-direction: column; }.scoreboard-header__meta { text-align: left; }.scoreboard-grid { grid-template-columns: 1fr; }.scoreboard-game__matchup { grid-template-columns: 1fr 78px 1fr; } }
+
+.onboarding-backdrop, .about-backdrop { position: fixed; z-index: 80; inset: 0; background: rgba(2, 6, 14, 0.72); backdrop-filter: blur(8px); }
+.onboarding-dialog, .about-dialog { position: fixed; z-index: 81; top: 50%; left: 50%; width: min(620px, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); overflow: auto; transform: translate(-50%, -50%); padding: clamp(1.1rem, 3vw, 1.8rem); border: 1px solid rgba(103,232,249,0.3); border-radius: 1.1rem; background: linear-gradient(145deg, rgba(15,29,48,0.98), rgba(7,12,22,0.98)); box-shadow: 0 28px 90px rgba(0,0,0,0.5); }
+.onboarding-dialog header { display: flex; gap: 0.8rem; align-items: center; }.onboarding-dialog h2, .about-dialog h2 { margin: 0.2rem 0 0; font-size: clamp(1.5rem, 4vw, 2.4rem); letter-spacing: -0.04em; }.onboarding-dialog > p { margin: 1rem 0; }
+.onboarding-steps { display: grid; gap: 0.55rem; margin: 1rem 0; padding: 0; list-style: none; counter-reset: onboarding; }.onboarding-steps li { display: grid; gap: 0.18rem; grid-template-columns: 2rem 1fr; padding: 0.72rem; border: 1px solid rgba(255,255,255,0.09); border-radius: 0.7rem; background: rgba(255,255,255,0.035); counter-increment: onboarding; }.onboarding-steps li::before { content: counter(onboarding); display: grid; place-items: center; width: 1.55rem; height: 1.55rem; border-radius: 50%; color: #06111c; background: #8ce6f4; font-weight: 900; }.onboarding-steps strong, .onboarding-steps span { grid-column: 2; }.onboarding-steps span { color: var(--muted); font-size: 0.78rem; }.onboarding-dialog footer, .about-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.65rem; }.onboarding-check { color: var(--muted); font-size: 0.75rem; }.onboarding-actions, .about-actions { display: flex; gap: 0.45rem; }
+.about-dialog { width: min(700px, calc(100vw - 2rem)); }.about-feature-grid, .about-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 0.5rem; margin: 1rem 0; }.about-feature-grid span, .about-status-grid > div { padding: 0.65rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 0.6rem; background: rgba(255,255,255,0.035); }.about-feature-grid span { color: #c9edff; font-size: 0.78rem; }.about-status-grid > div { display: grid; gap: 0.2rem; }.about-status-grid span { color: var(--muted); font-size: 0.68rem; }.about-status-grid strong { font-size: 0.88rem; }.about-disclaimer { padding: 0.7rem; border-left: 2px solid #f3c969; color: var(--muted); font-size: 0.76rem; }.about-actions { justify-content: flex-end; }
+@media (max-width: 680px) { .onboarding-dialog footer, .about-dialog .section-header { align-items: flex-start; flex-direction: column; }.onboarding-actions, .about-actions { width: 100%; }.onboarding-actions .btn, .about-actions .btn { flex: 1; text-align: center; }.about-feature-grid, .about-status-grid { grid-template-columns: 1fr; } }
+
+.gamecast-provenance { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.45rem; margin: 0.7rem 0; }
+.gamecast-provenance span { display: grid; gap: 0.15rem; padding: 0.45rem 0.55rem; border: 1px solid rgba(255,255,255,0.08); border-radius: 0.55rem; color: var(--muted); background: rgba(255,255,255,0.03); font-size: 0.68rem; }
+.gamecast-provenance strong { color: var(--text); font-size: 0.66rem; }
+.comparison-selection-note { margin: 0 0 0.65rem; padding: 0.6rem 0.7rem; border-left: 2px solid #64d6a2; color: var(--muted); font-size: 0.76rem; }
+.comparison-selection-note strong { color: var(--text); }
+.record-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; }.record-filters select { min-width: 118px; padding: 0.35rem 0.45rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.45rem; color: var(--text); background: rgba(255,255,255,0.05); font-size: 0.72rem; }
+@media (max-width: 680px) { .gamecast-provenance { grid-template-columns: 1fr 1fr; } }
 
 /* MLB board polish: broadcast hierarchy, restrained gradients, and ticker-safe spacing. */
 .mlb-lifecycle-shell { padding-bottom: 132px; }

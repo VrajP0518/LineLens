@@ -15,6 +15,7 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 try:
     import requests
@@ -41,10 +42,15 @@ MLB_SCHEDULE_URL = "https://statsapi.mlb.com/api/v1/schedule"
 MLB_LIVE_URL = "https://statsapi.mlb.com/api/v1.1/game/{game_pk}/feed/live"
 ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard"
 ESPN_SUMMARY_URL = "https://site.web.api.espn.com/apis/site/v2/sports/{sport}/{league}/summary"
+LOCAL_TZ = ZoneInfo("America/Toronto")
 
 ESPN_SPORTS = {
     "MLB": {"sport": "baseball", "league": "mlb"},
     "NFL": {"sport": "football", "league": "nfl"},
+    "SOCCER": {"sport": "soccer", "league": "fifa.world"},
+    "NBA": {"sport": "basketball", "league": "nba"},
+    "NHL": {"sport": "hockey", "league": "nhl"},
+    "WNBA": {"sport": "basketball", "league": "wnba"},
 }
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
@@ -58,6 +64,22 @@ def parse_iso_date(value: str | None) -> date:
     if not value:
         return datetime.now().date()
     return datetime.strptime(value[:10], "%Y-%m-%d").date()
+
+
+def local_schedule_date(value: str | None) -> str | None:
+    """Convert a timestamp to the Toronto calendar date; preserve date-only values."""
+    if not value:
+        return None
+    raw = str(value).strip()
+    if len(raw) == 10 and raw[4] == "-":
+        return raw[:10]
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return raw[:10] if len(raw) >= 10 else None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(LOCAL_TZ).date().isoformat()
 
 
 def date_range(start: date, end: date) -> list[date]:
@@ -337,6 +359,14 @@ def espn_probable_pitcher(competitor: dict[str, Any] | None) -> str | None:
     return None
 
 
+def espn_team_logo(team: dict[str, Any]) -> str | None:
+    logos = team.get("logos") or []
+    if not logos:
+        return None
+    first = logos[0] if isinstance(logos[0], dict) else {}
+    return first.get("href") or first.get("url")
+
+
 def espn_situation(competition: dict[str, Any], sport: str) -> dict[str, Any]:
     situation = competition.get("situation") or {}
     if sport == "MLB":
@@ -424,7 +454,8 @@ def game_from_espn_event(
     home = espn_team_code(home_team, sport)
     away = espn_team_code(away_team, sport)
     event_id = str(event.get("id") or competition.get("id") or "")
-    game_date = str(event.get("date") or competition.get("date") or "")[:10] or None
+    event_timestamp = event.get("date") or competition.get("date")
+    game_date = local_schedule_date(event_timestamp)
     status_type = (competition.get("status") or {}).get("type") or {}
     status_detail = (
         status_type.get("shortDetail")
@@ -440,9 +471,11 @@ def game_from_espn_event(
     if sport == "MLB":
         prediction = find_mlb_prediction(event_id, game_date, away, home, mlb_predictions)
         model = model_payload(prediction)
-    else:
+    elif sport == "NFL":
         prediction = find_nfl_prediction(event_id, game_date, away, home, nfl_predictions)
         model = nfl_model_payload(prediction)
+    else:
+        model = no_model_payload("Scoreboard-only ESPN row; LineLens does not model this sport")
 
     situation = espn_situation(competition, sport)
     row: dict[str, Any] = {
@@ -459,6 +492,8 @@ def game_from_espn_event(
         "home": home,
         "away_display": away_team.get("displayName") or away_team.get("name") or away,
         "home_display": home_team.get("displayName") or home_team.get("name") or home,
+        "away_logo": espn_team_logo(away_team),
+        "home_logo": espn_team_logo(home_team),
         "away_score": espn_competitor_score(away_competitor),
         "home_score": espn_competitor_score(home_competitor),
         "game_time": event.get("date") or competition.get("date"),
@@ -483,7 +518,7 @@ def game_from_espn_event(
                 },
             }
         )
-    else:
+    elif sport == "NFL":
         row.update(
             {
                 "period": (competition.get("status") or {}).get("period"),
@@ -494,8 +529,17 @@ def game_from_espn_event(
                 "live_note": None if status == "In Progress" else "ESPN scoreboard row; detailed NFL play feed is best-effort.",
             }
         )
+    else:
+        row.update(
+            {
+                "period": (competition.get("status") or {}).get("period"),
+                "clock": ((competition.get("status") or {}).get("displayClock")),
+                "competition": "FIFA World Cup" if sport == "SOCCER" else ESPN_SPORTS[sport]["league"].upper(),
+                "live_note": None if status == "In Progress" else "ESPN scoreboard row; no LineLens prediction model is applied.",
+            }
+        )
 
-    if status == "In Progress":
+    if status == "In Progress" and sport in {"MLB", "NFL"}:
         row.update(espn_summary_bits(sport, event_id))
     return clean(row)
 
@@ -513,14 +557,15 @@ def fetch_espn_games(
         return [], ["requests package is missing; ESPN live feed unavailable"]
 
     for day in date_range(start_date, end_date):
-        try:
-            payload = espn_scoreboard("MLB", day)
-            for event in payload.get("events", []):
-                row = game_from_espn_event(event, "MLB", mlb_predictions, nfl_predictions)
-                if row:
-                    games.append(row)
-        except Exception as error:  # noqa: BLE001 - keep MLB Stats API fallback alive.
-            warnings.append(f"ESPN MLB scoreboard failed for {day.isoformat()}: {error}")
+        for sport in ("MLB", "SOCCER", "NBA", "NHL", "WNBA"):
+            try:
+                payload = espn_scoreboard(sport, day)
+                for event in payload.get("events", []):
+                    row = game_from_espn_event(event, sport, mlb_predictions, nfl_predictions)
+                    if row:
+                        games.append(row)
+            except Exception as error:  # noqa: BLE001 - every scoreboard feed is optional.
+                warnings.append(f"ESPN {sport} scoreboard failed for {day.isoformat()}: {error}")
 
     try:
         payload = espn_scoreboard("NFL")
@@ -929,7 +974,9 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
             warnings.append("Using recent MLB backtest finals as last-resort display fallback.")
     espn_nfl_games = [game for game in espn_games if game.get("sport") == "NFL"]
     nfl_games = dedupe_games(espn_nfl_games + fallback_nfl_from_predictions(nfl_predictions))
-    games = dedupe_games(mlb_games + nfl_games)
+    soccer_games = dedupe_games([game for game in espn_games if game.get("sport") == "SOCCER"])
+    scoreboard_games = dedupe_games([game for game in espn_games if game.get("sport") in {"NBA", "NHL", "WNBA"}])
+    games = dedupe_games(mlb_games + nfl_games + soccer_games + scoreboard_games)
     if not games and source_status == "live_fresh":
         source_status = "missing"
     return {
@@ -938,7 +985,7 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
             "version": APP_VERSION,
             "generated_at": utc_now(),
             "real_data": True,
-            "source": "ESPN Scoreboard API + MLB Stats API + LineLens prediction exports",
+            "source": "ESPN Scoreboard API + MLB Stats API + LineLens prediction exports; optional World Cup, NBA, NHL, and WNBA scoreboards",
             "sports": sorted({game.get("sport") for game in games if game.get("sport")}),
             "refresh_mode": "live",
             "source_status": source_status,

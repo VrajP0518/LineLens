@@ -1,4 +1,4 @@
-const APP_VERSION = "v1.0.0";
+const APP_VERSION = "v2.0.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
@@ -51,6 +51,8 @@ const state = {
         teamCode: "TOR",
         reportSport: "MLB",
         recordSport: "MLB",
+        recordResultFilter: "all",
+        recordMarketFilter: "all",
         mlbFilter: "all",
         nflFilter: "all",
         homeSport: "MLB",
@@ -64,6 +66,8 @@ const state = {
         tableDensity: "comfortable",
         liveHeartbeatEnabled: true,
         liveHeartbeatSeconds: 15,
+        onboardingSeen: false,
+        onboardingNever: false,
         modelName: null,
         mlbLifecycleFilter: "all",
     },
@@ -81,6 +85,7 @@ const state = {
     tracker: [],
     refreshLogs: [],
     charts: {},
+    aboutOpen: false,
 };
 
 const derivedCache = {
@@ -271,6 +276,10 @@ function isEpochLikeDate(value) {
 }
 
 function gameIsoDate(game) {
+    if (game?.source === "ESPN Scoreboard API" && game?.game_time && /T\d{2}:\d{2}/.test(String(game.game_time))) {
+        const localDate = new Date(String(game.game_time));
+        if (!Number.isNaN(localDate.getTime())) return localDateIso(localDate);
+    }
     const iso = toIsoDate(gameDateRaw(game));
     return iso && !isEpochLikeDate(iso) ? iso : "";
 }
@@ -468,13 +477,21 @@ let teamIndex = new Map();
 function getTeamMeta(sport, code, display) {
     const normalized = String(code || "").toUpperCase();
     const aliases = {
+        "MLB:ATH": "MLB:OAK",
         "MLB:SDP": "MLB:SD",
         "MLB:SFN": "MLB:SF",
         "MLB:CHW": "MLB:CWS",
         "NFL:WSH": "NFL:WAS",
     };
     const key = aliases[`${sport}:${normalized}`] || `${sport}:${normalized}`;
-    return teamIndex.get(key) || {
+    const indexed = teamIndex.get(key);
+    if (indexed) return indexed;
+    const searchValues = [code, display].filter(Boolean).map(value => String(value).trim().toLowerCase());
+    const named = (state.teamPayload?.teams || []).find(team => {
+        if (sport && team.sport && team.sport !== sport) return false;
+        return [team.abbreviation, team.full_name, team.city, team.name].filter(Boolean).some(value => searchValues.includes(String(value).trim().toLowerCase()));
+    });
+    return named || {
         sport,
         abbreviation: normalized || "---",
         full_name: display || normalized || "Unknown Team",
@@ -551,9 +568,9 @@ function toggleWatchedGame(id) {
 
 function getGameProbability(game, sport) {
     if (sport === "NFL") {
-        return safeNumber(game.home_cover_probability ?? game.cover_probability ?? game.model_home_cover);
+        return safeNumber(game.home_cover_probability ?? game.cover_probability ?? game.model_home_cover ?? game.model?.home_cover_probability ?? game.model?.cover_probability);
     }
-    return safeNumber(game.home_win_probability ?? game.model_home_win);
+    return safeNumber(game.home_win_probability ?? game.model_home_win ?? game.model?.home_win_probability ?? game.model?.model_home_win);
 }
 
 function getConfidenceScore(game, sport) {
@@ -566,7 +583,7 @@ function getConfidenceScore(game, sport) {
 }
 
 function getGamePick(game, sport) {
-    if (game.model_pick) return game.model_pick;
+    if (game.model_pick || game.model?.pick) return game.model_pick || game.model.pick;
     const probability = getGameProbability(game, sport);
     if (probability === null) return "-";
     return probability >= 0.5 ? game.home : game.away;
@@ -598,7 +615,7 @@ function confidenceTag(confidence) {
 }
 
 function getGameEdge(game, sport) {
-    const explicit = safeNumber(game.edge);
+    const explicit = safeNumber(game.edge ?? game.model?.edge);
     if (explicit !== null) return explicit;
     const probability = getGameProbability(game, sport);
     return probability === null ? null : Math.abs(probability - 0.5);
@@ -659,6 +676,35 @@ function currentGames() {
 
 function liveGames() {
     return state.live.games.map(game => ({ ...game, sport: game.sport || "MLB" }));
+}
+
+function soccerGames() {
+    return scoreboardGames("SOCCER");
+}
+
+const SCOREBOARD_SPORTS = {
+    SOCCER: { view: "soccer", navLabel: "Soccer", title: "World Cup scoreboard", eyebrow: "Soccer / World Cup", description: "Live international fixtures and final scores from the bundled real-data feed. Soccer has no LineLens prediction model.", accent: "#70e7c0", emptyTitle: "No World Cup games are available", emptyCopy: "The current bundled live export has no World Cup rows. Run npm run refresh:live yourself when the ESPN scoreboard is available; LineLens will show only real returned rows." },
+    NBA: { view: "nba", navLabel: "NBA", title: "NBA scoreboard", eyebrow: "Basketball / NBA", description: "A clean courtside view of real live, upcoming, and final NBA games. No LineLens prediction model is applied.", accent: "#ff9a56", emptyTitle: "No NBA games are available", emptyCopy: "The current bundled live export has no NBA rows. Run npm run refresh:live yourself to load real ESPN scoreboard results." },
+    NHL: { view: "nhl", navLabel: "NHL", title: "NHL scoreboard", eyebrow: "Hockey / NHL", description: "Real NHL game status and scores, designed as a compact ice-level scoreboard. No LineLens prediction model is applied.", accent: "#72d8ff", emptyTitle: "No NHL games are available", emptyCopy: "The current bundled live export has no NHL rows. Run npm run refresh:live yourself to load real ESPN scoreboard results." },
+    WNBA: { view: "wnba", navLabel: "WNBA", title: "WNBA scoreboard", eyebrow: "Basketball / WNBA", description: "Real WNBA fixtures, live state, and final scores without fabricated predictions or market calls.", accent: "#ef8dff", emptyTitle: "No WNBA games are available", emptyCopy: "The current bundled live export has no WNBA rows. Run npm run refresh:live yourself to load real ESPN scoreboard results." },
+};
+
+function normalizedSportCode(sport) {
+    return String(sport || "").toUpperCase() === "SOC" ? "SOCCER" : String(sport || "").toUpperCase();
+}
+
+function isScoreboardOnlySport(sport) {
+    return Boolean(SCOREBOARD_SPORTS[normalizedSportCode(sport)]);
+}
+
+function scoreboardViewForSport(sport) {
+    return SCOREBOARD_SPORTS[normalizedSportCode(sport)]?.view || String(sport || "").toLowerCase();
+}
+
+function scoreboardGames(sport) {
+    const normalized = normalizedSportCode(sport);
+    return uniqueRowsByGame(liveGames().filter(game => normalizedSportCode(game.sport) === normalized))
+        .sort((a, b) => (tickerPriority(b) - tickerPriority(a)) || ((gameTimestamp(a) ?? Number.MAX_SAFE_INTEGER) - (gameTimestamp(b) ?? Number.MAX_SAFE_INTEGER)));
 }
 
 function liveHeartbeatSeconds() {
@@ -929,8 +975,67 @@ function isMoltresGame(game) {
     return String(game?.model_name || "").toLowerCase() === "moltres";
 }
 
+function isNonDecisiveGameStatus(row) {
+    const status = String(row?.status_at_prediction || row?.status || row?.status_detail || "").toLowerCase();
+    return ["postponed", "canceled", "cancelled", "suspended", "delayed", "delay"].some(marker => status.includes(marker));
+}
+
+function isExcludedPrediction(row) {
+    return isNonDecisiveGameStatus(row) || row?.prediction_mode === "postseason_result_supplement";
+}
+
+function predictionLogIdentity(row) {
+    return `${row?.sport || ""}:${row?.game_date || ""}:${row?.game_id || `${row?.away || ""}@${row?.home || ""}`}`;
+}
+
+function eligibleMlbLiveRows() {
+    const latest = new Map();
+    getLogEntries().filter(row => row.sport === "MLB" && !isExcludedPrediction(row)).forEach(row => {
+        const key = predictionLogIdentity(row);
+        const current = latest.get(key);
+        if (!current || String(row.generated_at || row.prediction_at || "") >= String(current.generated_at || current.prediction_at || "")) latest.set(key, row);
+    });
+    return [...latest.values()];
+}
+
+function summarizeEligibleRows(rows) {
+    const wins = rows.filter(row => ["win", "won"].includes(String(row.model_result || row.result_status || "").toLowerCase())).length;
+    const losses = rows.filter(row => ["loss", "lost"].includes(String(row.model_result || row.result_status || "").toLowerCase())).length;
+    const pushes = rows.filter(row => String(row.model_result || row.result_status || "").toLowerCase() === "push").length;
+    const scored = wins + losses + pushes;
+    return { wins, losses, pushes, pending: Math.max(0, rows.length - scored), accuracy: wins + losses ? wins / (wins + losses) : null, sample_size: rows.length, scored };
+}
+
+function derivedMlbLiveRecord() {
+    const rows = eligibleMlbLiveRows().sort((a, b) => String(b.game_date || b.generated_at || "").localeCompare(String(a.game_date || a.generated_at || "")));
+    const today = localDateIso();
+    const yesterday = dateOffsetIso(-1);
+    const recent = days => rows.filter(row => {
+        const iso = gameIsoDate(row);
+        const parsed = parseDateOnly(iso);
+        const anchor = parseDateOnly(today);
+        if (!parsed || !anchor) return false;
+        const difference = Math.round((anchor.getTime() - parsed.getTime()) / 86400000);
+        return difference >= 0 && difference <= days;
+    });
+    const scored = rows.filter(row => ["win", "loss", "push"].includes(String(row.model_result || "").toLowerCase()));
+    return {
+        overall: summarizeEligibleRows(rows),
+        today_record: summarizeEligibleRows(rows.filter(row => gameIsoDate(row) === today)),
+        yesterday_record: summarizeEligibleRows(rows.filter(row => gameIsoDate(row) === yesterday)),
+        recent_7_days: summarizeEligibleRows(recent(7)),
+        recent_30_days: summarizeEligibleRows(recent(30)),
+        recent_predictions: rows.slice(0, 12),
+        pending_predictions: rows.filter(row => !["win", "loss", "push"].includes(String(row.model_result || "").toLowerCase())).slice(0, 20),
+        last_scored_game: scored[0] || null,
+    };
+}
+
 function getModelRecord(sport = "MLB") {
-    return state.modelRecord?.sports?.[sport] || {};
+    const record = state.modelRecord?.sports?.[sport] || {};
+    if (sport !== "MLB" || !state.predictionLog) return record;
+    const live = derivedMlbLiveRecord();
+    return { ...record, overall: live.overall, live_record: live.overall, ...live };
 }
 
 function recordLine(record = {}) {
@@ -942,7 +1047,7 @@ function recordLine(record = {}) {
 }
 
 function getLogEntries() {
-    return Array.isArray(state.predictionLog?.predictions) ? state.predictionLog.predictions : [];
+    return Array.isArray(state.predictionLog?.predictions) ? state.predictionLog.predictions.filter(row => !isExcludedPrediction(row)) : [];
 }
 
 function logSummaryForSport(sport = "MLB") {
@@ -961,9 +1066,48 @@ function gameKey(game) {
     return String(game?.game_id || game?.id || `${game?.sport || ""}-${gameIsoDate(game)}-${game?.away || ""}-${game?.home || ""}`);
 }
 
+function teamIdentityKey(sport, code, display) {
+    const aliases = {
+        "MLB:ATH": "OAK",
+        "MLB:CHW": "CWS",
+        "MLB:SDP": "SD",
+        "MLB:SFN": "SF",
+        "NFL:WSH": "WAS",
+    };
+    const normalizedCode = String(code || "").trim().toUpperCase();
+    const rawValues = [aliases[`${sport}:${normalizedCode}`] || code, display].filter(Boolean).map(value => String(value).trim().toLowerCase());
+    const teams = state.teamPayload?.teams || [];
+    const found = teams.find(team => {
+        if (sport && team.sport && team.sport !== sport) return false;
+        const values = [team.abbreviation, team.full_name, team.city, team.name].filter(Boolean).map(value => String(value).trim().toLowerCase());
+        return rawValues.some(value => values.includes(value));
+    });
+    return String(found?.abbreviation || aliases[`${sport}:${normalizedCode}`] || code || display || "unknown").trim().toUpperCase();
+}
+
+function gameTimeKey(game) {
+    const raw = firstPresent(game?.game_time, game?.start_time, game?.commence_time, game?.kickoff, game?.first_pitch);
+    if (!raw) return "";
+    const value = String(raw);
+    const time = value.match(/T(\d{2}:\d{2})|^(\d{1,2}:\d{2})/);
+    return time ? (time[1] || time[2]) : "";
+}
+
+function canonicalGameKey(game) {
+    const sport = game?.sport || "MLB";
+    const slot = gameTimeKey(game);
+    return `${sport}:${gameIsoDate(game)}:${teamIdentityKey(sport, game?.away, game?.away_display)}:${teamIdentityKey(sport, game?.home, game?.home_display)}${slot ? `:${slot}` : ""}`;
+}
+
+function canonicalGameBaseKey(game) {
+    const sport = game?.sport || "MLB";
+    return `${sport}:${gameIsoDate(game)}:${teamIdentityKey(sport, game?.away, game?.away_display)}:${teamIdentityKey(sport, game?.home, game?.home_display)}`;
+}
+
 function teamsMatch(a, b) {
-    return String(a?.home || "").toUpperCase() === String(b?.home || "").toUpperCase()
-        && String(a?.away || "").toUpperCase() === String(b?.away || "").toUpperCase();
+    const sport = a?.sport || b?.sport || "MLB";
+    return teamIdentityKey(sport, a?.home, a?.home_display) === teamIdentityKey(sport, b?.home, b?.home_display)
+        && teamIdentityKey(sport, a?.away, a?.away_display) === teamIdentityKey(sport, b?.away, b?.away_display);
 }
 
 function sameGame(a, b) {
@@ -971,7 +1115,51 @@ function sameGame(a, b) {
     const aId = String(a.game_id || a.id || "");
     const bId = String(b.game_id || b.id || "");
     if (aId && bId && aId === bId) return true;
-    return teamsMatch(a, b) && gameIsoDate(a) === gameIsoDate(b);
+    if (!teamsMatch(a, b) || gameIsoDate(a) !== gameIsoDate(b)) return false;
+    const aTime = gameTimeKey(a);
+    const bTime = gameTimeKey(b);
+    return !aTime || !bTime || aTime === bTime;
+}
+
+function gameSourceRank(game) {
+    return { live: 0, current: 1, backtest: 2, prediction_log: 3 }[game?.source_type] ?? 9;
+}
+
+function mergeCanonicalGameRows(rows) {
+    const byBase = new Map();
+    rows.forEach(row => {
+        const key = canonicalGameBaseKey(row);
+        if (!key || !gameIsoDate(row)) return;
+        if (!byBase.has(key)) byBase.set(key, []);
+        byBase.get(key).push(row);
+    });
+    const groups = [];
+    byBase.forEach(rowsForMatchup => {
+        const timedBySlot = new Map();
+        rowsForMatchup.filter(row => gameTimeKey(row)).forEach(row => {
+            const slot = gameTimeKey(row);
+            if (!timedBySlot.has(slot)) timedBySlot.set(slot, []);
+            timedBySlot.get(slot).push(row);
+        });
+        const untimed = rowsForMatchup.filter(row => !gameTimeKey(row));
+        if (timedBySlot.size <= 1) {
+            groups.push(rowsForMatchup);
+            return;
+        }
+        timedBySlot.forEach(slotRows => groups.push([...slotRows, ...untimed.splice(0, 1)]));
+        untimed.forEach(row => groups.push([row]));
+    });
+    return groups.map(group => {
+        const ordered = [...group].sort((a, b) => gameSourceRank(a) - gameSourceRank(b));
+        const merged = { ...ordered[0] };
+        ordered.slice(1).forEach(row => {
+            Object.entries(row).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== "" && (merged[key] === null || merged[key] === undefined || merged[key] === "")) merged[key] = value;
+            });
+            if (row.model && (row.model.prediction_available || !merged.model?.prediction_available)) merged.model = { ...(merged.model || {}), ...row.model };
+        });
+        return merged;
+    });
 }
 
 function mergedGameRows() {
@@ -1221,21 +1409,17 @@ function allMlbReviewRows() {
         normalizeMeta(state.predictionLog).generated_at,
         state.mlb.games.length,
         state.mlbBacktest.games.length,
+        state.live.games.map(game => `${canonicalGameKey(game)}:${game.status}:${game.status_detail}:${game.away_score}:${game.home_score}`).join(","),
         getLogEntries().length,
     ].join("|");
     if (derivedCache.mlbReviewRows && derivedCache.mlbReviewKey === key) return derivedCache.mlbReviewRows;
-    const seen = new Set();
     const sources = [
         ...state.mlb.games.map(game => ({ ...game, sport: "MLB", source_label: "Current export", source_type: "current" })),
+        ...liveGames().filter(game => game.sport === "MLB").map(game => ({ ...game, sport: "MLB", source_label: "Live export", source_type: "live" })),
         ...state.mlbBacktest.games.map(game => ({ ...game, sport: "MLB", source_label: "Backtest", source_type: "backtest" })),
         ...predictionLogRowsForMlb(),
     ];
-    derivedCache.mlbReviewRows = sources.filter(game => {
-        const key = `${game.source_type}-${gameKey(game)}`;
-        if (!gameIsoDate(game) || seen.has(key)) return false;
-        seen.add(key);
-        return true;
-    });
+    derivedCache.mlbReviewRows = mergeCanonicalGameRows(sources.filter(game => gameIsoDate(game)));
     derivedCache.mlbReviewKey = key;
     return derivedCache.mlbReviewRows;
 }
@@ -1330,14 +1514,8 @@ function moveMlbReviewDate(delta) {
 
 function mlbRowsForDate(date = ensureMlbReviewDate()) {
     if (!date) return [];
-    const priority = { current: 0, backtest: 1, prediction_log: 2 };
     const rows = allMlbReviewRows().filter(game => gameIsoDate(game) === date);
-    const byGame = new Map();
-    rows.sort((a, b) => (priority[a.source_type] ?? 9) - (priority[b.source_type] ?? 9)).forEach(game => {
-        const key = gameKey(game);
-        if (!byGame.has(key)) byGame.set(key, game);
-    });
-    return sortedGamesByTime([...byGame.values()]);
+    return sortedGamesByTime(mergeCanonicalGameRows(rows));
 }
 
 function homeScopedRows() {
@@ -1384,7 +1562,8 @@ function gameDateDisplay(game, sport = game?.sport) {
 }
 
 function modelResultLabel(game) {
-    const result = firstPresent(game?.model_result, game?.pick_result, game?.prediction_result);
+    const logged = game?.sport ? latestLogForGame(game) : null;
+    const result = firstPresent(game?.model_result, game?.pick_result, game?.prediction_result, logged?.model_result, logged?.result_status);
     if (result) {
         const normalized = String(result).toLowerCase();
         if (normalized === "win") return "Won";
@@ -1848,6 +2027,10 @@ function switchView(view) {
         home: ["LineLens Sports", "sports prediction command center"],
         nfl: ["NFL Spread Predictor", "spread module"],
         mlb: ["MLB Game Board", "daily broadcast board"],
+        soccer: ["Soccer / World Cup", "live international scoreboard"],
+        nba: ["NBA Scoreboard", "courtside live board"],
+        nhl: ["NHL Scoreboard", "ice-level live board"],
+        wnba: ["WNBA Scoreboard", "live game board"],
         models: ["MLB Model Observatory", "production vs challengers"],
         reports: ["Model Reports", "calibration and comparison"],
         record: ["Model Record", "live and historical performance"],
@@ -1867,6 +2050,10 @@ function renderView(view = state.selected.view || "home") {
         home: renderHome,
         nfl: renderNFL,
         mlb: renderMLB,
+        soccer: renderSoccer,
+        nba: renderNBA,
+        nhl: renderNHL,
+        wnba: renderWNBA,
         models: renderModels,
         reports: renderReports,
         record: renderRecord,
@@ -2316,16 +2503,18 @@ function renderLiveWidgetPreview() {
 function renderTickerItem(game) {
     const sport = game?.sport || "MLB";
     const pick = getGamePick(game, sport);
-    const edge = formatEdge(getGameEdge(game, sport));
     const time = getGameTimeLabel(game);
     const score = finalScoreLabel(game);
-    const result = sport === "MLB" ? modelResultLabel(game) : (game?.result || game?.status || "Pending");
+    const result = sport === "MLB" ? modelResultLabel(game) : (game?.result || game?.status_detail || game?.status || "Pending");
+    const scoreboard = isScoreboardOnlySport(sport);
+    const scoreboardLabel = SCOREBOARD_SPORTS[normalizedSportCode(sport)]?.title || "Live scoreboard";
+    const signal = scoreboard ? scoreboardLabel : (pick === "-" ? "No model pick" : `${escapeHtml(pick)} ${formatEdge(getGameEdge(game, sport))}`);
     return `
         <button class="ticker-item-v2" type="button" data-ticker-open-game="${sport}" data-game-id="${escapeHtml(gameKey(game))}">
-            <b>${escapeHtml(sport)}</b>
+            <b>${escapeHtml(scoreboard ? (SCOREBOARD_SPORTS[normalizedSportCode(sport)]?.navLabel || sport) : sport)}</b>
             <span>${escapeHtml(time)}</span>
-            <strong>${escapeHtml(game?.away || "AWAY")} @ ${escapeHtml(game?.home || "HOME")}</strong>
-            <em>${pick === "-" ? "No model pick" : `${escapeHtml(pick)} ${edge}`}</em>
+            <strong>${escapeHtml(game?.away_display || game?.away || "AWAY")} @ ${escapeHtml(game?.home_display || game?.home || "HOME")}</strong>
+            <em>${signal}</em>
             ${resultChip(result)}
             ${score ? `<span>${escapeHtml(score)}</span>` : ""}
         </button>
@@ -2909,11 +3098,15 @@ function lifecycleStage(game) {
     const statuses = [live?.status_detail, live?.status, game?.status_detail, game?.status].filter(Boolean).map(value => String(value).toLowerCase());
     if (statuses.some(status => status.includes("final") || status.includes("completed"))) return "final";
     if (statuses.some(status => status.includes("progress") || status.includes("live") || status.includes("in progress"))) return "live";
+    const date = gameIsoDate(live || game);
+    const awayScore = safeNumber((live || game)?.away_score);
+    const homeScore = safeNumber((live || game)?.home_score);
+    if (date && date < localDateIso() && (awayScore === null || homeScore === null || (awayScore === 0 && homeScore === 0))) return "stale";
     return "pregame";
 }
 
 function lifecycleStageLabel(stage) {
-    return { pregame: "Pregame", live: "Live", final: "Final" }[stage] || "Pregame";
+    return { pregame: "Pregame", live: "Live", final: "Final", stale: "Past / verify" }[stage] || "Pregame";
 }
 
 function lifecycleBoardGames() {
@@ -2931,7 +3124,7 @@ function lifecycleBoardGames() {
         // Live status/score fields win, while the prediction export keeps the model fields.
         boardRows[existingIndex] = { ...boardRows[existingIndex], ...live, ...Object.fromEntries(Object.entries(boardRows[existingIndex]).filter(([key]) => live[key] === null || live[key] === undefined || live[key] === "")) };
     });
-    derivedCache.mlbBoardGames = uniqueRowsByGame(boardRows);
+    derivedCache.mlbBoardGames = mergeCanonicalGameRows(boardRows);
     derivedCache.mlbBoardKey = key;
     return derivedCache.mlbBoardGames;
 }
@@ -2942,6 +3135,7 @@ function lifecyclePriority(game) {
     const loggedResult = ["Won", "Lost", "Push"].includes(modelResultLabel(game));
     if (stage === "live") return watched ? 0 : 1;
     if (stage === "pregame") return watched ? 2 : getGameEdge(game, "MLB") !== null ? 3 : 4;
+    if (stage === "stale") return 7;
     return loggedResult ? 5 : 6;
 }
 
@@ -3049,13 +3243,13 @@ function renderMlbLifecycleCard(game) {
     const source = live || game;
     const awayScore = safeNumber(source?.away_score);
     const homeScore = safeNumber(source?.home_score);
-    const score = awayScore !== null && homeScore !== null ? `${awayScore} – ${homeScore}` : "";
+    const score = (stage === "live" || stage === "final") && awayScore !== null && homeScore !== null ? `${awayScore} – ${homeScore}` : "";
     const result = modelResultLabel(game);
     const cardResult = result === "Won" ? "MODEL WON" : result === "Lost" ? "MODEL LOST" : result.toUpperCase();
     const homeMeta = getTeamMeta("MLB", game.home, game.home_display);
     const awayMeta = getTeamMeta("MLB", game.away, game.away_display);
     const statusLabel = stage === "pregame" ? "UPCOMING" : lifecycleStageLabel(stage).toUpperCase();
-    const dateLabel = stage === "pregame" ? `${gameIsoDate(game) === localDateIso() ? "TODAY" : formatDateOnly(gameIsoDate(game), { month: "short", day: "numeric" }).toUpperCase()} · ${getGameTimeLabel(game)}` : gameStatusLine(game, live);
+    const dateLabel = stage === "pregame" ? `${gameIsoDate(game) === localDateIso() ? "TODAY" : formatDateOnly(gameIsoDate(game), { month: "short", day: "numeric" }).toUpperCase()} · ${getGameTimeLabel(game)}` : stage === "stale" ? "PAST · VERIFY SOURCE" : gameStatusLine(game, live);
     const marketRead = !market.movement.available ? "" : `<div class="mlb-game-card__market"><span>Market ${market.marketProbability === null ? "Linked" : formatProbability(market.marketProbability)}</span>${market.edge === null ? "" : `<strong>Edge ${formatEdge(market.edge)}</strong>`}</div>`;
     const latestPlay = stage === "live" && live?.latest_play ? `<small class="mlb-game-card__play">${escapeHtml(live.latest_play)}</small>` : "";
     return `<article class="mlb-game-card mlb-game-card--${stage} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
@@ -3100,7 +3294,7 @@ function renderMlbLifecyclePage() {
     return `<section class="lifecycle-shell mlb-lifecycle-shell">
         <section class="panel mlb-page-header">
             <div class="mlb-page-header__top"><div><p class="eyebrow">MLB / Daily board</p><h2>MLB Game Board</h2><div class="mlb-selected-date"><strong>${escapeHtml(dateDisplay.monthDay)}</strong><span>${escapeHtml(dateDisplay.season)}</span></div></div><div class="mlb-page-header__actions"><span class="mlb-freshness">Data ${escapeHtml(freshness.status || "pending")} · ${escapeHtml(freshness.last_success_at ? timestamp(freshness.last_success_at) : "freshness unavailable")}</span></div></div>
-            <div class="mlb-page-header__controls"><div>${renderMlbDateControls("mlb")}</div><div class="mlb-production" title="Technical model: ${escapeHtml(production?.model_name || "not declared")}"><span>Production model</span><strong>${escapeHtml(productionIdentity.legend || "Not declared")}</strong></div><div class="mlb-filter-wrap">${renderMlbStageFilters(games)}</div></div>
+            <div class="mlb-page-header__controls"><div>${renderMlbDateControls("mlb")}</div><div class="mlb-production" title="Technical model: ${escapeHtml(production?.model_name || "not declared")}"><span>Production model:</span><strong>${escapeHtml(productionIdentity.legend || "Not declared")}</strong></div><div class="mlb-filter-wrap">${renderMlbStageFilters(games)}</div></div>
         </section>
         <section class="mlb-intelligence-strip" aria-label="MLB board summary"><span><strong>${games.length}</strong> games</span><span><strong>${modelPicks}</strong> model picks</span><span><strong>${liveCount}</strong> live</span><span><strong>${finalCount}</strong> final</span><span><strong>${oddsLinked}</strong> odds linked</span><span><strong>${recordText}</strong> record</span></section>
         <section class="panel mlb-board-panel"><header class="section-header"><div><p class="eyebrow">Daily game board</p><p class="muted">${escapeHtml(dateDisplay.monthDay)} · live and watchlisted games lead; final accountability stays in the same full list.</p></div></header><div class="mlb-game-grid">${filtered.length ? filtered.map(renderMlbLifecycleCard).join("") : emptyState("No games in this lifecycle state", "This filter only shows real rows loaded for the selected date.")}</div></section>
@@ -3111,6 +3305,60 @@ function renderMlbLifecyclePage() {
 function renderMLB() {
     $("#view-mlb").innerHTML = renderMlbLifecyclePage();
 }
+
+function scoreboardStatus(game) {
+    const status = String(game?.status || game?.status_detail || "").toLowerCase();
+    if (status.includes("final") || status.includes("completed")) return "final";
+    if (status.includes("progress") || status.includes("live") || status.includes("in progress")) return "live";
+    return "upcoming";
+}
+
+function scoreboardTeamColor(value) {
+    const text = String(value || "team");
+    const hash = [...text].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) % 360, 0);
+    return `hsl(${hash} 72% 58%)`;
+}
+
+function renderScoreboardTeam(game, side) {
+    const code = game?.[side] || "---";
+    const display = game?.[`${side}_display`] || code;
+    const logo = game?.[`${side}_logo`] || "";
+    return `<div class="scoreboard-game__team"><span class="scoreboard-team-mark" style="--scoreboard-color:${scoreboardTeamColor(code)}">${logo ? `<img src="${escapeHtml(logo)}" alt="" loading="lazy" onerror="this.hidden=true; this.nextElementSibling.hidden=false;" /><i hidden>${escapeHtml(String(code).slice(0, 3).toUpperCase())}</i>` : `<i>${escapeHtml(String(code).slice(0, 3).toUpperCase())}</i>`}</span><strong>${escapeHtml(display)}</strong></div>`;
+}
+
+function renderScoreboardCard(game, config) {
+    const stage = scoreboardStatus(game);
+    const awayScore = safeNumber(game?.away_score);
+    const homeScore = safeNumber(game?.home_score);
+    const hasScore = awayScore !== null && homeScore !== null;
+    const statusLabel = stage === "live" ? "LIVE" : stage === "final" ? "FINAL" : "UPCOMING";
+    const detail = stage === "live" && game?.latest_play ? game.latest_play : stage === "upcoming" ? getGameTimeLabel(game) : (hasScore ? `${awayScore} – ${homeScore}` : "Score unavailable");
+    return `<article class="scoreboard-game scoreboard-game--${stage}" style="--scoreboard-accent:${escapeHtml(config.accent)}">
+        <header><span class="scoreboard-game__status">${statusLabel}</span><span>${escapeHtml(game?.status_detail || config.navLabel)}</span></header>
+        <div class="scoreboard-game__matchup">${renderScoreboardTeam(game, "away")}<div class="scoreboard-game__score"><strong>${hasScore ? `${awayScore} – ${homeScore}` : "VS"}</strong><small>${escapeHtml(detail)}</small></div>${renderScoreboardTeam(game, "home")}</div>
+        ${game?.latest_play && stage !== "live" ? `<p class="scoreboard-game__note">${escapeHtml(game.latest_play)}</p>` : ""}
+        <footer><span>Real ESPN scoreboard data</span><span>${escapeHtml(gameIsoDate(game) || "Date unavailable")}</span></footer>
+    </article>`;
+}
+
+function renderScoreboardDesk(sport) {
+    const normalized = normalizedSportCode(sport);
+    const config = SCOREBOARD_SPORTS[normalized];
+    const games = scoreboardGames(normalized);
+    const metadata = normalizeMeta(state.live.payload);
+    const sourceDate = metadata.generated_at ? timestamp(metadata.generated_at) : "bundled export status unavailable";
+    const mount = $(`#view-${config.view}`);
+    if (!mount) return;
+    mount.innerHTML = `<section class="scoreboard-shell" style="--scoreboard-accent:${escapeHtml(config.accent)}">
+        <section class="panel scoreboard-header"><div><p class="eyebrow">${escapeHtml(config.eyebrow)}</p><h2>${escapeHtml(config.title)}</h2><p class="muted">${escapeHtml(config.description)}</p></div><div class="scoreboard-header__meta"><strong>${games.length} loaded</strong><span>Feed: ${escapeHtml(sourceDate)}</span></div></section>
+        <section class="panel scoreboard-board"><header class="section-header"><div><p class="eyebrow">${escapeHtml(config.navLabel)}</p><h3>Fixtures, live action, and results</h3></div><span class="scoreboard-source-pill">${games.length ? "Real live export" : "No rows bundled"}</span></header>${games.length ? `<div class="scoreboard-grid">${games.map(game => renderScoreboardCard(game, config)).join("")}</div>` : emptyState(config.emptyTitle, config.emptyCopy)}</section>
+    </section>`;
+}
+
+function renderSoccer() { renderScoreboardDesk("SOCCER"); }
+function renderNBA() { renderScoreboardDesk("NBA"); }
+function renderNHL() { renderScoreboardDesk("NHL"); }
+function renderWNBA() { renderScoreboardDesk("WNBA"); }
 
 function recordSummaryText(summary) {
     const record = `${summary.wins}-${summary.losses}${summary.pushes ? `-${summary.pushes}` : ""}`;
@@ -3796,6 +4044,14 @@ function renderGameCastWhy(game) {
     `;
 }
 
+function renderGameCastProvenance(game, sport) {
+    const live = liveGameFor(game);
+    const odds = latestOddsForGame(game);
+    const payload = sport === "MLB" ? state.mlb.payload : state.nfl.payload;
+    const model = selectedModelEntry(sport);
+    return `<div class="gamecast-provenance" aria-label="GameCast data provenance"><span><strong>Prediction</strong>${escapeHtml(timestamp(game.generated_at || normalizeMeta(payload).generated_at))}</span><span><strong>Model</strong>${escapeHtml(model?.model_name || game.model_name || "not declared")}</span><span><strong>Live feed</strong>${escapeHtml(live ? "joined" : "not joined")}</span><span><strong>Odds</strong>${escapeHtml(odds ? oddsFreshness(odds) : "not linked")}</span></div>`;
+}
+
 function renderGameCast(game, sport) {
     const live = liveGameFor(game);
     const quality = featureQualityForGame(game);
@@ -3814,6 +4070,7 @@ function renderGameCast(game, sport) {
                 </div>
             </header>
             ${renderGameCastScore(game, live)}
+            ${renderGameCastProvenance(game, sport)}
             <section class="gamecast-grid">
                 <article class="gamecast-panel gamecast-panel--pick">
                     <span>${isMoltresGame(game) ? "Moltres pick" : "Model pick"}</span>
@@ -4065,6 +4322,7 @@ function renderMoltresModelCard() {
     const comparison = modelCard.comparison || {};
     const components = modelCard.architecture?.base_models || [];
     const weights = modelCard.architecture?.weights || {};
+    const selected = selectedModelEntry("MLB")?.model_name === "Moltres";
     return `
         <section class="panel moltres-card">
             <header class="section-header">
@@ -4083,7 +4341,7 @@ function renderMoltresModelCard() {
                 <div><span class="eyebrow">Stack components</span><div class="moltres-weight-list">${components.map(name => `<span><strong>${escapeHtml(name)}</strong><em>${safeNumber(weights[name]) === null ? "-" : `${(weights[name] * 100).toFixed(0)}%`}</em></span>`).join("") || "<span>Pending manual training</span>"}</div></div>
                 <div><span class="eyebrow">Leakage controls</span><ul>${(modelCard.data?.leakage_controls || []).slice(0, 3).map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
             </div>
-            <small class="moltres-card__foot">${escapeHtml(modelCard.selection?.evidence || "Moltres remains a challenger until the sealed chronological evaluation justifies promotion.")}</small>
+            <small class="moltres-card__foot">${escapeHtml(selected ? "Moltres is selected from the sealed comparison evidence." : `Moltres is not selected; ${modelCard.selection?.evidence || "the existing production model remains in place until Moltres wins the selection rule."}`)}</small>
         </section>
     `;
 }
@@ -4203,6 +4461,25 @@ function recordRowsForSport(sport) {
     return getModelRecord("NFL").recent_games || state.nfl.games || [];
 }
 
+function filterRecordRows(rows, sport) {
+    const resultFilter = state.selected.recordResultFilter || "all";
+    const marketFilter = state.selected.recordMarketFilter || "all";
+    return rows.filter(row => {
+        const result = accountabilityLabel(row).toLowerCase();
+        if (resultFilter !== "all" && result !== resultFilter) return false;
+        if (marketFilter !== "all") {
+            const linked = oddsSnapshotsForGame({ ...row, sport }).length > 0;
+            if (marketFilter === "linked" && !linked) return false;
+            if (marketFilter === "unlinked" && linked) return false;
+        }
+        return true;
+    });
+}
+
+function renderRecordFilters() {
+    return `<div class="record-filters"><select id="record-result-filter" aria-label="Record result filter"><option value="all" ${state.selected.recordResultFilter === "all" ? "selected" : ""}>All results</option><option value="correct" ${state.selected.recordResultFilter === "correct" ? "selected" : ""}>Won</option><option value="wrong" ${state.selected.recordResultFilter === "wrong" ? "selected" : ""}>Lost</option><option value="pending" ${state.selected.recordResultFilter === "pending" ? "selected" : ""}>Pending</option></select><select id="record-market-filter" aria-label="Record market filter"><option value="all" ${state.selected.recordMarketFilter === "all" ? "selected" : ""}>All markets</option><option value="linked" ${state.selected.recordMarketFilter === "linked" ? "selected" : ""}>Odds linked</option><option value="unlinked" ${state.selected.recordMarketFilter === "unlinked" ? "selected" : ""}>Odds unlinked</option></select></div>`;
+}
+
 function summarizeRecordRows(rows) {
     return rows.reduce((acc, row) => {
         const label = accountabilityLabel(row).toLowerCase();
@@ -4247,7 +4524,7 @@ function renderMlbRecordView() {
     const record = getModelRecord("MLB");
     const live = record.live_record || record.overall || {};
     const backtest = record.backtest_record || {};
-    const recentRows = record.recent_predictions || getLogEntries().filter(row => row.sport === "MLB").slice(0, 12);
+    const recentRows = filterRecordRows(record.recent_predictions || getLogEntries().filter(row => row.sport === "MLB").slice(0, 12), "MLB");
     const scored = safeNumber(live.scored, 0);
     return `
         <section class="dashboard-grid">
@@ -4278,7 +4555,7 @@ function renderMlbRecordView() {
         </section>
         <section class="dashboard-grid">
             <article class="panel">
-                <header><p class="eyebrow">Live Prediction Log</p><h2>Recent logged MLB picks</h2></header>
+                <header class="section-header"><div><p class="eyebrow">Live Prediction Log</p><h2>Recent logged MLB picks</h2></div>${renderRecordFilters()}</header>
                 ${recentRows.length ? renderRecordPredictionTable(recentRows, "MLB") : emptyState("No MLB prediction log rows", "Run npm run refresh:mlb, then npm run score:models.")}
             </article>
             <article class="panel">
@@ -4473,7 +4750,8 @@ function renderModelComparison(rows) {
     if (!rows.length) return emptyState("No comparison rows", "Model comparison export is missing.");
     const finiteLogLosses = rows.map(row => safeNumber(row.log_loss)).filter(value => value !== null);
     const bestLogLoss = finiteLogLosses.length ? Math.min(...finiteLogLosses) : null;
-    return `<div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Status</th><th>Accuracy</th><th>ROC AUC</th><th>Log loss</th><th>Brier</th><th>Calibration</th><th>Stability</th><th>N</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${escapeHtml(row.model || row.model_name)}</strong> ${bestLogLoss !== null && safeNumber(row.log_loss) === bestLogLoss ? '<span class="tag tag--high">Best log loss</span>' : ""}</td><td>${escapeHtml(row.status || "pending")}</td><td>${formatProbability(row.accuracy)}</td><td>${formatNumber(row.roc_auc, 3)}</td><td>${formatNumber(row.log_loss, 3)}</td><td>${formatNumber(row.brier_score, 3)}</td><td>${formatEdge(row.calibration_error)}</td><td>${formatNumber(row.stability?.stability_score, 3)}</td><td>${row.sample_size || 0}</td></tr>`).join("")}</tbody></table></div>`;
+    const meta = normalizeMeta(state.modelComparison);
+    return `<p class="comparison-selection-note">Production selection: <strong>${escapeHtml(meta.selected_model || "not declared")}</strong> · ${escapeHtml(meta.selected_by || "selection rule unavailable")} · all rows use the exported evaluation boundary.</p><div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Status</th><th>Accuracy</th><th>ROC AUC</th><th>Log loss</th><th>Brier</th><th>Calibration</th><th>Stability</th><th>N</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${escapeHtml(row.model || row.model_name)}</strong> ${bestLogLoss !== null && safeNumber(row.log_loss) === bestLogLoss ? '<span class="tag tag--high">Best log loss</span>' : ""}</td><td>${escapeHtml(row.status || "pending")}</td><td>${formatProbability(row.accuracy)}</td><td>${formatNumber(row.roc_auc, 3)}</td><td>${formatNumber(row.log_loss, 3)}</td><td>${formatNumber(row.brier_score, 3)}</td><td>${formatEdge(row.calibration_error)}</td><td>${formatNumber(row.stability?.stability_score, 3)}</td><td>${row.sample_size || 0}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 function renderConfidenceBuckets(rows) {
@@ -4794,6 +5072,7 @@ function renderSettings() {
     $("#view-settings").innerHTML = `
         <section class="module-header panel">
             <div><p class="eyebrow">Settings / Data Status</p><h2>Environment, data files, and build path</h2><p class="muted">Local native Tauri build is optional. This work machine can use GitHub Actions for Windows bundles.</p></div>
+            <div class="report-actions"><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn btn--primary" type="button" data-open-about>About / What’s New</button></div>
             <span class="chip">${escapeHtml(state.app.version || APP_VERSION)}</span>
         </section>
         ${renderUiPreferencesPanel()}
@@ -4807,17 +5086,91 @@ function renderSettings() {
     `;
 }
 
+function finishOnboarding() {
+    state.selected.onboardingSeen = true;
+    state.selected.onboardingNever = Boolean($("#onboarding-dont-show")?.checked);
+    persistSettings();
+    renderOnboarding();
+}
+
+function renderOnboarding() {
+    const root = $("#onboarding-root");
+    if (!root) return;
+    if (state.selected.onboardingSeen || state.selected.onboardingNever) {
+        root.innerHTML = "";
+        return;
+    }
+    root.innerHTML = `
+        <div class="onboarding-backdrop" data-onboarding-close></div>
+        <section class="onboarding-dialog" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+            <header><span class="brand__mark">LL</span><div><p class="eyebrow">LineLens Sports ${escapeHtml(state.app.version || APP_VERSION)}</p><h2 id="onboarding-title">A clearer way to read the board.</h2></div></header>
+            <p class="muted">Start with the real bundled demo, then follow one prediction from signal to accountability.</p>
+            <ol class="onboarding-steps"><li><strong>Review today’s MLB game board</strong><span>See what matters now, with live and final states separated.</span></li><li><strong>Open a matchup</strong><span>Inspect model, market, explanation, GameCast, and timeline details.</span></li><li><strong>Visit Models and Record</strong><span>See how the system was evaluated and whether predictions held up.</span></li></ol>
+            <footer><label class="onboarding-check"><input id="onboarding-dont-show" type="checkbox" /> Do not show again</label><div class="onboarding-actions"><button class="btn" type="button" data-onboarding-skip>Skip</button><button class="btn btn--primary" type="button" data-onboarding-start>Start Demo</button></div></footer>
+        </section>
+    `;
+}
+
+function renderAbout() {
+    const root = $("#about-root");
+    if (!root) return;
+    if (!state.aboutOpen) {
+        root.innerHTML = "";
+        return;
+    }
+    const production = selectedModelEntry("MLB");
+    root.innerHTML = `
+        <div class="about-backdrop" data-close-about></div>
+        <section class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title">
+            <header class="section-header"><div><p class="eyebrow">LineLens Sports</p><h2 id="about-title">What’s New in v2.0.0</h2></div><button class="icon-btn" type="button" data-close-about aria-label="Close About">×</button></header>
+            <p class="muted">A release-hardening and presentation pass focused on real data, model transparency, and a faster first impression.</p>
+            <div class="about-feature-grid"><span>MLB visual game board</span><span>Prediction Lifecycle</span><span>Soccer / World Cup scoreboard</span><span>Model Observatory</span><span>Moltres challenger ensemble</span><span>GameCast and odds movement</span><span>Record accountability</span><span>Live widget</span><span>Date/performance fixes</span></div>
+            <div class="about-status-grid"><div><span>Production model</span><strong>${escapeHtml(production?.model_name || "Not declared")}</strong></div><div><span>Moltres</span><strong>${escapeHtml(moltresStatusLabel())}</strong></div><div><span>Bundled data</span><strong>${state.mlb.games.length ? "available" : "missing"}</strong></div><div><span>Policy</span><strong>Real data only</strong></div></div>
+            <p class="about-disclaimer">Educational/demo outputs only. LineLens is not betting advice. Odds, live feeds, and pitcher context remain source-dependent.</p>
+            <footer class="about-actions"><a class="btn" href="README.md" target="_blank" rel="noreferrer">Open README</a><a class="btn" href="RELEASE_NOTES_v2.0.0.md" target="_blank" rel="noreferrer">Release notes</a><button class="btn btn--primary" type="button" data-close-about>Done</button></footer>
+        </section>
+    `;
+}
+
 function renderAll() {
     setBodyModes();
     renderView(state.selected.view || "home");
     renderGlobalTicker();
     renderGameCastRoot();
     renderLiveNotifications();
+    renderOnboarding();
+    renderAbout();
     switchView(state.selected.view || "home");
 }
 
 function bindEvents() {
     document.addEventListener("click", event => {
+        if (event.target.id === "about-btn" || event.target.closest("[data-open-about]")) {
+            state.aboutOpen = true;
+            renderAbout();
+            return;
+        }
+        if (event.target.closest("[data-close-about]")) {
+            state.aboutOpen = false;
+            renderAbout();
+            return;
+        }
+        if (event.target.closest("[data-onboarding-start]")) {
+            finishOnboarding();
+            switchView("home");
+            return;
+        }
+        if (event.target.closest("[data-onboarding-skip]") || event.target.closest("[data-onboarding-close]")) {
+            finishOnboarding();
+            return;
+        }
+        if (event.target.closest("[data-reopen-onboarding]")) {
+            state.selected.onboardingSeen = false;
+            state.selected.onboardingNever = false;
+            persistSettings();
+            renderOnboarding();
+            return;
+        }
         const viewLink = event.target.closest("[data-view-link]");
         if (viewLink) switchView(viewLink.dataset.viewLink);
 
@@ -4990,9 +5343,12 @@ function bindEvents() {
             const game = findGameByKey(sport, tickerOpenGame.dataset.gameId);
             if (game) state.selected[sport.toLowerCase()] = game;
             persistSettings();
-            sport === "NFL" ? renderNFL() : renderMLB();
-            switchView(sport.toLowerCase());
-            if (game) openGameCast(sport, game);
+            if (sport === "NFL") renderNFL();
+            else if (sport === "MLB") renderMLB();
+            else if (isScoreboardOnlySport(sport)) renderScoreboardDesk(normalizedSportCode(sport));
+            const view = isScoreboardOnlySport(sport) ? scoreboardViewForSport(sport) : sport.toLowerCase();
+            switchView(view);
+            if (game && !isScoreboardOnlySport(sport)) openGameCast(sport, game);
         }
 
         const lifecycleGame = event.target.closest("[data-lifecycle-game]");
@@ -5063,6 +5419,16 @@ function bindEvents() {
             state.selected.reportSport = event.target.value;
             persistSettings();
             renderReports();
+        }
+        if (event.target.id === "record-result-filter") {
+            state.selected.recordResultFilter = event.target.value;
+            persistSettings();
+            renderRecord();
+        }
+        if (event.target.id === "record-market-filter") {
+            state.selected.recordMarketFilter = event.target.value;
+            persistSettings();
+            renderRecord();
         }
         if (event.target.id === "mlb-filter-select") {
             state.selected.mlbFilter = event.target.value;

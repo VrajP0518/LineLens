@@ -1,8 +1,8 @@
-# LineLens Sports v1.0.0
+# LineLens Sports v2.0.0
 
-LineLens Sports is a Tauri desktop sports analytics dashboard for model-based NFL and MLB prediction review. It is built as a plain HTML/CSS/JavaScript frontend with Python data/modeling pipelines and a Tauri shell for a real desktop app experience.
+LineLens Sports is a Tauri desktop sports analytics dashboard for model-based NFL/MLB prediction review plus a real-data World Cup scoreboard. It is built as a plain HTML/CSS/JavaScript frontend with Python data/modeling pipelines and a Tauri shell for a real desktop app experience.
 
-This v1.0.0 demo release is designed to open with bundled real exports so a reviewer can immediately see the app working without first running a live data refresh.
+This v2.0.0 release is designed to open with bundled real exports so a reviewer can immediately see the app working without first running a live data refresh.
 
 Predictions are experimental educational outputs for project demonstration only. LineLens Sports is not betting advice.
 
@@ -11,6 +11,7 @@ Predictions are experimental educational outputs for project demonstration only.
 - Tauri desktop app with GitHub Actions Windows builds.
 - Home command center with Best Pick Spotlight, dashboard cards, and ESPN-style ticker.
 - MLB Prediction Lifecycle workspace that follows Pregame, Live, and Final accountability in one daily board.
+- Scoreboard-only Soccer / World Cup, NBA, NHL, and WNBA desks for real live, upcoming, and final fixtures; these sports have no LineLens prediction model.
 - MLB Model Observatory with technical algorithm names, Legendary-inspired abstract identities, production/challenger status, and expandable metric profiles.
 - MLB moneyline prediction model with real probabilities and current schedule exports.
 - 119+ MLB feature set covering team form, run differential, rest/fatigue, travel estimate, pitcher proxy, home/away splits, series context, and volatility.
@@ -26,15 +27,34 @@ Predictions are experimental educational outputs for project demonstration only.
 - Settings refresh console for safe Tauri command refreshes.
 - No fake prediction policy. Missing data is labeled honestly.
 
+## Portfolio / Reviewer Path
+
+LineLens is designed to be evaluated as both a sports product and an analytics engineering project. The fastest proof path is:
+
+1. Open the bundled demo without training or credentials.
+2. Follow one MLB matchup from prediction to GameCast to final accountability.
+3. Open Models and Reports to inspect production/challenger evidence, calibration, stability, and Moltres limitations.
+4. Open Settings / Data Doctor to verify source freshness, export presence, and runtime boundaries.
+
+Supporting documentation:
+
+- `docs/ARCHITECTURE.md` — UI, export, Python, and Tauri boundaries.
+- `docs/DATA_DICTIONARY.md` — real export fields and provenance rules.
+- `docs/MODEL_EVALUATION.md` — chronological comparison and Moltres governance.
+- `docs/DEMO_CHECKLIST.md` — sports-user and recruiter walkthroughs.
+
+The bundled demo is intentionally separate from refresh and training workflows. Reviewers can inspect real cached exports before setting up Python, odds credentials, or a local desktop build.
+
 ## Demo Flow
 
 1. Open Home and show the Best Pick Spotlight, summary cards, ticker, and Live Widget preview.
 2. Open MLB and show the daily board, probabilities, pitcher context, result chips, and "Why this pick?" factors.
-3. Click Open Live Widget to show the compact sports mini-widget. Expand it if you want the game list and detail panel.
-4. Open Record and show MLB live record, MLB backtest record, and NFL historical record as separate sections.
-5. Open Reports and show model comparison, selected model, feature summary, calibration/report cards, and registry.
-6. Open Settings and show the refresh console, data file presence, app version, and build/runtime status.
-7. Use Settings -> Presentation Mode when you want a cleaner professor/TA walkthrough with diagnostic noise reduced.
+3. Open Soccer and confirm the World Cup empty/live state is honest; no model controls should appear there.
+4. Click Open Live Widget to show the compact sports mini-widget. Expand it if you want the game list and detail panel.
+5. Open Record and show MLB live record, MLB backtest record, and NFL historical record as separate sections.
+6. Open Reports and show model comparison, selected model, feature summary, calibration/report cards, and registry.
+7. Open Settings and show the refresh console, data file presence, app version, and build/runtime status.
+8. Use Settings -> Presentation Mode when you want a cleaner professor/TA walkthrough with diagnostic noise reduced.
 
 ## Download The Windows App
 
@@ -43,10 +63,25 @@ The Windows desktop artifact is built in GitHub Actions.
 1. Go to the GitHub repo: `https://github.com/VrajP0518/LineLens`
 2. Open the Actions tab.
 3. Select the latest `Tauri Windows Build` run.
-4. Download the `LineLens-Sports-Windows` artifact.
+4. Download the `LineLens-Sports-Windows-v2.0.0` artifact.
 5. Extract it and run the bundled LineLens Sports executable or installer output.
 
-If a v1.0.0 GitHub Release is created, download the Windows installer/artifact from the release page instead.
+If a v2.0.0 GitHub Release is created, download the Windows installer/artifact from the release page instead.
+
+## Windows Artifact Smoke Test
+
+After GitHub Actions finishes, manually verify the downloaded `LineLens-Sports-Windows-v2.0.0` artifact:
+
+- fresh install/open succeeds;
+- first launch works without Python, `.env`, network access, or odds credentials;
+- Home loads bundled data;
+- MLB date and game board are correct;
+- Soccer / World Cup opens with either real rows or a concise no-data state;
+- Models shows every unique available model;
+- GameCast and the Live widget open;
+- navigation, favorites, ticker, and Presentation Mode work;
+- the app reopens correctly after closing;
+- no content is hidden behind the ticker.
 
 ## First Open Behavior
 
@@ -64,7 +99,7 @@ If Python scripts are not available in the installed app environment, the UI sta
 
 When the Tauri desktop app opens in the repo/dev environment, it automatically runs the same safe startup path as `npm run refresh:startup`: bootstrap Python, refresh MLB, refresh NFL, refresh live widget data, score model records, and check data status.
 
-Live score refresh is intentionally lighter than model refresh. `npm run refresh:live` pulls fast scoreboard/status data from ESPN public scoreboard endpoints and MLB Stats API, then joins existing LineLens prediction exports. The app heartbeat can poll live scores about every 15 seconds, while model predictions remain daily/on-demand so training is not rerun during live games.
+Live score refresh is intentionally lighter than model refresh. `npm run refresh:live` pulls fast MLB/NFL scoreboard/status data plus optional ESPN World Cup, NBA, NHL, and WNBA scoreboards, then joins existing LineLens prediction exports where applicable. The app heartbeat can poll live scores about every 15 seconds, while model predictions remain daily/on-demand so training is not rerun during live games. ESPN timestamped rows are normalized to the Toronto-local schedule date; plain `YYYY-MM-DD` values are never passed through UTC.
 
 ## Developer Setup
 
@@ -97,6 +132,9 @@ npm run refresh:mlb
 npm run refresh:live
 npm run refresh:odds
 npm run score:models
+
+# Run release-safe JavaScript, Python, data, integrity, bundle, and git checks.
+npm run verify:release
 npm run refresh:startup
 npm run check:data
 npm run check:js
@@ -209,6 +247,8 @@ If the Moltres card is absent, the app intentionally shows `Moltres pending` and
 - No fabricated model records.
 - No fabricated scores or game results.
 - Schedule-only games can appear in the widget or boards, but they are labeled `No model pick` and do not count in model record.
+- Postponed, delayed, canceled, suspended, and unresolved past schedule rows are excluded from model accountability; they remain visible only as pending or `Past / verify` context.
+- Soccer / World Cup rows are scoreboard-only and never count as MLB/NFL model predictions.
 - MLB live record uses logged LineLens predictions only.
 - MLB backtest is clearly separated from live record.
 - NFL exported rows are labeled historical/backtest unless a true current export is available.
@@ -266,7 +306,7 @@ It runs:
 The artifact is uploaded as:
 
 ```text
-LineLens-Sports-Windows
+LineLens-Sports-Windows-v2.0.0
 ```
 
 The build uses bundled compact exports and does not require live sports API refresh.
@@ -288,11 +328,11 @@ npm run score:models
 npm run refresh:startup
 npm run check:data
 npm run demo:check
-npm run tauri -- info
+npm run verify:release
 git status
 git add .
-git commit -m "Prepare LineLens Sports v1.0.0 demo release"
-git tag v1.0.0
+git commit -m "Release LineLens Sports v2.0.0"
+git tag v2.0.0
 git push origin main
-git push origin v1.0.0
+git push origin v2.0.0
 ```

@@ -1,6 +1,6 @@
 {
   "name": "linelens-sports",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
@@ -28,6 +28,8 @@
     "score:models": "python scripts/score_model_predictions.py",
     "record:models": "python scripts/score_model_predictions.py",
     "check:data": "python scripts/check_data_status.py",
+    "check:integrity": "python scripts/check_data_integrity.py",
+    "verify:release": "python scripts/verify_release.py",
     "refresh:live": "python scripts/live_scores.py",
     "refresh:widget": "python scripts/live_scores.py",
     "tauri": "tauri",

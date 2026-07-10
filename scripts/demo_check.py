@@ -80,6 +80,37 @@ def check_data_files() -> bool:
     return all(check_file(*item) for item in checks)
 
 
+def check_model_contract() -> bool:
+    """Verify that bundled production metadata agrees across real exports."""
+    try:
+        comparison = load_json(ROOT / "data/reports/mlb_model_comparison.json")
+        registry = load_json(ROOT / "data/models/model_registry.json")
+        predictions = load_json(ROOT / "data/predictions/mlb_predictions.json")
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        print(f"FAIL: model contract could not be read: {exc}")
+        return False
+
+    comparison_name = comparison.get("metadata", {}).get("selected_model")
+    selected_registry = [row for row in registry.get("models", []) if row.get("sport") == "MLB" and row.get("selected")]
+    prediction_name = predictions.get("metadata", {}).get("model_type")
+    if len(selected_registry) != 1:
+        print(f"FAIL: expected exactly one selected MLB registry model, found {len(selected_registry)}")
+        return False
+    registry_name = selected_registry[0].get("model_name")
+    if comparison_name != registry_name or prediction_name != registry_name:
+        print(f"FAIL: selected model mismatch: comparison={comparison_name}, registry={registry_name}, predictions={prediction_name}")
+        return False
+
+    placeholder_names = {"fake", "placeholder", "synthetic", "tbd", "unknown"}
+    for row in predictions.get("games", []):
+        pick = str(row.get("model_pick", "")).strip().lower()
+        if pick in placeholder_names:
+            print(f"FAIL: placeholder model pick found in MLB export: {row.get('game_id', row.get('id', 'unknown'))}")
+            return False
+    print(f"PASS: model contract consistent ({registry_name}); no placeholder MLB picks found")
+    return True
+
+
 def check_optional_files() -> None:
     print("\n[Optional data]")
     optional = [
@@ -106,6 +137,7 @@ def main() -> int:
         and run_step("Widget JavaScript syntax", ["node", "--check", "widget.js"]),
         run_step("Python compile", [PYTHON, "-m", "compileall", "src", "scripts"]),
         check_data_files(),
+        check_model_contract(),
         run_step("Build web dist", [PYTHON, "scripts/build_web_dist.py"]),
     ]
     check_optional_files()

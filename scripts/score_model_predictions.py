@@ -29,6 +29,7 @@ MLB_BACKTEST = PREDICTIONS_DIR / "mlb_backtest_predictions.json"
 NFL_PREDICTIONS = PREDICTIONS_DIR / "nfl_predictions.json"
 MLB_COMPARISON = REPORTS_DIR / "mlb_model_comparison.json"
 SCORED_RESULTS = {"win", "loss", "push"}
+NON_DECISIVE_STATUS_MARKERS = ("postponed", "canceled", "cancelled", "suspended", "delayed", "delay")
 
 
 def utc_now() -> str:
@@ -85,6 +86,11 @@ def normalize_result(value: Any) -> str:
     if result in {"tie"}:
         return "push"
     return result
+
+
+def is_excluded_prediction(row: dict[str, Any]) -> bool:
+    status = str(row.get("status_at_prediction") or row.get("status") or row.get("status_detail") or "").strip().lower()
+    return row.get("prediction_mode") == "postseason_result_supplement" or any(marker in status for marker in NON_DECISIVE_STATUS_MARKERS)
 
 
 def team_abbrev(side: dict[str, Any]) -> str:
@@ -256,6 +262,11 @@ def score_mlb_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
     for row in rows:
         if row.get("sport") != "MLB":
             continue
+        if is_excluded_prediction(row):
+            row["result_status"] = "excluded"
+            row["model_result"] = "no_result"
+            row["exclusion_reason"] = "Non-decisive schedule status; excluded from model accountability."
+            continue
         existing_result = normalize_result(row.get("model_result"))
         result = results.get(str(row.get("game_id")))
         if not result:
@@ -342,7 +353,7 @@ def recent_prediction_table(rows: list[dict[str, Any]], limit: int = 12) -> list
 
 
 def mlb_live_record(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    raw_mlb_rows = [row for row in rows if row.get("sport") == "MLB"]
+    raw_mlb_rows = [row for row in rows if row.get("sport") == "MLB" and not is_excluded_prediction(row)]
     mlb_rows = latest_prediction_per_game(raw_mlb_rows)
     by_confidence: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in mlb_rows:
