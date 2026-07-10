@@ -678,6 +678,30 @@ function liveGames() {
     return state.live.games.map(game => ({ ...game, sport: game.sport || "MLB" }));
 }
 
+function gameStatusText(game) {
+    return [game?.status, game?.status_detail]
+        .filter(Boolean)
+        .map(value => String(value).trim().toLowerCase())
+        .join(" ");
+}
+
+function isLiveSportGame(game) {
+    const status = gameStatusText(game);
+    // ESPN soccer rows can retain a Scheduled status while shortDetail carries
+    // the live match minute (for example, "52'"). Treat that as live without
+    // inferring live state from a score, since scheduled games are often 0-0.
+    return status.includes("progress")
+        || status.includes("live")
+        || status.includes("warmup")
+        || status.includes("halftime")
+        || /\b\d{1,3}(?:\+\d{1,2})?\s*[\u0027\u2032]/.test(status);
+}
+
+function isFinalSportGame(game) {
+    const status = gameStatusText(game);
+    return status.includes("final") || status.includes("completed") || status === "ft" || status.startsWith("ft-");
+}
+
 function soccerGames() {
     return scoreboardGames("SOCCER");
 }
@@ -2457,8 +2481,7 @@ function renderQuickActionsV2() {
 }
 
 function isLiveScoreGame(game) {
-    const status = String(game?.status || game?.status_detail || "").toLowerCase();
-    return status.includes("progress") || status.includes("live") || status.includes("warmup");
+    return isLiveSportGame(game);
 }
 
 function liveWidgetPreviewData() {
@@ -2503,7 +2526,8 @@ function renderLiveWidgetPreview() {
 function renderTickerItem(game) {
     const sport = game?.sport || "MLB";
     const pick = getGamePick(game, sport);
-    const time = getGameTimeLabel(game);
+    const live = isLiveSportGame(game);
+    const time = live ? `LIVE${game?.status_detail && !/^(in progress|live|warmup)$/i.test(String(game.status_detail).trim()) ? ` · ${game.status_detail}` : ""}` : getGameTimeLabel(game);
     const score = finalScoreLabel(game);
     const result = sport === "MLB" ? modelResultLabel(game) : (game?.result || game?.status_detail || game?.status || "Pending");
     const scoreboard = isScoreboardOnlySport(sport);
@@ -2523,15 +2547,15 @@ function renderTickerItem(game) {
 
 function tickerPriority(game) {
     const sport = game?.sport || "MLB";
-    const status = String(game?.status || game?.status_detail || "").toLowerCase();
+    const live = isLiveSportGame(game);
+    const final = isFinalSportGame(game);
     const date = gameIsoDate(game);
-    let score = 0;
+    // The lifecycle bucket is intentionally dominant: LIVE always leads,
+    // upcoming follows, and finals remain available after current action.
+    let score = live ? 3000000 : final ? 1000000 : 2000000;
     if (isWatchedGame(game)) score += 10000;
     if (isFavoriteTeam(sport, game.home) || isFavoriteTeam(sport, game.away)) score += 5000;
-    if (status.includes("progress") || status.includes("live")) score += 2500;
     if (date === dateOffsetIso(0)) score += 1000;
-    if (status.includes("scheduled")) score += 350;
-    if (status.includes("final")) score += 150;
     score += Math.round(safeNumber(getGameEdge(game, sport), 0) * 1000);
     const time = gameTimestamp(game);
     if (time !== null) score -= Math.max(0, Math.abs(Date.now() - time) / 100000000);
@@ -3255,9 +3279,9 @@ function renderMlbLifecycleCard(game) {
     return `<article class="mlb-game-card mlb-game-card--${stage} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
         <header class="mlb-game-card__header"><span class="mlb-game-card__status">${statusLabel}</span><span class="mlb-game-card__time">${escapeHtml(dateLabel)}</span>${renderWatchButton(game, "Watch matchup")}</header>
         <div class="mlb-game-card__matchup">
-            <div class="mlb-game-card__team">${renderTeamLogo("MLB", awayMeta.abbreviation, "lg", awayMeta.full_name)}<strong>${escapeHtml(awayMeta.abbreviation)}</strong><small>${escapeHtml(awayMeta.full_name)}</small></div>
+            <div class="mlb-game-card__team">${renderTeamLogo("MLB", awayMeta.abbreviation, "lg", awayMeta.full_name)}<strong>${escapeHtml(awayMeta.abbreviation)}</strong></div>
             <div class="mlb-game-card__at">${score ? `<b>${escapeHtml(score)}</b>` : "VS"}<small>${stage === "live" ? "LIVE SCORE" : stage === "final" ? "FINAL" : "FIRST PITCH"}</small></div>
-            <div class="mlb-game-card__team mlb-game-card__team--home">${renderTeamLogo("MLB", homeMeta.abbreviation, "lg", homeMeta.full_name)}<strong>${escapeHtml(homeMeta.abbreviation)}</strong><small>${escapeHtml(homeMeta.full_name)}</small></div>
+            <div class="mlb-game-card__team mlb-game-card__team--home">${renderTeamLogo("MLB", homeMeta.abbreviation, "lg", homeMeta.full_name)}<strong>${escapeHtml(homeMeta.abbreviation)}</strong></div>
         </div>
         <div class="mlb-game-card__signal"><span>Pick</span><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><b>${formatProbability(market.pickProbability)}</b></div>
         ${marketRead}${latestPlay}
@@ -3307,9 +3331,8 @@ function renderMLB() {
 }
 
 function scoreboardStatus(game) {
-    const status = String(game?.status || game?.status_detail || "").toLowerCase();
-    if (status.includes("final") || status.includes("completed")) return "final";
-    if (status.includes("progress") || status.includes("live") || status.includes("in progress")) return "live";
+    if (isFinalSportGame(game)) return "final";
+    if (isLiveSportGame(game)) return "live";
     return "upcoming";
 }
 

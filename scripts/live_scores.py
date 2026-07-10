@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -283,7 +284,13 @@ def status_bucket(status: str) -> str:
     normalized = status.lower()
     if "final" in normalized or "completed" in normalized:
         return "Final"
-    if "progress" in normalized or "live" in normalized or "warmup" in normalized:
+    if (
+        "progress" in normalized
+        or "live" in normalized
+        or "warmup" in normalized
+        or "halftime" in normalized
+        or re.search(r"\b\d{1,3}(?:\+\d{1,2})?\s*['′]", normalized)
+    ):
         return "In Progress"
     if "postponed" in normalized or "delayed" in normalized:
         return status
