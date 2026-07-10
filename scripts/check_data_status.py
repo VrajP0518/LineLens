@@ -52,12 +52,18 @@ def main() -> int:
     refresh = load_json(DATA_DIR / "refresh_status.json")
     report = load_json(DATA_DIR / "reports" / "model_report.json")
     comparison = load_json(DATA_DIR / "reports" / "mlb_model_comparison.json")
+    moltres_card = load_json(DATA_DIR / "reports" / "mlb_moltres_model_card.json")
     feature_summary = load_json(DATA_DIR / "reports" / "mlb_feature_summary.json")
     registry = load_json(DATA_DIR / "models" / "model_registry.json")
     prediction_log = load_json(DATA_DIR / "tracking" / "model_predictions_log.json")
     model_record = load_json(DATA_DIR / "tracking" / "model_record.json")
     odds = load_json(DATA_DIR / "odds" / "odds_snapshots.json")
     selected_models = [row for row in registry.get("models", []) if row.get("selected")]
+    selected_model_name = (comparison.get("metadata") or {}).get("selected_model")
+    registry_selected_name = selected_models[0].get("model_name") if selected_models else None
+    moltres_status = "missing"
+    if moltres_card and not moltres_card.get("_error"):
+        moltres_status = "selected" if registry_selected_name == "Moltres" else "challenger"
     log_rows = prediction_log.get("predictions", [])
     scored_rows = [
         row
@@ -93,6 +99,14 @@ def main() -> int:
                 "selected_model": (comparison.get("metadata") or {}).get("selected_model"),
                 "model_count": len(comparison.get("models", [])),
                 "error": comparison.get("_error"),
+            },
+            "moltres": {
+                "status": moltres_status,
+                "model_id": (moltres_card.get("metadata") or {}).get("model_id") if moltres_card else None,
+                "registry_selected": registry_selected_name == "Moltres",
+                "comparison_selected": selected_model_name == "Moltres",
+                "selection_consistent": selected_model_name == registry_selected_name if selected_model_name and registry_selected_name else None,
+                "error": moltres_card.get("_error") if moltres_card else None,
             },
             "mlb_feature_summary": {
                 "status": "real_cached" if feature_summary and not feature_summary.get("_error") else "missing",

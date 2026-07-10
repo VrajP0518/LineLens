@@ -10,6 +10,8 @@ Predictions are experimental educational outputs for project demonstration only.
 
 - Tauri desktop app with GitHub Actions Windows builds.
 - Home command center with Best Pick Spotlight, dashboard cards, and ESPN-style ticker.
+- MLB Prediction Lifecycle workspace that follows Pregame, Live, and Final accountability in one daily board.
+- MLB Model Observatory with technical algorithm names, Legendary-inspired abstract identities, production/challenger status, and expandable metric profiles.
 - MLB moneyline prediction model with real probabilities and current schedule exports.
 - 119+ MLB feature set covering team form, run differential, rest/fatigue, travel estimate, pitcher proxy, home/away splits, series context, and volatility.
 - Model comparison and selected model metadata.
@@ -148,6 +150,58 @@ Training uses 2021-2024 for training and 2025 for test/backtest by default. The 
 - Baseline 50/50
 
 The selected model is chosen primarily by log loss, with Brier score as an additional quality check.
+
+## Moltres MLB Flagship Ensemble
+
+Moltres is an integrated MLB challenger model, not a pre-declared winner. It combines the strongest base estimators that train successfully from the existing feature table, then fits a logistic meta-model on chronological out-of-fold base probabilities. The 2025 holdout season is sealed from both base-model and meta-model fitting. The comparison export reports accuracy, log loss, Brier score, ROC AUC, calibration error, and chronological stability for Moltres and every existing candidate.
+
+Moltres is promoted to the production artifact only when the same holdout selection rule used for the existing MLB models—lowest log loss, then Brier score—actually selects it. Otherwise the existing selected model remains in `models/mlb_moneyline_model.joblib`, while the challenger is retained at `models/mlb_moltres_model.joblib`. The Reports page shows `pending`, `challenger`, or `active` honestly from the available card and registry exports. No Moltres performance claim should be made before a manual training run produces the card and comparison evidence.
+
+The training path is protected by a single-process lock and stages model artifacts before replacing the production file. A failed or overlapping run is rejected without replacing the existing production model. The generated outputs are:
+
+- `models/mlb_moltres_model.joblib` — serialized Moltres ensemble artifact.
+- `data/reports/mlb_moltres_model_card.json` and `.js` — architecture, leakage controls, component weights, metrics, selection status, and limitations.
+- `data/reports/mlb_model_comparison.json` and `.js` — fair holdout comparison across base models, Moltres, and baselines.
+- `data/models/model_registry.json` and `.js` — Moltres registry entry plus the explicit selected model.
+- `data/predictions/mlb_predictions.json` and `.js` — production predictions using the selected model; Moltres component contributions appear when Moltres is selected or exported explicitly.
+
+### Manual Moltres training and evaluation commands
+
+Run these commands yourself from the repository after activating the project environment. Do not start a second training process while one is running, and do not use `npm run refresh:mlb:all` if you only want this controlled Moltres run because that refresh path may retrain as part of its orchestration.
+
+```powershell
+cd C:\Users\Vraj.Patel\Downloads\coop\LineLens
+.\.venv\Scripts\Activate.ps1
+
+# Train base candidates and Moltres on pre-2025 seasons; evaluate on sealed 2025.
+python -m src.mlb.train_model_mlb
+
+# Export current predictions from whichever model the evaluation selected.
+python -m src.mlb.export_predictions_mlb export
+
+# Export the selected production model's 2025 holdout rows.
+python -m src.mlb.export_predictions_mlb backtest --season 2025
+
+# If Moltres remains a challenger, inspect its predictions separately without
+# replacing the production export or live record.
+python -m src.mlb.export_predictions_mlb backtest --season 2025 --model-file models\mlb_moltres_model.joblib --output-file data\predictions\mlb_moltres_backtest_predictions.json --js-out data\predictions\mlb_moltres_backtest_predictions.js
+
+# Score logged production predictions and rebuild live/backtest record summaries.
+npm run score:models
+
+# Inspect the fair comparison and explicit selected model.
+$comparison = Get-Content data\reports\mlb_model_comparison.json -Raw | ConvertFrom-Json
+$comparison.metadata | Format-List selected_model,selected_by,generated_at
+$comparison.models | Where-Object { $_.status -in @('trained','baseline') } | Select-Object model_name,accuracy,log_loss,brier_score,roc_auc,calibration_error,stability | Format-Table -AutoSize
+
+# Lightweight verification after the run.
+npm run check:js
+python -m compileall src scripts
+npm run check:data
+npm run build:web
+```
+
+If the Moltres card is absent, the app intentionally shows `Moltres pending` and does not create predictions, records, or claims for it. Odds, pitcher detail, travel, and live status remain source-dependent and are never filled with placeholders.
 
 ## Data Policy
 

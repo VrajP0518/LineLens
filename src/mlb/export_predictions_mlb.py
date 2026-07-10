@@ -201,14 +201,38 @@ def _score_games(df: pd.DataFrame, model_path: Path, limit: Optional[int]) -> tu
     df = df.sort_values(["game_date", "game_id"]).tail(limit or len(df)).copy()
     probabilities = model.predict_proba(clean_numeric_frame(df, feature_cols))[:, 1]
     df["home_win_probability"] = probabilities
+    component_rows = []
+    if hasattr(model, "base_models"):
+        component_weights = artifact.get("component_weights") or {}
+        component_predictions = {
+            name: base.predict_proba(clean_numeric_frame(df, feature_cols))[:, 1]
+            for name, base in model.base_models
+        }
+        for row_index in range(len(df)):
+            component_rows.append(
+                [
+                    {
+                        "model_name": name,
+                        "home_probability": safe_float(values[row_index]),
+                        "weight": safe_float(component_weights.get(name)),
+                    }
+                    for name, values in component_predictions.items()
+                ]
+            )
+    else:
+        component_rows = [None] * len(df)
 
     games = []
-    for _, row in df.iterrows():
+    for row_index, (_, row) in enumerate(df.iterrows()):
         home_prob = safe_float(row.get("home_win_probability"))
         away_prob = None if home_prob is None else 1 - home_prob
         home = row.get("home_team")
         away = row.get("away_team")
         pitcher_status = row.get("pitcher_data_status") or ("proxy" if row.get("home_probable_pitcher") or row.get("away_probable_pitcher") else "missing")
+        explanation = _explanation(row, home, away, home_prob, importances, feature_cols)
+        if component_rows[row_index]:
+            explanation["component_contributions"] = component_rows[row_index]
+            explanation["explanation_type"] = "stacked ensemble components plus local feature values"
         games.append(
             {
                 "sport": "MLB",
@@ -252,7 +276,8 @@ def _score_games(df: pd.DataFrame, model_path: Path, limit: Optional[int]) -> tu
                 "prediction_mode": "model",
                 "model_name": metadata.get("model_name") or artifact.get("model_name"),
                 "model_id": metadata.get("model_id"),
-                "top_factor_label": (_explanation(row, home, away, home_prob, importances, feature_cols)["top_factors"] or [{}])[0].get("label"),
+                "model_components": component_rows[row_index],
+                "top_factor_label": (explanation["top_factors"] or [{}])[0].get("label"),
                 "data_quality": {
                     "pitcher_data": pitcher_status,
                     "travel_data": "estimated" if safe_float(row.get("estimated_travel_km")) is not None else "missing",
@@ -269,7 +294,7 @@ def _score_games(df: pd.DataFrame, model_path: Path, limit: Optional[int]) -> tu
                     "away_is_road_trip_opener": safe_float(row.get("away_is_road_trip_opener")),
                     "home_split_advantage": safe_float(row.get("home_split_advantage")),
                 },
-                "explanation": _explanation(row, home, away, home_prob, importances, feature_cols),
+                "explanation": explanation,
                 "trend": _trend(row),
             }
         )

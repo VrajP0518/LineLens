@@ -10,6 +10,7 @@ const DATA_SOURCES = {
     teams: ["data/team_metadata.json"],
     reports: ["data/reports/model_report.json"],
     modelComparison: ["data/reports/mlb_model_comparison.json"],
+    moltresCard: ["data/reports/mlb_moltres_model_card.json"],
     featureSummary: ["data/reports/mlb_feature_summary.json"],
     modelRegistry: ["data/models/model_registry.json"],
     modelRecord: ["data/tracking/model_record.json"],
@@ -29,6 +30,7 @@ const state = {
     teamPayload: window.__TEAM_METADATA__ || { teams: [] },
     report: window.__MODEL_REPORT__ || null,
     modelComparison: window.__MLB_MODEL_COMPARISON__ || null,
+    moltresCard: window.__MLB_MOLTRES_MODEL_CARD__ || null,
     featureSummary: window.__MLB_FEATURE_SUMMARY__ || null,
     modelRegistry: window.__MODEL_REGISTRY__ || null,
     modelRecord: window.__MODEL_RECORD__ || null,
@@ -860,7 +862,35 @@ function topEdges(limit = 5, options = {}) {
 
 function selectedModelEntry(sport = "MLB") {
     const entries = state.modelRegistry?.models || [];
-    return entries.find(model => model.sport === sport && model.selected) || entries.find(model => model.sport === sport) || null;
+    const selected = entries.find(model => model.sport === sport && model.selected);
+    if (selected) return selected;
+    const payload = sport === "MLB" ? normalizeMeta(state.mlb.payload) : normalizeMeta(state.nfl.payload);
+    const payloadName = payload.model_name || payload.model_type;
+    return payloadName ? entries.find(model => model.sport === sport && model.model_name === payloadName) || null : null;
+}
+
+function moltresCard() {
+    return state.moltresCard?.metadata?.model_name === "Moltres" ? state.moltresCard : null;
+}
+
+function moltresStatusLabel() {
+    const card = moltresCard();
+    if (!card) return "not trained";
+    return selectedModelEntry("MLB")?.model_name === "Moltres" ? "production" : "challenger";
+}
+
+function renderMoltresBadge(compact = false) {
+    const card = moltresCard();
+    const active = Boolean(card && selectedModelEntry("MLB")?.model_name === "Moltres");
+    const label = active ? "Moltres active" : card ? "Moltres challenger" : "Moltres pending";
+    const note = active
+        ? "selected on holdout evidence"
+        : card ? "holdout-tested, not selected" : "train to evaluate";
+    return `<span class="moltres-badge moltres-badge--${active ? "active" : card ? "challenger" : "pending"}" title="${escapeHtml(note)}">${compact ? "Moltres" : escapeHtml(label)}</span>`;
+}
+
+function isMoltresGame(game) {
+    return String(game?.model_name || "").toLowerCase() === "moltres";
 }
 
 function getModelRecord(sport = "MLB") {
@@ -1392,6 +1422,7 @@ async function loadAll() {
         teams,
         report,
         modelComparison,
+        moltresCard,
         featureSummary,
         modelRegistry,
         modelRecord,
@@ -1409,6 +1440,7 @@ async function loadAll() {
         loadOptional("teams", ["__TEAM_METADATA__"]),
         loadOptional("reports", ["__MODEL_REPORT__"]),
         loadOptional("modelComparison", ["__MLB_MODEL_COMPARISON__"]),
+        loadOptional("moltresCard", ["__MLB_MOLTRES_MODEL_CARD__"]),
         loadOptional("featureSummary", ["__MLB_FEATURE_SUMMARY__"]),
         loadOptional("modelRegistry", ["__MODEL_REGISTRY__"]),
         loadOptional("modelRecord", ["__MODEL_RECORD__"]),
@@ -1427,6 +1459,7 @@ async function loadAll() {
     state.teamPayload = teams || state.teamPayload;
     state.report = report || state.report;
     state.modelComparison = modelComparison || state.modelComparison;
+    state.moltresCard = moltresCard || state.moltresCard;
     state.featureSummary = featureSummary || state.featureSummary;
     state.modelRegistry = modelRegistry || state.modelRegistry;
     state.modelRecord = modelRecord || state.modelRecord;
@@ -1602,7 +1635,7 @@ async function runStartupAutomation(options = {}) {
 }
 
 async function loadAllAfterRefresh() {
-    const [bootstrap, startup, refresh, live, odds, report, modelComparison, featureSummary, modelRegistry, modelRecord, predictionLog, nfl, mlb, mlbBacktest] = await Promise.all([
+    const [bootstrap, startup, refresh, live, odds, report, modelComparison, moltresCard, featureSummary, modelRegistry, modelRecord, predictionLog, nfl, mlb, mlbBacktest] = await Promise.all([
         loadOptional("bootstrap", []),
         loadOptional("startup", []),
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
@@ -1610,6 +1643,7 @@ async function loadAllAfterRefresh() {
         loadOptional("odds", ["__ODDS_SNAPSHOTS__"]),
         loadOptional("reports", []),
         loadOptional("modelComparison", []),
+        loadOptional("moltresCard", []),
         loadOptional("featureSummary", []),
         loadOptional("modelRegistry", []),
         loadOptional("modelRecord", []),
@@ -1646,6 +1680,13 @@ async function loadAllAfterRefresh() {
     if (modelComparison) {
         state.modelComparison = modelComparison;
         window.__MLB_MODEL_COMPARISON__ = modelComparison;
+    }
+    if (moltresCard) {
+        state.moltresCard = moltresCard;
+        window.__MLB_MOLTRES_MODEL_CARD__ = moltresCard;
+    } else {
+        state.moltresCard = null;
+        window.__MLB_MOLTRES_MODEL_CARD__ = null;
     }
     if (featureSummary) {
         state.featureSummary = featureSummary;
@@ -1693,7 +1734,8 @@ function switchView(view) {
     const titles = {
         home: ["LineLens Sports", "sports prediction command center"],
         nfl: ["NFL Spread Predictor", "spread module"],
-        mlb: ["MLB Moneyline Predictor", "moneyline module"],
+        mlb: ["MLB Prediction Lifecycle", "pregame / live / final"],
+        models: ["MLB Model Observatory", "production vs challengers"],
         reports: ["Model Reports", "calibration and comparison"],
         record: ["Model Record", "live and historical performance"],
         teams: ["Team Profiles", "team-level model context"],
@@ -2026,6 +2068,43 @@ function renderHomeReadoutV2(rows) {
     `;
 }
 
+function signalBoardRows(limit = 6) {
+    return homeBoardGames()
+        .filter(game => getGamePick(game, game.sport) !== "-" && getGameProbability(game, game.sport) !== null)
+        .map(game => {
+            const probability = getGameProbability(game, game.sport);
+            const pick = getGamePick(game, game.sport);
+            const pickedProbability = pick === game.home ? probability : 1 - probability;
+            const movement = lineMovementSummary(game, game.sport);
+            return { game, pick, pickedProbability, movement, confidence: confidenceValue(game, game.sport) };
+        })
+        .sort((a, b) => (b.pickedProbability - a.pickedProbability) || (b.confidence - a.confidence))
+        .slice(0, limit);
+}
+
+function renderSignalBoard() {
+    const rows = signalBoardRows();
+    return `
+        <section class="panel signal-board">
+            <header class="section-header">
+                <div><p class="eyebrow">Signal Board</p><h2>Highest-conviction board reads</h2><p class="muted">Ranked from loaded model probabilities. Market edge appears only when real odds snapshots join.</p></div>
+                <span class="chip chip--soft">${rows.length} signals</span>
+            </header>
+            ${rows.length ? `<div class="signal-board__list">${rows.map(({ game, pick, pickedProbability, movement }) => {
+                const quality = featureQualityForGame(game);
+                const marketEdge = movement.available ? safeNumber(movement.marketEdge) : null;
+                return `<article class="signal-row">
+                    <div class="signal-row__game"><strong>${escapeHtml(pick)}</strong><span>${escapeHtml(game.away)} @ ${escapeHtml(game.home)}</span><small>${escapeHtml(game.sport)} · ${escapeHtml(detailResultSubtext(game))}</small></div>
+                    <div><span>Pick probability</span><strong>${formatProbability(pickedProbability)}</strong></div>
+                    <div><span>Market edge</span><strong>${marketEdge === null ? "Unavailable" : formatEdge(marketEdge)}</strong><small>${marketEdge === null ? "No joined odds" : escapeHtml(movement.freshness)}</small></div>
+                    <div><span>Data read</span><strong>${escapeHtml(game.sport === "MLB" ? compactQualityValue(quality.pitcher) : "export")}</strong><small>${escapeHtml(game.model_name || "model")}</small></div>
+                    <div class="signal-row__actions"><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport)}" data-game-id="${escapeHtml(gameKey(game))}">GameCast</button>${renderWatchButton(game, "Watch signal")}</div>
+                </article>`;
+            }).join("")}</div>` : emptyState("No model signals loaded", "Load a real MLB or NFL prediction export to populate the signal board.")}
+        </section>
+    `;
+}
+
 function renderQuickActionsV2() {
     return `
         <div class="quick-actions-v2">
@@ -2278,39 +2357,20 @@ function renderModelTrustCenterCompact() {
 }
 
 function renderHome() {
-    const scopedRows = homeBoardGames();
-    const top = homeTopEdges(8);
-    const latest = [normalizeMeta(state.nfl.payload).generated_at, normalizeMeta(state.mlb.payload).generated_at, state.report?.metadata?.generated_at].filter(Boolean).sort().at(-1);
-    const best = top[0];
-    const strongEdges = top.filter(row => safeNumber(row.edge, 0) >= 0.1).length;
-    const mlbRecord = getModelRecord("MLB").overall || {};
+    const games = lifecycleBoardGames();
+    const selected = games.find(game => gameKey(game) === gameKey(state.selected.mlb)) || games[0] || null;
+    state.selected.mlb = selected;
+    const live = games.filter(game => lifecycleStage(game) === "live").length;
+    const finals = games.filter(game => lifecycleStage(game) === "final").length;
+    const pregame = games.filter(game => lifecycleStage(game) === "pregame").length;
     $("#view-home").innerHTML = `
-        <section class="home-v2-shell">
-            <section class="panel home-v2-hero">
-                <div class="home-v2-hero__copy">
-                    <p class="eyebrow">LineLens Sports ${escapeHtml(state.app.version || APP_VERSION)}</p>
-                    <h2>Live Edge.<br><span>Model Clarity.</span></h2>
-                    <p class="muted">Real MLB/NFL model signals, daily results, and prediction record tracking in one command center.</p>
-                    ${renderQuickActionsV2()}
-                </div>
-                ${renderHeroHologram()}
-                ${renderBestPickMini(best)}
-            </section>
-            <section class="metric-strip-v2">
-                ${homeMetricCard("NFL", "NFL Games", String(state.nfl.games.length), "loaded rows", "blue")}
-                ${homeMetricCard("MLB", "MLB Games", String(state.mlb.games.length), "loaded rows", "purple")}
-                ${homeMetricCard("EDGE", "Strong Edges", String(strongEdges), "current board", "green")}
-                ${homeMetricCard("REC", "Model Record", formatBoardRecord(mlbRecord), formatProbability(mlbRecord.accuracy), "orange")}
-                ${homeMetricCard("TIME", "Latest Export", latest ? formatDate(latest) : "-", latest ? timestamp(latest) : "no timestamp", "blue")}
-            </section>
-            ${renderDailyBrief()}
-            <section class="home-v2-grid">
-                ${renderBestPickFeatureV2(best)}
-                ${renderHomeDailyBoard(scopedRows)}
-                ${renderHomeReadoutV2(top)}
-            </section>
-            ${renderModelTrustCenterCompact()}
+        <section class="lifecycle-shell home-lifecycle-shell">
+            <section class="lifecycle-hero lifecycle-hero--home"><div><p class="eyebrow">LineLens Sports · Daily command center</p><h2>Pregame conviction.<br><span>Live context. Final truth.</span></h2><p>One MLB workspace for the full prediction lifecycle. Production and challenger models stay visible, markets stay honest, and every pick ends with an accountable result.</p></div><div class="lifecycle-hero__actions">${renderMlbDateControls("home")}<button class="btn btn--primary" data-view-link="mlb">Open MLB desk</button><button class="btn" data-view-link="models">Model Observatory</button></div></section>
+            <section class="lifecycle-kpis">${card("Pregame", pregame, "today's board")}${card("Live", live, "live feed joined")}${card("Final", finals, "results available")}${card("MLB model", selectedModelEntry("MLB")?.model_name || "not declared", "production registry")}${card("NFL", state.nfl.games.length, "preserved module")}</section>
+            ${renderPredictionLifecycle(games)}
+            ${renderLifecycleMatchup(selected)}
             ${renderLiveWidgetPreview()}
+            <section class="lifecycle-cross-sport"><div><p class="eyebrow">NFL remains live</p><strong>Historical spread intelligence is still available.</strong><span>${state.nfl.games.length} real exported rows loaded.</span></div><button class="btn" data-view-link="nfl">Open NFL</button></section>
         </section>
     `;
 }
@@ -2667,36 +2727,105 @@ function filterMlbGames(games) {
     });
 }
 
-function renderMLB() {
+function lifecycleStage(game) {
+    const live = liveGameFor(game);
+    const status = String(live?.status_detail || live?.status || game?.status || "").toLowerCase();
+    if (status.includes("final") || status.includes("completed") || finalScoreLabel(live || game)) return "final";
+    if (status.includes("progress") || status.includes("live") || status.includes("in progress")) return "live";
+    return "pregame";
+}
+
+function lifecycleStageLabel(stage) {
+    return { pregame: "Pregame", live: "Live", final: "Final" }[stage] || "Pregame";
+}
+
+function lifecycleBoardGames() {
     const selectedDate = ensureMlbReviewDate();
-    const rawGames = mlbRowsForDate(selectedDate);
-    const usingBacktest = rawGames.some(game => game.source_type === "backtest") && !rawGames.some(game => game.source_type === "current");
-    const games = filterMlbGames(rawGames);
-    const payload = usingBacktest ? state.mlbBacktest.payload : state.mlb.payload;
-    const selectedStillVisible = games.some(game => gameKey(game) === gameKey(state.selected.mlb));
-    const selected = selectedStillVisible ? state.selected.mlb : games[0] || null;
-    state.selected.mlb = selected;
-    const top = rankRowsByEdge(games.map(game => ({ ...game, sport: "MLB" })), 1)[0]?.game || selected;
-    $("#view-mlb").innerHTML = `
-        <section class="predictor-hero predictor-hero--mlb">
-            <div>
-                <div class="title-row"><h2>MLB Moneyline Predictor</h2><span class="sport-pill">MLB</span></div>
-                <p>Daily board with pitcher and market-readiness context.</p>
-            </div>
-            <div class="predictor-actions">
-                <button class="btn btn--primary" data-refresh-command="mlb_current">Reload exports</button>
-            </div>
-        </section>
-        <section class="prediction-desk">
-            <article class="panel prediction-board">
-                ${renderMlbDeskHeader(rawGames, selectedDate, usingBacktest)}
-                ${rawGames.length && games.length !== rawGames.length ? `<p class="data-status prediction-board__notice" data-variant="info">Showing ${games.length} of ${rawGames.length}. Filter: ${escapeHtml(mlbFilterLabel())}.</p>` : ""}
-                ${games.length ? renderPredictionCards("MLB", games, "MLB_REVIEW") : emptyState("No MLB rows match this filter", rawGames.length ? "Change the MLB filter or refresh current predictions." : "Run npm run refresh:mlb:all.")}
-                ${renderAnalysisDrawer("MLB", selected)}
-            </article>
-            ${renderPredictionRail("MLB", games, top, payload)}
-        </section>
+    return uniqueRowsByGame(mlbRowsForDate(selectedDate).map(game => ({ ...game, sport: "MLB" })));
+}
+
+function lifecyclePriority(game) {
+    const favoriteTeam = isFavoriteTeam("MLB", game.home) || isFavoriteTeam("MLB", game.away);
+    const watched = isWatchedGame(game);
+    const stageScore = { live: 3, pregame: 2, final: 1 }[lifecycleStage(game)] || 0;
+    return (watched ? 100 : 0) + (favoriteTeam ? 50 : 0) + stageScore;
+}
+
+function lifecycleMarketRead(game) {
+    const movement = lineMovementSummary(game, "MLB");
+    const pick = getGamePick(game, "MLB");
+    const side = pick === game.home ? "home" : "away";
+    const pickProbability = modelProbabilityForSide(game, side, "MLB");
+    const marketProbability = movement.available ? marketImplied(movement.current, side) : null;
+    return {
+        movement,
+        pickProbability,
+        marketProbability,
+        edge: movement.available ? safeNumber(movement.marketEdge) : null,
+        lineShift: movement.available && movement.openHome !== null && movement.currentHome !== null ? movement.currentHome - movement.openHome : null,
+    };
+}
+
+function lifecycleTimeline(game) {
+    const log = latestLogForGame(game);
+    const odds = latestOddsForGame(game);
+    const stage = lifecycleStage(game);
+    return [
+        { label: "Prediction", value: log?.generated_at ? timestamp(log.generated_at) : "Not logged", done: Boolean(log) },
+        { label: "First odds", value: odds?.snapshot_at ? timestamp(odds.snapshot_at) : "No snapshot", done: Boolean(odds) },
+        { label: stage === "pregame" ? "First pitch" : "Live state", value: stage === "pregame" ? getGameTimeLabel(game) : gameStatusLine(game, liveGameFor(game)), done: stage !== "pregame" },
+        { label: "Final", value: finalScoreLabel(liveGameFor(game) || game) || "Awaiting result", done: stage === "final" },
+        { label: "Accountability", value: modelResultLabel(game), done: ["Won", "Lost", "Push"].includes(modelResultLabel(game)) },
+    ];
+}
+
+function renderLifecycleGame(game) {
+    const stage = lifecycleStage(game);
+    const market = lifecycleMarketRead(game);
+    const pick = getGamePick(game, "MLB");
+    const selected = gameKey(game) === gameKey(state.selected.mlb);
+    const watched = isWatchedGame(game);
+    const live = liveGameFor(game);
+    const score = live ? finalScoreLabel(live) : finalScoreLabel(game);
+    return `
+        <article class="lifecycle-game ${selected ? "is-selected" : ""} ${watched ? "is-watched" : ""}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
+            <div class="lifecycle-game__top"><span class="lifecycle-status lifecycle-status--${stage}">${lifecycleStageLabel(stage)}</span><span>${escapeHtml(watched ? "Watchlist" : getGameTimeLabel(game))}</span>${renderWatchButton(game, "Watch this game")}</div>
+            <div class="lifecycle-game__teams"><div>${renderTeamLogo("MLB", game.away, "sm", game.away_display)}<strong>${escapeHtml(game.away)}</strong><small>${live && safeNumber(live.away_score) !== null ? live.away_score : "-"}</small></div><span>@</span><div>${renderTeamLogo("MLB", game.home, "sm", game.home_display)}<strong>${escapeHtml(game.home)}</strong><small>${live && safeNumber(live.home_score) !== null ? live.home_score : "-"}</small></div></div>
+            <div class="lifecycle-game__pick"><span>${isMoltresGame(game) ? "Moltres" : game.model_name || "Production model"}</span><strong>${escapeHtml(pick)}</strong><b>${formatProbability(market.pickProbability)}</b></div>
+            <div class="lifecycle-game__market"><div><span>Market</span><strong>${market.marketProbability === null ? "Unavailable" : formatProbability(market.marketProbability)}</strong></div><div><span>Model edge</span><strong>${market.edge === null ? "—" : formatEdge(market.edge)}</strong></div><small>${market.lineShift === null ? "No odds movement loaded" : `Open → current ${market.lineShift > 0 ? "+" : ""}${formatNumber(market.lineShift, 0)}`}</small></div>
+            <div class="lifecycle-game__bottom"><span>${escapeHtml(score || gameStatusLine(game, live))}</span><button class="btn btn--micro" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">Open matchup</button></div>
+        </article>
     `;
+}
+
+function renderLifecycleLane(stage, games) {
+    return `<section class="lifecycle-lane lifecycle-lane--${stage}"><header><div><span class="lifecycle-lane__dot"></span><h3>${lifecycleStageLabel(stage)}</h3></div><strong>${games.length}</strong></header>${games.length ? games.map(renderLifecycleGame).join("") : `<div class="lifecycle-empty"><strong>No ${lifecycleStageLabel(stage).toLowerCase()} games</strong><span>Real schedule/live/final data will appear here when available.</span></div>`}</section>`;
+}
+
+function renderPredictionLifecycle(games = lifecycleBoardGames()) {
+    const sorted = [...games].sort((a, b) => lifecyclePriority(b) - lifecyclePriority(a));
+    return `<div class="lifecycle-board">${["pregame", "live", "final"].map(stage => renderLifecycleLane(stage, sorted.filter(game => lifecycleStage(game) === stage))).join("")}</div>`;
+}
+
+function renderLifecycleMatchup(game) {
+    if (!game) return `<section class="panel lifecycle-matchup lifecycle-matchup--empty">${emptyState("Select a game to inspect the lifecycle", "Open a matchup from the board to see model, market, live, and final accountability in one place.")}</section>`;
+    const market = lifecycleMarketRead(game);
+    const timeline = lifecycleTimeline(game);
+    return `<section class="panel lifecycle-matchup"><header class="section-header"><div><p class="eyebrow">Matchup workspace</p><h2>${escapeHtml(game.away)} @ ${escapeHtml(game.home)}</h2><p class="muted">${escapeHtml(lifecycleStageLabel(lifecycleStage(game)))} · ${escapeHtml(game.model_name || "Production model")}</p></div>${renderWatchButton(game, "Watch matchup")}</header><div class="lifecycle-matchup__readout"><div><span>Model pick</span><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><small>${formatProbability(market.pickProbability)} picked probability</small></div><div><span>Market</span><strong>${market.marketProbability === null ? "Unavailable" : formatProbability(market.marketProbability)}</strong><small>${market.edge === null ? "No joined odds" : `${formatEdge(market.edge)} model edge`}</small></div><div><span>Result</span><strong>${escapeHtml(modelResultLabel(game))}</strong><small>${escapeHtml(finalScoreLabel(liveGameFor(game) || game) || "Pending final")}</small></div></div><ol class="lifecycle-timeline">${timeline.map(item => `<li class="${item.done ? "is-done" : ""}"><i></i><div><strong>${escapeHtml(item.label)}</strong><span>${escapeHtml(item.value)}</span></div></li>`).join("")}</ol>${renderMatchupDetail("MLB", game)}</section>`;
+}
+
+function renderMlbLifecyclePage() {
+    const games = lifecycleBoardGames();
+    const selected = games.find(game => gameKey(game) === gameKey(state.selected.mlb)) || games[0] || null;
+    state.selected.mlb = selected;
+    const liveCount = games.filter(game => lifecycleStage(game) === "live").length;
+    const finalCount = games.filter(game => lifecycleStage(game) === "final").length;
+    const pregameCount = games.filter(game => lifecycleStage(game) === "pregame").length;
+    return `<section class="lifecycle-shell"><section class="lifecycle-hero"><div><p class="eyebrow">MLB Prediction Lifecycle</p><h2>Every pick has a before, during, and after.</h2><p>Follow today’s real board from pregame conviction to live context and final accountability. ${renderMoltresBadge()}</p></div><div class="lifecycle-hero__actions">${renderMlbDateControls("mlb")}<button class="btn btn--primary" data-refresh-command="mlb_current">Reload exports</button></div></section><section class="lifecycle-kpis">${card("Pregame", pregameCount, "awaiting first pitch")}${card("Live", liveCount, "live feed joined")}${card("Final", finalCount, "accountability ready")}${card("Odds", oddsStatusLabel(), oddsStatusMessage())}${card("Production", selectedModelEntry("MLB")?.model_name || "not declared", "registry selection")}</section>${renderPredictionLifecycle(games)}${renderLifecycleMatchup(selected)}</section>`;
+}
+
+function renderMLB() {
+    $("#view-mlb").innerHTML = renderMlbLifecyclePage();
 }
 
 function recordSummaryText(summary) {
@@ -3132,6 +3261,20 @@ function renderMLBImpact(game) {
     `;
 }
 
+function renderMoltresComponents(game, compact = false) {
+    const components = game?.model_components || game?.explanation?.component_contributions || [];
+    if (!components.length) return "";
+    const rows = components.slice(0, compact ? 4 : 6);
+    return `
+        <section class="moltres-components ${compact ? "moltres-components--compact" : ""}">
+            <header><span>Moltres component read</span><small>base-model home probabilities</small></header>
+            <div>
+                ${rows.map(component => `<article><strong>${escapeHtml(component.model_name || "Base model")}</strong><span>${formatProbability(component.home_probability)}</span><small>${safeNumber(component.weight) === null ? "weight pending" : `${(safeNumber(component.weight) * 100).toFixed(0)}% blend weight`}</small></article>`).join("")}
+            </div>
+        </section>
+    `;
+}
+
 function renderPredictionExplanation(game) {
     const explanation = game.explanation || {};
     const factors = explanation.top_factors || [];
@@ -3151,6 +3294,7 @@ function renderPredictionExplanation(game) {
                 </div>
             </div>
             ${factors.length ? `<div class="factor-list">${factors.slice(0, 5).map(factor => renderFactorRow(factor)).join("")}</div>` : emptyState("No factor export found", "Run npm run refresh:mlb:all to regenerate explanations.")}
+            ${renderMoltresComponents(game)}
             <details class="feature-details">
                 <summary>Model metadata and feature values</summary>
                 <div class="metadata-grid">
@@ -3355,8 +3499,10 @@ function renderGameCastWhy(game) {
     const explanation = game.explanation || {};
     const factors = explanation.top_factors || [];
     return `
+        <div class="gamecast-model-identity"><span>${escapeHtml(game.model_name || "MLB model")}</span>${isMoltresGame(game) ? renderMoltresBadge(true) : ""}</div>
         <p class="muted">${escapeHtml(explanation.summary || "No exported explanation for this row.")}</p>
         ${factors.length ? `<div class="factor-list factor-list--compact">${factors.slice(0, 3).map(renderFactorRow).join("")}</div>` : ""}
+        ${renderMoltresComponents(game, true)}
     `;
 }
 
@@ -3380,7 +3526,7 @@ function renderGameCast(game, sport) {
             ${renderGameCastScore(game, live)}
             <section class="gamecast-grid">
                 <article class="gamecast-panel gamecast-panel--pick">
-                    <span>Model pick</span>
+                    <span>${isMoltresGame(game) ? "Moltres pick" : "Model pick"}</span>
                     <strong>${escapeHtml(prediction)}</strong>
                     <small>${formatProbability(getConfidenceScore(game, sport))} · ${formatEdge(getGameEdge(game, sport))}</small>
                     ${renderModelReaction(game)}
@@ -3476,6 +3622,7 @@ function renderReports() {
             <div class="report-actions"><select id="report-sport-select"><option ${sport === "MLB" ? "selected" : ""}>MLB</option><option ${sport === "NFL" ? "selected" : ""}>NFL</option></select><button class="btn" data-view-link="record">Open Record</button></div>
         </section>
         <section class="panel">${renderModelTrustCenter(sport)}</section>
+        ${sport === "MLB" ? renderMoltresModelCard() : ""}
         <section class="dashboard-grid">
             <article class="panel">${renderCurrentModelPanel(sport)}</article>
             <article class="panel">${renderModelRecordPanel(sport)}</article>
@@ -3508,6 +3655,54 @@ function renderReports() {
     renderCalibrationChart(report.calibration || []);
 }
 
+const MODEL_IDENTITIES = {
+    Moltres: { legend: "Moltres", element: "ember", role: "Flagship stacked ensemble challenger", motif: "A layered ember core for component consensus.", strength: "Combines multiple probability views through a chronological meta-model.", weakness: "Needs a completed sealed evaluation before production promotion." },
+    LogisticRegression: { legend: "Articuno", element: "frost", role: "Stable linear reference", motif: "A cold, clean calibration line.", strength: "Transparent coefficients and a disciplined baseline probability shape.", weakness: "Linear decision surface may miss nonlinear matchup interactions." },
+    RandomForestClassifier: { legend: "Zapdos", element: "storm", role: "Fast nonlinear challenger", motif: "Electric branching signals across many trees.", strength: "Captures interactions and remains resilient to noisy feature combinations.", weakness: "Probability behavior can be less smooth and harder to explain locally." },
+    GradientBoostingClassifier: { legend: "Lugia", element: "tide", role: "Current production model", motif: "A balanced current built from sequential corrections.", strength: "Strong general-purpose nonlinear fit in the existing MLB comparison.", weakness: "Can overreact to feature drift and depends on careful calibration." },
+    HistGradientBoostingClassifier: { legend: "Ho-Oh", element: "phoenix", role: "Modern boosting challenger", motif: "A rebirth loop for efficient histogram splits.", strength: "Efficient nonlinear learning with regularization controls.", weakness: "Only useful when its holdout evidence is present and comparable." },
+};
+
+function modelIdentity(modelName) {
+    return MODEL_IDENTITIES[modelName] || { legend: "Legendary", element: "neutral", role: "Registry model", motif: "Abstract model signal.", strength: "Real registry-backed candidate.", weakness: "Behavior details are not exported." };
+}
+
+function modelObservatoryEntries() {
+    const entries = (state.modelRegistry?.models || []).filter(model => model.sport === "MLB");
+    const latestByName = new Map();
+    entries.forEach(entry => {
+        const current = latestByName.get(entry.model_name);
+        if (!current || String(entry.trained_at || "") > String(current.trained_at || "") || entry.selected) latestByName.set(entry.model_name, entry);
+    });
+    return [...latestByName.values()].sort((a, b) => (b.selected ? 1 : 0) - (a.selected ? 1 : 0) || String(a.model_name).localeCompare(String(b.model_name)));
+}
+
+function modelComparisonFor(name) {
+    return getComparisonRows("MLB").find(row => row.model_name === name) || {};
+}
+
+function renderModelMetric(label, value, note = "") {
+    return `<div class="model-metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong>${note ? `<small>${escapeHtml(note)}</small>` : ""}</div>`;
+}
+
+function renderModelProfile(entry) {
+    const name = entry.model_name || "Unknown model";
+    const identity = modelIdentity(name);
+    const comparison = modelComparisonFor(name);
+    const metrics = { ...(entry.metrics || {}), ...comparison };
+    const card = name === "Moltres" ? moltresCard() : null;
+    const topFactors = name === selectedModelEntry("MLB")?.model_name ? topGlobalFeatures("MLB").slice(0, 5) : [];
+    const trainSeasons = Array.isArray(entry.train_seasons) ? entry.train_seasons.join(", ") : entry.train_seasons || "Not exported";
+    return `<details class="model-profile model-profile--${identity.element}" ${entry.selected ? "open" : ""}><summary><span class="model-profile__crest" aria-hidden="true"><i></i><b>${escapeHtml(identity.legend.slice(0, 2).toUpperCase())}</b></span><span class="model-profile__title"><strong>${escapeHtml(identity.legend)}</strong><small>${escapeHtml(name)}</small></span><span class="model-profile__role">${escapeHtml(identity.role)}</span><span class="model-profile__headline">${formatNumber(metrics.log_loss, 3)}<small>log loss</small></span><span class="model-profile__status ${entry.selected ? "is-selected" : ""}">${entry.selected ? "Production" : "Challenger"}</span></summary><div class="model-profile__body"><div class="model-profile__intro"><p>${escapeHtml(identity.motif)}</p><div><span class="technical-label">Technical model</span><code>${escapeHtml(name)}</code></div></div><div class="model-metric-grid">${renderModelMetric("Accuracy", formatProbability(metrics.accuracy), `N=${metrics.sample_size || entry.test_rows || "-"}`)}${renderModelMetric("Log loss", formatNumber(metrics.log_loss, 3), "lower is better")}${renderModelMetric("Brier", formatNumber(metrics.brier_score, 3), "lower is better")}${renderModelMetric("ROC AUC", formatNumber(metrics.roc_auc, 3), "discrimination")}${renderModelMetric("Calibration", formatEdge(metrics.calibration_error), "absolute error")}${renderModelMetric("Stability", formatNumber(metrics.stability?.stability_score, 3), `${metrics.stability?.blocks || 0} time slices`)}</div><div class="model-profile__facts"><div><span class="eyebrow">Lifecycle</span><p>Trained ${escapeHtml(formatDate(entry.trained_at) || "not exported")}</p><p>Train seasons: ${escapeHtml(trainSeasons)}</p><p>Test season: ${escapeHtml(entry.test_season || "not exported")} · ${escapeHtml(String(entry.feature_count || "-"))} features</p></div><div><span class="eyebrow">Strength / weakness</span><p><strong>Strength:</strong> ${escapeHtml(identity.strength)}</p><p><strong>Weakness:</strong> ${escapeHtml(identity.weakness)}</p></div><div><span class="eyebrow">Top factors</span>${topFactors.length ? `<ul>${topFactors.map(factor => `<li>${escapeHtml(factor.feature || factor.label || "feature")}</li>`).join("")}</ul>` : `<p class="muted">Per-model attribution is not exported for this row. The production feature summary is available in Reports.</p>`}</div></div>${card ? `<div class="model-profile__components"><span class="eyebrow">Moltres components</span>${(card.architecture?.base_models || []).map(component => `<span><strong>${escapeHtml(component)}</strong><em>${safeNumber(card.architecture?.weights?.[component]) === null ? "-" : `${(card.architecture.weights[component] * 100).toFixed(0)}%`}</em></span>`).join("") || `<p class="muted">Moltres has not been manually trained in this bundle.</p>`}</div>` : ""}<p class="model-profile__limitation"><strong>Honest limitation:</strong> ${escapeHtml(card?.limitations?.[0] || "Registry metrics describe this exported evaluation only; they do not guarantee future performance.")}</p></div></details>`;
+}
+
+function renderModels() {
+    const entries = modelObservatoryEntries();
+    const selected = selectedModelEntry("MLB");
+    const comparison = getComparisonRows("MLB");
+    $("#view-models").innerHTML = `<section class="models-shell"><section class="models-hero"><div><p class="eyebrow">LineLens Model Observatory</p><h2>The model is part of the product.</h2><p>Every MLB candidate has a technical name, a visual identity, a measured role, and an honest boundary. Production selection is evidence-led; Moltres remains a challenger until its real evaluation earns promotion.</p></div><div class="models-hero__orb"><span></span><i></i><b></b></div></section><section class="models-command"><div><span class="eyebrow">Production model</span><strong>${escapeHtml(selected?.model_name || "Not declared")}</strong><small>${selected ? `selected ${formatDate(selected.trained_at)}` : "No registry selection"}</small></div><div><span class="eyebrow">Candidates</span><strong>${entries.length}</strong><small>unique MLB algorithms</small></div><div><span class="eyebrow">Evaluation rows</span><strong>${comparison.length}</strong><small>real comparison exports</small></div><div><span class="eyebrow">Moltres</span><strong>${escapeHtml(moltresStatusLabel())}</strong><small>${moltresCard() ? "card loaded" : "manual training pending"}</small></div></section><section class="models-legend"><span>Metric guide</span><small>Accuracy ↑</small><small>Log loss ↓</small><small>Brier ↓</small><small>ROC AUC ↑</small><small>Calibration ↓</small><small>Stability ↑</small></section><section class="models-list">${entries.length ? entries.map(renderModelProfile).join("") : emptyState("No MLB models in registry", "Train or load a real MLB registry export to populate the Model Observatory.")}</section></section>`;
+}
+
 function renderModelTrustCenter(sport) {
     const selected = selectedModelEntry(sport);
     const record = getModelRecord(sport);
@@ -3530,6 +3725,44 @@ function renderModelTrustCenter(sport) {
             ${card("Backtest", sport === "MLB" ? recordLine(backtest) : "NFL export", sport === "MLB" ? formatProbability(backtest.accuracy) : "scored from rows")}
         </div>
         <p class="muted">Trust comes from exported predictions, logged results, and registry metrics. Missing odds or source data stay marked as missing.</p>
+    `;
+}
+
+function renderMoltresModelCard() {
+    const modelCard = moltresCard();
+    if (!modelCard) {
+        return `
+            <section class="panel moltres-card moltres-card--pending">
+                <header class="section-header"><div><p class="eyebrow">MLB flagship model</p><h2>Moltres</h2></div>${renderMoltresBadge()}</header>
+                <p class="muted">Moltres is integrated as a challenger path but has not been trained in this data bundle yet. No Moltres prediction or performance claim is shown.</p>
+                <code>python -m src.mlb.train_model_mlb</code>
+            </section>
+        `;
+    }
+    const metrics = modelCard.metrics || {};
+    const comparison = modelCard.comparison || {};
+    const components = modelCard.architecture?.base_models || [];
+    const weights = modelCard.architecture?.weights || {};
+    return `
+        <section class="panel moltres-card">
+            <header class="section-header">
+                <div><p class="eyebrow">MLB flagship model</p><h2>Moltres</h2><p class="muted">${escapeHtml(modelCard.identity?.tagline || "Chronological MLB ensemble")}</p></div>
+                ${renderMoltresBadge()}
+            </header>
+            <div class="moltres-card__metrics">
+                ${card("Holdout accuracy", formatProbability(metrics.accuracy), `N=${metrics.sample_size || "-"}`)}
+                ${card("Log loss", formatNumber(metrics.log_loss, 3), "lower is better")}
+                ${card("Brier", formatNumber(metrics.brier_score, 3), "lower is better")}
+                ${card("ROC AUC", formatNumber(metrics.roc_auc, 3), "holdout")}
+                ${card("Calibration", formatEdge(comparison.calibration_error), "absolute bucket error")}
+                ${card("Stability", formatNumber(comparison.stability?.stability_score, 3), `${comparison.stability?.blocks || 0} chronological slices`)}
+            </div>
+            <div class="moltres-card__body">
+                <div><span class="eyebrow">Stack components</span><div class="moltres-weight-list">${components.map(name => `<span><strong>${escapeHtml(name)}</strong><em>${safeNumber(weights[name]) === null ? "-" : `${(weights[name] * 100).toFixed(0)}%`}</em></span>`).join("") || "<span>Pending manual training</span>"}</div></div>
+                <div><span class="eyebrow">Leakage controls</span><ul>${(modelCard.data?.leakage_controls || []).slice(0, 3).map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></div>
+            </div>
+            <small class="moltres-card__foot">${escapeHtml(modelCard.selection?.evidence || "Moltres remains a challenger until the sealed chronological evaluation justifies promotion.")}</small>
+        </section>
     `;
 }
 
@@ -3897,14 +4130,14 @@ function renderFeatureSummary(sport) {
 function renderModelRegistryPanel(sport) {
     const entries = (state.modelRegistry?.models || []).filter(model => model.sport === sport);
     if (!entries.length) return `<header><p class="eyebrow">Model registry</p><h2>No model runs yet</h2></header>${emptyState("Registry file missing or empty", sport === "MLB" ? "Run npm run refresh:mlb:all." : "NFL registry entries will appear after model-backed training exports.")}`;
-    const current = entries.find(model => model.selected) || entries[0];
-    const previous = entries.find(model => model.model_id !== current.model_id);
-    const improved = previous && safeNumber(current.metrics?.log_loss) !== null && safeNumber(previous.metrics?.log_loss) !== null
+    const current = selectedModelEntry(sport);
+    const previous = current ? entries.find(model => model.model_id !== current.model_id) : null;
+    const improved = current && previous && safeNumber(current.metrics?.log_loss) !== null && safeNumber(previous.metrics?.log_loss) !== null
         ? safeNumber(current.metrics.log_loss) < safeNumber(previous.metrics.log_loss)
         : null;
     return `
-        <header><p class="eyebrow">Model registry</p><h2>${escapeHtml(current.model_id || current.model_name)}</h2></header>
-        <p class="muted">${improved === null ? "No previous comparable model yet." : improved ? "Improved vs previous by log loss." : "No log-loss improvement vs previous model."}</p>
+        <header><p class="eyebrow">Model registry</p><h2>${escapeHtml(current?.model_id || current?.model_name || "Selection unavailable")}</h2></header>
+        <p class="muted">${!current ? "Registry rows are present, but no current selection is declared." : improved === null ? "No previous comparable model yet." : improved ? "Improved vs previous by log loss." : "No log-loss improvement vs previous model."}</p>
         <div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Version</th><th>Trained</th><th>Log loss</th><th>Brier</th><th>Selected</th></tr></thead><tbody>${entries.slice(0, 6).map(row => `<tr><td>${escapeHtml(row.model_name)}</td><td>${escapeHtml(row.version)}</td><td>${formatDate(row.trained_at)}</td><td>${formatNumber(row.metrics?.log_loss, 3)}</td><td>${formatNumber(row.metrics?.brier_score, 3)}</td><td>${row.selected ? '<span class="tag tag--high">current</span>' : ""}</td></tr>`).join("")}</tbody></table></div>
     `;
 }
@@ -3918,7 +4151,7 @@ function renderModelComparison(rows) {
     if (!rows.length) return emptyState("No comparison rows", "Model comparison export is missing.");
     const finiteLogLosses = rows.map(row => safeNumber(row.log_loss)).filter(value => value !== null);
     const bestLogLoss = finiteLogLosses.length ? Math.min(...finiteLogLosses) : null;
-    return `<div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Status</th><th>Accuracy</th><th>ROC AUC</th><th>Log loss</th><th>Brier</th><th>N</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${escapeHtml(row.model || row.model_name)}</strong> ${bestLogLoss !== null && safeNumber(row.log_loss) === bestLogLoss ? '<span class="tag tag--high">Best log loss</span>' : ""}</td><td>${escapeHtml(row.status)}</td><td>${formatProbability(row.accuracy)}</td><td>${formatNumber(row.roc_auc, 3)}</td><td>${formatNumber(row.log_loss, 3)}</td><td>${formatNumber(row.brier_score, 3)}</td><td>${row.sample_size || 0}</td></tr>`).join("")}</tbody></table></div>`;
+    return `<div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Status</th><th>Accuracy</th><th>ROC AUC</th><th>Log loss</th><th>Brier</th><th>Calibration</th><th>Stability</th><th>N</th></tr></thead><tbody>${rows.map(row => `<tr><td><strong>${escapeHtml(row.model || row.model_name)}</strong> ${bestLogLoss !== null && safeNumber(row.log_loss) === bestLogLoss ? '<span class="tag tag--high">Best log loss</span>' : ""}</td><td>${escapeHtml(row.status || "pending")}</td><td>${formatProbability(row.accuracy)}</td><td>${formatNumber(row.roc_auc, 3)}</td><td>${formatNumber(row.log_loss, 3)}</td><td>${formatNumber(row.brier_score, 3)}</td><td>${formatEdge(row.calibration_error)}</td><td>${formatNumber(row.stability?.stability_score, 3)}</td><td>${row.sample_size || 0}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 function renderConfidenceBuckets(rows) {
@@ -4257,6 +4490,7 @@ function renderAll() {
     renderHome();
     renderNFL();
     renderMLB();
+    renderModels();
     renderReports();
     renderRecord();
     renderTeams();
@@ -4414,6 +4648,18 @@ function bindEvents() {
             sport === "NFL" ? renderNFL() : renderMLB();
             switchView(sport.toLowerCase());
             if (game) openGameCast(sport, game);
+        }
+
+        const lifecycleGame = event.target.closest("[data-lifecycle-game]");
+        if (lifecycleGame && !event.target.closest("button")) {
+            const game = lifecycleBoardGames().find(item => gameKey(item) === lifecycleGame.dataset.gameId);
+            if (game) {
+                state.selected.mlb = game;
+                persistSettings();
+                renderHome();
+                renderMLB();
+            }
+            return;
         }
 
         const team = event.target.closest("[data-team-code]");

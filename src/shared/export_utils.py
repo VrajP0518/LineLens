@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 from pathlib import Path
 from typing import Any
 
@@ -29,11 +30,16 @@ def write_json_and_js(payload: dict[str, Any], json_path: Path, js_path: Path, v
     cleaned = clean_json(payload)
     json_path.parent.mkdir(parents=True, exist_ok=True)
     js_path.parent.mkdir(parents=True, exist_ok=True)
-    json_path.write_text(json.dumps(cleaned, separators=(",", ":"), allow_nan=False), encoding="utf-8")
-    js_path.write_text(
-        f"window.{variable_name} = " + json.dumps(cleaned, separators=(",", ":"), allow_nan=False) + ";\n",
-        encoding="utf-8",
-    )
+    json_text = json.dumps(cleaned, separators=(",", ":"), allow_nan=False)
+    js_text = f"window.{variable_name} = {json_text};\n"
+    for path, text in ((json_path, json_text), (js_path, js_text)):
+        temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+        try:
+            temporary.write_text(text, encoding="utf-8")
+            os.replace(temporary, path)
+        finally:
+            if temporary.exists():
+                temporary.unlink(missing_ok=True)
 
 
 def safe_float(value: Any) -> float | None:

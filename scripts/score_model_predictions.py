@@ -297,9 +297,8 @@ def mlb_backtest_record() -> dict[str, Any]:
         if normalize_result(game.get("model_result")) in SCORED_RESULTS and game.get("model_pick")
     ]
     comparison = load_json(MLB_COMPARISON)
-    selected = next((row for row in comparison.get("models", []) if row.get("selected")), None)
-    if selected is None and comparison.get("models"):
-        selected = comparison["models"][0]
+    selected_name = (comparison.get("metadata") or {}).get("selected_model")
+    selected = next((row for row in comparison.get("models", []) if row.get("model_name") == selected_name), None)
     meta = payload.get("metadata", {})
     return labeled_record(
         rows,
@@ -308,7 +307,8 @@ def mlb_backtest_record() -> dict[str, Any]:
         model_type=meta.get("model_name") or meta.get("model_type"),
         test_season=meta.get("test_season"),
         row_count=meta.get("row_count") or len(games),
-        metrics=(selected or {}),
+        metrics=selected or {},
+        selection_available=bool(selected),
         note="Backtest record is separate from live MLB prediction record.",
     )
 

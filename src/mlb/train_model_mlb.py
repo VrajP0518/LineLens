@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from functools import wraps
 import json
+import os
 from pathlib import Path
+import tempfile
 from typing import Optional
 
 import joblib
@@ -15,13 +18,14 @@ from rich.console import Console
 from sklearn.ensemble import GradientBoostingClassifier, HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, brier_score_loss, log_loss, roc_auc_score
+from sklearn.model_selection import TimeSeriesSplit
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from src.shared.export_utils import write_json_and_js
-from src.shared.modeling import clean_numeric_frame, read_table
+from src.shared.modeling import StackingEnsemble, clean_numeric_frame, read_table
 from src.shared.paths import MODEL_DIR, PROCESSED_DIR, ensure_project_dirs, resolve_project_path
-from src.shared.version import APP_VERSION
+from src.shared.version import APP_NAME, APP_VERSION
 
 console = Console()
 app = typer.Typer(help="Train the MLB moneyline model.")
@@ -34,6 +38,10 @@ MODEL_REGISTRY_JSON = Path("data/models/model_registry.json")
 MODEL_REGISTRY_JS = Path("data/models/model_registry.js")
 FEATURE_SUMMARY_JSON = Path("data/reports/mlb_feature_summary.json")
 FEATURE_SUMMARY_JS = Path("data/reports/mlb_feature_summary.js")
+MOLTRES_MODEL = MODEL_DIR / "mlb_moltres_model.joblib"
+MOLTRES_CARD_JSON = Path("data/reports/mlb_moltres_model_card.json")
+MOLTRES_CARD_JS = Path("data/reports/mlb_moltres_model_card.js")
+TRAINING_LOCK = MODEL_DIR / ".mlb_moneyline_training.lock"
 
 LEAKY_COLS = {
     "home_score",
@@ -64,6 +72,68 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
+def _active_pid(pid: int | None) -> bool:
+    if not pid or pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def _acquire_training_lock() -> Path:
+    """Prevent overlapping manual runs from racing to replace model artifacts."""
+
+    path = resolve_project_path(TRAINING_LOCK)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            existing = {}
+        if _active_pid(existing.get("pid")):
+            raise typer.BadParameter(
+                f"MLB training is already running (pid {existing.get('pid')}, started {existing.get('started_at', 'unknown')}). "
+                "Wait for it to finish rather than starting a second worker."
+            )
+        path.unlink(missing_ok=True)
+    try:
+        descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError as exc:
+        raise typer.BadParameter("MLB training lock already exists. Wait for the active run or remove only a verified stale lock.") from exc
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        json.dump({"pid": os.getpid(), "started_at": utc_now(), "command": "src.mlb.train_model_mlb"}, handle)
+    return path
+
+
+def exclusive_training_run(func):
+    @wraps(func)
+    def wrapped(*args, **kwargs):
+        lock = _acquire_training_lock()
+        try:
+            return func(*args, **kwargs)
+        finally:
+            lock.unlink(missing_ok=True)
+
+    return wrapped
+
+
+def _stage_joblib(payload: dict, destination: Path) -> Path:
+    """Serialize beside the target before any production artifact is replaced."""
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temp_name = tempfile.mkstemp(prefix=f".{destination.stem}.", suffix=".tmp", dir=destination.parent)
+    os.close(descriptor)
+    staged = Path(temp_name)
+    try:
+        joblib.dump(payload, staged)
+        return staged
+    except Exception:
+        staged.unlink(missing_ok=True)
+        raise
+
+
 def _feature_columns(df: pd.DataFrame) -> list[str]:
     numeric = set(df.select_dtypes(include=[np.number]).columns)
     return [col for col in df.columns if col in numeric and col not in LEAKY_COLS and not col.endswith("_score")]
@@ -80,6 +150,38 @@ def _metric_block(y_true: pd.Series, probabilities: np.ndarray) -> dict:
     }
     metrics["roc_auc"] = float(roc_auc_score(y_true, probabilities)) if len(set(y_true)) > 1 else None
     return metrics
+
+
+def _stability_block(test_df: pd.DataFrame, probabilities: np.ndarray, y_true: pd.Series, blocks: int = 6) -> dict:
+    """Measure consistency across chronological slices of the untouched holdout."""
+
+    if len(y_true) < blocks:
+        return {"blocks": 1, "accuracy_std": None, "log_loss_std": None, "stability_score": None}
+    slices = np.array_split(np.arange(len(y_true)), blocks)
+    accuracies = []
+    losses = []
+    for indices in slices:
+        if not len(indices):
+            continue
+        actual = y_true.iloc[indices]
+        predicted = probabilities[indices]
+        accuracies.append(float(accuracy_score(actual, predicted >= 0.5)))
+        losses.append(float(log_loss(actual, np.clip(predicted, 0.001, 0.999), labels=[0, 1])))
+    accuracy_std = float(np.std(accuracies)) if accuracies else None
+    log_loss_std = float(np.std(losses)) if losses else None
+    # Higher is better: low variation in both accuracy and probability loss.
+    stability_score = None if accuracy_std is None or log_loss_std is None else float(1 / (1 + accuracy_std + log_loss_std))
+    return {
+        "blocks": len(accuracies),
+        "accuracy_std": accuracy_std,
+        "log_loss_std": log_loss_std,
+        "stability_score": stability_score,
+    }
+
+
+def _calibration_error(probabilities: np.ndarray, y_true: pd.Series) -> float | None:
+    _, error = _calibration(probabilities, y_true)
+    return error
 
 
 def _pick_won(probabilities: np.ndarray, y_true: pd.Series) -> np.ndarray:
@@ -253,6 +355,32 @@ def _feature_importance(model: object, features: list[str]) -> list[dict]:
     return sorted(rows, key=lambda row: row["importance"], reverse=True)[:30]
 
 
+def _ensemble_feature_importance(row: dict, features: list[str]) -> list[dict]:
+    """Approximate Moltres global drivers from weighted base-model drivers."""
+
+    totals: dict[str, float] = {}
+    directions: dict[str, float] = {}
+    weights = row.get("component_weights") or {}
+    for name, model in getattr(row.get("model"), "base_models", []):
+        weight = float(weights.get(name, 0))
+        for item in _feature_importance(model, features):
+            feature = item["feature"]
+            totals[feature] = totals.get(feature, 0) + weight * float(item.get("importance") or 0)
+            directions[feature] = directions.get(feature, 0) + weight * float(item.get("signed_weight") or 0)
+    rows = []
+    for feature, importance in totals.items():
+        signed = directions.get(feature, 0)
+        rows.append(
+            {
+                "feature": feature,
+                "importance": float(importance),
+                "signed_weight": float(signed),
+                "direction": "supports_home_when_higher" if signed > 0 else "supports_away_when_higher" if signed < 0 else "global_importance",
+            }
+        )
+    return sorted(rows, key=lambda item: item["importance"], reverse=True)[:30]
+
+
 def _train_models(X_train: pd.DataFrame, y_train: pd.Series, X_test: pd.DataFrame, y_test: pd.Series) -> list[dict]:
     rows = []
     for name, model in _candidate_models():
@@ -274,10 +402,89 @@ def _train_models(X_train: pd.DataFrame, y_train: pd.Series, X_test: pd.DataFram
     return rows
 
 
+def _train_moltres(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_test: pd.DataFrame,
+    y_test: pd.Series,
+) -> dict:
+    """Train Moltres with chronological OOF stacking and a sealed test season."""
+
+    candidates = _candidate_models()
+    oof = np.full((len(X_train), len(candidates)), np.nan)
+    splitter = TimeSeriesSplit(n_splits=4)
+    fold_count = 0
+    for fold_train, fold_valid in splitter.split(X_train):
+        fold_count += 1
+        for column, (name, _) in enumerate(candidates):
+            try:
+                fold_model = dict(_candidate_models())[name]
+                fold_model.fit(X_train.iloc[fold_train], y_train.iloc[fold_train])
+                oof[fold_valid, column] = fold_model.predict_proba(X_train.iloc[fold_valid])[:, 1]
+            except Exception:
+                # A base model that cannot train on a chronological fold is
+                # excluded from the stack rather than backfilled with guesses.
+                continue
+
+    usable_cols = [column for column in range(oof.shape[1]) if np.isfinite(oof[:, column]).sum() >= max(100, int(len(oof) * 0.5))]
+    if len(usable_cols) < 2:
+        raise RuntimeError("Moltres could not retain at least two base models for chronological stacking.")
+    valid = np.isfinite(oof[:, usable_cols]).all(axis=1)
+    if valid.sum() < 100:
+        raise RuntimeError("Moltres could not produce enough chronological OOF rows for a meta-model.")
+
+    meta_model = LogisticRegression(max_iter=2000, class_weight="balanced")
+    meta_model.fit(oof[valid][:, usable_cols], y_train.iloc[np.flatnonzero(valid)])
+    final_models = []
+    allowed_names = {candidates[column][0] for column in usable_cols}
+    for name, _ in candidates:
+        if name not in allowed_names:
+            continue
+        try:
+            model = dict(_candidate_models())[name]
+            model.fit(X_train, y_train)
+            final_models.append((name, model))
+        except Exception:
+            continue
+    if len(final_models) < 2:
+        raise RuntimeError("Moltres requires at least two base models trained successfully.")
+
+    # Align the meta model to the base models that survived all folds.
+    surviving = [name for name, _ in final_models]
+    # Refit a compact meta layer on the surviving OOF columns when a base
+    # estimator failed a fold. This keeps component ordering exact.
+    surviving_cols = [column for column in usable_cols if [name for name, _ in candidates][column] in surviving]
+    meta_model.fit(oof[valid][:, surviving_cols], y_train.iloc[np.flatnonzero(valid)])
+    ensemble = StackingEnsemble(final_models, meta_model)
+    probabilities = ensemble.predict_proba(X_test)[:, 1]
+    coefficients = np.abs(meta_model.coef_[0])
+    denominator = float(coefficients.sum()) or 1.0
+    weights = {name: float(value / denominator) for (name, _), value in zip(final_models, coefficients)}
+    return {
+        "model_name": "Moltres",
+        "model": ensemble,
+        "probabilities": probabilities,
+        "metrics": _metric_block(y_test, probabilities),
+        "status": "trained",
+        "error": None,
+        "component_models": surviving,
+        "component_weights": weights,
+        "oof_rows": int(valid.sum()),
+        "oof_folds": fold_count,
+    }
+
+
 def _comparison_rows(model_rows: list[dict], y_test: pd.Series, test_df: pd.DataFrame) -> list[dict]:
     comparison = []
     for row in model_rows:
         metrics = row.get("metrics") or {}
+        probabilities = row.get("probabilities")
+        diagnostics = {}
+        if probabilities is not None:
+            diagnostics = {
+                "calibration_error": _calibration_error(probabilities, y_test),
+                "stability": _stability_block(test_df, probabilities, y_test),
+            }
         comparison.append(
             {
                 "model": row["model_name"],
@@ -285,6 +492,8 @@ def _comparison_rows(model_rows: list[dict], y_test: pd.Series, test_df: pd.Data
                 "status": row["status"],
                 "error": row.get("error"),
                 **metrics,
+                **diagnostics,
+                "components": row.get("component_models"),
             }
         )
     baselines = [
@@ -293,7 +502,17 @@ def _comparison_rows(model_rows: list[dict], y_test: pd.Series, test_df: pd.Data
         ("Baseline Recent Form", _baseline_recent_form(test_df)),
     ]
     for name, probabilities in baselines:
-        comparison.append({"model": name, "model_name": name, "status": "baseline", **_metric_block(y_test, probabilities)})
+        comparison.append(
+            {
+                "model": name,
+                "model_name": name,
+                "status": "baseline",
+                **_metric_block(y_test, probabilities),
+                "calibration_error": _calibration_error(probabilities, y_test),
+                "stability": _stability_block(test_df, probabilities, y_test),
+                "components": None,
+            }
+        )
     return comparison
 
 
@@ -332,13 +551,13 @@ def _write_model_comparison(comparison: list[dict], selected: dict, metadata: di
     write_json_and_js(payload, resolve_project_path(MODEL_COMPARISON_JSON), resolve_project_path(MODEL_COMPARISON_JS), "__MLB_MODEL_COMPARISON__")
 
 
-def _update_model_registry(entry: dict) -> None:
+def _update_model_registry(entries: list[dict]) -> None:
     registry = _load_json(MODEL_REGISTRY_JSON) or {"metadata": {}, "models": []}
     models = registry.get("models", [])
     for row in models:
         if row.get("sport") == "MLB" and row.get("target") == "home_win":
             row["selected"] = False
-    models.append(entry)
+    models.extend(entries)
     registry = {
         "metadata": {
             "app": "LineLens Sports",
@@ -410,7 +629,61 @@ def _write_report(
     write_json_and_js(report, path, path.with_suffix(".js"), "__MODEL_REPORT__")
 
 
+def _write_moltres_card(metadata: dict, metrics: dict, comparison: list[dict], components: list[str], weights: dict[str, float], selected: bool) -> None:
+    moltres_row = next((row for row in comparison if row.get("model_name") == "Moltres"), {})
+    card = {
+        "metadata": {
+            "app": APP_NAME,
+            "sport": "MLB",
+            "model_name": "Moltres",
+            "model_id": metadata.get("model_id"),
+            "generated_at": utc_now(),
+            "real_data": True,
+        },
+        "identity": {
+            "display_name": "Moltres",
+            "tagline": "Chronological ensemble for MLB moneyline probabilities",
+            "accent": "ember",
+            "status": "selected production model" if selected else "validated challenger",
+        },
+        "architecture": {
+            "type": "stacked probability ensemble",
+            "base_models": components,
+            "meta_model": "LogisticRegression on chronological out-of-fold probabilities",
+            "oof_rows": metadata.get("moltres_oof_rows"),
+            "oof_folds": metadata.get("moltres_oof_folds"),
+            "weights": weights,
+        },
+        "data": {
+            "train_seasons": list(range(metadata.get("train_start_season"), metadata.get("train_end_season") + 1)),
+            "test_season": metadata.get("test_season"),
+            "train_rows": metadata.get("row_count_train"),
+            "test_rows": metadata.get("row_count_test"),
+            "feature_count": metadata.get("feature_count"),
+            "leakage_controls": [
+                "All rolling team features are shifted to prior games.",
+                "The test season is never used for base or meta fitting.",
+                "Meta probabilities come from chronological out-of-fold rows only.",
+            ],
+        },
+        "metrics": metrics,
+        "comparison": moltres_row,
+        "selection": {
+            "selected_for_production": selected,
+            "rule": "lowest holdout log loss, then Brier score, among trained models",
+            "evidence": "Moltres is not promoted unless its sealed test-season metrics win the same rule used for existing models.",
+        },
+        "limitations": [
+            "Pitcher inputs are proxy features when probable pitcher history is available.",
+            "Travel features estimate venue distance rather than exact itineraries.",
+            "No paid odds feed is required; market features remain unavailable when snapshots are absent.",
+        ],
+    }
+    write_json_and_js(card, resolve_project_path(MOLTRES_CARD_JSON), resolve_project_path(MOLTRES_CARD_JS), "__MLB_MOLTRES_MODEL_CARD__")
+
+
 @app.command()
+@exclusive_training_run
 def train(
     features_file: Optional[Path] = typer.Option(None, help="Feature table from feature_builder_mlb.py."),
     model_out: Path = typer.Option(DEFAULT_MODEL, help="Output model artifact."),
@@ -420,12 +693,13 @@ def train(
     test_season: Optional[int] = typer.Option(None, help="Holdout season."),
 ) -> None:
     ensure_project_dirs()
+    console.print("[cyan][1/6] Loading chronological MLB feature history[/cyan]")
     path = resolve_project_path(features_file or DEFAULT_FEATURES)
     if not path.exists():
         raise typer.BadParameter(f"Missing feature file: {path}")
     df = read_table(path)
     df["game_date"] = pd.to_datetime(df["game_date"])
-    df = df.dropna(subset=["home_win"]).copy()
+    df = df.dropna(subset=["home_win"]).copy().sort_values(["game_date", "game_id"]).reset_index(drop=True)
     if df.empty:
         raise typer.BadParameter("No completed MLB games with home_win target were found.")
 
@@ -445,17 +719,23 @@ def train(
     X_test = clean_numeric_frame(test_df, features)
     y_test = test_df["home_win"].astype(int)
 
+    console.print("[cyan][2/6] Fitting base models on pre-holdout seasons[/cyan]")
     model_rows = _train_models(X_train, y_train, X_test, y_test)
+    console.print("[cyan][3/6] Building Moltres from chronological out-of-fold probabilities[/cyan]")
+    moltres = _train_moltres(X_train, y_train, X_test, y_test)
+    model_rows.append(moltres)
+    console.print("[cyan][4/6] Evaluating every candidate on the sealed holdout season[/cyan]")
     selected = _select_model(model_rows)
+    moltres_id = f"mlb_moltres_{APP_VERSION}_{utc_now().replace(':', '').replace('-', '').replace('Z', '')}"
     probabilities = selected["probabilities"]
     metrics = selected["metrics"]
     calibration, calibration_error = _calibration(probabilities, y_test)
     record = _model_record(probabilities, y_test)
     confidence_records = _threshold_records(probabilities, y_test)
     comparison = _comparison_rows(model_rows, y_test, test_df)
-    top_features = _feature_importance(selected["model"], features)
+    top_features = _ensemble_feature_importance(moltres, features) if selected["model_name"] == "Moltres" else _feature_importance(selected["model"], features)
     created_at = utc_now()
-    model_id = f"mlb_moneyline_{APP_VERSION}_{created_at.replace(':', '').replace('-', '').replace('Z', '')}"
+    model_id = moltres_id if selected["model_name"] == "Moltres" else f"mlb_moneyline_{APP_VERSION}_{created_at.replace(':', '').replace('-', '').replace('Z', '')}"
     record_breakdowns = {
         "per_month": _per_month_accuracy(test_df, probabilities, y_test),
         "per_team": _per_team_accuracy(test_df, probabilities, y_test),
@@ -479,6 +759,9 @@ def train(
         "calibration_error": calibration_error,
         "metrics": metrics,
         "record": record,
+        "moltres_model_id": moltres_id,
+        "moltres_oof_rows": moltres.get("oof_rows"),
+        "moltres_oof_folds": moltres.get("oof_folds"),
     }
     payload = {
         "model": selected["model"],
@@ -490,8 +773,28 @@ def train(
         "top_global_features": top_features,
     }
     out = resolve_project_path(model_out)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(payload, out)
+    staged_selected = _stage_joblib(payload, out)
+
+    moltres_metadata = {
+        **metadata,
+        "model_id": moltres_id,
+        "model_name": "Moltres",
+        "metrics": moltres["metrics"],
+        "record": _model_record(moltres["probabilities"], y_test),
+        "selected_by": "chronological OOF stacking; holdout selection by log_loss then Brier score",
+    }
+    moltres_payload = {
+        "model": moltres["model"],
+        "model_name": "Moltres",
+        "features": features,
+        "metadata": moltres_metadata,
+        "metrics": moltres["metrics"],
+        "model_comparison": comparison,
+        "top_global_features": _ensemble_feature_importance(moltres, features),
+        "component_models": moltres.get("component_models"),
+        "component_weights": moltres.get("component_weights"),
+    }
+    staged_moltres = _stage_joblib(moltres_payload, resolve_project_path(MOLTRES_MODEL))
 
     registry_entry = {
         "model_id": model_id,
@@ -509,12 +812,33 @@ def train(
         "selected": True,
         "notes": "Selected by lowest log loss, then Brier score.",
     }
-    _update_model_registry(registry_entry)
+    moltres_entry = {
+        **registry_entry,
+        "model_id": moltres_id,
+        "model_name": "Moltres",
+        "metrics": moltres["metrics"],
+        "selected": selected["model_name"] == "Moltres",
+        "notes": "Chronological OOF stacking challenger; promoted only when sealed holdout metrics win the production selection rule.",
+        "components": moltres.get("component_models"),
+        "component_weights": moltres.get("component_weights"),
+    }
+    registry_entries = [moltres_entry] if selected["model_name"] == "Moltres" else [registry_entry, moltres_entry]
+    console.print("[cyan][5/6] Writing model card, registry, reports, and comparison[/cyan]")
+    _update_model_registry(registry_entries)
     _write_model_comparison(comparison, selected, metadata, top_features)
     _write_report(report_out, metrics, calibration, comparison, metadata, confidence_records, top_features, record_breakdowns)
+    _write_moltres_card(moltres_metadata, moltres["metrics"], comparison, moltres.get("component_models", []), moltres.get("component_weights", {}), selected["model_name"] == "Moltres")
     _update_feature_summary(features)
 
+    # The only production-model replacement happens after every other output
+    # has been staged or written successfully. A failed train never replaces
+    # the existing selected model artifact.
+    os.replace(staged_moltres, resolve_project_path(MOLTRES_MODEL))
+    os.replace(staged_selected, out)
+    console.print("[cyan][6/6] Atomically promoted the evaluated selected artifact[/cyan]")
+
     console.print(f"selected_model: {selected['model_name']}")
+    console.print(f"moltres_metrics: {moltres['metrics']}")
     console.print(f"features: {len(features)}")
     for key, value in metrics.items():
         console.print(f"{key}: {value:.4f}" if isinstance(value, (float, int)) else f"{key}: {value}")
