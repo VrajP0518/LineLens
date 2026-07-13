@@ -201,26 +201,31 @@ def _score_games(df: pd.DataFrame, model_path: Path, limit: Optional[int]) -> tu
     df = df.sort_values(["game_date", "game_id"]).tail(limit or len(df)).copy()
     probabilities = model.predict_proba(clean_numeric_frame(df, feature_cols))[:, 1]
     df["home_win_probability"] = probabilities
-    component_rows = []
-    if hasattr(model, "base_models"):
-        component_weights = artifact.get("component_weights") or {}
-        component_predictions = {
-            name: base.predict_proba(clean_numeric_frame(df, feature_cols))[:, 1]
-            for name, base in model.base_models
-        }
-        for row_index in range(len(df)):
-            component_rows.append(
-                [
-                    {
-                        "model_name": name,
-                        "home_probability": safe_float(values[row_index]),
-                        "weight": safe_float(component_weights.get(name)),
-                    }
-                    for name, values in component_predictions.items()
-                ]
-            )
-    else:
-        component_rows = [None] * len(df)
+    numeric_frame = clean_numeric_frame(df, feature_cols)
+    candidate_models = artifact.get("candidate_models") or []
+    if not candidate_models and hasattr(model, "base_models"):
+        candidate_models = list(model.base_models)
+    candidate_predictions = {}
+    for name, candidate in candidate_models:
+        try:
+            candidate_predictions[name] = candidate.predict_proba(numeric_frame)[:, 1]
+        except Exception:
+            continue
+    if not candidate_predictions:
+        candidate_predictions[metadata.get("model_name") or artifact.get("model_name") or "Production"] = probabilities
+    component_weights = artifact.get("component_weights") or {}
+    consensus_rows = []
+    for row_index in range(len(df)):
+        consensus_rows.append(
+            [
+                {
+                    "model_name": name,
+                    "home_probability": safe_float(values[row_index]),
+                    "weight": safe_float(component_weights.get(name)),
+                }
+                for name, values in candidate_predictions.items()
+            ]
+        )
 
     games = []
     for row_index, (_, row) in enumerate(df.iterrows()):
@@ -230,9 +235,9 @@ def _score_games(df: pd.DataFrame, model_path: Path, limit: Optional[int]) -> tu
         away = row.get("away_team")
         pitcher_status = row.get("pitcher_data_status") or ("proxy" if row.get("home_probable_pitcher") or row.get("away_probable_pitcher") else "missing")
         explanation = _explanation(row, home, away, home_prob, importances, feature_cols)
-        if component_rows[row_index]:
-            explanation["component_contributions"] = component_rows[row_index]
-            explanation["explanation_type"] = "stacked ensemble components plus local feature values"
+        if consensus_rows[row_index]:
+            explanation["component_contributions"] = consensus_rows[row_index]
+            explanation["explanation_type"] = "multi-model probability panel plus local feature values"
         games.append(
             {
                 "sport": "MLB",
@@ -276,7 +281,8 @@ def _score_games(df: pd.DataFrame, model_path: Path, limit: Optional[int]) -> tu
                 "prediction_mode": "model",
                 "model_name": metadata.get("model_name") or artifact.get("model_name"),
                 "model_id": metadata.get("model_id"),
-                "model_components": component_rows[row_index],
+                "model_components": consensus_rows[row_index],
+                "model_consensus": consensus_rows[row_index],
                 "top_factor_label": (explanation["top_factors"] or [{}])[0].get("label"),
                 "data_quality": {
                     "pitcher_data": pitcher_status,
@@ -429,6 +435,8 @@ def export(
             "model_name": artifact_meta.get("model_name") or artifact.get("model_name"),
             "model_id": artifact_meta.get("model_id"),
             "feature_count": len(artifact.get("features", [])),
+            "model_count": len((games[0].get("model_consensus") or []) if games else []),
+            "consensus_available": len((games[0].get("model_consensus") or []) if games else []) > 1,
         },
     )
     write_json_and_js(payload, json_path, js_path, "__MLB_PREDICTIONS__")
@@ -471,6 +479,8 @@ def backtest(
             "model_name": artifact_meta.get("model_name") or artifact.get("model_name"),
             "model_id": artifact_meta.get("model_id"),
             "feature_count": len(artifact.get("features", [])),
+            "model_count": len((games[0].get("model_consensus") or []) if games else []),
+            "consensus_available": len((games[0].get("model_consensus") or []) if games else []) > 1,
         },
     )
     payload["metadata"]["mode"] = "real"

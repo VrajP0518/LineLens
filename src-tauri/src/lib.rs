@@ -363,14 +363,24 @@ async fn open_live_widget(app: tauri::AppHandle) -> Result<(), String> {
         tauri::WebviewUrl::App("widget.html".into()),
     )
     .title("LineLens Live")
-    .inner_size(390.0, 180.0)
-    .min_inner_size(360.0, 160.0)
+    .inner_size(390.0, 170.0)
+    .min_inner_size(320.0, 138.0)
+    .decorations(false)
+    .transparent(true)
     .resizable(true)
     .always_on_top(true)
     .build()
     .map_err(|error| error.to_string())?;
 
     window.set_focus().map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+async fn close_live_widget(app: tauri::AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("live-widget") {
+        window.close().map_err(|error| error.to_string())?;
+    }
     Ok(())
 }
 
@@ -394,6 +404,7 @@ pub fn run() {
             refresh_sports_data,
             run_startup_refresh,
             open_live_widget,
+            close_live_widget,
             focus_main_window
         ])
         .run(tauri::generate_context!())

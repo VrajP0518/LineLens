@@ -4,6 +4,7 @@ const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
 const FAVORITES_KEY = "linelens.favorites.v1";
 const LIVE_ALERTS_KEY = "linelens.liveAlerts.v1";
+const RELOAD_AFTER_REFRESH_KEY = "linelens.refreshReload.v1";
 
 const DATA_SOURCES = {
     app: ["data/app_metadata.json"],
@@ -338,22 +339,28 @@ function normalizeGames(payload) {
 }
 
 async function fetchJson(url) {
-    const response = await fetch(url, { cache: "no-cache" });
+    const separator = String(url).includes("?") ? "&" : "?";
+    const response = await fetch(`${url}${separator}v=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) throw new Error(`${url} returned ${response.status}`);
     return response.json();
 }
 
-async function loadOptional(kind, globals = []) {
-    for (const name of globals) {
-        if (window[name]) return window[name];
+async function loadOptional(kind, globals = [], options = {}) {
+    if (!options.force && window.location.protocol === "file:") {
+        for (const name of globals) {
+            if (window[name]) return window[name];
+        }
+        return null;
     }
-    if (window.location.protocol === "file:") return null;
     for (const url of DATA_SOURCES[kind] || []) {
         try {
             return await fetchJson(url);
         } catch (_error) {
             // Try the next source. The UI renders clean missing states.
         }
+    }
+    for (const name of globals) {
+        if (window[name]) return window[name];
     }
     return null;
 }
@@ -364,6 +371,51 @@ function setStatus(message, variant = "info") {
     el.textContent = message;
     el.dataset.variant = variant;
     el.hidden = !message;
+}
+
+let appLoadingStartedAt = performance.now();
+
+function setAppLoading(message, detail = "", progress = 24) {
+    const root = $("#app-loading");
+    if (!root) return;
+    root.hidden = false;
+    root.setAttribute("aria-hidden", "false");
+    root.classList.remove("is-complete");
+    root.classList.add("is-visible");
+    root.style.setProperty("--loading-progress", `${Math.max(8, Math.min(96, progress))}%`);
+    const messageEl = $("#app-loading-message");
+    if (messageEl) messageEl.textContent = message || "Loading prediction exports...";
+    const detailEl = $(".app-loading__eyebrow");
+    if (detailEl && detail) detailEl.textContent = `LineLens / ${detail}`;
+}
+
+function finishAppLoading() {
+    const root = $("#app-loading");
+    if (!root) return;
+    const elapsed = performance.now() - appLoadingStartedAt;
+    const wait = Math.max(180, 560 - elapsed);
+    root.style.setProperty("--loading-progress", "100%");
+    window.setTimeout(() => {
+        root.classList.add("is-complete");
+        window.setTimeout(() => {
+            root.hidden = true;
+            root.setAttribute("aria-hidden", "true");
+        }, 540);
+    }, wait);
+}
+
+function startAppLoading(message, detail, progress = 20) {
+    appLoadingStartedAt = performance.now();
+    setAppLoading(message, detail, progress);
+}
+
+function triggerViewTransition() {
+    const wash = $("#view-transition-wash");
+    if (!wash) return;
+    wash.classList.remove("is-active");
+    void wash.offsetWidth;
+    wash.classList.add("is-active");
+    window.setTimeout(() => wash.classList.remove("is-active"), 560);
 }
 
 function showToast(message) {
@@ -1727,6 +1779,7 @@ function featureQualityForGame(game) {
 }
 
 async function loadAll() {
+    startAppLoading("Loading prediction exports...", "Sports Intelligence", 18);
     setStatus("Loading prediction exports...", "info");
     loadSettings();
     loadTracker();
@@ -1771,6 +1824,8 @@ async function loadAll() {
         loadOptional("mlbBacktest", ["__MLB_BACKTEST_PREDICTIONS__"]),
     ]);
 
+    setAppLoading("Building the board...", "Model registry / Live board", 66);
+
     state.app = app || state.app;
     state.teamPayload = teams || state.teamPayload;
     state.report = report || state.report;
@@ -1800,9 +1855,13 @@ async function loadAll() {
     $("#sidebar-version").textContent = state.app.version || APP_VERSION;
     if ($("#app-version-chip")) $("#app-version-chip").textContent = state.app.version || APP_VERSION;
     renderAll();
+    setAppLoading("Board online.", "Production model / Live board ready", 94);
+    finishAppLoading();
 
     const modes = [`NFL ${dataMode(state.nfl.payload, state.nfl.games)}`, `MLB ${dataMode(state.mlb.payload, state.mlb.games)}`];
     setStatus(allGames().length ? "" : `No prediction exports loaded. ${modes.join(" / ")}.`, allGames().length ? "success" : "warning");
+    const resumedAfterFileRefresh = sessionStorage.getItem(RELOAD_AFTER_REFRESH_KEY) === "1";
+    if (resumedAfterFileRefresh) sessionStorage.removeItem(RELOAD_AFTER_REFRESH_KEY);
     if (!state.refreshRuntime.checked) {
         state.refreshRuntime.checked = true;
         state.refreshRuntime.available = isTauriRefreshAvailable();
@@ -1810,7 +1869,7 @@ async function loadAll() {
             ? "Desktop auto-refresh is available."
             : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment.";
         renderAll();
-        if (state.refreshRuntime.available) {
+        if (state.refreshRuntime.available && !resumedAfterFileRefresh) {
             runStartupAutomation({ background: true });
         }
     }
@@ -1874,7 +1933,10 @@ async function runRefreshCommand(commandName = "startup", options = {}) {
     state.refreshRuntime.active = true;
     state.refreshRuntime.command = commandName;
     state.refreshRuntime.message = `Running ${config.label}: ${config.manual}`;
-    if (!options.background) showToast(`Running ${config.label}...`);
+    if (!options.background) {
+        startAppLoading(`Refreshing ${config.label}...`, "Daily data refresh", 28);
+        showToast(`Running ${config.label}...`);
+    }
     renderAll();
     try {
         const result = await tauriInvoke("run_refresh_command", { commandName });
@@ -1883,6 +1945,12 @@ async function runRefreshCommand(commandName = "startup", options = {}) {
             ? `${config.label} completed.`
             : `${config.label} failed with exit code ${result.exit_code ?? "unknown"}.`;
         showToast(result.success ? `${config.label} complete` : `${config.label} failed`);
+        if (result.success && window.location.protocol === "file:") {
+            sessionStorage.setItem(RELOAD_AFTER_REFRESH_KEY, "1");
+            window.location.reload();
+            return;
+        }
+        setAppLoading("Loading refreshed exports...", "New data / Model signals", 72);
         await loadAllAfterRefresh();
     } catch (error) {
         state.refreshRuntime.message = String(error?.message || error || "Refresh failed; showing cached data.");
@@ -1900,6 +1968,10 @@ async function runRefreshCommand(commandName = "startup", options = {}) {
         showToast("Refresh failed; showing cached data");
     } finally {
         state.refreshRuntime.active = false;
+        if (!options.background) {
+            setAppLoading("Refresh complete.", "Board synchronized", 96);
+            finishAppLoading();
+        }
         renderAll();
     }
 }
@@ -1922,13 +1994,22 @@ async function runStartupAutomation(options = {}) {
     state.refreshRuntime.active = true;
     state.refreshRuntime.command = "startup_auto";
     state.refreshRuntime.message = "Running startup automation: bootstrap Python, refresh MLB/NFL/live data, score records, and check data status.";
-    if (!options.background) showToast("Running startup automation...");
+    if (!options.background) {
+        startAppLoading("Running startup automation...", "Daily data refresh", 22);
+        showToast("Running startup automation...");
+    }
     renderAll();
     try {
         const result = await tauriInvoke("run_startup_automation", {});
         appendRefreshLog(result);
         state.refreshRuntime.message = result.success ? "Startup automation finished." : "Startup automation failed; see command console.";
         showToast(result.success ? "Startup automation finished" : "Startup automation failed");
+        if (result.success && window.location.protocol === "file:") {
+            sessionStorage.setItem(RELOAD_AFTER_REFRESH_KEY, "1");
+            window.location.reload();
+            return;
+        }
+        setAppLoading("Loading refreshed exports...", "New data / Model signals", 72);
         await loadAllAfterRefresh();
     } catch (error) {
         state.refreshRuntime.message = String(error?.message || error || "Startup automation failed.");
@@ -1946,27 +2027,31 @@ async function runStartupAutomation(options = {}) {
         showToast("Startup automation failed");
     } finally {
         state.refreshRuntime.active = false;
+        if (!options.background) {
+            setAppLoading("Refresh complete.", "Board synchronized", 96);
+            finishAppLoading();
+        }
         renderAll();
     }
 }
 
 async function loadAllAfterRefresh() {
     const [bootstrap, startup, refresh, live, odds, report, modelComparison, moltresCard, featureSummary, modelRegistry, modelRecord, predictionLog, nfl, mlb, mlbBacktest] = await Promise.all([
-        loadOptional("bootstrap", []),
-        loadOptional("startup", []),
-        loadOptional("refresh", ["__REFRESH_STATUS__"]),
-        loadOptional("live", ["__LIVE_SCORES__"]),
-        loadOptional("odds", ["__ODDS_SNAPSHOTS__"]),
-        loadOptional("reports", []),
-        loadOptional("modelComparison", []),
-        loadOptional("moltresCard", []),
-        loadOptional("featureSummary", []),
-        loadOptional("modelRegistry", []),
-        loadOptional("modelRecord", []),
-        loadOptional("predictionLog", []),
-        loadOptional("nfl", []),
-        loadOptional("mlb", []),
-        loadOptional("mlbBacktest", []),
+        loadOptional("bootstrap", [], { force: true }),
+        loadOptional("startup", [], { force: true }),
+        loadOptional("refresh", ["__REFRESH_STATUS__"], { force: true }),
+        loadOptional("live", ["__LIVE_SCORES__"], { force: true }),
+        loadOptional("odds", ["__ODDS_SNAPSHOTS__"], { force: true }),
+        loadOptional("reports", [], { force: true }),
+        loadOptional("modelComparison", [], { force: true }),
+        loadOptional("moltresCard", [], { force: true }),
+        loadOptional("featureSummary", [], { force: true }),
+        loadOptional("modelRegistry", [], { force: true }),
+        loadOptional("modelRecord", [], { force: true }),
+        loadOptional("predictionLog", [], { force: true }),
+        loadOptional("nfl", [], { force: true }),
+        loadOptional("mlb", [], { force: true }),
+        loadOptional("mlbBacktest", [], { force: true }),
     ]);
     if (bootstrap) {
         state.bootstrapStatus = bootstrap;
@@ -2036,6 +2121,7 @@ async function loadAllAfterRefresh() {
 
 function switchView(view) {
     const previous = state.selected.view;
+    if (previous !== view) triggerViewTransition();
     state.selected.view = view;
     persistSettings();
     $$(".view").forEach(el => {
@@ -3213,6 +3299,43 @@ function lifecycleMarketRead(game) {
     };
 }
 
+function modelConsensusForGame(game) {
+    const rawRows = Array.isArray(game?.model_consensus)
+        ? game.model_consensus
+        : Array.isArray(game?.model_components)
+            ? game.model_components
+            : [];
+    const rows = rawRows.map(row => {
+        const modelName = row.model_name || row.model || "Model";
+        const homeProbability = safeNumber(row.home_probability ?? row.home_win_probability);
+        const pick = row.pick || (homeProbability === null ? null : homeProbability >= 0.5 ? game.home : game.away);
+        return { modelName, legend: modelIdentity(modelName).legend, homeProbability, pick };
+    }).filter(row => row.pick && row.homeProbability !== null);
+    if (!rows.length) return null;
+    const votes = rows.reduce((counts, row) => {
+        counts[row.pick] = (counts[row.pick] || 0) + 1;
+        return counts;
+    }, {});
+    const productionPick = getGamePick(game, "MLB");
+    const consensusPick = Object.entries(votes).sort((a, b) => b[1] - a[1] || (a[0] === productionPick ? -1 : 1))[0]?.[0] || productionPick;
+    return {
+        rows,
+        votes,
+        consensusPick,
+        consensusCount: votes[consensusPick] || 0,
+        total: rows.length,
+        productionPick,
+    };
+}
+
+function renderModelConsensus(game) {
+    const consensus = modelConsensusForGame(game);
+    if (!consensus) {
+        return `<div class="mlb-game-card__consensus mlb-game-card__consensus--pending"><header><span>Model consensus</span><small>Production export</small></header><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><small>Multi-model vote will appear after the next trained export.</small></div>`;
+    }
+    return `<div class="mlb-game-card__consensus"><header><span>Model consensus</span><strong>${escapeHtml(consensus.consensusPick)} ${consensus.consensusCount}–${consensus.total - consensus.consensusCount}</strong></header><div class="mlb-game-card__consensus-grid">${consensus.rows.map(row => `<span><b>${escapeHtml(row.legend)}</b><em>${escapeHtml(row.pick)} ${formatProbability(row.pick === game.home ? row.homeProbability : 1 - row.homeProbability)}</em></span>`).join("")}</div><footer><span>Production pick: <strong>${escapeHtml(consensus.productionPick)}</strong></span><span>${consensus.consensusCount} of ${consensus.total} agree</span></footer></div>`;
+}
+
 function lifecycleTimeline(game) {
     const log = latestLogForGame(game);
     const odds = latestOddsForGame(game);
@@ -3283,7 +3406,8 @@ function renderMlbLifecycleCard(game) {
             <div class="mlb-game-card__at">${score ? `<b>${escapeHtml(score)}</b>` : "VS"}<small>${stage === "live" ? "LIVE SCORE" : stage === "final" ? "FINAL" : "FIRST PITCH"}</small></div>
             <div class="mlb-game-card__team mlb-game-card__team--home">${renderTeamLogo("MLB", homeMeta.abbreviation, "lg", homeMeta.full_name)}<strong>${escapeHtml(homeMeta.abbreviation)}</strong></div>
         </div>
-        <div class="mlb-game-card__signal"><span>Pick</span><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><b>${formatProbability(market.pickProbability)}</b></div>
+        <div class="mlb-game-card__signal"><span>Production pick</span><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><b>${formatProbability(market.pickProbability)}</b></div>
+        ${renderModelConsensus(game)}
         ${marketRead}${latestPlay}
         <footer class="mlb-game-card__footer"><span>${resultChip(cardResult)}</span><button class="btn btn--micro" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">${stage === "live" ? "Open GameCast" : "View Matchup"}</button></footer>
     </article>`;
@@ -4302,7 +4426,13 @@ function renderModels() {
     const comparison = getComparisonRows("MLB");
     const selectedEntry = state.selected.modelName ? entries.find(entry => entry.model_name === state.selected.modelName) : null;
     const detail = selectedEntry ? `<section class="model-drawer"><header class="section-header"><div><p class="eyebrow">Model profile</p><h2>${escapeHtml(modelIdentity(selectedEntry.model_name).legend)}</h2><p class="muted">Expanded technical profile and registry history.</p></div><button class="btn btn--small" type="button" data-model-close>Close profile</button></header>${renderModelProfile(selectedEntry)}<div class="model-history"><p class="eyebrow">Registry history</p>${renderModelVersionHistory(selectedEntry.model_name)}</div></section>` : `<div class="models-gallery-hint"><strong>Select a model to inspect its profile.</strong><span>Metrics stay tied to the real registry and comparison exports; pending models remain visibly pending.</span></div>`;
-    $("#view-models").innerHTML = `<section class="models-shell"><section class="models-hero"><div><p class="eyebrow">LineLens Model Observatory</p><h2>Five signals. One accountable system.</h2><p>Every MLB algorithm gets a distinct visual identity, its real technical name, measured metrics, and an honest role. Moltres is the ember-red ensemble challenger; it is not promoted until a manual chronological evaluation proves it belongs in production.</p></div><div class="models-hero__orb"><span></span><i></i><b></b></div></section><section class="models-command"><div><span class="eyebrow">Production model</span><strong>${escapeHtml(selected?.model_name || "Not declared")}</strong><small>${selected ? `selected ${formatDate(selected.trained_at)}` : "No registry selection"}</small></div><div><span class="eyebrow">Model gallery</span><strong>${entries.length}</strong><small>unique MLB algorithms</small></div><div><span class="eyebrow">Evaluation rows</span><strong>${comparison.length}</strong><small>real comparison exports</small></div><div><span class="eyebrow">Moltres</span><strong>${escapeHtml(moltresStatusLabel())}</strong><small>${moltresCard() ? "card loaded" : "manual training pending"}</small></div></section><section class="models-legend"><span>Metric guide</span><small>Accuracy ↑</small><small>Log loss ↓</small><small>Brier ↓</small><small>ROC AUC ↑</small><small>Calibration ↓</small><small>Stability ↑</small></section><section class="models-gallery">${entries.length ? entries.map(renderModelGalleryCard).join("") : emptyState("No MLB models in registry", "Train or load a real MLB registry export to populate the Model Observatory.")}</section>${detail}</section>`;
+    const productionMetrics = selected ? { ...(selected.metrics || {}), ...modelComparisonFor(selected.model_name) } : {};
+    const leaderboardRows = [...comparison].filter(row => row.status === "trained").sort((a, b) => (safeNumber(a.log_loss, 99) - safeNumber(b.log_loss, 99))).map((row, index) => {
+        const identity = modelIdentity(row.model_name);
+        const liveRecord = row.model_name === selected?.model_name ? recordLine(getModelRecord("MLB").live_record || getModelRecord("MLB").overall || {}) : "Not tracked";
+        return `<tr><td><span class="model-rank">${index + 1}</span><strong>${escapeHtml(identity.legend)}</strong><small>${escapeHtml(row.model_name)}</small></td><td>${escapeHtml(row.model_name === selected?.model_name ? "Production" : identity.role.replace("Current ", ""))}</td><td>${formatNumber(row.log_loss, 4)}</td><td>${formatNumber(row.brier_score, 4)}</td><td>${escapeHtml(liveRecord)}</td></tr>`;
+    }).join("");
+    $("#view-models").innerHTML = `<section class="models-shell"><section class="models-hero"><div><p class="eyebrow">LineLens Model Observatory</p><h2>Model intelligence, up front.</h2><p>Compare the production pick with its challengers, then inspect the evidence behind every daily prediction.</p><div class="models-hero__production"><span>Production pick</span><strong>${escapeHtml(modelIdentity(selected?.model_name).legend)}</strong><small>${formatProbability(productionMetrics.accuracy)} holdout accuracy · ${formatNumber(productionMetrics.log_loss, 4)} log loss</small></div></div><div class="models-hero__orb"><span></span><i></i><b></b></div></section><section class="models-command"><div><span class="eyebrow">Production model</span><strong>${escapeHtml(modelIdentity(selected?.model_name).legend)}</strong><small>${selected ? `trained ${formatDate(selected.trained_at)}` : "No registry selection"}</small></div><div><span class="eyebrow">Model gallery</span><strong>${entries.length}</strong><small>unique MLB algorithms</small></div><div><span class="eyebrow">Evaluation rows</span><strong>${comparison.length}</strong><small>real comparison exports</small></div><div><span class="eyebrow">Moltres</span><strong>${escapeHtml(moltresStatusLabel())}</strong><small>${moltresCard() ? "card loaded" : "manual training pending"}</small></div></section><section class="panel model-leaderboard"><header class="section-header"><div><p class="eyebrow">Holdout leaderboard</p><h2>Which model earns the next start?</h2></div><span class="chip chip--soft">lower log loss wins</span></header><div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Role</th><th>Log loss</th><th>Brier</th><th>Live record</th></tr></thead><tbody>${leaderboardRows || `<tr><td colspan="5">No comparison rows loaded.</td></tr>`}</tbody></table></div></section><section class="models-legend"><span>Metric guide</span><small>Accuracy ↑</small><small>Log loss ↓</small><small>Brier ↓</small><small>ROC AUC ↑</small><small>Calibration ↓</small><small>Stability ↑</small></section><section class="models-gallery">${entries.length ? entries.map(renderModelGalleryCard).join("") : emptyState("No MLB models in registry", "Train or load a real MLB registry export to populate the Model Observatory.")}</section>${detail}</section>`;
 }
 
 function renderModelTrustCenter(sport) {
@@ -5547,10 +5677,47 @@ function bindEvents() {
         }
     });
 
-    $("#refresh-btn").addEventListener("click", () => loadAll());
+    $("#refresh-btn").addEventListener("click", () => runStartupAutomation());
+}
+
+function setupSidebarResize() {
+    const handle = $("#sidebar-resizer");
+    if (!handle) return;
+    const root = document.documentElement;
+    const saved = safeNumber(localStorage.getItem("linelens.sidebarWidth.v1"));
+    const min = 214;
+    const max = 360;
+    const apply = width => {
+        const value = Math.max(min, Math.min(max, width));
+        root.style.setProperty("--sidebar-width", `${value}px`);
+        root.style.setProperty("--sidebar-scale", Math.max(0.86, Math.min(1.2, value / 260)).toFixed(3));
+        localStorage.setItem("linelens.sidebarWidth.v1", String(Math.round(value)));
+    };
+    if (saved !== null) apply(saved);
+    let dragging = false;
+    let startX = 0;
+    let startWidth = 260;
+    handle.addEventListener("pointerdown", event => {
+        if (window.matchMedia("(max-width: 1100px)").matches) return;
+        dragging = true;
+        startX = event.clientX;
+        startWidth = safeNumber(getComputedStyle(root).getPropertyValue("--sidebar-width").replace("px", ""), 260);
+        handle.setPointerCapture?.(event.pointerId);
+        document.body.classList.add("is-resizing-sidebar");
+    });
+    handle.addEventListener("pointermove", event => {
+        if (dragging) apply(startWidth + event.clientX - startX);
+    });
+    const stop = () => {
+        dragging = false;
+        document.body.classList.remove("is-resizing-sidebar");
+    };
+    handle.addEventListener("pointerup", stop);
+    handle.addEventListener("pointercancel", stop);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    setupSidebarResize();
     bindEvents();
     loadAll();
 });

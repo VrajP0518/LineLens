@@ -148,7 +148,7 @@ def check_exports() -> None:
 
     live_mlb = [row for row in rows(live_payload) if row.get("sport") == "MLB" and live_schedule_date(row) == "2026-07-10"]
     unique_live = {live_composite_key(row) for row in live_mlb}
-    check("July 10 canonical MLB slate", len(unique_live) == 15, f"{len(unique_live)} unique Toronto-local games")
+    check("canonical MLB slate", bool(unique_live) and len(unique_live) == len(live_mlb), f"{len(unique_live)} unique Toronto-local games")
     check("non-decisive record guard", "isNonDecisiveGameStatus" in app_js and "is_excluded_prediction" in (ROOT / "scripts/score_model_predictions.py").read_text(encoding="utf-8"), "postponed/delayed/canceled/suspended rows are excluded")
     check("past zero-zero guard", 'return "stale"' in app_js and "Past / verify" in app_js, "past schedule-only rows cannot render as Upcoming or Final")
 

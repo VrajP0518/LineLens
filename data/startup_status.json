@@ -1,8 +1,8 @@
 {
   "metadata": {
     "app": "LineLens Sports",
-    "version": "v1.0.0",
-    "generated_at": "2026-07-08T17:02:43Z"
+    "version": "v2.0.0",
+    "generated_at": "2026-07-13T13:50:20Z"
   },
   "status": "real_fresh",
   "steps": [
@@ -11,18 +11,18 @@
       "command": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe scripts/bootstrap_env.py",
       "status": "done",
       "exit_code": 0,
-      "started_at": "2026-07-08T17:02:43Z",
-      "finished_at": "2026-07-08T17:02:48Z",
-      "stdout_tail": "  \"status\": \"env_ready\",\n  \"python_found\": true,\n  \"python_path\": \"C:\\\\Users\\\\Vraj.Patel\\\\Downloads\\\\coop\\\\LineLens\\\\.venv\\\\Scripts\\\\python.exe\",\n  \"python_version\": \"3.11.9\",\n  \"venv_detected\": true,\n  \"venv_created\": false,\n  \"requirements_hash\": \"7d1ba12dcf8818284b56764e046122b8f882b6d8a6a992fee088781cf70b3fc5\",\n  \"requirements_installed\": false,\n  \"requirements_skipped\": true,\n  \"imports_verified\": true,\n  \"mlb_ready\": true,\n  \"nfl_ready\": true,\n  \"nfl_error\": null,\n  \"error\": null,\n  \"candidates\": [\n    {\n      \"path\": \"C:\\\\Users\\\\Vraj.Patel\\\\Downloads\\\\coop\\\\LineLens\\\\.venv\\\\Scripts\\\\python.exe\",\n      \"version\": \"3.11.9\",\n      \"major\": 3,\n      \"minor\": 11,\n      \"micro\": 9,\n      \"command\": [\n        \"C:\\\\Users\\\\Vraj.Patel\\\\Downloads\\\\coop\\\\LineLens\\\\.venv\\\\Scripts\\\\python.exe\"\n      ],\n      \"available\": true,\n      \"supported\": true,\n      \"too_new\": false\n    }\n  ],\n  \"imports\": {\n    \"pandas\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"numpy\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"sklearn\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"joblib\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"typer\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"requests\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"nfl_data_py\": {\n      \"ok\": true,\n      \"error\": null\n    }\n  }\n}",
+      "started_at": "2026-07-13T13:50:20Z",
+      "finished_at": "2026-07-13T13:50:24Z",
+      "stdout_tail": "  \"status\": \"env_ready\",\n  \"python_found\": true,\n  \"python_path\": \"C:\\\\Users\\\\Vraj.Patel\\\\Downloads\\\\coop\\\\LineLens\\\\.venv\\\\Scripts\\\\python.exe\",\n  \"python_version\": \"3.11.9\",\n  \"venv_detected\": true,\n  \"venv_created\": false,\n  \"requirements_hash\": \"f98b6c645ccc0ca1a3e1ded7242e052a5b5455e420fb32e90f9290b755f64699\",\n  \"requirements_installed\": false,\n  \"requirements_skipped\": true,\n  \"imports_verified\": true,\n  \"mlb_ready\": true,\n  \"nfl_ready\": true,\n  \"nfl_error\": null,\n  \"error\": null,\n  \"candidates\": [\n    {\n      \"path\": \"C:\\\\Users\\\\Vraj.Patel\\\\Downloads\\\\coop\\\\LineLens\\\\.venv\\\\Scripts\\\\python.exe\",\n      \"version\": \"3.11.9\",\n      \"major\": 3,\n      \"minor\": 11,\n      \"micro\": 9,\n      \"command\": [\n        \"C:\\\\Users\\\\Vraj.Patel\\\\Downloads\\\\coop\\\\LineLens\\\\.venv\\\\Scripts\\\\python.exe\"\n      ],\n      \"available\": true,\n      \"supported\": true,\n      \"too_new\": false\n    }\n  ],\n  \"imports\": {\n    \"pandas\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"numpy\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"sklearn\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"joblib\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"typer\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"requests\": {\n      \"ok\": true,\n      \"error\": null\n    },\n    \"nfl_data_py\": {\n      \"ok\": true,\n      \"error\": null\n    }\n  }\n}",
       "stderr_tail": ""
     },
     {
-      "name": "Refresh MLB current predictions",
-      "command": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe scripts/refresh_data.py --sport mlb --mode predict",
+      "name": "Daily MLB retrain and current predictions",
+      "command": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe scripts/refresh_data.py --sport mlb --mode all",
       "status": "done",
       "exit_code": 0,
-      "started_at": "2026-07-08T17:02:48Z",
-      "finished_at": "2026-07-08T17:03:16Z",
+      "started_at": "2026-07-13T13:50:24Z",
+      "finished_at": "2026-07-13T13:53:14Z",
       "stdout_tail": "Refresh finished for MLB. Status written to data/refresh_status.json",
       "stderr_tail": ""
     },
@@ -31,8 +31,8 @@
       "command": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe scripts/refresh_data.py --sport nfl --mode real",
       "status": "done",
       "exit_code": 0,
-      "started_at": "2026-07-08T17:03:16Z",
-      "finished_at": "2026-07-08T17:03:19Z",
+      "started_at": "2026-07-13T13:53:14Z",
+      "finished_at": "2026-07-13T13:53:17Z",
       "stdout_tail": "Refresh finished for NFL. Status written to data/refresh_status.json",
       "stderr_tail": ""
     },
@@ -41,9 +41,19 @@
       "command": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe scripts/live_scores.py",
       "status": "done",
       "exit_code": 0,
-      "started_at": "2026-07-08T17:03:19Z",
-      "finished_at": "2026-07-08T17:03:21Z",
-      "stdout_tail": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v1.0.0\",\n  \"generated_at\": \"2026-07-08T17:03:21Z\",\n  \"real_data\": true,\n  \"source\": \"MLB Stats API + LineLens prediction exports\",\n  \"sports\": [\n    \"MLB\",\n    \"NFL\"\n  ],\n  \"refresh_mode\": \"live\",\n  \"source_status\": \"live_cached\",\n  \"data_window\": {\n    \"center_date\": \"2026-07-08\",\n    \"start_date\": \"2026-07-05\",\n    \"end_date\": \"2026-07-11\",\n    \"days_back\": 3,\n    \"days_forward\": 3\n  },\n  \"row_count\": 121,\n  \"warnings\": [\n    \"MLB Stats API refresh failed: HTTPSConnectionPool(host='statsapi.mlb.com', port=443): Max retries exceeded with url: /api/v1/schedule?sportId=1&startDate=2026-07-05&endDate=2026-07-11&hydrate=probablePitcher%2Clinescore (Caused by ProxyError('Unable to connect to proxy', NewConnectionError(\\\"HTTPSConnection(host='127.0.0.1', port=9): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it\\\")))\",\n    \"Using cached MLB schedule files from data/raw/mlb.\"\n  ]\n}",
+      "started_at": "2026-07-13T13:53:17Z",
+      "finished_at": "2026-07-13T13:53:34Z",
+      "stdout_tail": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v2.0.0\",\n  \"generated_at\": \"2026-07-13T13:53:34Z\",\n  \"real_data\": true,\n  \"source\": \"ESPN Scoreboard API + MLB Stats API + LineLens prediction exports; optional World Cup, NBA, NHL, and WNBA scoreboards\",\n  \"sports\": [\n    \"MLB\",\n    \"NFL\",\n    \"SOCCER\",\n    \"WNBA\"\n  ],\n  \"refresh_mode\": \"live\",\n  \"source_status\": \"espn_live_fresh\",\n  \"live_poll_seconds_recommended\": 15,\n  \"data_window\": {\n    \"center_date\": \"2026-07-13\",\n    \"start_date\": \"2026-07-10\",\n    \"end_date\": \"2026-07-16\",\n    \"days_back\": 3,\n    \"days_forward\": 3\n  },\n  \"row_count\": 132,\n  \"warnings\": []\n}",
+      "stderr_tail": ""
+    },
+    {
+      "name": "Refresh optional odds snapshots",
+      "command": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe scripts/odds_snapshots.py",
+      "status": "done",
+      "exit_code": 0,
+      "started_at": "2026-07-13T13:53:34Z",
+      "finished_at": "2026-07-13T13:53:35Z",
+      "stdout_tail": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v1.0.0\",\n  \"generated_at\": \"2026-07-13T13:53:34Z\",\n  \"real_data\": true,\n  \"new_real_data\": true,\n  \"provider\": \"the_odds_api\",\n  \"source\": \"The Odds API\",\n  \"source_status\": \"success\",\n  \"snapshot_count\": 258,\n  \"new_snapshot_count\": 76,\n  \"mlb_predictions_joined\": 0,\n  \"sports_requested\": [\n    \"MLB\",\n    \"NFL\"\n  ],\n  \"timeout_seconds\": \"8\",\n  \"note\": \"Odds are optional. Missing odds never fabricate lines, movement, or CLV.\"\n}",
       "stderr_tail": ""
     },
     {
@@ -51,9 +61,9 @@
       "command": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe scripts/score_model_predictions.py",
       "status": "done",
       "exit_code": 0,
-      "started_at": "2026-07-08T17:03:21Z",
-      "finished_at": "2026-07-08T17:03:23Z",
-      "stdout_tail": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v1.0.0\",\n  \"generated_at\": \"2026-07-08T17:03:23Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 126,\n  \"predictions_scored_this_run\": 40,\n  \"pending_predictions\": 86,\n  \"last_scoring_run\": \"2026-07-08T17:03:23Z\"\n}",
+      "started_at": "2026-07-13T13:53:35Z",
+      "finished_at": "2026-07-13T13:53:37Z",
+      "stdout_tail": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v2.0.0\",\n  \"generated_at\": \"2026-07-13T13:53:37Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 396,\n  \"predictions_scored_this_run\": 169,\n  \"pending_predictions\": 1,\n  \"last_scoring_run\": \"2026-07-13T13:53:37Z\"\n}",
       "stderr_tail": ""
     },
     {
@@ -61,9 +71,9 @@
       "command": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe scripts/check_data_status.py",
       "status": "done",
       "exit_code": 0,
-      "started_at": "2026-07-08T17:03:23Z",
-      "finished_at": "2026-07-08T17:03:24Z",
-      "stdout_tail": "        \"feature_count\": 119,\n        \"train_rows\": 9524,\n        \"test_rows\": 2400,\n        \"metrics\": {\n          \"accuracy\": 0.5533333333333333,\n          \"log_loss\": 0.685169944924063,\n          \"brier_score\": 0.24602429311314922,\n          \"sample_size\": 2400,\n          \"roc_auc\": 0.5589729545969631\n        },\n        \"selected\": true,\n        \"notes\": \"Selected by lowest log loss, then Brier score.\"\n      }\n    ],\n    \"error\": null\n  },\n  \"model_tracking\": {\n    \"prediction_log\": {\n      \"status\": \"real_cached\",\n      \"rows\": 126,\n      \"scored\": 40,\n      \"pending\": 86,\n      \"error\": null\n    },\n    \"record\": {\n      \"status\": \"real_cached\",\n      \"generated_at\": \"2026-07-08T17:03:23Z\",\n      \"mlb_overall\": {\n        \"wins\": 13,\n        \"losses\": 11,\n        \"pushes\": 0,\n        \"pending\": 45,\n        \"accuracy\": 0.5416666666666666,\n        \"sample_size\": 69,\n        \"scored\": 24,\n        \"label\": \"Live Record\",\n        \"source\": \"data\\\\tracking\\\\model_predictions_log.json\",\n        \"note\": \"Only the latest logged LineLens MLB prediction per game is counted here.\",\n        \"logged_rows\": 126,\n        \"unique_games\": 69\n      },\n      \"nfl_overall\": {\n        \"wins\": 1409,\n        \"losses\": 368,\n        \"pushes\": 0,\n        \"pending\": 0,\n        \"accuracy\": 0.7929093978615644,\n        \"sample_size\": 1777,\n        \"scored\": 1777,\n        \"label\": \"Historical NFL Backtest / Cached Real Export\",\n        \"source\": \"data\\\\predictions\\\\nfl_predictions.json\",\n        \"rows_found\": 1777,\n        \"rows_scored\": 1777,\n        \"missing_fields\": [],\n        \"prediction_mode\": \"historical_backtest\"\n      },\n      \"error\": null\n    }\n  }\n}",
+      "started_at": "2026-07-13T13:53:37Z",
+      "finished_at": "2026-07-13T13:53:37Z",
+      "stdout_tail": "          \"sample_size\": 2400,\n          \"roc_auc\": 0.5599284693018167\n        },\n        \"selected\": true,\n        \"notes\": \"Selected by lowest log loss, then Brier score.\"\n      }\n    ],\n    \"error\": null\n  },\n  \"model_tracking\": {\n    \"prediction_log\": {\n      \"status\": \"real_cached\",\n      \"rows\": 396,\n      \"scored\": 169,\n      \"pending\": 1,\n      \"error\": null\n    },\n    \"record\": {\n      \"status\": \"real_cached\",\n      \"generated_at\": \"2026-07-13T13:53:37Z\",\n      \"mlb_overall\": {\n        \"wins\": 38,\n        \"losses\": 46,\n        \"pushes\": 0,\n        \"pending\": 1,\n        \"accuracy\": 0.4523809523809524,\n        \"sample_size\": 85,\n        \"scored\": 84,\n        \"label\": \"Live Record\",\n        \"source\": \"data\\\\tracking\\\\model_predictions_log.json\",\n        \"note\": \"Only the latest logged LineLens MLB prediction per game is counted here.\",\n        \"logged_rows\": 170,\n        \"unique_games\": 85\n      },\n      \"nfl_overall\": {\n        \"wins\": 1409,\n        \"losses\": 368,\n        \"pushes\": 0,\n        \"pending\": 0,\n        \"accuracy\": 0.7929093978615644,\n        \"sample_size\": 1777,\n        \"scored\": 1777,\n        \"label\": \"Historical NFL Backtest / Cached Real Export\",\n        \"source\": \"data\\\\predictions\\\\nfl_predictions.json\",\n        \"rows_found\": 1778,\n        \"rows_scored\": 1777,\n        \"missing_fields\": [],\n        \"prediction_mode\": \"historical_backtest\"\n      },\n      \"error\": null\n    }\n  },\n  \"odds\": {\n    \"status\": \"success\",\n    \"provider\": \"the_odds_api\",\n    \"snapshot_count\": 258,\n    \"new_snapshot_count\": 76,\n    \"error\": null\n  }\n}",
       "stderr_tail": ""
     }
   ],
@@ -83,16 +93,16 @@
   "refresh_status": {
     "NFL": {
       "status": "real_fresh",
-      "message": "Found existing NFL processed dataset. Exported 1777 real historical predictions.",
-      "last_success_at": "2026-07-08T17:03:19Z",
+      "message": "Found existing NFL processed dataset. Exported 1778 real historical predictions.",
+      "last_success_at": "2026-07-13T13:53:17Z",
       "used_cache": false,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     },
     "MLB": {
       "status": "model_generated",
-      "message": "MLB model predictions generated from cached schedule after live fetch failed.",
-      "last_success_at": "2026-07-08T17:03:14Z",
-      "used_cache": true,
+      "message": "MLB model predictions generated from current schedule.",
+      "last_success_at": "2026-07-13T13:53:12Z",
+      "used_cache": false,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     }
   }

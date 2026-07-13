@@ -11,7 +11,7 @@ import json
 import shutil
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -128,6 +128,23 @@ def has_mlb_model_predictions() -> bool:
     return any(game.get("home_win_probability") is not None for game in games)
 
 
+def model_needs_daily_retrain() -> bool:
+    """Keep the daily startup path aligned with the promised retrain cadence."""
+
+    if not MLB_MODEL.exists():
+        return True
+    try:
+        import joblib
+
+        artifact = joblib.load(MLB_MODEL)
+        metadata = artifact.get("metadata") or {}
+        trained_at = str(metadata.get("created_at") or metadata.get("trained_at") or "")[:10]
+        has_consensus_models = bool(artifact.get("candidate_models"))
+        return trained_at != date.today().isoformat() or not has_consensus_models
+    except Exception:
+        return True
+
+
 def orchestrate() -> dict[str, Any]:
     ensure_data_dirs()
     steps: list[dict[str, Any]] = []
@@ -166,8 +183,8 @@ def orchestrate() -> dict[str, Any]:
         write_json_and_js(status, STATUS_JSON, STATUS_JS, "__STARTUP_STATUS__")
         return status
 
-    if not MLB_MODEL.exists() or not MLB_FEATURES.exists():
-        steps.append(run_step("Generate MLB model and current predictions", [python_path, "scripts/refresh_data.py", "--sport", "mlb", "--mode", "all"], timeout=1800))
+    if not MLB_MODEL.exists() or not MLB_FEATURES.exists() or model_needs_daily_retrain():
+        steps.append(run_step("Daily MLB retrain and current predictions", [python_path, "scripts/refresh_data.py", "--sport", "mlb", "--mode", "all"], timeout=1800))
     else:
         steps.append(run_step("Refresh MLB current predictions", [python_path, "scripts/refresh_data.py", "--sport", "mlb", "--mode", "predict"], timeout=900))
     status["mlb_ready"] = has_mlb_model_predictions()

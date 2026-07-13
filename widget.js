@@ -545,18 +545,18 @@ function renderCompact(game) {
     if (!game) return renderEmpty();
     return `
         <section class="widget-frame is-compact ${state.workMode ? "is-work-mode" : ""}" data-tauri-drag-region>
-            ${renderHeader(game)}
             <article class="featured-game">
+                <div class="widget-broadcast-label"><span class="live-dot ${isLiveGame(game) ? "" : "is-muted"}"></span><strong>${escapeHtml(widgetTitle(game))}</strong><small>${escapeHtml(state.refreshStatus || sourceStatusLabel())}</small></div>
                 ${scoreRow(game)}
-                <div class="status-line"><span class="live-dot ${isLiveGame(game) ? "" : "is-muted"}"></span> <strong>${escapeHtml(countLine(game))}</strong> ${statusChip(game)} ${dataModeChip(game)} ${resultLine(game)}</div>
-                <div class="latest-play">${isLiveGame(game) ? "Last play" : "Note"}: ${escapeHtml(latestPlay(game))}</div>
+                <div class="status-line"><strong>${escapeHtml(countLine(game))}</strong> ${statusChip(game)} ${resultLine(game)}</div>
                 ${modelLine(game)}
             </article>
-            <div class="compact-controls">
-                <button class="widget-icon-btn" data-prev-game>Prev</button>
-                <button class="widget-icon-btn" data-next-game>Next</button>
-                <span class="base-line">${escapeHtml(basesLine(game))}</span>
-                <button class="widget-icon-btn" data-toggle-expanded>Expand</button>
+            <div class="widget-hover-controls" aria-label="Widget controls">
+                <button class="widget-icon-btn" data-prev-game aria-label="Previous game">‹</button>
+                <button class="widget-icon-btn" data-next-game aria-label="Next game">›</button>
+                <button class="widget-icon-btn" data-refresh-live>Refresh</button>
+                <button class="widget-icon-btn" data-toggle-expanded>Details</button>
+                <button class="widget-icon-btn widget-icon-btn--close" data-close-widget aria-label="Close live widget">×</button>
             </div>
         </section>
     `;
@@ -764,6 +764,18 @@ async function openFullApp() {
     window.location.href = "index.html";
 }
 
+async function closeWidget() {
+    if (isTauri()) {
+        try {
+            await tauriInvoke("close_live_widget", {});
+            return;
+        } catch (_error) {
+            // Fall through to the browser close attempt.
+        }
+    }
+    window.close();
+}
+
 function bindEvents() {
     document.addEventListener("click", event => {
         const sport = event.target.closest("[data-sport]");
@@ -825,6 +837,7 @@ function bindEvents() {
         }
         if (event.target.closest("[data-refresh-live]")) refreshLive();
         if (event.target.closest("[data-open-full]")) openFullApp();
+        if (event.target.closest("[data-close-widget]")) closeWidget();
     });
     document.addEventListener("change", event => {
         const interval = event.target.closest("[data-refresh-interval]");

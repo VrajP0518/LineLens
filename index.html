@@ -24,6 +24,26 @@
     <script src="data/predictions/mlb_predictions.js" defer></script>
 </head>
 <body>
+    <div id="app-loading" class="app-loading is-visible" role="status" aria-live="polite">
+        <div class="app-loading__backdrop" aria-hidden="true"></div>
+        <div class="app-loading__content">
+            <div class="app-loading__mark" aria-hidden="true">
+                <span>LL</span>
+                <i></i>
+                <b></b>
+            </div>
+            <p class="app-loading__eyebrow">LineLens / Sports Intelligence</p>
+            <h1>Bringing the board online.</h1>
+            <p id="app-loading-message">Loading prediction exports...</p>
+            <div class="app-loading__progress" aria-hidden="true"><span></span></div>
+            <div class="app-loading__signals" aria-hidden="true">
+                <span><i></i>Local data layer</span>
+                <span><i></i>Model registry</span>
+                <span><i></i>Live board</span>
+            </div>
+        </div>
+    </div>
+    <div id="view-transition-wash" class="view-transition-wash" aria-hidden="true"></div>
     <div class="app-shell">
         <aside class="sidebar">
             <div class="brand">
@@ -63,6 +83,7 @@
                 <span>Models scanning loaded board signals.</span>
                 <i aria-hidden="true"></i>
             </div>
+            <div id="sidebar-resizer" class="sidebar-resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0"></div>
         </aside>
 
         <div class="workspace">

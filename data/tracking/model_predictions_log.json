@@ -1,12 +1,12 @@
 {
   "metadata": {
     "app": "LineLens Sports",
-    "version": "v1.0.0",
-    "generated_at": "2026-07-10T13:39:00Z",
+    "version": "v2.0.0",
+    "generated_at": "2026-07-13T13:53:37Z",
     "real_data": true,
-    "row_count": 380,
-    "scored_this_run": 324,
-    "pending": 56
+    "row_count": 396,
+    "scored_this_run": 169,
+    "pending": 1
   },
   "predictions": [
     {
@@ -1028,9 +1028,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NYY",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 5
     },
     {
       "prediction_id": "MLB-822955-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1051,9 +1053,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "TB",
+      "model_result": "loss",
+      "home_score": 7,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-823357-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1074,9 +1078,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "PIT",
+      "model_result": "loss",
+      "home_score": 7,
+      "away_score": 6
     },
     {
       "prediction_id": "MLB-823604-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1097,9 +1103,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "BOS",
+      "model_result": "loss",
+      "home_score": 2,
+      "away_score": 6
     },
     {
       "prediction_id": "MLB-823845-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1120,9 +1128,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "CLE",
+      "model_result": "loss",
+      "home_score": 2,
+      "away_score": 3
     },
     {
       "prediction_id": "MLB-824252-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1143,9 +1153,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "DET",
+      "model_result": "loss",
+      "home_score": 10,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-824493-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1166,9 +1178,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "CIN",
+      "model_result": "loss",
+      "home_score": 4,
+      "away_score": 0
     },
     {
       "prediction_id": "MLB-824575-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1189,9 +1203,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "CWS",
+      "model_result": "loss",
+      "home_score": 14,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-824817-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1212,9 +1228,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "BAL",
+      "model_result": "loss",
+      "home_score": 5,
+      "away_score": 3
     },
     {
       "prediction_id": "MLB-822878-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1235,9 +1253,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "TEX",
+      "model_result": "loss",
+      "home_score": 7,
+      "away_score": 3
     },
     {
       "prediction_id": "MLB-823033-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1258,9 +1278,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "STL",
+      "model_result": "loss",
+      "home_score": 2,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-823200-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1281,9 +1303,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "COL",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 4
     },
     {
       "prediction_id": "MLB-823278-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1304,9 +1328,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "TOR",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 5
     },
     {
       "prediction_id": "MLB-823685-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1327,9 +1353,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "LAA",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 4
     },
     {
       "prediction_id": "MLB-823927-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -1350,9 +1378,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "AZ",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 9
     },
     {
       "prediction_id": "MLB-822710-mlb_moneyline_v0.7.0_20260707T135820-2026-07-07",
@@ -2123,9 +2153,11 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "TEX",
+      "model_result": "win",
+      "home_score": 7,
+      "away_score": 6
     },
     {
       "prediction_id": "MLB-822954-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2146,9 +2178,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NYY",
+      "model_result": "win",
+      "home_score": 4,
+      "away_score": 12
     },
     {
       "prediction_id": "MLB-823034-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2169,9 +2203,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "MIL",
+      "model_result": "win",
+      "home_score": 4,
+      "away_score": 8
     },
     {
       "prediction_id": "MLB-823201-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2192,9 +2228,11 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "SF",
+      "model_result": "win",
+      "home_score": 8,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-823277-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2215,9 +2253,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "AZ",
+      "model_result": "loss",
+      "home_score": 1,
+      "away_score": 3
     },
     {
       "prediction_id": "MLB-823359-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2238,9 +2278,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "ATL",
+      "model_result": "win",
+      "home_score": 5,
+      "away_score": 10
     },
     {
       "prediction_id": "MLB-823606-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2261,9 +2303,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NYM",
+      "model_result": "loss",
+      "home_score": 7,
+      "away_score": 3
     },
     {
       "prediction_id": "MLB-823683-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2284,9 +2328,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "CLE",
+      "model_result": "win",
+      "home_score": 2,
+      "away_score": 5
     },
     {
       "prediction_id": "MLB-823846-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2307,9 +2353,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "MIA",
+      "model_result": "loss",
+      "home_score": 8,
+      "away_score": 4
     },
     {
       "prediction_id": "MLB-824251-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2330,9 +2378,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "DET",
+      "model_result": "loss",
+      "home_score": 4,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-824494-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2353,9 +2403,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "PHI",
+      "model_result": "win",
+      "home_score": 0,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-824577-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2376,9 +2428,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "BOS",
+      "model_result": "win",
+      "home_score": 1,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-824816-mlb_moneyline_v0.7.0_20260707T135820-2026-07-08",
@@ -2399,9 +2453,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "BAL",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-822710-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -2797,9 +2853,11 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "TEX",
+      "model_result": "win",
+      "home_score": 7,
+      "away_score": 6
     },
     {
       "prediction_id": "MLB-822954-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -2820,9 +2878,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NYY",
+      "model_result": "win",
+      "home_score": 4,
+      "away_score": 12
     },
     {
       "prediction_id": "MLB-823034-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -2843,9 +2903,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "MIL",
+      "model_result": "win",
+      "home_score": 4,
+      "away_score": 8
     },
     {
       "prediction_id": "MLB-823201-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -2866,9 +2928,11 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "SF",
+      "model_result": "win",
+      "home_score": 8,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-823277-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -2889,9 +2953,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "AZ",
+      "model_result": "loss",
+      "home_score": 1,
+      "away_score": 3
     },
     {
       "prediction_id": "MLB-823359-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -2912,9 +2978,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "ATL",
+      "model_result": "win",
+      "home_score": 5,
+      "away_score": 10
     },
     {
       "prediction_id": "MLB-823606-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -2935,9 +3003,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NYM",
+      "model_result": "loss",
+      "home_score": 7,
+      "away_score": 3
     },
     {
       "prediction_id": "MLB-823683-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -2958,9 +3028,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "CLE",
+      "model_result": "win",
+      "home_score": 2,
+      "away_score": 5
     },
     {
       "prediction_id": "MLB-823846-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -2981,9 +3053,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "MIA",
+      "model_result": "loss",
+      "home_score": 8,
+      "away_score": 4
     },
     {
       "prediction_id": "MLB-824251-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -3004,9 +3078,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "DET",
+      "model_result": "loss",
+      "home_score": 4,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-824494-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -3027,9 +3103,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "PHI",
+      "model_result": "win",
+      "home_score": 0,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-824577-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -3050,9 +3128,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "BOS",
+      "model_result": "win",
+      "home_score": 1,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-824816-mlb_moneyline_v1.0.0_20260708T164059-2026-07-08",
@@ -3073,9 +3153,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "BAL",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-822710-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3471,9 +3553,11 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "TEX",
+      "model_result": "win",
+      "home_score": 7,
+      "away_score": 6
     },
     {
       "prediction_id": "MLB-822954-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3494,9 +3578,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NYY",
+      "model_result": "win",
+      "home_score": 4,
+      "away_score": 12
     },
     {
       "prediction_id": "MLB-823034-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3517,9 +3603,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "MIL",
+      "model_result": "win",
+      "home_score": 4,
+      "away_score": 8
     },
     {
       "prediction_id": "MLB-823201-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3540,9 +3628,11 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "SF",
+      "model_result": "win",
+      "home_score": 8,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-823277-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3563,9 +3653,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "AZ",
+      "model_result": "loss",
+      "home_score": 1,
+      "away_score": 3
     },
     {
       "prediction_id": "MLB-823359-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3586,9 +3678,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "ATL",
+      "model_result": "win",
+      "home_score": 5,
+      "away_score": 10
     },
     {
       "prediction_id": "MLB-823606-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3609,9 +3703,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "NYM",
+      "model_result": "loss",
+      "home_score": 7,
+      "away_score": 3
     },
     {
       "prediction_id": "MLB-823683-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3632,9 +3728,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "CLE",
+      "model_result": "win",
+      "home_score": 2,
+      "away_score": 5
     },
     {
       "prediction_id": "MLB-823846-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3655,9 +3753,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "MIA",
+      "model_result": "loss",
+      "home_score": 8,
+      "away_score": 4
     },
     {
       "prediction_id": "MLB-824251-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3678,9 +3778,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "DET",
+      "model_result": "loss",
+      "home_score": 4,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-824494-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3701,9 +3803,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "PHI",
+      "model_result": "win",
+      "home_score": 0,
+      "away_score": 1
     },
     {
       "prediction_id": "MLB-824577-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3724,9 +3828,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "BOS",
+      "model_result": "win",
+      "home_score": 1,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-824816-mlb_moneyline_v1.0.0_20260708T183153-2026-07-08",
@@ -3747,9 +3853,11 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "BAL",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 2
     },
     {
       "prediction_id": "MLB-634627-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -3770,11 +3878,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BAL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634647-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -3795,11 +3904,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634620-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -3820,11 +3930,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "WSH",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 8,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634556-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -3845,11 +3956,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 9,
-      "away_score": 11
+      "away_score": 11,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634595-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -3870,11 +3982,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634656-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -3895,11 +4008,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "KC",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632208-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -3920,11 +4034,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "LAA",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632223-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -3945,11 +4060,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BOS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632224-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -3970,11 +4086,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BAL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632226-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -3995,11 +4112,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634472-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4020,11 +4138,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "SEA",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634515-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4045,11 +4164,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PHI",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634518-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4070,11 +4190,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634520-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4095,11 +4216,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "KC",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634561-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4120,11 +4242,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "COL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634465-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4145,11 +4268,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "LAA",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634441-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4170,11 +4294,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIN",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634466-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4195,11 +4320,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATH",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634390-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4220,11 +4346,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PIT",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634452-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4245,11 +4372,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634380-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4270,11 +4398,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "AZ",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634357-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4295,11 +4424,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 11,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634254-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4320,11 +4450,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "COL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 8,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634264-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4345,11 +4476,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CHC",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634239-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4370,11 +4502,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634173-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4395,11 +4528,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 9,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634222-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4420,11 +4554,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634155-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4445,11 +4580,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "COL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633910-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4470,11 +4606,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633912-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4495,11 +4632,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633887-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4520,11 +4658,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633899-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4545,11 +4684,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633916-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4570,11 +4710,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634005-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4595,11 +4736,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PIT",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634042-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4620,11 +4762,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633925-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4645,11 +4788,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-634072-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4670,11 +4814,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BOS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633866-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4695,11 +4840,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633867-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4720,11 +4866,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CIN",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 12,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633745-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4745,11 +4892,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "WSH",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633610-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4770,11 +4918,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 9
+      "away_score": 9,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633530-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4795,11 +4944,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633581-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4820,11 +4970,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633476-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4845,11 +4996,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633506-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4870,11 +5022,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633421-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4895,11 +5048,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633447-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4920,11 +5074,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIA",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633522-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4945,11 +5100,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 10
+      "away_score": 10,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633360-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4970,11 +5126,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TB",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633395-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -4995,11 +5152,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633326-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5020,11 +5178,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633331-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5045,11 +5204,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TOR",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 11
+      "away_score": 11,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633337-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5070,11 +5230,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 12
+      "away_score": 12,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633394-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5095,11 +5256,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "KC",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633291-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5120,11 +5282,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633372-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5145,11 +5308,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIN",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633292-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5170,11 +5334,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TOR",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 10,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633224-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5195,11 +5360,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "SD",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633246-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5220,11 +5386,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BOS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633162-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5245,11 +5412,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TOR",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-633134-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5270,11 +5438,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PHI",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 11,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632997-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5295,11 +5464,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632912-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5320,11 +5490,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632820-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5345,11 +5516,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PIT",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 14,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632730-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5370,11 +5542,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632773-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5395,11 +5568,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BOS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 8,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632822-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5420,11 +5594,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "COL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 10,
-      "away_score": 13
+      "away_score": 13,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632699-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5445,11 +5620,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632666-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5470,11 +5646,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632670-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5495,11 +5672,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PHI",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632457-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5520,9 +5698,10 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Cancelled",
-      "result_status": "pending",
+      "result_status": "excluded",
       "actual_winner": null,
-      "model_result": "pending"
+      "model_result": "no_result",
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632388-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5543,11 +5722,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CIN",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 13,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632393-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5568,11 +5748,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-632409-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5593,11 +5774,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 8,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661333-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5618,11 +5800,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661750-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5643,11 +5826,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "SEA",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663147-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5668,11 +5852,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662018-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5693,11 +5878,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662009-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5718,11 +5904,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662700-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5743,11 +5930,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "KC",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662587-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5768,11 +5956,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "WSH",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662616-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5793,11 +5982,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663087-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5818,11 +6008,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663075-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5843,11 +6034,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662849-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5868,11 +6060,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "COL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662839-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5893,11 +6086,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PIT",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663068-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5918,11 +6112,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661304-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5943,11 +6138,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TEX",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661345-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5968,11 +6164,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BAL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661628-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -5993,11 +6190,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663057-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6018,11 +6216,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 8,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663071-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6043,11 +6242,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PIT",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663142-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6068,11 +6268,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "LAD",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661303-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6093,11 +6294,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661349-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6118,11 +6320,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BAL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661627-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6143,11 +6346,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661523-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6168,11 +6372,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662566-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6193,11 +6398,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663043-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6218,11 +6424,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CIN",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661290-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6243,11 +6450,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663002-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6268,11 +6476,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663123-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6293,11 +6502,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662514-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6318,11 +6528,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "WSH",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 13,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662841-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6343,11 +6554,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662991-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6368,11 +6580,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "COL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 13,
-      "away_score": 12
+      "away_score": 12,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661330-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6393,11 +6606,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663134-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6418,11 +6632,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TEX",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661109-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6443,11 +6658,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CHC",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662964-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6468,11 +6684,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 13
+      "away_score": 13,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662531-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6493,11 +6710,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "SEA",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661115-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6518,11 +6736,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661965-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6543,11 +6762,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662948-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6568,11 +6788,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661945-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6593,11 +6814,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661045-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6618,11 +6840,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TOR",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662974-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6643,11 +6866,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663108-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6668,11 +6892,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CIN",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 10,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-662283-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6693,11 +6918,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661235-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6718,11 +6944,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661098-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6743,11 +6970,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PHI",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-661095-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6768,11 +6996,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 8,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-663272-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6793,11 +7022,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TOR",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718700-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6818,11 +7048,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CHC",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718684-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6843,11 +7074,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIN",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718685-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6868,11 +7100,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PHI",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718688-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6893,11 +7126,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BAL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718693-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6918,11 +7152,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 9,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718558-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6943,11 +7178,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718541-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6968,11 +7204,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718543-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -6993,11 +7230,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718488-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7018,11 +7256,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIA",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718399-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7043,11 +7282,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PIT",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 16
+      "away_score": 16,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718401-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7068,11 +7308,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BAL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718371-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7093,11 +7334,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 21
+      "away_score": 21,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718361-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7118,11 +7360,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718348-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7143,11 +7386,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-718099-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7168,11 +7412,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717928-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7193,11 +7438,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TB",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717857-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7218,11 +7464,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717862-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7243,11 +7490,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PHI",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717847-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7268,11 +7516,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "AZ",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717784-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7293,11 +7542,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717730-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7318,11 +7568,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BOS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717664-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7343,11 +7594,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 8,
-      "away_score": 10
+      "away_score": 10,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717550-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7368,11 +7620,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717480-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7393,11 +7646,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TOR",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717411-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7418,11 +7672,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TB",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717247-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7443,11 +7698,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "LAA",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 11
+      "away_score": 11,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717096-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7468,11 +7724,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "WSH",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-717027-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7493,11 +7750,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CIN",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716959-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7518,11 +7776,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716903-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7543,11 +7802,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CIN",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716628-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7568,11 +7828,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716631-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7593,11 +7854,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "KC",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 10,
-      "away_score": 11
+      "away_score": 11,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716597-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7618,11 +7880,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BOS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716581-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7643,11 +7906,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "COL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 9,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716467-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7668,11 +7932,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716471-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7693,11 +7958,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716443-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7718,11 +7984,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716430-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7743,11 +8010,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIA",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-716393-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7768,11 +8036,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 11,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745604-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7793,11 +8062,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 9
+      "away_score": 9,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745848-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7818,11 +8088,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745844-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7843,11 +8114,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745843-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7868,11 +8140,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746816-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7893,11 +8166,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745927-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7918,11 +8192,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIN",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-747139-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7943,11 +8218,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746490-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7968,11 +8244,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIN",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746730-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -7993,11 +8270,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746656-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8018,11 +8296,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746809-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8043,11 +8322,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746891-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8068,11 +8348,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CHC",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746572-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8093,11 +8374,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "SEA",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 10
+      "away_score": 10,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746481-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8118,11 +8400,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 11,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745184-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8143,11 +8426,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYM",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746799-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8168,11 +8452,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CWS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-747039-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8193,11 +8478,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TOR",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-747121-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8218,11 +8504,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745175-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8243,11 +8530,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745816-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8268,11 +8556,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "LAD",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746468-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8293,11 +8582,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PIT",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 10
+      "away_score": 10,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746628-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8318,11 +8608,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "KC",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745891-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8343,11 +8634,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIN",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 8,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745157-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8368,11 +8660,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745155-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8393,11 +8686,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "KC",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746773-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8418,11 +8712,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIN",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-747093-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8443,11 +8738,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-747090-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8468,11 +8764,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CIN",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745713-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8493,11 +8790,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "LAA",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746602-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8518,11 +8816,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "AZ",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745708-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8543,11 +8842,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "TEX",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 9
+      "away_score": 9,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-745455-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8568,11 +8868,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "WSH",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746906-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8593,11 +8894,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BOS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 9,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-747064-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8618,11 +8920,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 0
+      "away_score": 0,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-746577-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8643,9 +8946,10 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Cancelled",
-      "result_status": "pending",
+      "result_status": "excluded",
       "actual_winner": null,
-      "model_result": "pending"
+      "model_result": "no_result",
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778443-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8666,11 +8970,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BOS",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778431-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8691,11 +8996,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778372-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8716,11 +9022,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BAL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 16,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778266-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8741,11 +9048,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "COL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778195-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8766,11 +9074,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "KC",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778179-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8791,11 +9100,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778180-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8816,11 +9126,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 2
+      "away_score": 2,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778170-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8841,11 +9152,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "NYY",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778134-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8866,11 +9178,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778068-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8891,11 +9204,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778046-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8916,11 +9230,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 9
+      "away_score": 9,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-778029-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8941,11 +9256,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 1,
-      "away_score": 11
+      "away_score": 11,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777933-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8966,11 +9282,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 14
+      "away_score": 14,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777938-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -8991,11 +9308,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIN",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777839-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9016,11 +9334,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777825-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9041,11 +9360,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "ATL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 3,
-      "away_score": 6
+      "away_score": 6,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777815-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9066,11 +9386,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BOS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 19,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777809-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9091,11 +9412,12 @@
       "confidence_label": "High",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BOS",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777735-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9116,11 +9438,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PHI",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777642-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9141,11 +9464,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 5
+      "away_score": 5,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777458-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9166,11 +9490,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "STL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 6,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777459-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9191,11 +9516,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIL",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 0,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777464-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9216,11 +9542,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PIT",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 4,
-      "away_score": 8
+      "away_score": 8,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777284-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9241,11 +9568,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "DET",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 11
+      "away_score": 11,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777289-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9266,11 +9594,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "MIL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 7
+      "away_score": 7,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777290-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9291,11 +9620,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "PHI",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 1
+      "away_score": 1,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777181-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9316,11 +9646,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "BAL",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 7,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777164-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9341,11 +9672,12 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "CLE",
-      "model_result": "loss",
+      "model_result": "no_result",
       "home_score": 2,
-      "away_score": 4
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-777010-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9366,11 +9698,12 @@
       "confidence_label": "Medium",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
-      "result_status": "scored",
+      "result_status": "excluded",
       "actual_winner": "KC",
-      "model_result": "win",
+      "model_result": "no_result",
       "home_score": 5,
-      "away_score": 3
+      "away_score": 3,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
     },
     {
       "prediction_id": "MLB-776691-mlb_moneyline_v1.0.0_20260710T133841-2026-07-10",
@@ -9391,11 +9724,410 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Postponed",
+      "result_status": "excluded",
+      "actual_winner": "CHC",
+      "model_result": "no_result",
+      "home_score": 6,
+      "away_score": 4,
+      "exclusion_reason": "Non-decisive schedule status; excluded from model accountability."
+    },
+    {
+      "prediction_id": "MLB-822708-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "822708",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "WSH",
+      "away": "NYY",
+      "model_pick": "NYY",
+      "home_win_probability": 0.4312316104403362,
+      "away_win_probability": 0.5687683895596638,
+      "confidence": 0.5687683895596638,
+      "confidence_label": "Medium",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "NYY",
+      "model_result": "win",
+      "home_score": 3,
+      "away_score": 5
+    },
+    {
+      "prediction_id": "MLB-822876-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "822876",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "TEX",
+      "away": "HOU",
+      "model_pick": "TEX",
+      "home_win_probability": 0.5422350557912393,
+      "away_win_probability": 0.4577649442087607,
+      "confidence": 0.5422350557912393,
+      "confidence_label": "Low",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "TEX",
+      "model_result": "win",
+      "home_score": 6,
+      "away_score": 5
+    },
+    {
+      "prediction_id": "MLB-822951-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "822951",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "TB",
+      "away": "SEA",
+      "model_pick": "SEA",
+      "home_win_probability": 0.45686798440318316,
+      "away_win_probability": 0.5431320155968169,
+      "confidence": 0.5431320155968169,
+      "confidence_label": "Low",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "SEA",
+      "model_result": "win",
+      "home_score": 2,
+      "away_score": 8
+    },
+    {
+      "prediction_id": "MLB-823029-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "823029",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "STL",
+      "away": "ATL",
+      "model_pick": "ATL",
+      "home_win_probability": 0.4952039073129717,
+      "away_win_probability": 0.5047960926870283,
+      "confidence": 0.5047960926870283,
+      "confidence_label": "Low",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "ATL",
+      "model_result": "win",
+      "home_score": 3,
+      "away_score": 4
+    },
+    {
+      "prediction_id": "MLB-823199-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "823199",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "SF",
+      "away": "COL",
+      "model_pick": "SF",
+      "home_win_probability": 0.6363981994770967,
+      "away_win_probability": 0.36360180052290325,
+      "confidence": 0.6363981994770967,
+      "confidence_label": "High",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "SF",
+      "model_result": "win",
+      "home_score": 3,
+      "away_score": 1
+    },
+    {
+      "prediction_id": "MLB-823274-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "823274",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "SD",
+      "away": "TOR",
+      "model_pick": "TOR",
+      "home_win_probability": 0.49599818596986167,
+      "away_win_probability": 0.5040018140301383,
+      "confidence": 0.5040018140301383,
+      "confidence_label": "Low",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "SD",
+      "model_result": "loss",
+      "home_score": 5,
+      "away_score": 4
+    },
+    {
+      "prediction_id": "MLB-823358-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "823358",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "PIT",
+      "away": "MIL",
+      "model_pick": "PIT",
+      "home_win_probability": 0.5367520013124728,
+      "away_win_probability": 0.4632479986875272,
+      "confidence": 0.5367520013124728,
+      "confidence_label": "Low",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "PIT",
+      "model_result": "win",
+      "home_score": 14,
+      "away_score": 5
+    },
+    {
+      "prediction_id": "MLB-823602-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "823602",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "NYM",
+      "away": "BOS",
+      "model_pick": "NYM",
+      "home_win_probability": 0.5149389977429542,
+      "away_win_probability": 0.48506100225704585,
+      "confidence": 0.5149389977429542,
+      "confidence_label": "Low",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "BOS",
+      "model_result": "loss",
+      "home_score": 2,
+      "away_score": 3
+    },
+    {
+      "prediction_id": "MLB-823681-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "823681",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "MIN",
+      "away": "LAA",
+      "model_pick": "MIN",
+      "home_win_probability": 0.603343113825524,
+      "away_win_probability": 0.39665688617447603,
+      "confidence": 0.603343113825524,
+      "confidence_label": "Medium",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "MIN",
+      "model_result": "win",
+      "home_score": 4,
+      "away_score": 2
+    },
+    {
+      "prediction_id": "MLB-823842-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "823842",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "MIA",
+      "away": "CLE",
+      "model_pick": "CLE",
+      "home_win_probability": 0.4374594172209529,
+      "away_win_probability": 0.5625405827790471,
+      "confidence": 0.5625405827790471,
+      "confidence_label": "Medium",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "CLE",
+      "model_result": "win",
+      "home_score": 2,
+      "away_score": 5
+    },
+    {
+      "prediction_id": "MLB-823925-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "823925",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "LAD",
+      "away": "AZ",
+      "model_pick": "LAD",
+      "home_win_probability": 0.5655257328374581,
+      "away_win_probability": 0.4344742671625419,
+      "confidence": 0.5655257328374581,
+      "confidence_label": "Medium",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "AZ",
+      "model_result": "loss",
+      "home_score": 3,
+      "away_score": 5
+    },
+    {
+      "prediction_id": "MLB-824250-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "824250",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "DET",
+      "away": "PHI",
+      "model_pick": "PHI",
+      "home_win_probability": 0.4409274095695328,
+      "away_win_probability": 0.5590725904304672,
+      "confidence": 0.5590725904304672,
+      "confidence_label": "Medium",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "PHI",
+      "model_result": "win",
+      "home_score": 0,
+      "away_score": 5
+    },
+    {
+      "prediction_id": "MLB-824491-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "824491",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "CIN",
+      "away": "CHC",
+      "model_pick": "CHC",
+      "home_win_probability": 0.48081689855780335,
+      "away_win_probability": 0.5191831014421966,
+      "confidence": 0.5191831014421966,
+      "confidence_label": "Low",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
       "result_status": "scored",
       "actual_winner": "CHC",
+      "model_result": "win",
+      "home_score": 4,
+      "away_score": 8
+    },
+    {
+      "prediction_id": "MLB-824574-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "824574",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "CWS",
+      "away": "ATH",
+      "model_pick": "ATH",
+      "home_win_probability": 0.4498581950203498,
+      "away_win_probability": 0.5501418049796503,
+      "confidence": 0.5501418049796503,
+      "confidence_label": "Medium",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "CWS",
       "model_result": "loss",
-      "home_score": 6,
-      "away_score": 4
+      "home_score": 9,
+      "away_score": 1
+    },
+    {
+      "prediction_id": "MLB-824814-mlb_moneyline_v2.0.0_20260713T134618-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T134618",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:47:00Z",
+      "game_id": "824814",
+      "season": 2026,
+      "game_date": "2026-07-12",
+      "home": "BAL",
+      "away": "KC",
+      "model_pick": "KC",
+      "home_win_probability": 0.46866753250815546,
+      "away_win_probability": 0.5313324674918445,
+      "confidence": 0.5313324674918445,
+      "confidence_label": "Low",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "scored",
+      "actual_winner": "BAL",
+      "model_result": "loss",
+      "home_score": 8,
+      "away_score": 2
+    },
+    {
+      "prediction_id": "MLB-823443-mlb_moneyline_v2.0.0_20260713T135232-2026-07-13",
+      "sport": "MLB",
+      "model_version": "v2.0.0",
+      "model_id": "mlb_moneyline_v2.0.0_20260713T135232",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-13T13:53:12Z",
+      "game_id": "823443",
+      "season": 2026,
+      "game_date": "2026-07-14",
+      "home": "NL",
+      "away": "AL",
+      "model_pick": "AL",
+      "home_win_probability": 0.48012779352411616,
+      "away_win_probability": 0.5198722064758838,
+      "confidence": 0.5198722064758838,
+      "confidence_label": "Low",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "pending",
+      "actual_winner": null,
+      "model_result": "pending"
     }
   ]
 }

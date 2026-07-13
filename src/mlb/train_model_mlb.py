@@ -733,6 +733,11 @@ def train(
     record = _model_record(probabilities, y_test)
     confidence_records = _threshold_records(probabilities, y_test)
     comparison = _comparison_rows(model_rows, y_test, test_df)
+    candidate_models = [
+        (row["model_name"], row["model"])
+        for row in model_rows
+        if row.get("status") == "trained" and row.get("model") is not None
+    ]
     top_features = _ensemble_feature_importance(moltres, features) if selected["model_name"] == "Moltres" else _feature_importance(selected["model"], features)
     created_at = utc_now()
     model_id = moltres_id if selected["model_name"] == "Moltres" else f"mlb_moneyline_{APP_VERSION}_{created_at.replace(':', '').replace('-', '').replace('Z', '')}"
@@ -771,6 +776,7 @@ def train(
         "metrics": metrics,
         "model_comparison": comparison,
         "top_global_features": top_features,
+        "candidate_models": candidate_models,
     }
     out = resolve_project_path(model_out)
     staged_selected = _stage_joblib(payload, out)
@@ -793,6 +799,7 @@ def train(
         "top_global_features": _ensemble_feature_importance(moltres, features),
         "component_models": moltres.get("component_models"),
         "component_weights": moltres.get("component_weights"),
+        "candidate_models": candidate_models,
     }
     staged_moltres = _stage_joblib(moltres_payload, resolve_project_path(MOLTRES_MODEL))
 
