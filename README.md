@@ -58,19 +58,6 @@ LineLens bundles real exports so the interface opens immediately. Daily refresh 
 
 Predictions are experimental educational outputs for project demonstration only, not betting advice.
 
-## Publish a new release
-
-The repository workflow builds and publishes the Tauri Windows installers when a version tag is pushed. From PowerShell:
-
-```powershell
-npm run verify:release
-git add .
-git commit -m "Release LineLens Sports v3.0.0"
-git push origin main
-git tag -a v3.0.0 -m "LineLens Sports v3.0.0"
-git push origin v3.0.0
-```
-
 After the tag push, open the repository’s **Actions** tab to watch `Tauri Windows Build`. When it finishes, the workflow creates a GitHub Release and attaches the `.msi` and `.exe` installers. Others can then download the app from **Releases**, rather than from an Actions artifact.
 
 For a future release, update the app version metadata, README version, and tag together, for example `v3.1.0`.
