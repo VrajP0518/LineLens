@@ -100,6 +100,18 @@ function isTauri() {
     return Boolean(window.__TAURI__?.core?.invoke || window.__TAURI__?.invoke);
 }
 
+async function requestLocalRefresh(commandName) {
+    if (!window.location || !["http:", "https:"].includes(window.location.protocol)) return null;
+    const response = await fetch("/api/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ command_name: commandName }),
+    });
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`Local refresh bridge returned ${response.status}.`);
+    return response.json();
+}
+
 function tauriInvoke(command, payload = {}) {
     const invoker = window.__TAURI__?.core?.invoke || window.__TAURI__?.invoke;
     if (!invoker) return Promise.reject(new Error("Tauri invoke is unavailable."));
@@ -765,9 +777,12 @@ async function refreshLive(options = {}) {
     try {
         if (isTauri()) {
             if (!options.background) showToast("Refreshing live scores...");
-            await tauriInvoke("run_refresh_command", { commandName: "live_scores" });
-        } else if (!options.background) {
-            showToast("Browser mode: run npm run refresh:live for live updates.");
+            const result = await tauriInvoke("run_refresh_command", { commandName: "live_scores" });
+            if (result && result.success === false) throw new Error(result.stderr || "Live score refresh failed.");
+        } else {
+            const result = await requestLocalRefresh("live_scores");
+            if (result?.success === false) throw new Error(result.stderr || "Live score refresh failed.");
+            if (!result && !options.background) showToast("Start npm run app for live refresh, or showing cached data.");
         }
         await loadLocalData("Reloading live schedule...", { forceFetch: true });
         if (!options.background) showToast("Live scores loaded");
@@ -889,8 +904,7 @@ function startAutoRefresh() {
     window.clearInterval(state.timer);
     if (!state.refreshInterval) return;
     state.timer = window.setInterval(() => {
-        if (isTauri()) refreshLive({ background: true });
-        else loadLocalData("Reloading cached live data...", { forceFetch: true });
+        refreshLive({ background: true });
     }, Math.max(15, state.refreshInterval) * 1000);
 }
 

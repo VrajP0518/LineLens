@@ -1,8 +1,8 @@
 {
   "metadata": {
     "app": "LineLens Sports",
-    "version": "v2.0.0",
-    "generated_at": "2026-07-13T13:50:20Z"
+    "version": "v3.0.0",
+    "generated_at": "2026-07-13T17:37:34Z"
   },
   "status": "env_ready",
   "python_found": true,

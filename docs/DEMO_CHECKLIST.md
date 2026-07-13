@@ -38,4 +38,4 @@ The bundled demo should load without model training, odds credentials, live refr
 
 ## Windows artifact smoke test
 
-After downloading `LineLens-Sports-Windows-v2.0.0` from GitHub Actions, verify: fresh install/open; first launch without Python, `.env`, network, or odds credentials; Home bundled data; MLB July 10/date selection and score/status consistency; Soccer empty/live state; every unique Models entry; GameCast; widget; responsive navigation; favorites persistence; ticker clearance; Presentation Mode; and successful reopen after closing.
+After downloading `LineLens-Sports-Windows-v3.0.0` from GitHub Actions, verify: fresh install/open; first launch without Python, `.env`, network, or odds credentials; Home bundled data; MLB date selection and score/status consistency; Soccer empty/live state; every unique Models entry; GameCast; widget; responsive navigation; favorites persistence; ticker clearance; Presentation Mode; and successful reopen after closing.

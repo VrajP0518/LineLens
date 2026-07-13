@@ -77,7 +77,7 @@ def main() -> int:
         git_safety(),
     ]
     if all(steps):
-        print("\nRELEASE VERIFY PASS: LineLens Sports v2.0.0 is release-check clean.")
+        print("\nRELEASE VERIFY PASS: LineLens Sports v3.0.0 is release-check clean.")
         return 0
     print("\nRELEASE VERIFY FAIL: fix the failed release checks before tagging.")
     return 1

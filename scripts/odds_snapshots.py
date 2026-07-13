@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.shared.odds_provider import fetch_odds, odds_config_status
+from src.shared.version import APP_VERSION
 
 
 ODDS_DIR = ROOT / "data" / "odds"
@@ -113,24 +114,39 @@ def normalize_event(event: dict[str, Any], sport: str, aliases: dict[str, str], 
     away_code = aliases.get(normalize_name(away_name), str(away_name or "").upper())
     home_prices: list[float] = []
     away_prices: list[float] = []
+    spread_home_points: list[float] = []
+    spread_away_points: list[float] = []
+    spread_home_prices: list[float] = []
+    spread_away_prices: list[float] = []
     books: list[dict[str, Any]] = []
+    spread_books: list[dict[str, Any]] = []
 
     for book in event.get("bookmakers", []) or []:
         for market in book.get("markets", []) or []:
-            if market.get("key") != "h2h":
+            market_key = market.get("key")
+            if market_key not in {"h2h", "spreads"}:
                 continue
             book_row = {"book": book.get("title") or book.get("key"), "last_update": market.get("last_update"), "home": None, "away": None}
             for outcome in market.get("outcomes", []) or []:
                 price = outcome.get("price")
                 if price is None:
                     continue
-                if normalize_name(outcome.get("name")) == normalize_name(home_name):
-                    home_prices.append(float(price))
-                    book_row["home"] = price
-                elif normalize_name(outcome.get("name")) == normalize_name(away_name):
-                    away_prices.append(float(price))
-                    book_row["away"] = price
-            books.append(book_row)
+                is_home = normalize_name(outcome.get("name")) == normalize_name(home_name)
+                is_away = normalize_name(outcome.get("name")) == normalize_name(away_name)
+                if market_key == "h2h":
+                    if is_home:
+                        home_prices.append(float(price))
+                        book_row["home"] = price
+                    elif is_away:
+                        away_prices.append(float(price))
+                        book_row["away"] = price
+                elif is_home or is_away:
+                    point = outcome.get("point")
+                    if point is not None:
+                        (spread_home_points if is_home else spread_away_points).append(float(point))
+                    (spread_home_prices if is_home else spread_away_prices).append(float(price))
+                    book_row["home" if is_home else "away"] = {"point": point, "price": price}
+            (books if market_key == "h2h" else spread_books).append(book_row)
 
     home_consensus = round(mean(home_prices), 1) if home_prices else None
     away_consensus = round(mean(away_prices), 1) if away_prices else None
@@ -154,9 +170,14 @@ def normalize_event(event: dict[str, Any], sport: str, aliases: dict[str, str], 
         "moneyline_away_current": away_consensus,
         "best_home_moneyline": max(home_prices) if home_prices else None,
         "best_away_moneyline": max(away_prices) if away_prices else None,
+        "spread_home_current": round(mean(spread_home_points), 1) if spread_home_points else None,
+        "spread_away_current": round(mean(spread_away_points), 1) if spread_away_points else None,
+        "spread_home_price_current": round(mean(spread_home_prices), 1) if spread_home_prices else None,
+        "spread_away_price_current": round(mean(spread_away_prices), 1) if spread_away_prices else None,
         "market_implied_home": american_implied(home_consensus),
         "market_implied_away": american_implied(away_consensus),
         "books": books[:8],
+        "spread_books": spread_books[:8],
         "source": "The Odds API",
         "data_mode": "real_odds_snapshot",
     }
@@ -181,6 +202,10 @@ def apply_mlb_odds_to_predictions(snapshots: list[dict[str, Any]]) -> int:
         game["moneyline_away"] = odds.get("moneyline_away_current")
         game["moneyline_home_current"] = odds.get("moneyline_home_current")
         game["moneyline_away_current"] = odds.get("moneyline_away_current")
+        game["spread_home_current"] = odds.get("spread_home_current")
+        game["spread_away_current"] = odds.get("spread_away_current")
+        game["spread_home_price_current"] = odds.get("spread_home_price_current")
+        game["spread_away_price_current"] = odds.get("spread_away_price_current")
         game["market_implied_home"] = odds.get("market_implied_home")
         game["market_implied_away"] = odds.get("market_implied_away")
         if game.get("home_win_probability") is not None and odds.get("market_implied_home") is not None:
@@ -251,7 +276,7 @@ def main() -> int:
     payload = {
         "metadata": {
             "app": "LineLens Sports",
-            "version": "v1.0.0",
+            "version": APP_VERSION,
             "generated_at": generated_at,
             "real_data": bool(snapshots),
             "new_real_data": bool(new_snapshots),

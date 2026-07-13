@@ -1,11 +1,11 @@
 {
   "name": "linelens-sports",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
     "build:web": "python scripts/build_web_dist.py",
-    "app": "npx http-server . -p 4173",
+    "app": "python scripts/local_server.py --port 4173",
     "app:dist": "npm run build:web && npx http-server dist-web -p 4174",
     "check:js": "node --check app.js && node --check widget.js",
     "check:python": "python -m compileall src scripts",

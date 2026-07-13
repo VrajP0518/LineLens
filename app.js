@@ -1,4 +1,4 @@
-const APP_VERSION = "v2.0.0";
+const APP_VERSION = "v3.0.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
@@ -201,7 +201,7 @@ function formatEdge(value) {
 function formatLine(value, sport) {
     const numeric = safeNumber(value);
     if (numeric === null) return "-";
-    if (sport === "MLB") return numeric > 0 ? `+${numeric}` : `${numeric}`;
+    if (sport === "MLB") return americanOdds(numeric);
     return numeric > 0 ? `+${numeric.toFixed(1)}` : numeric.toFixed(1);
 }
 
@@ -493,7 +493,12 @@ function saveFavorites() {
 
 function loadRefreshLogs() {
     try {
-        state.refreshLogs = JSON.parse(localStorage.getItem(REFRESH_LOGS_KEY) || "[]");
+        const saved = JSON.parse(localStorage.getItem(REFRESH_LOGS_KEY) || "[]");
+        state.refreshLogs = (Array.isArray(saved) ? saved : []).filter(entry => {
+            const stderr = String(entry?.stderr || "");
+            return !entry?.skipped && !stderr.includes("Automatic refresh requires scripts/");
+        });
+        if (state.refreshLogs.length !== saved.length) saveRefreshLogs();
     } catch (_error) {
         state.refreshLogs = [];
     }
@@ -1299,6 +1304,76 @@ function marketLine(snapshot, side, sport = "MLB") {
     return safeNumber(snapshot[`moneyline_${side}_current`] ?? snapshot[`best_${side}_moneyline`]);
 }
 
+function marketSpreadLine(snapshot, side) {
+    if (!snapshot) return null;
+    return safeNumber(snapshot[`spread_${side}_current`] ?? snapshot[`spread_${side}`] ?? snapshot[`spread_${side}_point_current`]);
+}
+
+function americanOdds(value) {
+    const numeric = safeNumber(value);
+    if (numeric === null) return "-";
+    const rounded = Math.round(numeric);
+    return rounded > 0 ? `+${rounded}` : String(rounded);
+}
+
+function runLine(value) {
+    const numeric = safeNumber(value);
+    if (numeric === null) return "-";
+    return numeric > 0 ? `+${numeric.toFixed(1)}` : numeric.toFixed(1);
+}
+
+function oddsDisplayForGame(game) {
+    const context = oddsContextForGame(game);
+    const stage = lifecycleStage(game);
+    const direct = {
+        snapshot_at: game?.odds_snapshot_at,
+        moneyline_home_current: game?.moneyline_home_current ?? game?.moneyline_home,
+        moneyline_away_current: game?.moneyline_away_current ?? game?.moneyline_away,
+        spread_home_current: game?.spread_home_current ?? game?.spread_line,
+        spread_away_current: game?.spread_away_current,
+        spread_home_price_current: game?.spread_home_price_current,
+        spread_away_price_current: game?.spread_away_price_current,
+    };
+    const hasDirectOdds = Object.values(direct).some(value => value !== null && value !== undefined && value !== "" && value !== direct.snapshot_at);
+    let snapshot;
+    let label;
+    if (stage === "final" || stage === "stale") {
+        snapshot = context.opening || context.current || (hasDirectOdds ? direct : null);
+        label = "Pregame odds";
+    } else if (stage === "live") {
+        snapshot = context.current || (hasDirectOdds ? direct : null);
+        label = "Live odds";
+    } else {
+        snapshot = context.current || context.opening || (hasDirectOdds ? direct : null);
+        label = "Current odds";
+    }
+    if (!snapshot) return { snapshot: null, label, freshness: "Unavailable" };
+    return { snapshot, label, freshness: oddsFreshness(snapshot) };
+}
+
+function renderMlbOdds(game) {
+    const display = oddsDisplayForGame(game);
+    const snapshot = display.snapshot;
+    if (!snapshot) {
+        return `<div class="mlb-game-card__odds mlb-game-card__odds--empty"><span>Game odds</span><small>Moneyline / run line unavailable</small></div>`;
+    }
+    const awayMeta = getTeamMeta("MLB", game.away, game.away_display);
+    const homeMeta = getTeamMeta("MLB", game.home, game.home_display);
+    const awayMoneyline = marketLine(snapshot, "away", "MLB");
+    const homeMoneyline = marketLine(snapshot, "home", "MLB");
+    const awaySpread = marketSpreadLine(snapshot, "away");
+    const homeSpread = marketSpreadLine(snapshot, "home");
+    const awaySpreadPrice = safeNumber(snapshot.spread_away_price_current ?? snapshot.spread_away_price);
+    const homeSpreadPrice = safeNumber(snapshot.spread_home_price_current ?? snapshot.spread_home_price);
+    const moneyline = awayMoneyline === null && homeMoneyline === null
+        ? "Unavailable"
+        : `${awayMeta.abbreviation} ${americanOdds(awayMoneyline)} · ${homeMeta.abbreviation} ${americanOdds(homeMoneyline)}`;
+    const spread = awaySpread === null && homeSpread === null
+        ? "Unavailable"
+        : `${awayMeta.abbreviation} ${runLine(awaySpread)} ${americanOdds(awaySpreadPrice)} · ${homeMeta.abbreviation} ${runLine(homeSpread)} ${americanOdds(homeSpreadPrice)}`;
+    return `<div class="mlb-game-card__odds"><header><span>${escapeHtml(display.label)}</span><small>${escapeHtml(display.freshness)}</small></header><div><span>Moneyline</span><strong>${escapeHtml(moneyline)}</strong></div><div><span>Run line</span><strong>${escapeHtml(spread)}</strong></div></div>`;
+}
+
 function marketImplied(snapshot, side) {
     return safeNumber(snapshot?.[`market_implied_${side}`]);
 }
@@ -1888,7 +1963,9 @@ async function loadAll() {
         state.refreshRuntime.available = isTauriRefreshAvailable();
         state.refreshRuntime.message = state.refreshRuntime.available
             ? "Desktop auto-refresh is available."
-            : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment.";
+            : window.location?.protocol === "http:" || window.location?.protocol === "https:"
+                ? "Local refresh bridge ready when launched with npm run app."
+                : "Showing bundled exports. Start npm run app to enable local command refresh.";
         renderAll();
         if (state.refreshRuntime.available && !resumedAfterFileRefresh) {
             runStartupAutomation({ background: true });
@@ -1909,7 +1986,19 @@ function tauriInvoke(command, payload) {
 
 function browserRefreshMessage(commandName) {
     const config = REFRESH_COMMANDS[commandName] || REFRESH_COMMANDS.startup;
-    return `Command refresh is available only in the Tauri desktop app. Run this manually: ${config.manual}`;
+    return `Local refresh bridge unavailable. Start the app with npm run app, or run this manually: ${config.manual}`;
+}
+
+async function requestLocalRefresh(commandName) {
+    if (!window.location || !["http:", "https:"].includes(window.location.protocol)) return null;
+    const response = await fetch("/api/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ command_name: commandName }),
+    });
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`Local refresh bridge returned ${response.status}.`);
+    return response.json();
 }
 
 function refreshCommandLabel(commandName) {
@@ -1918,7 +2007,13 @@ function refreshCommandLabel(commandName) {
 
 async function openLiveWidget() {
     if (!isTauriRefreshAvailable()) {
-        showToast("Live widget is available in the Tauri desktop app. Browser mode: run npm run refresh:live.");
+        const widget = window.open("widget.html", "linelens-live-widget", "popup=yes,width=390,height=180,resizable=yes");
+        if (widget) {
+            widget.focus?.();
+            showToast("Opening LineLens Live widget");
+        } else {
+            showToast("Popup blocked. Open widget.html in a new tab.");
+        }
         return;
     }
     try {
@@ -1932,23 +2027,7 @@ async function openLiveWidget() {
 async function runRefreshCommand(commandName = "startup", options = {}) {
     const config = REFRESH_COMMANDS[commandName] || REFRESH_COMMANDS.startup;
     if (!isTauriRefreshAvailable()) {
-        state.refreshRuntime.available = false;
-        state.refreshRuntime.message = browserRefreshMessage(commandName);
-        appendRefreshLog({
-            command_name: commandName,
-            command: config.manual,
-            success: false,
-            skipped: true,
-            exit_code: null,
-            stdout: "",
-            stderr: state.refreshRuntime.message,
-            started_at: new Date().toISOString(),
-            finished_at: new Date().toISOString(),
-            duration_ms: 0,
-        });
-        showToast(state.refreshRuntime.message);
-        renderAll();
-        return;
+        return runBrowserRefreshCommand(commandName, options);
     }
     state.refreshRuntime.available = true;
     state.refreshRuntime.active = true;
@@ -1987,6 +2066,49 @@ async function runRefreshCommand(commandName = "startup", options = {}) {
             duration_ms: 0,
         });
         showToast("Refresh failed; showing cached data");
+    } finally {
+        state.refreshRuntime.active = false;
+        if (!options.background) {
+            setAppLoading("Refresh complete.", "Board synchronized", 96);
+            finishAppLoading();
+        }
+        renderAll();
+    }
+}
+
+async function runBrowserRefreshCommand(commandName = "startup", options = {}) {
+    const config = REFRESH_COMMANDS[commandName] || REFRESH_COMMANDS.startup;
+    state.refreshRuntime.available = false;
+    state.refreshRuntime.active = true;
+    state.refreshRuntime.command = commandName;
+    state.refreshRuntime.message = `Refreshing through the local bridge: ${config.manual}`;
+    if (!options.background) {
+        startAppLoading(`Refreshing ${config.label}...`, "Local data refresh", 28);
+        showToast(`Running ${config.label}...`);
+    }
+    renderAll();
+    try {
+        const result = await requestLocalRefresh(commandName);
+        if (!result) {
+            state.refreshRuntime.message = browserRefreshMessage(commandName);
+            if (!options.background) showToast(state.refreshRuntime.message);
+            return null;
+        }
+        appendRefreshLog(result);
+        state.refreshRuntime.message = result.success
+            ? `${config.label} completed.`
+            : `${config.label} failed with exit code ${result.exit_code ?? "unknown"}.`;
+        if (result.success) {
+            showToast(`${config.label} complete`);
+            await loadAllAfterRefresh();
+        } else {
+            showToast(`${config.label} failed; cached data remains visible`);
+        }
+        return result;
+    } catch (error) {
+        state.refreshRuntime.message = String(error?.message || error || "Local refresh failed; showing cached data.");
+        if (!options.background) showToast("Refresh failed; cached data remains visible");
+        return null;
     } finally {
         state.refreshRuntime.active = false;
         if (!options.background) {
@@ -3077,13 +3199,13 @@ function renderRefreshPanel(context = "home") {
                 ${card("Last refresh", timestamp(state.refreshStatus?.generated_at), state.refreshRuntime.active ? "refreshing" : "runtime status")}
                 ${card("NFL refresh", nfl.status, nfl.used_cache ? "using cache" : "fresh export")}
                 ${card("MLB refresh", mlb.status, mlb.used_cache ? "using cache" : "fresh schedule")}
-                ${card("Tauri command", state.refreshRuntime.available ? "Available" : "Browser/static", state.refreshRuntime.available ? "desktop app" : "exported data only")}
+                ${card("Refresh bridge", state.refreshRuntime.available ? "Desktop" : "Local app", state.refreshRuntime.available ? "Tauri command" : "npm run app")}
             </div>
             <div class="refresh-log">
                 <div><strong>NFL</strong><span>${escapeHtml(nfl.message)}</span></div>
                 <div><strong>MLB</strong><span>${escapeHtml(mlb.message)}</span></div>
             </div>
-            ${state.refreshRuntime.available ? "" : `<p class="data-status" data-variant="warning">Command refresh is available only in the Tauri desktop app. Browser/static mode uses cached exports. Manual examples: <code>${escapeHtml(REFRESH_COMMANDS.nfl_real.manual)}</code> or <code>${escapeHtml(REFRESH_COMMANDS.mlb_current.manual)}</code>.</p>`}
+            ${state.refreshRuntime.available ? "" : `<p class="data-status" data-variant="warning">Browser mode can refresh through the local bridge when started with <code>npm run app</code>. Static hosting only reloads cached exports. Manual examples: <code>${escapeHtml(REFRESH_COMMANDS.nfl_real.manual)}</code> or <code>${escapeHtml(REFRESH_COMMANDS.mlb_current.manual)}</code>.</p>`}
         </section>
     `;
 }
@@ -3444,9 +3566,11 @@ function renderMlbLifecycleCard(game) {
     const awayScore = safeNumber(source?.away_score);
     const homeScore = safeNumber(source?.home_score);
     const score = (stage === "live" || stage === "final") && awayScore !== null && homeScore !== null ? `${awayScore} – ${homeScore}` : "";
+    const pick = getGamePick(game, "MLB");
     const result = modelResultLabel(game);
     const cardResult = result === "Won" ? "MODEL WON" : result === "Lost" ? "MODEL LOST" : result.toUpperCase();
     const modelWon = result === "Won";
+    const modelLost = result === "Lost";
     const pickMeta = getTeamMeta("MLB", pick, pick);
     const homeMeta = getTeamMeta("MLB", game.home, game.home_display);
     const awayMeta = getTeamMeta("MLB", game.away, game.away_display);
@@ -3454,7 +3578,7 @@ function renderMlbLifecycleCard(game) {
     const dateLabel = stage === "pregame" ? `${gameIsoDate(game) === localDateIso() ? "TODAY" : formatDateOnly(gameIsoDate(game), { month: "short", day: "numeric" }).toUpperCase()} · ${getGameTimeLabel(game)}` : stage === "stale" ? "PAST · VERIFY SOURCE" : gameStatusLine(game, live);
     const marketRead = !market.movement.available ? "" : `<div class="mlb-game-card__market"><span>Market ${market.marketProbability === null ? "Linked" : formatProbability(market.marketProbability)}</span>${market.edge === null ? "" : `<strong>Edge ${formatEdge(market.edge)}</strong>`}</div>`;
     const latestPlay = stage === "live" && live?.latest_play ? `<small class="mlb-game-card__play">${escapeHtml(live.latest_play)}</small>` : "";
-    return `<article class="mlb-game-card mlb-game-card--${stage} ${modelWon ? "is-model-won" : ""} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
+    return `<article class="mlb-game-card mlb-game-card--${stage} ${modelWon ? "is-model-won" : ""} ${modelLost ? "is-model-lost" : ""} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
         <header class="mlb-game-card__header"><span class="mlb-game-card__status">${statusLabel}</span><span class="mlb-game-card__time">${escapeHtml(dateLabel)}</span>${renderWatchButton(game, "Watch matchup")}</header>
         <div class="mlb-game-card__matchup">
             <div class="mlb-game-card__team">${renderTeamLogo("MLB", awayMeta.abbreviation, "lg", awayMeta.full_name)}<strong>${escapeHtml(awayMeta.abbreviation)}</strong></div>
@@ -3462,6 +3586,7 @@ function renderMlbLifecycleCard(game) {
             <div class="mlb-game-card__team mlb-game-card__team--home">${renderTeamLogo("MLB", homeMeta.abbreviation, "lg", homeMeta.full_name)}<strong>${escapeHtml(homeMeta.abbreviation)}</strong></div>
         </div>
         <div class="mlb-game-card__signal"><span>${escapeHtml(modelPickLabel(game))}</span><strong class="mlb-game-card__signal-pick">${escapeHtml(pick)}</strong><b>${formatProbability(market.pickProbability)}</b></div>
+        ${renderMlbOdds(game)}
         ${renderModelConsensus(game)}
         ${marketRead}${latestPlay}
         <footer class="mlb-game-card__footer"><span>${resultChip(cardResult)}</span><button class="btn btn--micro" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">${stage === "live" ? "Open GameCast" : "View Matchup"}</button></footer>
@@ -3469,10 +3594,23 @@ function renderMlbLifecycleCard(game) {
 }
 
 function renderLifecycleMatchup(game) {
-    if (!game) return `<section class="panel lifecycle-matchup lifecycle-matchup--empty">${emptyState("Select a game to inspect the lifecycle", "Open a matchup from the board to see model, market, live, and final accountability in one place.")}</section>`;
+    if (!game) return `<section id="mlb-matchup-workspace" class="panel lifecycle-matchup lifecycle-matchup--empty">${emptyState("Select a game to inspect the lifecycle", "Open a matchup from the board to see model, market, live, and final accountability in one place.")}</section>`;
     const market = lifecycleMarketRead(game);
     const timeline = lifecycleTimeline(game);
-    return `<section class="panel lifecycle-matchup"><header class="section-header"><div><p class="eyebrow">Matchup workspace</p><h2>${escapeHtml(game.away)} @ ${escapeHtml(game.home)}</h2><p class="muted">${escapeHtml(lifecycleStageLabel(lifecycleStage(game)))} · ${escapeHtml(game.model_name || "Production model")}</p></div>${renderWatchButton(game, "Watch matchup")}</header><div class="lifecycle-matchup__readout"><div><span>Model pick</span><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><small>${formatProbability(market.pickProbability)} picked probability</small></div><div><span>Market</span><strong>${market.marketProbability === null ? "Unavailable" : formatProbability(market.marketProbability)}</strong><small>${market.edge === null ? "No joined odds" : `${formatEdge(market.edge)} model edge`}</small></div><div><span>Result</span><strong>${escapeHtml(modelResultLabel(game))}</strong><small>${escapeHtml(finalScoreLabel(liveGameFor(game) || game) || "Pending final")}</small></div></div><ol class="lifecycle-timeline">${timeline.map(item => `<li class="${item.done ? "is-done" : ""}"><i></i><div><strong>${escapeHtml(item.label)}</strong><span>${escapeHtml(item.value)}</span></div></li>`).join("")}</ol>${renderMatchupDetail("MLB", game)}</section>`;
+    return `<section id="mlb-matchup-workspace" class="panel lifecycle-matchup"><header class="section-header"><div><p class="eyebrow">Matchup workspace</p><h2>${escapeHtml(game.away)} @ ${escapeHtml(game.home)}</h2><p class="muted">${escapeHtml(lifecycleStageLabel(lifecycleStage(game)))} · ${escapeHtml(game.model_name || "Production model")}</p></div>${renderWatchButton(game, "Watch matchup")}</header><div class="lifecycle-matchup__readout"><div><span>Model pick</span><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><small>${formatProbability(market.pickProbability)} picked probability</small></div><div><span>Market</span><strong>${market.marketProbability === null ? "Unavailable" : formatProbability(market.marketProbability)}</strong><small>${market.edge === null ? "No joined odds" : `${formatEdge(market.edge)} model edge`}</small></div><div><span>Result</span><strong>${escapeHtml(modelResultLabel(game))}</strong><small>${escapeHtml(finalScoreLabel(liveGameFor(game) || game) || "Pending final")}</small></div></div><ol class="lifecycle-timeline">${timeline.map(item => `<li class="${item.done ? "is-done" : ""}"><i></i><div><strong>${escapeHtml(item.label)}</strong><span>${escapeHtml(item.value)}</span></div></li>`).join("")}</ol>${renderMatchupDetail("MLB", game)}</section>`;
+}
+
+function scrollToMlbMatchup() {
+    const focus = () => {
+        const target = $("#mlb-matchup-workspace");
+        if (!target) return;
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        target.classList.remove("is-focus-pulse");
+        void target.offsetWidth;
+        target.classList.add("is-focus-pulse");
+    };
+    if (typeof window.requestAnimationFrame === "function") window.requestAnimationFrame(focus);
+    else window.setTimeout(focus, 0);
 }
 
 function renderMlbLifecyclePage() {
@@ -4214,11 +4352,36 @@ function renderPredictionTimeline(game) {
 function renderGameCastMarket(game) {
     const sport = game?.sport || "MLB";
     const movement = lineMovementSummary(game, sport);
-    const odds = movement.current;
+    const display = oddsDisplayForGame(game);
+    const odds = display.snapshot || movement.current;
     if (!odds) return emptyState("No market snapshot", "Run npm run refresh:odds when an ODDS_API_KEY is configured.");
     const side = marketSideForPick(game, sport);
     const modelProbability = modelProbabilityForSide(game, side, sport);
     const implied = marketImplied(odds, side);
+    if (sport === "MLB") {
+        const awayMeta = getTeamMeta("MLB", game.away, game.away_display);
+        const homeMeta = getTeamMeta("MLB", game.home, game.home_display);
+        const awayMoneyline = marketLine(odds, "away", "MLB");
+        const homeMoneyline = marketLine(odds, "home", "MLB");
+        const awaySpread = marketSpreadLine(odds, "away");
+        const homeSpread = marketSpreadLine(odds, "home");
+        const awaySpreadPrice = safeNumber(odds.spread_away_price_current ?? odds.spread_away_price);
+        const homeSpreadPrice = safeNumber(odds.spread_home_price_current ?? odds.spread_home_price);
+        const moneyline = `${awayMeta.abbreviation} ${americanOdds(awayMoneyline)} / ${homeMeta.abbreviation} ${americanOdds(homeMoneyline)}`;
+        const runLineDisplay = awaySpread === null && homeSpread === null
+            ? "Unavailable"
+            : `${awayMeta.abbreviation} ${runLine(awaySpread)} ${americanOdds(awaySpreadPrice)} / ${homeMeta.abbreviation} ${runLine(homeSpread)} ${americanOdds(homeSpreadPrice)}`;
+        return `
+            <div class="gamecast-market">
+                ${card("Books", safeNumber(odds.bookmakers_count, 0), "snapshot consensus")}
+                ${card("Moneyline", moneyline, display.label)}
+                ${card("Run line", runLineDisplay, display.label)}
+                ${card("Market implied", formatProbability(implied), `${side} side`)}
+                ${card("Model probability", formatProbability(modelProbability), getGamePick(game, sport))}
+                ${card("Model edge", formatEdge(movement.marketEdge), display.freshness)}
+            </div>
+        `;
+    }
     return `
         <div class="gamecast-market">
             ${card("Books", safeNumber(odds.bookmakers_count, 0), "snapshot consensus")}
@@ -5202,7 +5365,7 @@ function renderLiveWidgetSettings() {
                     Work Mode
                 </label>
             </div>
-            ${state.refreshRuntime.available ? "" : `<p class="data-status" data-variant="warning">Live widget windows open from the Tauri desktop app. In browser/static mode, run <code>npm run refresh:live</code> to update cached live scores.</p>`}
+            ${state.refreshRuntime.available ? "" : `<p class="data-status" data-variant="warning">The widget opens as a popup in browser mode and refreshes through the local bridge when started with <code>npm run app</code>. Static hosting can only show cached scores.</p>`}
         </section>
     `;
 }
@@ -5335,12 +5498,12 @@ function renderAbout() {
     root.innerHTML = `
         <div class="about-backdrop" data-close-about></div>
         <section class="about-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title">
-            <header class="section-header"><div><p class="eyebrow">LineLens Sports</p><h2 id="about-title">What’s New in v2.0.0</h2></div><button class="icon-btn" type="button" data-close-about aria-label="Close About">×</button></header>
+            <header class="section-header"><div><p class="eyebrow">LineLens Sports</p><h2 id="about-title">What’s New in v3.0.0</h2></div><button class="icon-btn" type="button" data-close-about aria-label="Close About">×</button></header>
             <p class="muted">A release-hardening and presentation pass focused on real data, model transparency, and a faster first impression.</p>
             <div class="about-feature-grid"><span>MLB visual game board</span><span>Prediction Lifecycle</span><span>Soccer / World Cup scoreboard</span><span>Model Observatory</span><span>Moltres challenger ensemble</span><span>GameCast and odds movement</span><span>Record accountability</span><span>Live widget</span><span>Date/performance fixes</span></div>
             <div class="about-status-grid"><div><span>Production model</span><strong>${escapeHtml(production?.model_name || "Not declared")}</strong></div><div><span>Moltres</span><strong>${escapeHtml(moltresStatusLabel())}</strong></div><div><span>Bundled data</span><strong>${state.mlb.games.length ? "available" : "missing"}</strong></div><div><span>Policy</span><strong>Real data only</strong></div></div>
             <p class="about-disclaimer">Educational/demo outputs only. LineLens is not betting advice. Odds, live feeds, and pitcher context remain source-dependent.</p>
-            <footer class="about-actions"><a class="btn" href="README.md" target="_blank" rel="noreferrer">Open README</a><a class="btn" href="RELEASE_NOTES_v2.0.0.md" target="_blank" rel="noreferrer">Release notes</a><button class="btn btn--primary" type="button" data-close-about>Done</button></footer>
+            <footer class="about-actions"><a class="btn" href="README.md" target="_blank" rel="noreferrer">Open README</a><a class="btn" href="RELEASE_NOTES_v3.0.0.md" target="_blank" rel="noreferrer">Release notes</a><button class="btn btn--primary" type="button" data-close-about>Done</button></footer>
         </section>
     `;
 }
@@ -5572,6 +5735,7 @@ function bindEvents() {
                 persistSettings();
                 renderHome();
                 renderMLB();
+                scrollToMlbMatchup();
             }
             return;
         }

@@ -29,10 +29,28 @@ struct CommandSpec {
 
 fn project_root() -> Result<PathBuf, String> {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    manifest_dir
-        .parent()
-        .ok_or_else(|| "Unable to resolve project root.".to_string())
-        .map(|path| path.to_path_buf())
+    let mut candidates = Vec::new();
+    if let Some(path) = manifest_dir.parent() {
+        candidates.push(path.to_path_buf());
+    }
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(parent) = executable.parent() {
+            candidates.push(parent.to_path_buf());
+            candidates.push(parent.join("resources"));
+            candidates.push(parent.join("resources").join("runtime"));
+        }
+    }
+    if let Ok(current_dir) = std::env::current_dir() {
+        candidates.push(current_dir);
+    }
+
+    candidates.dedup();
+    for candidate in candidates {
+        if candidate.join("scripts").join("refresh_data.py").exists() {
+            return Ok(candidate);
+        }
+    }
+    Err("Unable to resolve a LineLens project root containing scripts/refresh_data.py.".to_string())
 }
 
 fn scripts_detected(root: &PathBuf) -> bool {
