@@ -6,10 +6,8 @@
   <img src="image-1.png" alt="LineLens Sports prediction command center" width="100%" />
 </p>
 
-## See it in action
-
 <p align="center">
-  <img src="image.png" alt="LineLens Sports home experience" width="100%" />
+  <img src="image.png" alt="LineLens Sports home dashboard" width="100%" />
 </p>
 
 ## What makes it useful
@@ -19,6 +17,17 @@
 - American odds, market context, matchup detail, model explanations, and cached pregame snapshots.
 - Compact live widget, responsive layout, loading states, and smooth score-card-to-matchup navigation.
 - Real-data-only behavior: missing feeds stay clearly labeled instead of becoming invented numbers.
+
+## Download the Windows app
+
+You do not need Python, Node, Rust, or the source code to run the packaged Tauri app.
+
+1. Open the repository’s **Releases** page.
+2. Open the latest `LineLens Sports` release.
+3. Download the Windows `.msi` installer or `.exe` installer.
+4. Install it and launch LineLens Sports from the Start menu.
+
+The app opens with bundled exports immediately. Live refresh requires the configured desktop environment and available data sources.
 
 ## Run it locally
 
@@ -49,8 +58,19 @@ LineLens bundles real exports so the interface opens immediately. Daily refresh 
 
 Predictions are experimental educational outputs for project demonstration only, not betting advice.
 
-## Sprint 3 / v3.0.0
+## Publish a new release
 
-Sprint 3 is complete: the model presentation, responsive UI, visual system, refresh workflow, odds display, loading experience, live widget surface, and matchup navigation are ready for review.
+The repository workflow builds and publishes the Tauri Windows installers when a version tag is pushed. From PowerShell:
 
-See the short [v3.0.0 release notes](RELEASE_NOTES_v3.0.0.md). A video demo can be added here later.
+```powershell
+npm run verify:release
+git add .
+git commit -m "Release LineLens Sports v3.0.0"
+git push origin main
+git tag -a v3.0.0 -m "LineLens Sports v3.0.0"
+git push origin v3.0.0
+```
+
+After the tag push, open the repository’s **Actions** tab to watch `Tauri Windows Build`. When it finishes, the workflow creates a GitHub Release and attaches the `.msi` and `.exe` installers. Others can then download the app from **Releases**, rather than from an Actions artifact.
+
+For a future release, update the app version metadata, README version, and tag together, for example `v3.1.0`.
