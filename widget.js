@@ -17,6 +17,8 @@ const state = {
     workMode: false,
     refreshInterval: 30,
     refreshing: false,
+    loading: true,
+    loadError: null,
     refreshStatus: "Loading local schedule...",
     timer: null,
 };
@@ -87,13 +89,14 @@ function toIsoDate(value) {
 }
 
 function todayIso() {
-    return new Date().toISOString().slice(0, 10);
+    const date = new Date();
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function addDaysIso(value, days) {
     const date = parseLocalDate(value || todayIso()) || new Date();
     date.setDate(date.getDate() + days);
-    return date.toISOString().slice(0, 10);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function isTauri() {
@@ -144,14 +147,25 @@ function showToast(message) {
     window.setTimeout(() => toast.classList.remove("is-visible"), 2400);
 }
 
-async function fetchJson(url) {
-    const response = await fetch(url, { cache: "no-cache" });
-    if (!response.ok) throw new Error(`${url} returned ${response.status}`);
-    return response.json();
+async function fetchJson(url, timeoutMs = 3500) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+    const cacheBust = url.includes("?") ? "&" : "?";
+    try {
+        const response = await fetch(`${url}${cacheBust}v=${Date.now()}`, {
+            cache: "no-store",
+            signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`${url} returned ${response.status}`);
+        return await response.json();
+    } finally {
+        window.clearTimeout(timeout);
+    }
 }
 
-async function loadJson(url, globalName) {
+async function loadJson(url, globalName, options = {}) {
     let payload = window[globalName] || null;
+    if (payload && !options.forceFetch) return payload;
     if (window.location.protocol !== "file:") {
         try {
             payload = await fetchJson(url);
@@ -162,31 +176,38 @@ async function loadJson(url, globalName) {
     return payload;
 }
 
-async function loadLocalData(status = "Loading local schedule...") {
+async function loadLocalData(status = "Loading local schedule...", options = {}) {
+    state.loading = true;
+    state.loadError = null;
     state.refreshStatus = status;
     render();
-    const [live, mlb, nfl, predictionLog, modelRecord] = await Promise.all([
-        loadJson("data/live/live_scores.json", "__LIVE_SCORES__"),
-        loadJson("data/predictions/mlb_predictions.json", "__MLB_PREDICTIONS__"),
-        loadJson("data/predictions/nfl_predictions.json", "__NFL_PREDICTIONS__"),
-        loadJson("data/tracking/model_predictions_log.json", "__MODEL_PREDICTIONS_LOG__"),
-        loadJson("data/tracking/model_record.json", "__MODEL_RECORD__"),
-    ]);
-    state.payload = live || state.payload;
-    state.mlbPayload = mlb || state.mlbPayload;
-    state.nflPayload = nfl || state.nflPayload;
-    state.predictionLog = predictionLog || state.predictionLog;
-    state.modelRecord = modelRecord || state.modelRecord;
-    state.games = buildUnifiedGames();
-    if (!state.games.length) {
-        state.mlbBacktestPayload = await loadJson("data/predictions/mlb_backtest_predictions.json", "__MLB_BACKTEST_PREDICTIONS__") || state.mlbBacktestPayload;
+    try {
+        const [live, mlb, nfl, predictionLog, modelRecord] = await Promise.all([
+            loadJson("data/live/live_scores.json", "__LIVE_SCORES__", options),
+            loadJson("data/predictions/mlb_predictions.json", "__MLB_PREDICTIONS__", options),
+            loadJson("data/predictions/nfl_predictions.json", "__NFL_PREDICTIONS__", options),
+            loadJson("data/tracking/model_predictions_log.json", "__MODEL_PREDICTIONS_LOG__", options),
+            loadJson("data/tracking/model_record.json", "__MODEL_RECORD__", options),
+        ]);
+        state.payload = live || state.payload;
+        state.mlbPayload = mlb || state.mlbPayload;
+        state.nflPayload = nfl || state.nflPayload;
+        state.predictionLog = predictionLog || state.predictionLog;
+        state.modelRecord = modelRecord || state.modelRecord;
         state.games = buildUnifiedGames();
+        if (!state.games.length) {
+            state.mlbBacktestPayload = await loadJson("data/predictions/mlb_backtest_predictions.json", "__MLB_BACKTEST_PREDICTIONS__", options) || state.mlbBacktestPayload;
+            state.games = buildUnifiedGames();
+        }
+    } catch (error) {
+        state.loadError = String(error?.message || error || "Local data load failed");
     }
     ensureSelectedDate();
     clampSelectedIndex();
     state.refreshStatus = state.games.length
         ? sourceStatusLabel()
         : "No local schedule found. Run npm run refresh:live or npm run refresh:mlb.";
+    state.loading = false;
     render();
 }
 
@@ -714,6 +735,17 @@ function renderEmpty() {
     `;
 }
 
+function renderLoading() {
+    return `
+        <section class="widget-loading widget-loading--active" role="status" aria-live="polite">
+            <div class="widget-loading__mark" aria-hidden="true"><span>LL</span><i></i></div>
+            <strong>LineLens Live</strong>
+            <span>${escapeHtml(state.refreshStatus || "Loading local schedule...")}</span>
+            <small>Checking the local ESPN cache first</small>
+        </section>
+    `;
+}
+
 function sourceStatusLabel() {
     const metadata = state.payload?.metadata || {};
     const count = state.games.length || (Array.isArray(state.payload?.games) ? state.payload.games.length : 0);
@@ -723,6 +755,11 @@ function sourceStatusLabel() {
 function render() {
     const root = $("#widget-root");
     if (!root) return;
+    if (state.loading && !state.games.length) {
+        root.innerHTML = renderLoading();
+        root.classList.toggle("is-work-mode", state.workMode);
+        return;
+    }
     const games = displayGames();
     const game = selectedGame();
     root.innerHTML = state.expanded ? renderExpanded(game, games) : renderCompact(game);
@@ -741,7 +778,7 @@ async function refreshLive(options = {}) {
         } else if (!options.background) {
             showToast("Browser mode: run npm run refresh:live for live updates.");
         }
-        await loadLocalData("Reloading live schedule...");
+        await loadLocalData("Reloading live schedule...", { forceFetch: true });
         if (!options.background) showToast("Live scores loaded");
     } catch (error) {
         state.refreshStatus = `Showing cached schedule - live refresh failed`;
@@ -862,13 +899,19 @@ function startAutoRefresh() {
     if (!state.refreshInterval) return;
     state.timer = window.setInterval(() => {
         if (isTauri()) refreshLive({ background: true });
-        else loadLocalData("Reloading cached live data...");
+        else loadLocalData("Reloading cached live data...", { forceFetch: true });
     }, Math.max(15, state.refreshInterval) * 1000);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
     loadPrefs();
     bindEvents();
+    // The script-tag payload is bundled with the widget. Build from it before
+    // any async refresh so the compact PiP card is visible immediately.
+    state.games = buildUnifiedGames();
+    ensureSelectedDate();
+    clampSelectedIndex();
+    state.loading = !state.games.length;
     render();
     await loadLocalData("Loading local schedule...");
     startAutoRefresh();

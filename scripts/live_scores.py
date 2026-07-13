@@ -42,6 +42,8 @@ NFL_PREDICTIONS = PREDICTIONS_DIR / "nfl_predictions.json"
 MLB_SCHEDULE_URL = "https://statsapi.mlb.com/api/v1/schedule"
 MLB_LIVE_URL = "https://statsapi.mlb.com/api/v1.1/game/{game_pk}/feed/live"
 ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard"
+FRESH_LOOKBACK_DAYS = 3
+CACHE_LOOKBACK_DAYS = 120
 ESPN_SUMMARY_URL = "https://site.web.api.espn.com/apis/site/v2/sports/{sport}/{league}/summary"
 LOCAL_TZ = safe_zone("America/Toronto")
 
@@ -578,7 +580,8 @@ def fetch_espn_games(
         payload = espn_scoreboard("NFL")
         for event in payload.get("events", []):
             row = game_from_espn_event(event, "NFL", mlb_predictions, nfl_predictions)
-            if row:
+            row_date = parse_iso_date(str(row.get("game_date") or "")) if row and row.get("game_date") else None
+            if row and row_date and start_date <= row_date <= end_date:
                 games.append(row)
     except Exception as error:  # noqa: BLE001 - NFL can fall back to exports.
         warnings.append(f"ESPN NFL scoreboard failed: {error}")
@@ -942,32 +945,39 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
     selected = parse_iso_date(center_date)
     start_date = selected - timedelta(days=days_back)
     end_date = selected + timedelta(days=days_forward)
+    fresh_start = max(start_date, selected - timedelta(days=FRESH_LOOKBACK_DAYS))
     mlb_predictions, nfl_predictions = prediction_indexes()
     warnings: list[str] = []
     source_status = "live_fresh"
     espn_games: list[dict[str, Any]] = []
     mlb_games: list[dict[str, Any]] = []
     try:
-        espn_games, espn_warnings = fetch_espn_games(start_date, end_date, mlb_predictions, nfl_predictions)
+        espn_games, espn_warnings = fetch_espn_games(fresh_start, end_date, mlb_predictions, nfl_predictions)
         warnings.extend(espn_warnings)
         if espn_games:
             source_status = "espn_live_fresh"
     except Exception as error:  # noqa: BLE001 - ESPN is a fast overlay, not the only source.
         warnings.append(f"ESPN live scoreboard refresh failed: {error}")
     try:
-        mlb_games, feed_warnings = fetch_mlb_games(start_date, end_date, mlb_predictions)
+        mlb_games, feed_warnings = fetch_mlb_games(fresh_start, end_date, mlb_predictions)
         warnings.extend(feed_warnings)
     except Exception as error:  # noqa: BLE001 - clean fallback is required.
         if not espn_games:
             source_status = "source_failed"
         warnings.append(f"MLB Stats API refresh failed: {error}")
-        mlb_games = cached_mlb_games(start_date, end_date, mlb_predictions)
+        mlb_games = cached_mlb_games(fresh_start, end_date, mlb_predictions)
         if mlb_games:
             source_status = "espn_live_fresh" if espn_games else "live_cached"
             warnings.append("Using cached MLB schedule files from data/raw/mlb.")
     prediction_fallback = fallback_mlb_from_predictions(mlb_predictions, start_date, end_date)
+    historical_cache = cached_mlb_games(start_date, fresh_start - timedelta(days=1), mlb_predictions)
+    historical_backtest = [
+        game
+        for game in fallback_recent_backtest(limit=240)
+        if start_date.isoformat() <= str(game.get("game_date") or "")[:10] < fresh_start.isoformat()
+    ]
     espn_mlb_games = [game for game in espn_games if game.get("sport") == "MLB"]
-    mlb_source_games = dedupe_games(espn_mlb_games + mlb_games)
+    mlb_source_games = dedupe_games(espn_mlb_games + mlb_games + historical_cache + historical_backtest)
     if not mlb_source_games:
         mlb_games = prediction_fallback
         if mlb_games and source_status == "source_failed":
@@ -980,10 +990,23 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
             mlb_games = backtest
             warnings.append("Using recent MLB backtest finals as last-resort display fallback.")
     espn_nfl_games = [game for game in espn_games if game.get("sport") == "NFL"]
-    nfl_games = dedupe_games(espn_nfl_games + fallback_nfl_from_predictions(nfl_predictions))
+    # Never turn a stale prediction export into a current scoreboard row. In
+    # particular, NFL is out of season here; an empty ESPN feed should remain
+    # empty instead of surfacing irrelevant historical games in the ticker.
+    nfl_games = dedupe_games(espn_nfl_games)
     soccer_games = dedupe_games([game for game in espn_games if game.get("sport") == "SOCCER"])
     scoreboard_games = dedupe_games([game for game in espn_games if game.get("sport") in {"NBA", "NHL", "WNBA"}])
     games = dedupe_games(mlb_games + nfl_games + soccer_games + scoreboard_games)
+    # Rescheduled MLB events can remain inside an old daily response while
+    # carrying a later official date. Keep the bundled snapshot honest to its
+    # declared window; the event will re-enter when that future date becomes
+    # part of a fresh/cache window.
+    games = [
+        game
+        for game in games
+        if not game.get("game_date")
+        or start_date <= parse_iso_date(str(game.get("game_date"))[:10]) <= end_date
+    ]
     if not games and source_status == "live_fresh":
         source_status = "missing"
     return {
@@ -1003,6 +1026,8 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
                 "end_date": end_date.isoformat(),
                 "days_back": days_back,
                 "days_forward": days_forward,
+                "fresh_start_date": fresh_start.isoformat(),
+                "cache_lookback_days": CACHE_LOOKBACK_DAYS,
             },
             "row_count": len(games),
             "warnings": warnings,
@@ -1014,7 +1039,7 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
 def main() -> int:
     parser = argparse.ArgumentParser(description="Refresh LineLens live widget scores.")
     parser.add_argument("--date", default=today_iso(), help="Center schedule date in YYYY-MM-DD format.")
-    parser.add_argument("--days-back", type=int, default=3, help="Days before the center date to include.")
+    parser.add_argument("--days-back", type=int, default=CACHE_LOOKBACK_DAYS, help="Days before the center date to include from local cache.")
     parser.add_argument("--days-forward", type=int, default=3, help="Days after the center date to include.")
     args = parser.parse_args()
     payload = build_payload(args.date, max(args.days_back, 0), max(args.days_forward, 0))

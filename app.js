@@ -2648,18 +2648,36 @@ function tickerPriority(game) {
     return score;
 }
 
+function tickerRelevant(game) {
+    const sport = normalizedSportCode(game?.sport || "MLB");
+    const date = gameIsoDate(game);
+    const today = dateOffsetIso(0);
+    const yesterday = dateOffsetIso(-1);
+    const tomorrow = dateOffsetIso(1);
+    // The ticker is a broadcast strip, not a historical export browser:
+    // yesterday's finals, today's slate, tomorrow's notable slate, and live
+    // games only. This also prevents stale NFL exports from leaking into the
+    // offseason ticker when ESPN has no current NFL scoreboard events.
+    if (isLiveSportGame(game)) return true;
+    if (!date) return sport !== "NFL" && !isFinalSportGame(game);
+    if (date === yesterday || date === today) return true;
+    if (date === tomorrow) return sport !== "NFL";
+    return false;
+}
+
 function tickerGames() {
     const rows = uniqueRowsByGame([
         ...liveGames(),
         ...currentGames(),
         ...homeBoardGames(),
-    ]).sort((a, b) => tickerPriority(b) - tickerPriority(a));
+    ]).filter(tickerRelevant).sort((a, b) => tickerPriority(b) - tickerPriority(a));
     return rows.slice(0, 18);
 }
 
 function renderSportsTickerV2(rows = []) {
     const fallbackGames = rows.map(row => row.game).filter(Boolean);
-    const games = tickerGames().length ? tickerGames() : uniqueRowsByGame(fallbackGames);
+    const liveRelevant = tickerGames();
+    const games = liveRelevant.length ? liveRelevant : uniqueRowsByGame(fallbackGames).filter(tickerRelevant);
     if (!games.length) {
         return `
             <section class="sports-ticker-v2 sports-ticker-v2--empty">

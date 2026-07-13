@@ -307,13 +307,61 @@ def _score_games(df: pd.DataFrame, model_path: Path, limit: Optional[int]) -> tu
     return games, artifact
 
 
+def _prediction_log_game_key(row: dict) -> str:
+    """Return one stable identity for a real scheduled game.
+
+    Model version and export date are metadata, not game identity.  MLB's
+    provider game id is the authoritative key and also keeps doubleheaders
+    distinct.  The composite fallback retains the scheduled time for older
+    exports that do not contain a provider id.
+    """
+    sport = str(row.get("sport") or "MLB").strip().upper()
+    game_id = str(row.get("game_id") or row.get("espn_event_id") or "").strip()
+    if game_id:
+        return f"{sport}:id:{game_id}"
+    return ":".join(
+        (
+            sport,
+            str(row.get("game_date") or "").strip()[:10],
+            str(row.get("away") or "").strip().upper(),
+            str(row.get("home") or "").strip().upper(),
+            str(row.get("game_time") or row.get("start_time") or "").strip()[:16],
+        )
+    )
+
+
+def _prediction_log_rank(row: dict) -> tuple[int, str]:
+    result = str(row.get("model_result") or row.get("result_status") or "").lower()
+    scored = int(result in {"win", "loss", "push", "no_result"})
+    timestamp = str(row.get("generated_at") or row.get("prediction_at") or "")
+    return scored, timestamp
+
+
+def _dedupe_prediction_log_rows(rows: list[dict]) -> list[dict]:
+    """Collapse historical version/day duplicates without losing scored rows."""
+    latest: dict[str, dict] = {}
+    for row in rows:
+        key = _prediction_log_game_key(row)
+        current = latest.get(key)
+        if current is None or _prediction_log_rank(row) >= _prediction_log_rank(current):
+            latest[key] = row
+    return list(latest.values())
+
+
+def _stable_prediction_id(row: dict) -> str:
+    game_id = str(row.get("game_id") or row.get("espn_event_id") or "").strip()
+    if game_id:
+        return f"{str(row.get('sport') or 'MLB').upper()}-{game_id}"
+    fallback = _prediction_log_game_key(row).replace(":", "-").replace("/", "-")
+    return f"PRED-{fallback}"
+
+
 def _append_prediction_log(games: list[dict], artifact: dict, generated_at: str) -> None:
     payload = _load_json(TRACKING_LOG_JSON) or {"metadata": {}, "predictions": []}
-    rows = payload.get("predictions", [])
-    by_id = {row.get("prediction_id"): row for row in rows}
+    rows = _dedupe_prediction_log_rows(payload.get("predictions", []))
+    by_game = {_prediction_log_game_key(row): row for row in rows}
     model_id = artifact.get("metadata", {}).get("model_id") or f"mlb_moneyline_{APP_VERSION}"
     model_name = artifact.get("metadata", {}).get("model_name") or artifact.get("model_name")
-    generated_day = generated_at[:10]
     appended = 0
     updated = 0
     for game in games:
@@ -321,9 +369,8 @@ def _append_prediction_log(games: list[dict], artifact: dict, generated_at: str)
             continue
         if _is_final_status(game.get("status")):
             continue
-        prediction_id = f"MLB-{game.get('game_id')}-{model_id}-{generated_day}"
         row = {
-            "prediction_id": prediction_id,
+            "prediction_id": _stable_prediction_id(game),
             "sport": "MLB",
             "model_version": APP_VERSION,
             "model_id": model_id,
@@ -345,17 +392,19 @@ def _append_prediction_log(games: list[dict], artifact: dict, generated_at: str)
             "actual_winner": game.get("home") if game.get("result") == "Home won" else game.get("away") if game.get("result") == "Away won" else None,
             "model_result": game.get("model_result", "Pending").lower(),
         }
-        existing = by_id.get(prediction_id)
+        game_key = _prediction_log_game_key(row)
+        existing = by_game.get(game_key)
         if existing is None:
             rows.append(row)
-            by_id[prediction_id] = row
+            by_game[game_key] = row
             appended += 1
         else:
             old_prob = safe_float(existing.get("home_win_probability"))
             new_prob = safe_float(row.get("home_win_probability"))
             result_changed = existing.get("model_result") in {None, "pending", "Pending"} and row.get("model_result") != "pending"
             probability_changed = old_prob is None or new_prob is None or abs(old_prob - new_prob) >= 0.002
-            if result_changed or probability_changed:
+            model_changed = existing.get("model_id") != row.get("model_id")
+            if result_changed or probability_changed or model_changed:
                 existing_result = str(existing.get("model_result", "")).lower()
                 if existing_result in {"win", "loss", "push", "no_result"} and row.get("model_result") == "pending":
                     for key in (
@@ -378,6 +427,7 @@ def _append_prediction_log(games: list[dict], artifact: dict, generated_at: str)
             "real_data": True,
             "appended": appended,
             "updated": updated,
+            "deduplicated": len(payload.get("predictions", [])) - len(rows),
             "row_count": len(rows),
         },
         "predictions": rows,

@@ -2474,6 +2474,77 @@ body {
     }
 }
 
+/* Sport rail upgrade: image-backed marks carry the visual weight; labels stay for orientation. */
+
+.nav__section--sports .nav__item {
+    grid-template-columns: clamp(58px, calc(66px * var(--sidebar-scale)), 80px) minmax(0, 1fr);
+    min-height: 78px;
+    gap: 0.8rem;
+    padding: 0.45rem 0.72rem;
+}
+
+.nav__section--sports .nav-sport-mark {
+    display: grid;
+    width: clamp(56px, calc(66px * var(--sidebar-scale)), 80px);
+    height: clamp(56px, calc(66px * var(--sidebar-scale)), 80px);
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    box-shadow: 0 7px 22px rgba(0, 0, 0, 0.34);
+}
+
+.nav__section--sports .nav-sport-mark::before,
+.nav__section--sports .nav-sport-mark::after {
+    display: none;
+}
+
+.nav__section--sports .nav-sport-mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: saturate(1.08) drop-shadow(0 0 9px rgba(103, 232, 249, 0.14));
+    transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), filter 0.26s ease;
+}
+
+.nav__section--sports .nav__item:hover .nav-sport-mark img,
+.nav__section--sports .nav__item.is-active .nav-sport-mark img {
+    filter: saturate(1.2) drop-shadow(0 0 15px rgba(103, 232, 249, 0.28));
+    transform: scale(1.08) rotate(-2deg);
+}
+
+.nav__section--sports .nav__item > span:last-child {
+    font-size: clamp(0.88rem, calc(0.98rem * var(--sidebar-scale)), 1.08rem);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+}
+
+.nav__section--sports .nav__item--mlb .nav-sport-mark img {
+    filter: saturate(1.16) drop-shadow(0 0 12px rgba(244, 92, 108, 0.20));
+}
+
+.nav__section--sports .nav__item--wnba .nav-sport-mark img {
+    filter: saturate(1.16) drop-shadow(0 0 12px rgba(237, 136, 255, 0.22));
+}
+
+@media (max-width: 760px) {
+    .nav__section--sports .nav__item {
+        grid-template-columns: 52px minmax(0, 1fr);
+        min-height: 64px;
+    }
+
+    .nav__section--sports .nav-sport-mark {
+        width: 50px;
+        height: 50px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nav__section--sports .nav-sport-mark img {
+        transition: none;
+    }
+}
+
 /* ==========================================================
    Sprint 3 art direction: broadcast-night / luxury utility
    Inspired by Apple Materials and modern live-score products:
@@ -5089,7 +5160,7 @@ html {
 .ticker-track-v2 {
     display: inline-flex;
     width: max-content;
-    animation: llTicker 105s linear infinite;
+    animation: llTicker 165s linear infinite;
 }
 
 .ticker-window-v2:hover .ticker-track-v2,
@@ -5354,4 +5425,49 @@ html {
     .favorite-btn:hover {
         transform: none;
     }
+}
+
+/* Final cascade for the responsive focal hierarchy and model-specific actions. */
+@media (min-width: 1500px) {
+    body { font-size: clamp(16px, 0.78rem + 0.16vw, 18px); }
+    .mlb-game-card__team strong { font-size: clamp(1.05rem, 0.78rem + 0.42vw, 1.42rem); }
+    .mlb-game-card__team b { font-size: clamp(1.42rem, 1rem + 0.72vw, 2rem); }
+    .model-gallery-card__visual span { font-size: clamp(1.78rem, 1.3rem + 0.7vw, 2.35rem); }
+    .model-gallery-card__heading h3 { font-size: clamp(1.35rem, 0.95rem + 0.56vw, 1.72rem); }
+    .model-metric strong { font-size: clamp(1rem, 0.78rem + 0.28vw, 1.25rem); }
+}
+
+@media (max-width: 1499px) {
+    body { font-size: clamp(15px, 0.83rem + 0.08vw, 16px); }
+}
+
+.model-gallery-card .btn,
+.model-profile .btn {
+    border-color: color-mix(in srgb, var(--model-accent, #83d9ff) 56%, transparent);
+    color: color-mix(in srgb, var(--model-accent, #83d9ff) 34%, #ffffff);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--model-accent, #83d9ff) 20%, #0b1220), rgba(11, 18, 32, 0.92));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--model-accent, #83d9ff) 10%, transparent), 0 0 20px color-mix(in srgb, var(--model-accent, #83d9ff) 24%, transparent);
+}
+
+.model-gallery-card .btn:hover,
+.model-profile .btn:hover {
+    border-color: var(--model-accent, #83d9ff);
+    color: #fff;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--model-accent, #83d9ff) 38%, #0b1220), rgba(11, 18, 32, 0.84));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--model-accent, #83d9ff) 22%, transparent), 0 0 30px color-mix(in srgb, var(--model-accent, #83d9ff) 44%, transparent);
+    transform: translateY(-1px);
+}
+
+.mlb-game-card__footer .result-chip {
+    min-height: 32px;
+    padding: 0.34rem 0.72rem;
+    font-size: clamp(0.72rem, 0.62rem + 0.18vw, 0.9rem);
+    letter-spacing: 0.035em;
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.06);
+}
+
+.mlb-game-card__footer .result-chip--win,
+.mlb-game-card__footer .result-chip--loss {
+    font-weight: 950;
+    box-shadow: 0 0 20px color-mix(in srgb, currentColor 22%, transparent);
 }

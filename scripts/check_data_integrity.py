@@ -45,6 +45,22 @@ def game_key(row: dict) -> str:
     return str(row.get("game_id") or row.get("id") or f"{row.get('game_date')}|{row.get('away')}|{row.get('home')}")
 
 
+def prediction_log_game_key(row: dict) -> str:
+    sport = str(row.get("sport") or "MLB").strip().upper()
+    game_id = str(row.get("game_id") or row.get("espn_event_id") or "").strip()
+    if game_id:
+        return f"{sport}:id:{game_id}"
+    return ":".join(
+        (
+            sport,
+            str(row.get("game_date") or "").strip()[:10],
+            str(row.get("away") or "").strip().upper(),
+            str(row.get("home") or "").strip().upper(),
+            str(row.get("game_time") or row.get("start_time") or "").strip()[:16],
+        )
+    )
+
+
 def source_date(row: dict) -> str:
     raw = str(row.get("game_date") or row.get("date") or row.get("scheduled_date") or "")
     match = re.match(r"^(\d{4}-\d{2}-\d{2})", raw)
@@ -145,6 +161,8 @@ def check_exports() -> None:
 
     log_keys = [f"{game_key(row)}|{row.get('model_name') or row.get('model_id')}|{row.get('generated_at') or row.get('prediction_at')}" for row in rows(log, "predictions")]
     check("duplicate log safety", len(log_keys) == len(set(log_keys)), "no identical game/model/timestamp predictions")
+    canonical_log_keys = [prediction_log_game_key(row) for row in rows(log, "predictions")]
+    check("one prediction log row per game", len(canonical_log_keys) == len(set(canonical_log_keys)), "model re-exports do not create duplicate game rows")
 
     live_mlb = [row for row in rows(live_payload) if row.get("sport") == "MLB" and live_schedule_date(row) == "2026-07-10"]
     unique_live = {live_composite_key(row) for row in live_mlb}

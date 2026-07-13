@@ -2,42 +2,42 @@
   "metadata": {
     "app": "LineLens Sports",
     "version": "v2.0.0",
-    "generated_at": "2026-07-13T13:53:37Z",
+    "generated_at": "2026-07-13T14:52:42Z",
     "real_data": true,
-    "predictions_logged": 396,
-    "predictions_scored_this_run": 169,
+    "predictions_logged": 309,
+    "predictions_scored_this_run": 82,
     "pending_predictions": 1,
-    "last_scoring_run": "2026-07-13T13:53:37Z"
+    "last_scoring_run": "2026-07-13T14:52:42Z"
   },
   "sports": {
     "MLB": {
       "overall": {
-        "wins": 38,
+        "wins": 36,
         "losses": 46,
         "pushes": 0,
         "pending": 1,
-        "accuracy": 0.4523809523809524,
-        "sample_size": 85,
-        "scored": 84,
+        "accuracy": 0.43902439024390244,
+        "sample_size": 83,
+        "scored": 82,
         "label": "Live Record",
         "source": "data\\tracking\\model_predictions_log.json",
         "note": "Only the latest logged LineLens MLB prediction per game is counted here.",
-        "logged_rows": 170,
-        "unique_games": 85
+        "logged_rows": 83,
+        "unique_games": 83
       },
       "live_record": {
-        "wins": 38,
+        "wins": 36,
         "losses": 46,
         "pushes": 0,
         "pending": 1,
-        "accuracy": 0.4523809523809524,
-        "sample_size": 85,
-        "scored": 84,
+        "accuracy": 0.43902439024390244,
+        "sample_size": 83,
+        "scored": 82,
         "label": "Live Record",
         "source": "data\\tracking\\model_predictions_log.json",
         "note": "Only the latest logged LineLens MLB prediction per game is counted here.",
-        "logged_rows": 170,
-        "unique_games": 85
+        "logged_rows": 83,
+        "unique_games": 83
       },
       "today_record": {
         "wins": 0,
@@ -60,23 +60,23 @@
         "label": "Yesterday"
       },
       "recent_7_days": {
-        "wins": 36,
+        "wins": 34,
         "losses": 43,
         "pushes": 0,
         "pending": 1,
-        "accuracy": 0.45569620253164556,
-        "sample_size": 80,
-        "scored": 79,
+        "accuracy": 0.44155844155844154,
+        "sample_size": 78,
+        "scored": 77,
         "label": "Last 7 Days"
       },
       "recent_30_days": {
-        "wins": 38,
+        "wins": 36,
         "losses": 46,
         "pushes": 0,
         "pending": 1,
-        "accuracy": 0.4523809523809524,
-        "sample_size": 85,
-        "scored": 84,
+        "accuracy": 0.43902439024390244,
+        "sample_size": 83,
+        "scored": 82,
         "label": "Last 30 Days"
       },
       "pending_predictions": [
@@ -122,13 +122,13 @@
           "scored": 8
         },
         "v0.7.0": {
-          "wins": 11,
+          "wins": 9,
           "losses": 22,
           "pushes": 0,
           "pending": 0,
-          "accuracy": 0.3333333333333333,
-          "sample_size": 33,
-          "scored": 33
+          "accuracy": 0.2903225806451613,
+          "sample_size": 31,
+          "scored": 31
         },
         "v1.0.0": {
           "wins": 13,
@@ -178,13 +178,13 @@
           "scored": 16
         },
         "57.5-60%": {
-          "wins": 3,
+          "wins": 2,
           "losses": 5,
           "pushes": 0,
           "pending": 0,
-          "accuracy": 0.375,
-          "sample_size": 8,
-          "scored": 8
+          "accuracy": 0.2857142857142857,
+          "sample_size": 7,
+          "scored": 7
         },
         "60-65%": {
           "wins": 4,
@@ -196,24 +196,24 @@
           "scored": 6
         },
         "65%+": {
-          "wins": 5,
+          "wins": 4,
           "losses": 0,
           "pushes": 0,
           "pending": 0,
           "accuracy": 1.0,
-          "sample_size": 5,
-          "scored": 5
+          "sample_size": 4,
+          "scored": 4
         }
       },
       "by_month": {
         "2026-07": {
-          "wins": 38,
+          "wins": 36,
           "losses": 46,
           "pushes": 0,
           "pending": 1,
-          "accuracy": 0.4523809523809524,
-          "sample_size": 85,
-          "scored": 84
+          "accuracy": 0.43902439024390244,
+          "sample_size": 83,
+          "scored": 82
         }
       },
       "recent_predictions": [
