@@ -5,9 +5,6 @@ const state = {
     teams: window.__TEAM_METADATA__ || { teams: [] },
     mlbPayload: window.__MLB_PREDICTIONS__ || null,
     mlbBacktestPayload: window.__MLB_BACKTEST_PREDICTIONS__ || null,
-    nflPayload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null,
-    predictionLog: window.__MODEL_PREDICTIONS_LOG__ || null,
-    modelRecord: window.__MODEL_RECORD__ || null,
     games: [],
     sport: "All",
     mode: "Now",
@@ -182,18 +179,12 @@ async function loadLocalData(status = "Loading local schedule...", options = {})
     state.refreshStatus = status;
     render();
     try {
-        const [live, mlb, nfl, predictionLog, modelRecord] = await Promise.all([
-            loadJson("data/live/live_scores.json", "__LIVE_SCORES__", options),
+        const [live, mlb] = await Promise.all([
+            loadJson("data/live/live_widget.json", "__LIVE_SCORES__", options),
             loadJson("data/predictions/mlb_predictions.json", "__MLB_PREDICTIONS__", options),
-            loadJson("data/predictions/nfl_predictions.json", "__NFL_PREDICTIONS__", options),
-            loadJson("data/tracking/model_predictions_log.json", "__MODEL_PREDICTIONS_LOG__", options),
-            loadJson("data/tracking/model_record.json", "__MODEL_RECORD__", options),
         ]);
         state.payload = live || state.payload;
         state.mlbPayload = mlb || state.mlbPayload;
-        state.nflPayload = nfl || state.nflPayload;
-        state.predictionLog = predictionLog || state.predictionLog;
-        state.modelRecord = modelRecord || state.modelRecord;
         state.games = buildUnifiedGames();
         if (!state.games.length) {
             state.mlbBacktestPayload = await loadJson("data/predictions/mlb_backtest_predictions.json", "__MLB_BACKTEST_PREDICTIONS__", options) || state.mlbBacktestPayload;

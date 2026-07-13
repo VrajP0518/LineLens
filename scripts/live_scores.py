@@ -34,6 +34,8 @@ from src.shared.version import APP_VERSION
 LIVE_DIR = ROOT / "data" / "live"
 LIVE_JSON = LIVE_DIR / "live_scores.json"
 LIVE_JS = LIVE_DIR / "live_scores.js"
+WIDGET_JSON = LIVE_DIR / "live_widget.json"
+WIDGET_JS = LIVE_DIR / "live_widget.js"
 PREDICTIONS_DIR = ROOT / "data" / "predictions"
 RAW_MLB_DIR = ROOT / "data" / "raw" / "mlb"
 MLB_PREDICTIONS = PREDICTIONS_DIR / "mlb_predictions.json"
@@ -105,6 +107,35 @@ def write_json_and_js(payload: dict[str, Any]) -> None:
     cleaned = clean(payload)
     LIVE_JSON.write_text(json.dumps(cleaned, indent=2, allow_nan=False), encoding="utf-8")
     LIVE_JS.write_text(
+        "window.__LIVE_SCORES__ = "
+        + json.dumps(cleaned, separators=(",", ":"), allow_nan=False)
+        + ";\n",
+        encoding="utf-8",
+    )
+
+
+def write_widget_payload(payload: dict[str, Any]) -> None:
+    """Write a small near-term snapshot for instant PiP startup."""
+    metadata = payload.get("metadata") or {}
+    center = parse_iso_date(str(metadata.get("data_window", {}).get("center_date") or today_iso()))
+    allowed_dates = {(center + timedelta(days=offset)).isoformat() for offset in (-1, 0, 1)}
+    games = [
+        game for game in payload.get("games", [])
+        if not game.get("game_date") or str(game.get("game_date"))[:10] in allowed_dates
+    ]
+    widget_payload = {
+        "metadata": {
+            **metadata,
+            "source": "LineLens live widget snapshot",
+            "widget_snapshot": True,
+            "row_count": len(games),
+            "full_cache_path": "data/live/live_scores.json",
+        },
+        "games": games,
+    }
+    cleaned = clean(widget_payload)
+    WIDGET_JSON.write_text(json.dumps(cleaned, indent=2, allow_nan=False), encoding="utf-8")
+    WIDGET_JS.write_text(
         "window.__LIVE_SCORES__ = "
         + json.dumps(cleaned, separators=(",", ":"), allow_nan=False)
         + ";\n",
@@ -1044,6 +1075,7 @@ def main() -> int:
     args = parser.parse_args()
     payload = build_payload(args.date, max(args.days_back, 0), max(args.days_forward, 0))
     write_json_and_js(payload)
+    write_widget_payload(payload)
     print(json.dumps(payload["metadata"], indent=2))
     return 0
 

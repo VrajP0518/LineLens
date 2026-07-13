@@ -1500,6 +1500,27 @@ function allMlbReviewRows() {
     return derivedCache.mlbReviewRows;
 }
 
+function teamProfileGames(team) {
+    const rows = team.sport === "MLB" ? allMlbReviewRows() : state.nfl.games.map(game => ({ ...game, sport: "NFL" }));
+    return rows
+        .filter(game => game.sport === team.sport && (game.home === team.abbreviation || game.away === team.abbreviation))
+        .sort((a, b) => {
+            const dateOrder = String(gameIsoDate(b) || "").localeCompare(String(gameIsoDate(a) || ""));
+            if (dateOrder !== 0) return dateOrder;
+            return String(b.game_time || b.start_time || "").localeCompare(String(a.game_time || a.start_time || ""));
+        });
+}
+
+function teamAverageRunDifferential(team, games) {
+    if (team.sport !== "MLB") return null;
+    const values = games.map(game => {
+        const trend = game.trend || {};
+        const side = game.home === team.abbreviation ? trend.home : trend.away;
+        return safeNumber(Array.isArray(side) ? side[1] : null);
+    }).filter(value => value !== null);
+    return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+}
+
 function mlbReviewDates() {
     return uniqueSortedStrings(allMlbReviewRows().map(gameIsoDate), "asc");
 }
@@ -3288,18 +3309,32 @@ function sortMlbLifecycleGames(games) {
 function teamGradientColor(meta) {
     const key = `${meta?.sport || "MLB"}:${meta?.abbreviation || ""}:${meta?.primary || ""}:${meta?.secondary || ""}`;
     if (derivedCache.teamGradientColors.has(key)) return derivedCache.teamGradientColors.get(key);
-    const colors = [meta?.primary, meta?.secondary].filter(color => /^#[0-9a-f]{6}$/i.test(String(color || "")));
-    if (!colors.length) {
+    const primary = /^#[0-9a-f]{6}$/i.test(String(meta?.primary || "")) ? meta.primary : null;
+    const secondary = /^#[0-9a-f]{6}$/i.test(String(meta?.secondary || "")) ? meta.secondary : null;
+    if (!primary && !secondary) {
         derivedCache.teamGradientColors.set(key, "#2e86ab");
         return "#2e86ab";
     }
-    const score = color => {
-        const values = color.slice(1).match(/.{2}/g).map(value => parseInt(value, 16));
-        return Math.max(...values) - Math.min(...values) + Math.max(...values) * 0.2;
-    };
-    const color = colors.sort((a, b) => score(b) - score(a))[0];
+    // The primary team color is the identity anchor. Choosing the brightest
+    // secondary color made Toronto read red, Detroit read orange, etc.
+    const color = primary || secondary;
     derivedCache.teamGradientColors.set(key, color);
     return color;
+}
+
+function modelNameForGame(game) {
+    const raw = game?.model_name
+        || game?.model?.model_name
+        || latestLogForGame(game)?.model_name
+        || selectedModelEntry("MLB")?.model_name
+        || normalizeMeta(state.mlb.payload).model_type
+        || "MLB model";
+    return String(raw);
+}
+
+function modelPickLabel(game) {
+    const raw = modelNameForGame(game);
+    return `${modelIdentity(raw).legend} pick`;
 }
 
 function lifecycleMarketRead(game) {
@@ -3351,7 +3386,7 @@ function renderModelConsensus(game) {
     if (!consensus) {
         return `<div class="mlb-game-card__consensus mlb-game-card__consensus--pending"><header><span>Model consensus</span><small>Production export</small></header><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><small>Multi-model vote will appear after the next trained export.</small></div>`;
     }
-    return `<div class="mlb-game-card__consensus"><header><span>Model consensus</span><strong>${escapeHtml(consensus.consensusPick)} ${consensus.consensusCount}–${consensus.total - consensus.consensusCount}</strong></header><div class="mlb-game-card__consensus-grid">${consensus.rows.map(row => `<span><b>${escapeHtml(row.legend)}</b><em>${escapeHtml(row.pick)} ${formatProbability(row.pick === game.home ? row.homeProbability : 1 - row.homeProbability)}</em></span>`).join("")}</div><footer><span>Production pick: <strong>${escapeHtml(consensus.productionPick)}</strong></span><span>${consensus.consensusCount} of ${consensus.total} agree</span></footer></div>`;
+    return `<div class="mlb-game-card__consensus"><header><span>Model consensus</span><strong>${escapeHtml(consensus.consensusPick)} ${consensus.consensusCount}–${consensus.total - consensus.consensusCount}</strong></header><div class="mlb-game-card__consensus-grid">${consensus.rows.map(row => `<span><b>${escapeHtml(row.legend)}</b><em>${escapeHtml(row.pick)} ${formatProbability(row.pick === game.home ? row.homeProbability : 1 - row.homeProbability)}</em></span>`).join("")}</div><footer><span>${escapeHtml(modelPickLabel(game))}: <strong>${escapeHtml(consensus.productionPick)}</strong></span><span>${consensus.consensusCount} of ${consensus.total} agree</span></footer></div>`;
 }
 
 function lifecycleTimeline(game) {
@@ -3411,20 +3446,22 @@ function renderMlbLifecycleCard(game) {
     const score = (stage === "live" || stage === "final") && awayScore !== null && homeScore !== null ? `${awayScore} – ${homeScore}` : "";
     const result = modelResultLabel(game);
     const cardResult = result === "Won" ? "MODEL WON" : result === "Lost" ? "MODEL LOST" : result.toUpperCase();
+    const modelWon = result === "Won";
+    const pickMeta = getTeamMeta("MLB", pick, pick);
     const homeMeta = getTeamMeta("MLB", game.home, game.home_display);
     const awayMeta = getTeamMeta("MLB", game.away, game.away_display);
     const statusLabel = stage === "pregame" ? "UPCOMING" : lifecycleStageLabel(stage).toUpperCase();
     const dateLabel = stage === "pregame" ? `${gameIsoDate(game) === localDateIso() ? "TODAY" : formatDateOnly(gameIsoDate(game), { month: "short", day: "numeric" }).toUpperCase()} · ${getGameTimeLabel(game)}` : stage === "stale" ? "PAST · VERIFY SOURCE" : gameStatusLine(game, live);
     const marketRead = !market.movement.available ? "" : `<div class="mlb-game-card__market"><span>Market ${market.marketProbability === null ? "Linked" : formatProbability(market.marketProbability)}</span>${market.edge === null ? "" : `<strong>Edge ${formatEdge(market.edge)}</strong>`}</div>`;
     const latestPlay = stage === "live" && live?.latest_play ? `<small class="mlb-game-card__play">${escapeHtml(live.latest_play)}</small>` : "";
-    return `<article class="mlb-game-card mlb-game-card--${stage} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
+    return `<article class="mlb-game-card mlb-game-card--${stage} ${modelWon ? "is-model-won" : ""} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
         <header class="mlb-game-card__header"><span class="mlb-game-card__status">${statusLabel}</span><span class="mlb-game-card__time">${escapeHtml(dateLabel)}</span>${renderWatchButton(game, "Watch matchup")}</header>
         <div class="mlb-game-card__matchup">
             <div class="mlb-game-card__team">${renderTeamLogo("MLB", awayMeta.abbreviation, "lg", awayMeta.full_name)}<strong>${escapeHtml(awayMeta.abbreviation)}</strong></div>
             <div class="mlb-game-card__at">${score ? `<b>${escapeHtml(score)}</b>` : "VS"}<small>${stage === "live" ? "LIVE SCORE" : stage === "final" ? "FINAL" : "FIRST PITCH"}</small></div>
             <div class="mlb-game-card__team mlb-game-card__team--home">${renderTeamLogo("MLB", homeMeta.abbreviation, "lg", homeMeta.full_name)}<strong>${escapeHtml(homeMeta.abbreviation)}</strong></div>
         </div>
-        <div class="mlb-game-card__signal"><span>Production pick</span><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><b>${formatProbability(market.pickProbability)}</b></div>
+        <div class="mlb-game-card__signal"><span>${escapeHtml(modelPickLabel(game))}</span><strong class="mlb-game-card__signal-pick">${escapeHtml(pick)}</strong><b>${formatProbability(market.pickProbability)}</b></div>
         ${renderModelConsensus(game)}
         ${marketRead}${latestPlay}
         <footer class="mlb-game-card__footer"><span>${resultChip(cardResult)}</span><button class="btn btn--micro" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">${stage === "live" ? "Open GameCast" : "View Matchup"}</button></footer>
@@ -4996,7 +5033,7 @@ function renderTeams() {
     }
     $("#view-teams").innerHTML = `
         <section class="module-header panel">
-            <div><p class="eyebrow">Team Profiles</p><h2>Team-level context from prediction exports</h2></div>
+            <div><p class="eyebrow">Team Profiles</p><h2>Team-level context from prediction exports</h2><p class="muted">Current slate plus every loaded historical prediction row.</p></div>
             <div class="select-row"><select id="team-sport-select"><option ${state.selected.teamSport === "MLB" ? "selected" : ""}>MLB</option><option ${state.selected.teamSport === "NFL" ? "selected" : ""}>NFL</option></select><select id="team-select">${teams.map(team => `<option value="${team.abbreviation}" ${team.abbreviation === state.selected.teamCode ? "selected" : ""}>${team.full_name}</option>`).join("")}</select></div>
         </section>
         ${selected ? renderTeamProfile(selected) : emptyState("No team metadata", "Team metadata file is missing.")}
@@ -5004,7 +5041,7 @@ function renderTeams() {
 }
 
 function renderTeamProfile(team) {
-    const games = (team.sport === "NFL" ? state.nfl.games : state.mlb.games).filter(game => game.home === team.abbreviation || game.away === team.abbreviation);
+    const games = teamProfileGames(team);
     const probabilityValues = games
         .map(game => {
             const prob = getGameProbability(game, team.sport);
@@ -5013,20 +5050,25 @@ function renderTeamProfile(team) {
         })
         .filter(value => value !== null);
     const avgProb = probabilityValues.length ? probabilityValues.reduce((sum, value) => sum + value, 0) / probabilityValues.length : null;
+    const runDifferential = teamAverageRunDifferential(team, games);
+    const oldestDate = games.length ? gameIsoDate(games.at(-1)) : null;
+    const newestDate = games.length ? gameIsoDate(games[0]) : null;
+    const coverage = oldestDate && newestDate ? `${formatDate(oldestDate)} – ${formatDate(newestDate)}` : "No historical rows loaded";
+    const tableSource = team.sport === "MLB" ? "MLB_REVIEW_ALL" : "NFL";
     return `
         <section class="team-profile panel">
             <div class="team-profile__hero" style="--team-color:${team.primary}">
                 ${renderTeamLogo(team.sport, team.abbreviation, "lg", team.full_name)}
-                <div><p class="eyebrow">${team.sport}</p><h2>${escapeHtml(team.full_name)}</h2><p class="muted">${escapeHtml(team.city)} profile generated from loaded prediction exports.</p></div>
+                <div><p class="eyebrow">${team.sport}</p><h2>${escapeHtml(team.full_name)}</h2><p class="muted">${escapeHtml(team.city)} profile across the full loaded prediction history.</p></div>
                 ${renderFavoriteButton(team.sport, team.abbreviation, `Favorite ${team.full_name}`)}
             </div>
             <div class="summary-grid summary-grid--compact">
                 ${card("Loaded games", games.length, "prediction rows")}
                 ${card("Average model probability", formatProbability(avgProb), "team perspective")}
-                ${card(team.sport === "MLB" ? "Run differential" : "ATS context", team.sport === "MLB" ? formatNumber(games[0]?.trend?.home?.[1] ?? games[0]?.trend?.away?.[1]) : "Export dependent", "from available rows")}
+                ${card(team.sport === "MLB" ? "Average run differential" : "ATS context", team.sport === "MLB" ? formatNumber(runDifferential, 2) : "Export dependent", "across available rows")}
                 ${card("Data status", games.length ? "Available" : "Limited", team.sport === "MLB" ? "pitcher data optional" : "injury data optional")}
             </div>
-            <article class="panel panel--nested"><header><p class="eyebrow">Last 5 loaded games</p><h2>Team game context</h2></header>${games.length ? renderGameTable(team.sport, games.slice(0, 5)) : emptyState("No games for this team", "Load a prediction export containing this team.")}</article>
+            <article class="panel panel--nested team-profile__history"><header><div><p class="eyebrow">All loaded games</p><h2>Team game context</h2><p class="muted">${escapeHtml(coverage)} · ${games.length} rows across current and historical exports.</p></div><span class="chip chip--soft">Historical view</span></header>${games.length ? renderGameTable(team.sport, games, tableSource) : emptyState("No games for this team", "Load a prediction export containing this team.")}</article>
         </section>
     `;
 }
@@ -5553,6 +5595,8 @@ function bindEvents() {
                     ? state.mlbBacktest.games
                     : sourceName === "MLB_REVIEW"
                         ? filterMlbGames(mlbRowsForDate())
+                        : sourceName === "MLB_REVIEW_ALL"
+                            ? allMlbReviewRows()
                         : state.mlb.games;
             const game = source.find(item => gameKey({ ...item, sport }) === row.dataset.gameId) || source[Number(row.dataset.gameIndex)];
             state.selected[sport.toLowerCase()] = game;
