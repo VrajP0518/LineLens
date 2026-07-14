@@ -41,6 +41,7 @@ RAW_MLB_DIR = ROOT / "data" / "raw" / "mlb"
 MLB_PREDICTIONS = PREDICTIONS_DIR / "mlb_predictions.json"
 MLB_BACKTEST = PREDICTIONS_DIR / "mlb_backtest_predictions.json"
 NFL_PREDICTIONS = PREDICTIONS_DIR / "nfl_predictions.json"
+WNBA_PREDICTIONS = PREDICTIONS_DIR / "wnba_predictions.json"
 MLB_SCHEDULE_URL = "https://statsapi.mlb.com/api/v1/schedule"
 MLB_LIVE_URL = "https://statsapi.mlb.com/api/v1.1/game/{game_pk}/feed/live"
 ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/{sport}/{league}/scoreboard"
@@ -203,11 +204,13 @@ def prediction_key(game: dict[str, Any]) -> str:
     )
 
 
-def prediction_indexes() -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
+def prediction_indexes() -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
     mlb_payload = load_json(MLB_PREDICTIONS)
     nfl_payload = load_json(NFL_PREDICTIONS)
+    wnba_payload = load_json(WNBA_PREDICTIONS)
     mlb: dict[str, dict[str, Any]] = {}
     nfl: dict[str, dict[str, Any]] = {}
+    wnba: dict[str, dict[str, Any]] = {}
     for game in mlb_payload.get("games", []):
         mlb[prediction_key(game)] = game
         mlb[
@@ -224,7 +227,10 @@ def prediction_indexes() -> tuple[dict[str, dict[str, Any]], dict[str, dict[str,
             f"fallback:{game.get('game_date')}:"
             f"{normalize_team(game.get('away'))}:{normalize_team(game.get('home'))}"
         ] = game
-    return mlb, nfl
+    for game in wnba_payload.get("games", []):
+        wnba[prediction_key(game)] = game
+        wnba[f"fallback:{game.get('game_date')}:{normalize_team(game.get('away'))}:{normalize_team(game.get('home'))}"] = game
+    return mlb, nfl, wnba
 
 
 def find_mlb_prediction(
@@ -302,6 +308,18 @@ def nfl_model_payload(prediction: dict[str, Any] | None) -> dict[str, Any]:
 
 
 def find_nfl_prediction(
+    game_id: str,
+    game_date: str | None,
+    away: str,
+    home: str,
+    index: dict[str, dict[str, Any]],
+) -> dict[str, Any] | None:
+    return index.get(f"id:{game_id}") or index.get(
+        f"fallback:{game_date}:{normalize_team(away)}:{normalize_team(home)}"
+    )
+
+
+def find_wnba_prediction(
     game_id: str,
     game_date: str | None,
     away: str,
@@ -482,6 +500,7 @@ def game_from_espn_event(
     sport: str,
     mlb_predictions: dict[str, dict[str, Any]],
     nfl_predictions: dict[str, dict[str, Any]],
+    wnba_predictions: dict[str, dict[str, Any]],
 ) -> dict[str, Any] | None:
     competition = (event.get("competitions") or [{}])[0]
     competitors = espn_competitor_map(competition, sport)
@@ -514,6 +533,9 @@ def game_from_espn_event(
     elif sport == "NFL":
         prediction = find_nfl_prediction(event_id, game_date, away, home, nfl_predictions)
         model = nfl_model_payload(prediction)
+    elif sport == "WNBA":
+        prediction = find_wnba_prediction(event_id, game_date, away, home, wnba_predictions)
+        model = model_payload(prediction)
     else:
         model = no_model_payload("Scoreboard-only ESPN row; LineLens does not model this sport")
 
@@ -575,7 +597,7 @@ def game_from_espn_event(
                 "period": (competition.get("status") or {}).get("period"),
                 "clock": ((competition.get("status") or {}).get("displayClock")),
                 "competition": "FIFA World Cup" if sport == "SOCCER" else ESPN_SPORTS[sport]["league"].upper(),
-                "live_note": None if status == "In Progress" else "ESPN scoreboard row; no LineLens prediction model is applied.",
+                "live_note": None if status == "In Progress" else ("ESPN scoreboard row; WNBA model joined when available." if sport == "WNBA" else "ESPN scoreboard row; no LineLens prediction model is applied."),
             }
         )
 
@@ -589,6 +611,7 @@ def fetch_espn_games(
     end_date: date,
     mlb_predictions: dict[str, dict[str, Any]],
     nfl_predictions: dict[str, dict[str, Any]],
+    wnba_predictions: dict[str, dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[str]]:
     warnings: list[str] = []
     games: list[dict[str, Any]] = []
@@ -601,7 +624,7 @@ def fetch_espn_games(
             try:
                 payload = espn_scoreboard(sport, day)
                 for event in payload.get("events", []):
-                    row = game_from_espn_event(event, sport, mlb_predictions, nfl_predictions)
+                    row = game_from_espn_event(event, sport, mlb_predictions, nfl_predictions, wnba_predictions)
                     if row:
                         games.append(row)
             except Exception as error:  # noqa: BLE001 - every scoreboard feed is optional.
@@ -610,7 +633,7 @@ def fetch_espn_games(
     try:
         payload = espn_scoreboard("NFL")
         for event in payload.get("events", []):
-            row = game_from_espn_event(event, "NFL", mlb_predictions, nfl_predictions)
+            row = game_from_espn_event(event, "NFL", mlb_predictions, nfl_predictions, wnba_predictions)
             row_date = parse_iso_date(str(row.get("game_date") or "")) if row and row.get("game_date") else None
             if row and row_date and start_date <= row_date <= end_date:
                 games.append(row)
@@ -977,13 +1000,13 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
     start_date = selected - timedelta(days=days_back)
     end_date = selected + timedelta(days=days_forward)
     fresh_start = max(start_date, selected - timedelta(days=FRESH_LOOKBACK_DAYS))
-    mlb_predictions, nfl_predictions = prediction_indexes()
+    mlb_predictions, nfl_predictions, wnba_predictions = prediction_indexes()
     warnings: list[str] = []
     source_status = "live_fresh"
     espn_games: list[dict[str, Any]] = []
     mlb_games: list[dict[str, Any]] = []
     try:
-        espn_games, espn_warnings = fetch_espn_games(fresh_start, end_date, mlb_predictions, nfl_predictions)
+        espn_games, espn_warnings = fetch_espn_games(fresh_start, end_date, mlb_predictions, nfl_predictions, wnba_predictions)
         warnings.extend(espn_warnings)
         if espn_games:
             source_status = "espn_live_fresh"

@@ -65,6 +65,21 @@
     {"sport":"MLB","abbreviation":"TB","full_name":"Tampa Bay Rays","city":"Tampa Bay","primary":"#092C5C","secondary":"#8FBCE6","logo_url":"https://a.espncdn.com/i/teamlogos/mlb/500/tb.png"},
     {"sport":"MLB","abbreviation":"TEX","full_name":"Texas Rangers","city":"Texas","primary":"#003278","secondary":"#C0111F","logo_url":"https://a.espncdn.com/i/teamlogos/mlb/500/tex.png"},
     {"sport":"MLB","abbreviation":"TOR","full_name":"Toronto Blue Jays","city":"Toronto","primary":"#134A8E","secondary":"#E8291C","logo_url":"https://a.espncdn.com/i/teamlogos/mlb/500/tor.png"},
-    {"sport":"MLB","abbreviation":"WSH","full_name":"Washington Nationals","city":"Washington","primary":"#AB0003","secondary":"#14225A","logo_url":"https://a.espncdn.com/i/teamlogos/mlb/500/wsh.png"}
+    {"sport":"MLB","abbreviation":"WSH","full_name":"Washington Nationals","city":"Washington","primary":"#AB0003","secondary":"#14225A","logo_url":"https://a.espncdn.com/i/teamlogos/mlb/500/wsh.png"},
+    {"sport":"WNBA","abbreviation":"ATL","full_name":"Atlanta Dream","city":"Atlanta","primary":"#E31837","secondary":"#F7B718","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/atl.png"},
+    {"sport":"WNBA","abbreviation":"CHI","full_name":"Chicago Sky","city":"Chicago","primary":"#418FDE","secondary":"#FFCD00","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/chi.png"},
+    {"sport":"WNBA","abbreviation":"CON","full_name":"Connecticut Sun","city":"Connecticut","primary":"#F58220","secondary":"#0A2240","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/con.png"},
+    {"sport":"WNBA","abbreviation":"DAL","full_name":"Dallas Wings","city":"Dallas","primary":"#0C2340","secondary":"#C4D600","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/dal.png"},
+    {"sport":"WNBA","abbreviation":"GS","full_name":"Golden State Valkyries","city":"Golden State","primary":"#1D428A","secondary":"#FFC72C","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/gs.png"},
+    {"sport":"WNBA","abbreviation":"IND","full_name":"Indiana Fever","city":"Indiana","primary":"#002D62","secondary":"#FDBB30","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/ind.png"},
+    {"sport":"WNBA","abbreviation":"LA","full_name":"Los Angeles Sparks","city":"Los Angeles","primary":"#552583","secondary":"#FDB927","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/la.png"},
+    {"sport":"WNBA","abbreviation":"LV","full_name":"Las Vegas Aces","city":"Las Vegas","primary":"#000000","secondary":"#C8102E","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/lv.png"},
+    {"sport":"WNBA","abbreviation":"MIN","full_name":"Minnesota Lynx","city":"Minnesota","primary":"#236192","secondary":"#9EA2A2","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/min.png"},
+    {"sport":"WNBA","abbreviation":"NY","full_name":"New York Liberty","city":"New York","primary":"#6ECEB2","secondary":"#000000","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/ny.png"},
+    {"sport":"WNBA","abbreviation":"PHX","full_name":"Phoenix Mercury","city":"Phoenix","primary":"#E56020","secondary":"#201747","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/phx.png"},
+    {"sport":"WNBA","abbreviation":"POR","full_name":"Portland Fire","city":"Portland","primary":"#E03A3E","secondary":"#000000","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/por.png"},
+    {"sport":"WNBA","abbreviation":"SEA","full_name":"Seattle Storm","city":"Seattle","primary":"#2C5234","secondary":"#FBE122","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/sea.png"},
+    {"sport":"WNBA","abbreviation":"TOR","full_name":"Toronto Tempo","city":"Toronto","primary":"#5A2D82","secondary":"#F4B942","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/tor.png"},
+    {"sport":"WNBA","abbreviation":"WSH","full_name":"Washington Mystics","city":"Washington","primary":"#E31837","secondary":"#C4CED4","logo_url":"https://a.espncdn.com/i/teamlogos/wnba/500/wsh.png"}
   ]
 }

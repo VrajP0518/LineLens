@@ -30,6 +30,9 @@ MLB_MODEL = ROOT / "models" / "mlb_moneyline_model.joblib"
 MLB_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_features_2021_2025.csv"
 MLB_PREDICTIONS = DATA_DIR / "predictions" / "mlb_predictions.json"
 NFL_PREDICTIONS = DATA_DIR / "predictions" / "nfl_predictions.json"
+WNBA_MODEL = ROOT / "models" / "wnba_moneyline_model.joblib"
+WNBA_FEATURES = DATA_DIR / "processed" / "wnba" / "wnba_features_all.csv"
+WNBA_PREDICTIONS = DATA_DIR / "predictions" / "wnba_predictions.json"
 VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
 
 
@@ -84,8 +87,10 @@ def ensure_data_dirs() -> None:
     for folder in [
         DATA_DIR / "raw" / "mlb",
         DATA_DIR / "raw" / "nfl",
+        DATA_DIR / "raw" / "wnba",
         DATA_DIR / "processed" / "mlb",
         DATA_DIR / "processed" / "nfl",
+        DATA_DIR / "processed" / "wnba",
         DATA_DIR / "imports" / "nfl",
         DATA_DIR / "predictions",
         DATA_DIR / "reports",
@@ -128,6 +133,11 @@ def has_mlb_model_predictions() -> bool:
     return any(game.get("home_win_probability") is not None for game in games)
 
 
+def has_wnba_model_predictions() -> bool:
+    payload = load_json(WNBA_PREDICTIONS)
+    return any(game.get("home_win_probability") is not None for game in payload.get("games") or [])
+
+
 def model_needs_daily_retrain() -> bool:
     """Keep the daily startup path aligned with the promised retrain cadence."""
 
@@ -154,6 +164,7 @@ def orchestrate() -> dict[str, Any]:
         "steps": steps,
         "mlb_ready": False,
         "nfl_ready": False,
+        "wnba_ready": False,
         "nfl_requires_import": False,
         "manual_nfl_import_path": "data/imports/nfl/spread_dataset.parquet",
         "error": None,
@@ -195,12 +206,14 @@ def orchestrate() -> dict[str, Any]:
         return status
 
     steps.append(run_step("Refresh NFL real/cached predictions", [python_path, "scripts/refresh_data.py", "--sport", "nfl", "--mode", "real"], timeout=1800))
+    steps.append(run_step("Refresh WNBA model and current board", [python_path, "scripts/refresh_data.py", "--sport", "wnba", "--mode", "all"], timeout=1800))
     steps.append(run_step("Refresh live widget scores", [python_path, "scripts/live_scores.py"], timeout=300))
     steps.append(run_step("Refresh optional odds snapshots", [python_path, "scripts/odds_snapshots.py"], timeout=300))
     steps.append(run_step("Score logged model predictions", [python_path, "scripts/score_model_predictions.py"], timeout=300))
     steps.append(run_step("Check data status", [python_path, "scripts/check_data_status.py"], timeout=300))
 
     status["nfl_ready"] = has_real_export(NFL_PREDICTIONS)
+    status["wnba_ready"] = has_wnba_model_predictions()
     status["nfl_requires_import"] = not status["nfl_ready"]
     refresh = load_json(REFRESH_JSON)
     status["refresh_status"] = refresh.get("sports", {})

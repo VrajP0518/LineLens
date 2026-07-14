@@ -18,8 +18,10 @@ def ensure_project_dirs() -> None:
     for path in [
         RAW_DIR / "nfl",
         RAW_DIR / "mlb",
+        RAW_DIR / "wnba",
         PROCESSED_DIR / "nfl",
         PROCESSED_DIR / "mlb",
+        PROCESSED_DIR / "wnba",
         PREDICTIONS_DIR,
         MODEL_DIR,
     ]:

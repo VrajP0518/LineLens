@@ -54,6 +54,9 @@ def main() -> int:
     comparison = load_json(DATA_DIR / "reports" / "mlb_model_comparison.json")
     moltres_card = load_json(DATA_DIR / "reports" / "mlb_moltres_model_card.json")
     feature_summary = load_json(DATA_DIR / "reports" / "mlb_feature_summary.json")
+    wnba_comparison = load_json(DATA_DIR / "reports" / "wnba_model_comparison.json")
+    wnba_card = load_json(DATA_DIR / "reports" / "wnba_model_card.json")
+    wnba_feature_summary = load_json(DATA_DIR / "reports" / "wnba_feature_summary.json")
     registry = load_json(DATA_DIR / "models" / "model_registry.json")
     prediction_log = load_json(DATA_DIR / "tracking" / "model_predictions_log.json")
     model_record = load_json(DATA_DIR / "tracking" / "model_record.json")
@@ -89,6 +92,8 @@ def main() -> int:
             "NFL": mode_for_prediction(DATA_DIR / "predictions" / "nfl_predictions.json"),
             "MLB": mode_for_prediction(DATA_DIR / "predictions" / "mlb_predictions.json"),
             "MLB_BACKTEST": mode_for_prediction(DATA_DIR / "predictions" / "mlb_backtest_predictions.json"),
+            "WNBA": mode_for_prediction(DATA_DIR / "predictions" / "wnba_predictions.json"),
+            "WNBA_BACKTEST": mode_for_prediction(DATA_DIR / "predictions" / "wnba_backtest_predictions.json"),
         },
         "reports": {
             "status": "real_cached" if report and not report.get("_error") else "missing",
@@ -114,6 +119,23 @@ def main() -> int:
                 "feature_count": feature_summary.get("feature_count"),
                 "features_used": len(feature_summary.get("features_used_by_model", [])),
                 "error": feature_summary.get("_error"),
+            },
+            "wnba_model_comparison": {
+                "status": "real_cached" if wnba_comparison and not wnba_comparison.get("_error") else "missing",
+                "selected_model": wnba_comparison.get("selected_model") or (wnba_comparison.get("metadata") or {}).get("selected_model"),
+                "model_count": len(wnba_comparison.get("models", [])),
+                "error": wnba_comparison.get("_error"),
+            },
+            "wnba_model_card": {
+                "status": "real_cached" if wnba_card and not wnba_card.get("_error") else "missing",
+                "model_name": (wnba_card.get("model") or {}).get("model_name"),
+                "error": wnba_card.get("_error"),
+            },
+            "wnba_feature_summary": {
+                "status": "real_cached" if wnba_feature_summary and not wnba_feature_summary.get("_error") else "missing",
+                "rows": (wnba_feature_summary.get("metadata") or {}).get("row_count"),
+                "data_quality": (wnba_feature_summary.get("metadata") or {}).get("data_quality"),
+                "error": wnba_feature_summary.get("_error"),
             },
         },
         "model_registry": {

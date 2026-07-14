@@ -733,11 +733,23 @@ def train(
     record = _model_record(probabilities, y_test)
     confidence_records = _threshold_records(probabilities, y_test)
     comparison = _comparison_rows(model_rows, y_test, test_df)
-    candidate_models = [
-        (row["model_name"], row["model"])
-        for row in model_rows
-        if row.get("status") == "trained" and row.get("model") is not None
-    ]
+    # Keep the latest season sealed for model selection, then fit the
+    # production artifacts on every completed row available in the feature
+    # table. This preserves honest holdout metrics while ensuring the daily
+    # exporter benefits from the full historical dataset.
+    X_full = clean_numeric_frame(df, features)
+    y_full = df["home_win"].astype(int)
+    production_candidates = []
+    for name, model in _candidate_models():
+        try:
+            model.fit(X_full, y_full)
+            production_candidates.append((name, model))
+        except Exception:
+            continue
+    production_moltres = _train_moltres(X_full, y_full, X_full, y_full)
+    production_candidates.append(("Moltres", production_moltres["model"]))
+    production_model = dict(production_candidates).get(selected["model_name"], selected["model"])
+    candidate_models = production_candidates
     top_features = _ensemble_feature_importance(moltres, features) if selected["model_name"] == "Moltres" else _feature_importance(selected["model"], features)
     created_at = utc_now()
     model_id = moltres_id if selected["model_name"] == "Moltres" else f"mlb_moneyline_{APP_VERSION}_{created_at.replace(':', '').replace('-', '').replace('Z', '')}"
@@ -760,6 +772,10 @@ def train(
         "feature_count": len(features),
         "row_count_train": int(len(train_df)),
         "row_count_test": int(len(test_df)),
+        "production_fit_rows": int(len(df)),
+        "production_fit_seasons": seasons,
+        "production_fit_policy": "all completed rows after sealed latest-season evaluation",
+        "holdout_sealed": True,
         "selected_by": "log_loss",
         "calibration_error": calibration_error,
         "metrics": metrics,
@@ -769,7 +785,7 @@ def train(
         "moltres_oof_folds": moltres.get("oof_folds"),
     }
     payload = {
-        "model": selected["model"],
+        "model": production_model,
         "model_name": selected["model_name"],
         "features": features,
         "metadata": metadata,
@@ -790,7 +806,7 @@ def train(
         "selected_by": "chronological OOF stacking; holdout selection by log_loss then Brier score",
     }
     moltres_payload = {
-        "model": moltres["model"],
+        "model": production_moltres["model"],
         "model_name": "Moltres",
         "features": features,
         "metadata": moltres_metadata,
@@ -815,6 +831,9 @@ def train(
         "feature_count": len(features),
         "train_rows": int(len(train_df)),
         "test_rows": int(len(test_df)),
+        "production_fit_rows": int(len(df)),
+        "production_fit_seasons": seasons,
+        "production_fit_policy": "all completed rows after sealed latest-season evaluation",
         "metrics": metrics,
         "selected": True,
         "notes": "Selected by lowest log loss, then Brier score.",

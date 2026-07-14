@@ -13,6 +13,9 @@
     <script src="data/reports/mlb_model_comparison.js" defer></script>
     <script src="data/reports/mlb_moltres_model_card.js" defer></script>
     <script src="data/reports/mlb_feature_summary.js" defer></script>
+    <script src="data/reports/wnba_model_comparison.js" defer></script>
+    <script src="data/reports/wnba_model_card.js" defer></script>
+    <script src="data/reports/wnba_feature_summary.js" defer></script>
     <script src="data/models/model_registry.js" defer></script>
     <script src="data/tracking/model_record.js" defer></script>
     <script src="data/tracking/model_predictions_log.js" defer></script>
@@ -22,6 +25,8 @@
     <script src="data/predictions/nfl_predictions.js" defer></script>
     <script src="data/predictions.js" defer></script>
     <script src="data/predictions/mlb_predictions.js" defer></script>
+    <script src="data/predictions/wnba_predictions.js" defer></script>
+    <script src="data/predictions/wnba_backtest_predictions.js" defer></script>
 </head>
 <body>
     <div id="app-loading" class="app-loading is-visible" role="status" aria-live="polite">
@@ -32,8 +37,8 @@
                 <i></i>
                 <b></b>
             </div>
-            <p class="app-loading__eyebrow">LineLens / Sports Intelligence</p>
-            <h1>Bringing the board online.</h1>
+            <p class="app-loading__eyebrow">LineLens Sports</p>
+            <h1>Loading sports data.</h1>
             <p id="app-loading-message">Loading prediction exports...</p>
             <div class="app-loading__progress" aria-hidden="true"><span></span></div>
             <div class="app-loading__signals" aria-hidden="true">
@@ -57,7 +62,10 @@
                 <section class="nav__section" aria-label="Workspace">
                     <p class="nav__section-label">Workspace</p>
                     <button class="nav__item nav__item--home is-active" data-view="home"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-home.png" alt="" /></span><span>Home</span></button>
-                    <button class="nav__item nav__item--models" data-view="models"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-models.png" alt="" /></span><span>Models</span></button>
+                    <button class="nav__item nav__item--picks" data-view="picks"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 5h14M5 12h10M5 19h6" /></svg></span><span>Picks</span></button>
+                    <button class="nav__item nav__item--models" data-view="models"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-models.png" alt="" /></span><span>Model Lab</span></button>
+                    <button class="nav__item nav__item--history" data-view="history"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 12a8 8 0 1 0 2.35-5.65L4 8.7M4 4v4.7h4.7" /></svg></span><span>History</span></button>
+                    <button class="nav__item nav__item--watchlist" data-view="watchlist"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m12 4 2.45 4.96 5.48.8-3.96 3.86.94 5.45L12 16.5l-4.91 2.57.94-5.45-3.96-3.86 5.48-.8L12 4Z" /></svg></span><span>Watchlist</span></button>
                     <button class="nav__item nav__item--reports" data-view="reports"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-reports.png" alt="" /></span><span>Reports</span></button>
                     <button class="nav__item nav__item--record" data-view="record"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-record.png" alt="" /></span><span>Record</span></button>
                     <button class="nav__item nav__item--teams" data-view="teams"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-teams.png" alt="" /></span><span>Teams</span></button>
@@ -73,14 +81,18 @@
                     <button class="nav__item nav__item--wnba" data-view="wnba"><span class="nav-sport-mark nav-sport-mark--wnba" aria-hidden="true"><img src="assets/sport-icon-wnba.png" alt="" /></span><span>WNBA</span></button>
                     <button class="nav__item nav__item--soccer" data-view="soccer"><span class="nav-sport-mark nav-sport-mark--soccer" aria-hidden="true"><img src="assets/sport-icon-soccer.png" alt="" /></span><span>Soccer</span></button>
                 </section>
+                <section class="nav__section nav__section--utility" aria-label="Product information">
+                    <p class="nav__section-label">Product</p>
+                    <button class="nav__item nav__item--about" data-view="about"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8.5" /><path d="M12 10.5v5M12 7.5h.01" /></svg></span><span>About</span></button>
+                </section>
             </nav>
             <div class="sidebar__note">
                 <span class="status-dot"></span>
-                CI-first desktop builds through GitHub Actions.
+                Windows builds through GitHub Actions.
             </div>
             <div class="ll-sidebar-engine">
-                <strong>AI Edge Engine</strong>
-                <span>Models scanning loaded board signals.</span>
+                <strong>Data status</strong>
+                <span>Loaded exports and model status.</span>
                 <i aria-hidden="true"></i>
             </div>
             <div id="sidebar-resizer" class="sidebar-resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0"></div>
@@ -89,12 +101,12 @@
         <div class="workspace">
             <header class="topbar">
                 <div>
-                    <p class="eyebrow" id="view-kicker">sports prediction command center</p>
+                    <p class="eyebrow" id="view-kicker">Today’s model pulse</p>
                     <h1 id="view-title">LineLens Sports</h1>
                 </div>
                 <div class="topbar__meta">
                     <button id="refresh-btn" class="btn btn--primary">Reload exports</button>
-                    <button id="about-btn" class="btn">About v3.0.0</button>
+                    <button id="about-btn" class="btn" data-view-link="about">About</button>
                 </div>
             </header>
 
@@ -102,6 +114,7 @@
 
             <main>
                 <section class="view is-active" id="view-home"></section>
+                <section class="view" id="view-picks"></section>
                 <section class="view" id="view-nfl"></section>
                 <section class="view" id="view-mlb"></section>
                 <section class="view" id="view-soccer"></section>
@@ -109,12 +122,16 @@
                 <section class="view" id="view-nhl"></section>
                 <section class="view" id="view-wnba"></section>
                 <section class="view" id="view-models"></section>
+                <section class="view" id="view-history"></section>
+                <section class="view" id="view-watchlist"></section>
                 <section class="view" id="view-reports"></section>
                 <section class="view" id="view-record"></section>
                 <section class="view" id="view-teams"></section>
                 <section class="view" id="view-tracking"></section>
                 <section class="view" id="view-settings"></section>
+                <section class="view" id="view-about"></section>
             </main>
+            <footer class="global-footer"><span>LineLens Sports · <span id="footer-version">v3.0.0</span></span><button class="link-btn" type="button" data-view-link="about">Created by Vraj Patel</button></footer>
         </div>
     </div>
 

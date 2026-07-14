@@ -26,6 +26,8 @@ LOG_JS = TRACKING_DIR / "model_predictions_log.js"
 RECORD_JSON = TRACKING_DIR / "model_record.json"
 RECORD_JS = TRACKING_DIR / "model_record.js"
 MLB_BACKTEST = PREDICTIONS_DIR / "mlb_backtest_predictions.json"
+WNBA_PREDICTIONS = PREDICTIONS_DIR / "wnba_predictions.json"
+WNBA_BACKTEST = PREDICTIONS_DIR / "wnba_backtest_predictions.json"
 NFL_PREDICTIONS = PREDICTIONS_DIR / "nfl_predictions.json"
 MLB_COMPARISON = REPORTS_DIR / "mlb_model_comparison.json"
 SCORED_RESULTS = {"win", "loss", "push"}
@@ -292,6 +294,53 @@ def score_mlb_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
     return scored_this_run, pending
 
 
+def wnba_result_map() -> dict[str, dict[str, Any]]:
+    results: dict[str, dict[str, Any]] = {}
+    payload = load_json(WNBA_PREDICTIONS)
+    for game in payload.get("games", []):
+        home_score = safe_float(game.get("home_score"))
+        away_score = safe_float(game.get("away_score"))
+        status = str(game.get("status") or "").lower()
+        if home_score is None or away_score is None or not any(marker in status for marker in ("final", "completed", "ft")):
+            continue
+        home = str(game.get("home") or "")
+        away = str(game.get("away") or "")
+        results[str(game.get("game_id") or game.get("id"))] = {
+            "home": home,
+            "away": away,
+            "home_score": home_score,
+            "away_score": away_score,
+            "actual_winner": home if home_score > away_score else away,
+            "status": game.get("status") or "Final",
+        }
+    return results
+
+
+def score_wnba_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
+    results = wnba_result_map()
+    scored_this_run = 0
+    pending = 0
+    for row in rows:
+        if row.get("sport") != "WNBA":
+            continue
+        result = results.get(str(row.get("game_id")))
+        if not result:
+            if normalize_result(row.get("model_result")) in SCORED_RESULTS:
+                continue
+            row["result_status"] = "pending"
+            row["model_result"] = "pending"
+            pending += 1
+            continue
+        row["actual_winner"] = result["actual_winner"]
+        row["home_score"] = result["home_score"]
+        row["away_score"] = result["away_score"]
+        row["status"] = result["status"]
+        row["result_status"] = "scored"
+        row["model_result"] = "win" if row.get("model_pick") == result["actual_winner"] else "loss"
+        scored_this_run += 1
+    return scored_this_run, pending
+
+
 def mlb_backtest_record() -> dict[str, Any]:
     payload = load_json(MLB_BACKTEST)
     games = payload.get("games", [])
@@ -389,6 +438,29 @@ def mlb_live_record(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def wnba_backtest_record() -> dict[str, Any]:
+    payload = load_json(WNBA_BACKTEST)
+    rows = [game for game in payload.get("games", []) if normalize_result(game.get("model_result")) in SCORED_RESULTS]
+    return labeled_record(rows, "WNBA Holdout", source=str(WNBA_BACKTEST.relative_to(ROOT)), row_count=len(rows), test_season=(payload.get("metadata") or {}).get("season"))
+
+
+def wnba_live_record(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    wnba_rows = latest_prediction_per_game([row for row in rows if row.get("sport") == "WNBA" and not is_excluded_prediction(row)])
+    scored_rows = [row for row in wnba_rows if normalize_result(row.get("model_result")) in SCORED_RESULTS]
+    live = labeled_record(wnba_rows, "WNBA Live Record", source=str(LOG_JSON.relative_to(ROOT)), note="Only exported WNBA model predictions are counted; schedule-only rows do not count.", logged_rows=len(wnba_rows), unique_games=len(wnba_rows))
+    return {
+        "overall": live,
+        "live_record": live,
+        "today_record": labeled_record(date_rows(wnba_rows, 0), "Today"),
+        "yesterday_record": labeled_record(date_rows(wnba_rows, -1), "Yesterday"),
+        "recent_7_days": labeled_record(recent_rows(wnba_rows, 7), "Last 7 Days"),
+        "recent_30_days": labeled_record(recent_rows(wnba_rows, 30), "Last 30 Days"),
+        "pending_predictions": [row for row in recent_prediction_table(wnba_rows, 20) if normalize_result(row.get("model_result")) not in SCORED_RESULTS],
+        "last_scored_game": recent_prediction_table(sorted(scored_rows, key=lambda row: str(row.get("game_date") or ""), reverse=True), 1)[0] if scored_rows else None,
+        "backtest_record": wnba_backtest_record(),
+    }
+
+
 def nfl_record() -> dict[str, Any]:
     payload = load_json(NFL_PREDICTIONS)
     games = payload.get("games", [])
@@ -455,6 +527,7 @@ def nfl_record() -> dict[str, Any]:
 def build_record(log_payload: dict[str, Any], scored: int, pending: int) -> dict[str, Any]:
     rows = log_payload.get("predictions", [])
     mlb = mlb_live_record(rows)
+    wnba = wnba_live_record(rows)
     nfl = nfl_record()
     return {
         "metadata": {
@@ -469,6 +542,7 @@ def build_record(log_payload: dict[str, Any], scored: int, pending: int) -> dict
         },
         "sports": {
             "MLB": mlb,
+            "WNBA": wnba,
             "NFL": nfl,
         },
     }
@@ -477,7 +551,10 @@ def build_record(log_payload: dict[str, Any], scored: int, pending: int) -> dict
 def main() -> int:
     payload = load_json(LOG_JSON) or {"metadata": {}, "predictions": []}
     payload.setdefault("predictions", [])
-    scored, pending = score_mlb_predictions(payload["predictions"])
+    mlb_scored, mlb_pending = score_mlb_predictions(payload["predictions"])
+    wnba_scored, wnba_pending = score_wnba_predictions(payload["predictions"])
+    scored = mlb_scored + wnba_scored
+    pending = mlb_pending + wnba_pending
     payload["metadata"] = {
         "app": "LineLens Sports",
         "version": APP_VERSION,

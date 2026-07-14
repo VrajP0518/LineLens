@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -28,16 +29,54 @@ from src.shared.version import APP_VERSION
 
 DATA_DIR = ROOT / "data"
 RAW_MLB_DIR = DATA_DIR / "raw" / "mlb"
+RAW_WNBA_DIR = DATA_DIR / "raw" / "wnba"
 PREDICTIONS_DIR = DATA_DIR / "predictions"
 STATUS_JSON = DATA_DIR / "refresh_status.json"
 STATUS_JS = DATA_DIR / "refresh_status.js"
 MLB_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_features_2021_2025.csv"
 MLB_CURRENT_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_current_features.csv"
 MLB_MODEL = ROOT / "models" / "mlb_moneyline_model.joblib"
+WNBA_FEATURES = DATA_DIR / "processed" / "wnba" / "wnba_features_all.csv"
+WNBA_CURRENT_FEATURES = DATA_DIR / "processed" / "wnba" / "wnba_current_features.csv"
+WNBA_MODEL = ROOT / "models" / "wnba_moneyline_model.joblib"
+LIVE_SCORES_JSON = DATA_DIR / "live" / "live_scores.json"
 NFL_FEATURES = ROOT / "data" / "processed" / "nfl" / "spread_dataset.parquet"
 NFL_IMPORT_FEATURES = ROOT / "data" / "imports" / "nfl" / "spread_dataset.parquet"
 NFL_IMPORT_FEATURES_CSV = ROOT / "data" / "imports" / "nfl" / "spread_dataset.csv"
 VENV_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
+
+
+def mlb_history_bounds() -> tuple[int, int]:
+    """Use every completed cached season while keeping the current season out of training."""
+
+    latest_completed = date.today().year - 1
+    cached = []
+    for path in RAW_MLB_DIR.glob("history_*.json"):
+        try:
+            season = int(path.stem.split("_")[-1])
+        except ValueError:
+            continue
+        if season <= latest_completed:
+            cached.append(season)
+    start = min(cached) if cached else 2021
+    end = max(latest_completed, max(cached, default=start))
+    return start, end
+
+
+def wnba_history_bounds() -> tuple[int, int]:
+    latest_completed = date.today().year - 1
+    cached = []
+    for path in RAW_WNBA_DIR.glob("schedule_*.json"):
+        label = path.stem.split("_")[-1]
+        try:
+            season = int(label[:4])
+        except ValueError:
+            continue
+        if season <= latest_completed:
+            cached.append(season)
+    start = min(cached) if cached else max(2021, latest_completed - 4)
+    end = max(latest_completed, max(cached, default=start))
+    return start, end
 def pipeline_python() -> str:
     return str(VENV_PYTHON) if VENV_PYTHON.exists() else sys.executable
 
@@ -77,7 +116,12 @@ def write_status(status: dict[str, Any]) -> None:
 
 def run_module(args: list[str], timeout: int = 300) -> subprocess.CompletedProcess[str]:
     command = [pipeline_python(), "-m", *args]
-    return subprocess.run(command, cwd=ROOT, text=True, capture_output=True, timeout=timeout, check=False)
+    env = os.environ.copy()
+    env.setdefault("OMP_NUM_THREADS", "1")
+    env.setdefault("OPENBLAS_NUM_THREADS", "1")
+    env.setdefault("MKL_NUM_THREADS", "1")
+    env.setdefault("LOKY_MAX_CPU_COUNT", "1")
+    return subprocess.run(command, cwd=ROOT, text=True, capture_output=True, timeout=timeout, check=False, env=env)
 
 
 def run_python_script(args: list[str], timeout: int = 300) -> subprocess.CompletedProcess[str]:
@@ -92,6 +136,24 @@ def run_model_scoring(status: dict[str, Any]) -> None:
         "message": (result.stdout or result.stderr or "Model scoring finished.").strip(),
         "last_run_at": utc_now(),
     }
+
+
+def model_needs_refresh(model_path: Path, feature_path: Path, source_dir: Path, source_prefix: str, history_end: int) -> bool:
+    """Return whether a trained artifact is missing or older than its local inputs."""
+    if not model_path.exists() or not feature_path.exists():
+        return True
+    model_mtime = model_path.stat().st_mtime
+    if feature_path.stat().st_mtime > model_mtime:
+        return True
+    for source in source_dir.glob(f"{source_prefix}*.json"):
+        label = source.stem.removeprefix(source_prefix)
+        try:
+            season = int(label[:4])
+        except ValueError:
+            continue
+        if season <= history_end and source.stat().st_mtime > model_mtime:
+            return True
+    return False
 
 
 def missing_dependency_message(stderr: str, stdout: str = "") -> str:
@@ -383,20 +445,24 @@ def refresh_mlb(status: dict[str, Any], target_date: str | None, date_range: lis
 
 
 def refresh_mlb_train(status: dict[str, Any]) -> bool:
+    history_start, history_end = mlb_history_bounds()
+    # Keep the canonical artifact path stable for the exporter/UI while the
+    # metadata and status record the actual dynamic season window.
+    feature_file = "data/processed/mlb/mlb_features_2021_2025.csv"
     steps = [
-        (["src.mlb.data_ingest_mlb", "history", "--start-season", "2021", "--end-season", "2025"], 420),
-        (["src.mlb.feature_builder_mlb", "build-history", "--start-season", "2021", "--end-season", "2025"], 300),
+        (["src.mlb.data_ingest_mlb", "history", "--start-season", str(history_start), "--end-season", str(history_end)], 420),
+        (["src.mlb.feature_builder_mlb", "build-history", "--start-season", str(history_start), "--end-season", str(history_end), "--output-file", feature_file], 300),
         (
             [
                 "src.mlb.train_model_mlb",
                 "--features-file",
-                "data/processed/mlb/mlb_features_2021_2025.csv",
+                feature_file,
                 "--train-start-season",
-                "2021",
+                str(history_start),
                 "--train-end-season",
-                "2024",
+                str(history_end - 1),
                 "--test-season",
-                "2025",
+                str(history_end),
             ],
             300,
         ),
@@ -405,9 +471,9 @@ def refresh_mlb_train(status: dict[str, Any]) -> bool:
                 "src.mlb.export_predictions_mlb",
                 "backtest",
                 "--features-file",
-                "data/processed/mlb/mlb_features_2021_2025.csv",
+                feature_file,
                 "--season",
-                "2025",
+                str(history_end),
             ],
             180,
         ),
@@ -423,9 +489,18 @@ def refresh_mlb_train(status: dict[str, Any]) -> bool:
             status,
             "MLB",
             "model_generated",
-            "MLB historical model trained on 2021-2024, tested on 2025, and backtest export refreshed.",
+            f"MLB retrained across all cached completed seasons {history_start}-{history_end - 1}, held out {history_end}, then refit for production on {history_start}-{history_end}.",
             used_cache=False,
         )
+        status.setdefault("training", {})["MLB"] = {
+            "policy": "all_cached_completed_seasons_with_latest_season_holdout_then_full_production_refit",
+            "history_start": history_start,
+            "history_end": history_end,
+            "evaluation_holdout": history_end,
+            "production_train_end": history_end,
+            "feature_file": feature_file,
+            "last_run_at": utc_now(),
+        }
         return True
     except Exception as exc:  # noqa: BLE001
         update_sport_status(status, "MLB", "failed", f"{type(exc).__name__}: {exc}", used_cache=True)
@@ -461,14 +536,15 @@ def refresh_mlb_export(status: dict[str, Any]) -> None:
 
 
 def refresh_mlb_history(status: dict[str, Any], *, force: bool = False) -> bool:
-    args = ["src.mlb.data_ingest_mlb", "history", "--start-season", "2021", "--end-season", "2025"]
+    history_start, history_end = mlb_history_bounds()
+    args = ["src.mlb.data_ingest_mlb", "history", "--start-season", str(history_start), "--end-season", str(history_end)]
     if force:
         args.append("--force")
     result = run_module(args, timeout=420)
     if result.returncode != 0:
         update_sport_status(status, "MLB", "failed", missing_dependency_message(result.stderr, result.stdout), used_cache=True)
         return False
-    update_sport_status(status, "MLB", "real_cached", "MLB historical regular-season data cache is available for 2021-2025.", used_cache=False)
+    update_sport_status(status, "MLB", "real_cached", f"MLB historical regular-season data cache is available for {history_start}-{history_end}.", used_cache=False)
     return True
 
 
@@ -492,12 +568,17 @@ def refresh_mlb_predict(status: dict[str, Any], target_date: str | None, date_ra
         update_sport_status(status, "MLB", "schedule_only", "MLB schedule loaded, but model/features are missing. Run npm run refresh:mlb:all for real predictions.", used_cache=False)
         return
 
+    history_start, history_end = mlb_history_bounds()
     result = run_module(
         [
             "src.mlb.feature_builder_mlb",
             "build-current",
             "--season",
             str(date.today().year),
+            "--start-season",
+            str(history_start),
+            "--end-season",
+            str(history_end),
             "--schedule-file",
             str(raw_path.relative_to(ROOT)),
         ],
@@ -532,6 +613,119 @@ def refresh_mlb_predict(status: dict[str, Any], target_date: str | None, date_ra
         + (" from cached schedule after live fetch failed." if used_cached_schedule else " from current schedule."),
         used_cache=used_cached_schedule,
     )
+
+
+def refresh_wnba_history(status: dict[str, Any], *, force: bool = False) -> bool:
+    history_start, history_end = wnba_history_bounds()
+    args = ["src.wnba.data_ingest_wnba", "history", "--start-season", str(history_start), "--end-season", str(history_end)]
+    if force:
+        args.append("--force")
+    result = run_module(args, timeout=900)
+    if result.returncode != 0:
+        update_sport_status(status, "WNBA", "failed", missing_dependency_message(result.stderr, result.stdout), used_cache=True)
+        return False
+    update_sport_status(status, "WNBA", "real_cached", f"WNBA schedule/results history is available for {history_start}-{history_end} from ESPN.", used_cache=False)
+    return True
+
+
+def refresh_wnba_train(status: dict[str, Any]) -> bool:
+    history_start, history_end = wnba_history_bounds()
+    feature_file = "data/processed/wnba/wnba_features_all.csv"
+    steps = [
+        (["src.wnba.data_ingest_wnba", "history", "--start-season", str(history_start), "--end-season", str(history_end)], 900),
+        (["src.wnba.feature_builder_wnba", "build-history", "--start-season", str(history_start), "--end-season", str(history_end), "--output-file", feature_file], 300),
+        (["src.wnba.train_model_wnba", "--features-file", feature_file, "--train-end-season", str(history_end - 1), "--test-season", str(history_end)], 300),
+        (["src.wnba.export_predictions_wnba", "backtest", "--features-file", feature_file, "--season", str(history_end)], 180),
+    ]
+    try:
+        for args, timeout in steps:
+            result = run_module(args, timeout=timeout)
+            if result.returncode != 0:
+                update_sport_status(status, "WNBA", "schedule_only", missing_dependency_message(result.stderr, result.stdout), used_cache=True)
+                return False
+        update_sport_status(status, "WNBA", "model_generated", f"WNBA model candidates retrained with {history_end} as the chronological holdout and full-history production refit.", used_cache=False)
+        status.setdefault("training", {})["WNBA"] = {
+            "policy": "score_only_team_form_elo_with_latest_completed_season_holdout",
+            "history_start": history_start, "history_end": history_end, "evaluation_holdout": history_end,
+            "production_train_end": history_end, "feature_file": feature_file, "last_run_at": utc_now(),
+        }
+        return True
+    except Exception as exc:  # noqa: BLE001
+        update_sport_status(status, "WNBA", "schedule_only", f"{type(exc).__name__}: {exc}", used_cache=True)
+        return False
+
+
+def write_live_wnba_schedule_fallback(day: str, raw_path: Path) -> bool:
+    """Reuse the bundled real ESPN live export when a direct refresh is unavailable."""
+    if not LIVE_SCORES_JSON.exists():
+        return False
+    try:
+        payload = json.loads(LIVE_SCORES_JSON.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    games = []
+    for source in payload.get("games") or []:
+        if str(source.get("sport") or "").upper() != "WNBA" or str(source.get("game_date") or "")[:10] != day:
+            continue
+        status = str(source.get("status") or source.get("status_detail") or "Scheduled")
+        completed = any(marker in status.lower() for marker in ("final", "completed", "ft"))
+        home_score = source.get("home_score")
+        away_score = source.get("away_score")
+        home_win = None
+        if completed and home_score is not None and away_score is not None:
+            home_win = 1 if float(home_score) > float(away_score) else 0
+        games.append({
+            "sport": "WNBA", "season": int(day[:4]), "game_date": day,
+            "game_id": str(source.get("game_id") or source.get("id") or ""),
+            "home": source.get("home"), "away": source.get("away"),
+            "home_display": source.get("home_display") or source.get("home"),
+            "away_display": source.get("away_display") or source.get("away"),
+            "venue": source.get("venue"), "status": status, "completed": completed,
+            "home_score": home_score, "away_score": away_score, "home_win": home_win,
+            "source": "Bundled ESPN live scoreboard export",
+        })
+    if not games:
+        return False
+    raw_path.parent.mkdir(parents=True, exist_ok=True)
+    raw_path.write_text(json.dumps({
+        "metadata": {"sport": "WNBA", "season": int(day[:4]), "generated_at": utc_now(), "source": "Bundled ESPN live scoreboard export", "real_data": True, "row_count": len(games)},
+        "games": games,
+    }, indent=2), encoding="utf-8")
+    return True
+
+
+def refresh_wnba_predict(status: dict[str, Any], target_date: str | None) -> None:
+    day = date.today().isoformat() if target_date in {None, "today"} else str(target_date)[:10]
+    raw_path = RAW_WNBA_DIR / f"schedule_{day}.json"
+    try:
+        result = run_module(["src.wnba.data_ingest_wnba", "current", "--date", day], timeout=120)
+        used_cache = False
+        if result.returncode != 0:
+            used_cache = write_live_wnba_schedule_fallback(day, raw_path) or raw_path.exists()
+        if result.returncode != 0 and not used_cache:
+            detail = (result.stderr or result.stdout or "ESPN scoreboard request failed.").strip()
+            update_sport_status(status, "WNBA", "schedule_only", detail if detail.startswith("WNBA source unavailable:") else f"WNBA source unavailable: {detail}", used_cache=True)
+            return
+    except Exception as exc:  # noqa: BLE001
+        used_cache = raw_path.exists()
+        if not used_cache:
+            used_cache = write_live_wnba_schedule_fallback(day, raw_path)
+        if not used_cache:
+            update_sport_status(status, "WNBA", "schedule_only", f"WNBA current source unavailable: {type(exc).__name__}: {exc}", used_cache=True)
+            return
+    history_start, history_end = wnba_history_bounds()
+    build = run_module(["src.wnba.feature_builder_wnba", "build-current", "--season", str(day[:4]), "--start-season", str(history_start), "--end-season", str(day[:4]), "--output-file", "data/processed/wnba/wnba_current_features.csv"], timeout=300)
+    if build.returncode != 0:
+        update_sport_status(status, "WNBA", "schedule_only", (build.stderr or build.stdout or "WNBA current feature build returned no rows.").strip(), used_cache=used_cache)
+        return
+    if not WNBA_MODEL.exists():
+        update_sport_status(status, "WNBA", "schedule_only", "WNBA schedule is loaded. Train the Raikou/Entei/Suicune candidates before model probabilities can be shown.", used_cache=used_cache)
+        return
+    export = run_module(["src.wnba.export_predictions_wnba", "export", "--features-file", "data/processed/wnba/wnba_current_features.csv", "--model-file", "models/wnba_moneyline_model.joblib", "--season", day[:4]], timeout=180)
+    if export.returncode != 0:
+        update_sport_status(status, "WNBA", "schedule_only", (export.stderr or export.stdout or "WNBA prediction export failed.").strip(), used_cache=used_cache)
+        return
+    update_sport_status(status, "WNBA", "model_generated", "WNBA current model probabilities refreshed from real ESPN schedule rows." + (" Cached source used." if used_cache else ""), used_cache=used_cache)
 
 
 def first_existing(paths: list[Path]) -> Path | None:
@@ -772,16 +966,21 @@ def refresh_startup(status: dict[str, Any]) -> None:
         update_sport_status(status, "NFL", "real_cached", "NFL real export found; skipping rebuild.", used_cache=True)
     else:
         refresh_nfl(status, require_real=True)
-    if not MLB_MODEL.exists() or not MLB_FEATURES.exists():
+    mlb_history_end = mlb_history_bounds()[1]
+    if model_needs_refresh(MLB_MODEL, MLB_FEATURES, RAW_MLB_DIR, "history_", mlb_history_end):
         if not refresh_mlb_train(status):
             return
     refresh_mlb_predict(status, None, None)
+    wnba_history_end = wnba_history_bounds()[1]
+    if model_needs_refresh(WNBA_MODEL, WNBA_FEATURES, RAW_WNBA_DIR, "schedule_", wnba_history_end):
+        refresh_wnba_train(status)
+    refresh_wnba_predict(status, None)
     run_model_scoring(status)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--sport", choices=["all", "nfl", "mlb"], default="all")
+    parser.add_argument("--sport", choices=["all", "nfl", "mlb", "wnba"], default="all")
     parser.add_argument("--mode", choices=["current", "history", "train", "predict", "export", "real", "startup", "all"], default="current")
     parser.add_argument("--date", default="today", help="MLB schedule date, or 'today'.")
     parser.add_argument("--date-range", nargs=2, metavar=("START", "END"), help="MLB schedule date range.")
@@ -813,9 +1012,16 @@ def main() -> None:
         refresh_mlb_export(status)
     if args.sport in {"all", "nfl"} and args.mode in {"current", "export", "real", "all"}:
         refresh_nfl(status, require_real=args.mode in {"real", "all"})
+    if args.sport in {"all", "wnba"} and args.mode == "history":
+        refresh_wnba_history(status)
+    if args.sport in {"all", "wnba"} and args.mode in {"train", "all", "real"}:
+        refresh_wnba_train(status)
+    if args.sport in {"all", "wnba"} and args.mode in {"current", "predict", "all", "real"}:
+        refresh_wnba_predict(status, args.date)
+        run_model_scoring(status)
 
     write_status(status)
-    requested = "NFL and MLB" if args.sport == "all" else args.sport.upper()
+    requested = "NFL, MLB, and WNBA" if args.sport == "all" else args.sport.upper()
     print(f"Refresh finished for {requested}. Status written to data/refresh_status.json")
 
 
