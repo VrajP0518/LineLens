@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "sport": "WNBA",
+    "generated_at": "2026-07-15T13:22:24Z",
+    "status": "Stable",
+    "reason": "Health remains separate from prop pick record and probability calibration."
+  },
+  "markets": [
+    {
+      "market": "points",
+      "status": "Healthy",
+      "reason": "Chronological test sample supports basic error reporting.",
+      "training_sample": 83763,
+      "evaluation_sample": 21566,
+      "mae": 3.368907551391699,
+      "rmse": 4.592308544035197,
+      "interval_coverage": 0.8272744134285449,
+      "projection_uncertainty": 4.57909296312018,
+      "brier_score": null
+    },
+    {
+      "market": "rebounds",
+      "status": "Healthy",
+      "reason": "Chronological test sample supports basic error reporting.",
+      "training_sample": 83763,
+      "evaluation_sample": 21566,
+      "mae": 1.526249546416921,
+      "rmse": 2.066673774605435,
+      "interval_coverage": 0.8333487897616618,
+      "projection_uncertainty": 2.060571780430888,
+      "brier_score": null
+    },
+    {
+      "market": "assists",
+      "status": "Healthy",
+      "reason": "Chronological test sample supports basic error reporting.",
+      "training_sample": 83763,
+      "evaluation_sample": 21566,
+      "mae": 1.1045561904041639,
+      "rmse": 1.5435723428630466,
+      "interval_coverage": 0.8447556338681258,
+      "projection_uncertainty": 1.5352933618023268,
+      "brier_score": null
+    }
+  ]
+}

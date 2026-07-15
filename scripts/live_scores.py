@@ -1094,7 +1094,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Refresh LineLens live widget scores.")
     parser.add_argument("--date", default=today_iso(), help="Center schedule date in YYYY-MM-DD format.")
     parser.add_argument("--days-back", type=int, default=CACHE_LOOKBACK_DAYS, help="Days before the center date to include from local cache.")
-    parser.add_argument("--days-forward", type=int, default=3, help="Days after the center date to include.")
+    parser.add_argument("--days-forward", type=int, default=7, help="Days after the center date to include so upcoming slates remain visible before predictions are ready.")
     args = parser.parse_args()
     payload = build_payload(args.date, max(args.days_back, 0), max(args.days_forward, 0))
     write_json_and_js(payload)

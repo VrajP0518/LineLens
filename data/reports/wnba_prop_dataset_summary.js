@@ -1,0 +1,26 @@
+window.__WNBA_PROP_DATASET_SUMMARY__ = {
+  "metadata": {
+    "sport": "WNBA",
+    "generated_at": "2026-07-15T13:22:20Z",
+    "target_markets": [
+      "points",
+      "rebounds",
+      "assists"
+    ],
+    "real_data": true,
+    "data_quality": "real_player_boxscores",
+    "source_url": "https://www.kaggle.com/datasets/nicholascoplandunc/wnba-player-and-team-stats-2003-2025-120k-rows",
+    "source_urls": [
+      "https://www.kaggle.com/datasets/nicholascoplandunc/wnba-player-and-team-stats-2003-2025-120k-rows",
+      "https://site.web.api.espn.com/apis/site/v2/sports/basketball/wnba/summary"
+    ],
+    "source_note": "Historical public WNBA player-game export attributed to SportsDataverse/wehoop plus current completed-game ESPN summaries; verify source terms before redistribution.",
+    "leakage_policy": "rolling values exclude the game being predicted"
+  },
+  "row_count": 105329,
+  "source_files": [
+    "data\\raw\\wnba\\player_boxscore_2026.json",
+    "data\\raw\\wnba\\player_boxscore_2003_2025.csv"
+  ],
+  "feature_count": 27
+};

@@ -2,12 +2,12 @@
   "metadata": {
     "app": "LineLens Sports",
     "version": "v3.0.0",
-    "generated_at": "2026-07-14T14:10:12Z",
+    "generated_at": "2026-07-14T18:06:02Z",
     "real_data": true,
     "predictions_logged": 313,
-    "predictions_scored_this_run": 82,
-    "pending_predictions": 5,
-    "last_scoring_run": "2026-07-14T14:10:12Z"
+    "predictions_scored_this_run": 83,
+    "pending_predictions": 4,
+    "last_scoring_run": "2026-07-14T18:06:02Z"
   },
   "sports": {
     "MLB": {
@@ -445,13 +445,13 @@
     },
     "WNBA": {
       "overall": {
-        "wins": 0,
+        "wins": 1,
         "losses": 0,
         "pushes": 0,
-        "pending": 4,
-        "accuracy": null,
+        "pending": 3,
+        "accuracy": 1.0,
         "sample_size": 4,
-        "scored": 0,
+        "scored": 1,
         "label": "WNBA Live Record",
         "source": "data\\tracking\\model_predictions_log.json",
         "note": "Only exported WNBA model predictions are counted; schedule-only rows do not count.",
@@ -459,13 +459,13 @@
         "unique_games": 4
       },
       "live_record": {
-        "wins": 0,
+        "wins": 1,
         "losses": 0,
         "pushes": 0,
-        "pending": 4,
-        "accuracy": null,
+        "pending": 3,
+        "accuracy": 1.0,
         "sample_size": 4,
-        "scored": 0,
+        "scored": 1,
         "label": "WNBA Live Record",
         "source": "data\\tracking\\model_predictions_log.json",
         "note": "Only exported WNBA model predictions are counted; schedule-only rows do not count.",
@@ -473,13 +473,13 @@
         "unique_games": 4
       },
       "today_record": {
-        "wins": 0,
+        "wins": 1,
         "losses": 0,
         "pushes": 0,
-        "pending": 2,
-        "accuracy": null,
+        "pending": 1,
+        "accuracy": 1.0,
         "sample_size": 2,
-        "scored": 0,
+        "scored": 1,
         "label": "Today"
       },
       "yesterday_record": {
@@ -493,29 +493,29 @@
         "label": "Yesterday"
       },
       "recent_7_days": {
-        "wins": 0,
+        "wins": 1,
         "losses": 0,
         "pushes": 0,
-        "pending": 4,
-        "accuracy": null,
+        "pending": 3,
+        "accuracy": 1.0,
         "sample_size": 4,
-        "scored": 0,
+        "scored": 1,
         "label": "Last 7 Days"
       },
       "recent_30_days": {
-        "wins": 0,
+        "wins": 1,
         "losses": 0,
         "pushes": 0,
-        "pending": 4,
-        "accuracy": null,
+        "pending": 3,
+        "accuracy": 1.0,
         "sample_size": 4,
-        "scored": 0,
+        "scored": 1,
         "label": "Last 30 Days"
       },
       "pending_predictions": [
         {
           "sport": "WNBA",
-          "generated_at": "2026-07-14T14:10:09Z",
+          "generated_at": "2026-07-14T18:06:00Z",
           "game_date": "2026-07-13",
           "away": "LA",
           "home": "ATL",
@@ -530,7 +530,7 @@
         },
         {
           "sport": "WNBA",
-          "generated_at": "2026-07-14T14:10:09Z",
+          "generated_at": "2026-07-14T18:06:00Z",
           "game_date": "2026-07-13",
           "away": "PHX",
           "home": "MIN",
@@ -545,22 +545,7 @@
         },
         {
           "sport": "WNBA",
-          "generated_at": "2026-07-14T14:10:09Z",
-          "game_date": "2026-07-14",
-          "away": "POR",
-          "home": "CON",
-          "model_pick": "CON",
-          "home_win_probability": 0.6385573972586305,
-          "away_win_probability": 0.3614426027413695,
-          "confidence": "High",
-          "model_result": "pending",
-          "result_status": "pending",
-          "home_score": 0.0,
-          "away_score": 0.0
-        },
-        {
-          "sport": "WNBA",
-          "generated_at": "2026-07-14T14:10:09Z",
+          "generated_at": "2026-07-14T18:06:00Z",
           "game_date": "2026-07-14",
           "away": "WSH",
           "home": "TOR",
@@ -574,7 +559,21 @@
           "away_score": 0.0
         }
       ],
-      "last_scored_game": null,
+      "last_scored_game": {
+        "sport": "WNBA",
+        "generated_at": "2026-07-14T18:06:00Z",
+        "game_date": "2026-07-14",
+        "away": "POR",
+        "home": "CON",
+        "model_pick": "CON",
+        "home_win_probability": 0.6385573972586305,
+        "away_win_probability": 0.3614426027413695,
+        "confidence": "High",
+        "model_result": "win",
+        "result_status": "scored",
+        "home_score": 90.0,
+        "away_score": 87.0
+      },
       "backtest_record": {
         "wins": 235,
         "losses": 92,

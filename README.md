@@ -58,6 +58,69 @@ LineLens bundles real exports so the interface opens immediately. Daily refresh 
 
 Predictions are experimental educational outputs for project demonstration only, not betting advice.
 
+## Player props and odds
+
+The prop system supports WNBA points, rebounds, and assists, plus MLB pitcher strikeouts, batter hits, and batter total bases. WNBA artifacts are research/challenger models until a real evaluation supports selection. MLB artifacts are intentionally research-only until a verified player-game dataset has been supplied and evaluated. A published prop requires a real current line and odds, matched event/player, trained model, sufficient history, current freshness, and a sport-specific availability or lineup gate. “Top 10” means up to ten qualified props; fewer results, or zero results, are normal when a gate is not met.
+
+Historical sportsbook lines and player availability are not fabricated. Player models use chronological, leakage-safe player-game rows and export a numeric projection with an 80% residual-based interval. Probability is estimated from projection versus line and held-out error; it is not a historical Over/Under classifier. Prop Score ranks candidates but never bypasses a hard quality gate. Publication is capped at ten rows, with no more than two per player and three per game.
+
+Odds use the optional `ODDS_API_KEY` environment variable and The Odds API architecture. WNBA requests `player_points`, `player_rebounds`, and `player_assists`; MLB monitoring requests `pitcher_strikeouts`, `batter_hits`, and `batter_total_bases` (override with `ODDS_MLB_PROP_MARKETS`). Quota headers, refresh limits, provider health, event/player matching, and cached snapshots are tracked without exposing the key. No API key, raw provider payload, or large training dataset belongs in the UI or release bundle.
+
+### Local data refresh and Parquet storage
+
+The optional MLB player-game collector uses the installed `pybaseball==2.0.0` interface. PyPI documents its Statcast, batting, pitching, and player-ID functions; the collector uses Statcast pitch events and aggregates only completed real events. Raw chunks and the normalized player-game export stay local under the ignored `data/raw/mlb/` directory as Parquet files. The package cache is redirected to `data/raw/mlb/pybaseball_cache` so the app does not require write access to the user profile.
+
+The official WNBA report is fetched from the WNBA injury-report page’s report feed. Only explicit statuses from the latest report are normalized; an unlisted player remains `unknown` and cannot pass the publication gate.
+
+```powershell
+npm run refresh:wnba:availability
+npm run refresh:mlb:player-games -- --start-date 2023-03-30 --end-date 2025-10-01
+npm run build:mlb:props
+npm run train:mlb:props
+npm run refresh:props
+npm run export:props
+npm run export:mlb:props
+npm run score:props
+```
+
+For the one-button local workflow, use `npm run refresh:props:pipeline`. It refreshes official WNBA availability, downloads resumable MLB Parquet chunks, builds the leakage-safe dataset, trains the research MLB prop models, exports both sports, and scores completed player-game rows. It is intentionally manual and is not run automatically when the desktop app opens. The Props page exposes the same action through the local refresh bridge when LineLens is launched with `npm run app` or in the packaged desktop shell.
+
+The MLB collector supports `--dry-run`, `--force`, and `--chunk-days`. A multi-season Statcast download can be large and may take time; existing Parquet chunks are reused by default. Do not commit `data/raw/mlb/`, `data/processed/mlb/`, or the local pybaseball cache.
+
+### Manual WNBA prop commands
+
+Do not run these during the normal lightweight release check. Run them manually when real player box-score source files and enough history are available:
+
+```powershell
+npm run build:wnba:props
+npm run train:wnba:props
+npm run refresh:props
+npm run export:props
+npm run score:props
+```
+
+`build:wnba:props` reads validated player box-score JSON under `data/raw/wnba`. Rolling features exclude the game being predicted and the train/test split is chronological. `train:wnba:props` creates separate points, rebounds, and assists regression artifacts; it does not create historical sportsbook lines. `refresh:props` requests selected current event-specific markets with cache and quota protection. `export:props` publishes only qualified current projections. `score:props` freezes the original line and scores final player statistics as Won, Lost, Push, Void, DNP, Pending, or Data unresolved.
+
+### Manual MLB prop commands
+
+Supply verified real player-game files under the ignored `data/raw/mlb/` path before running these commands. The pipeline will remain explicit `model_not_trained` or `no_qualified_props` when the source, artifacts, or quality gates are missing:
+
+```powershell
+npm run build:mlb:props
+npm run train:mlb:props
+npm run export:mlb:props
+```
+
+The MLB builder accepts `player_game*.json`, `player_game*.csv`, `player_boxscore*.json`, and `player_boxscore*.csv`. It does not infer player props from team schedules. The MLB trainer uses a chronological holdout and writes separate research artifacts for pitcher strikeouts, batter hits, and batter total bases. Run `npm run refresh:props` before either exporter when a fresh real sportsbook snapshot is required; cached data is used when the provider cache policy requires it.
+
+Both exporters write candidate rows and rejection diagnostics. Candidates are review-only until every publication gate passes. `npm run score:props` is idempotent and keeps WNBA and MLB records separate. It adds final statistics, result, prediction error, deterministic autopsy classification, and closing-line fields only when a provider export explicitly contains closing values; otherwise closing status remains `not_captured`.
+
+The importer also accepts CSV files named `player_boxscore*.csv` or `boxscore*.csv`. The current local training source is the public [WNBA Player and Team Stats 2003–2025 export](https://www.kaggle.com/datasets/nicholascoplandunc/wnba-player-and-team-stats-2003-2025-120k-rows), attributed by its listing to the `wehoop` data project. It is stored under the ignored `data/raw/wnba/` path and normalized into the LineLens player-game schema before feature construction.
+
+For current completed games, `npm run refresh:wnba:player-boxscores` uses the public ESPN WNBA summary feed to write real 2026 player rows. It does not create future player availability or starter information; current props remain unpublished until those states and fresh odds are available.
+
+The current WNBA bundle includes real player box-score history and trained challenger prop artifacts. Candidate projections remain visible for review, but the Props page publishes none until verified availability and the remaining quality gates are present. Advanced player data, official availability, and historical sportsbook lines may require a paid or separately licensed source; LineLens will not infer them from team scoreboard rows. MLB market rows remain separate from WNBA model projections until the MLB player model is validated.
+
 After the tag push, open the repository’s **Actions** tab to watch `Tauri Windows Build`. When it finishes, the workflow creates a GitHub Release and attaches the `.msi` and `.exe` installers. Others can then download the app from **Releases**, rather than from an Actions artifact.
 
 For a future release, update the app version metadata, README version, and tag together, for example `v3.1.0`.

@@ -1,0 +1,61 @@
+window.__PROP_RECORD__ = {
+  "metadata": {
+    "sports": [
+      "WNBA",
+      "MLB"
+    ],
+    "generated_at": "2026-07-15T13:26:25Z",
+    "source": "prop_prediction_log.json",
+    "records_are_separate_from_projection_error": true,
+    "immutable_original_fields": [
+      "original_line",
+      "original_price",
+      "projection",
+      "probability",
+      "prediction_timestamp"
+    ]
+  },
+  "overall": {
+    "wins": 0,
+    "losses": 0,
+    "pushes": 0,
+    "voids": 0,
+    "dnp": 0,
+    "pending": 0,
+    "scored": 0
+  },
+  "by_sport": {
+    "WNBA": {
+      "wins": 0,
+      "losses": 0,
+      "pushes": 0,
+      "voids": 0,
+      "dnp": 0,
+      "pending": 0,
+      "scored": 0,
+      "by_market": {}
+    },
+    "MLB": {
+      "wins": 0,
+      "losses": 0,
+      "pushes": 0,
+      "voids": 0,
+      "dnp": 0,
+      "pending": 0,
+      "scored": 0,
+      "by_market": {}
+    }
+  },
+  "by_market": {},
+  "projection_error": {
+    "status": "insufficient_sample",
+    "note": "Projection error is separate from prop pick record."
+  },
+  "calibration": {
+    "status": "insufficient_sample",
+    "note": "Probability calibration requires enough real sportsbook line outcomes."
+  },
+  "closing_line": {
+    "status": "insufficient_sample"
+  }
+};

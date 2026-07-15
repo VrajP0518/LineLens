@@ -1,0 +1,30 @@
+window.__MLB_PROP_PREDICTIONS__ = {
+  "metadata": {
+    "sport": "MLB",
+    "version": "v1",
+    "generated_at": "2026-07-15T13:55:00Z",
+    "real_data": false,
+    "status": "model_not_trained",
+    "markets": [
+      "pitcher_strikeouts",
+      "batter_hits",
+      "batter_total_bases"
+    ],
+    "candidate_count": 0,
+    "excluded_candidate_counts": {},
+    "qualification": {
+      "minimum_probability": 0.55,
+      "minimum_edge": 0.03,
+      "publication_requires": [
+        "real line and odds",
+        "matched player",
+        "confirmed lineup or starter state",
+        "fresh snapshot",
+        "validated model artifact"
+      ]
+    },
+    "note": "MLB player-game features are present, but no trained MLB prop artifact is available. Run npm run train:mlb:props before exporting projections."
+  },
+  "predictions": [],
+  "candidate_predictions": []
+};

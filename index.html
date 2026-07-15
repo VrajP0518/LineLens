@@ -16,9 +16,19 @@
     <script src="data/reports/wnba_model_comparison.js" defer></script>
     <script src="data/reports/wnba_model_card.js" defer></script>
     <script src="data/reports/wnba_feature_summary.js" defer></script>
+    <script src="data/reports/wnba_prop_model_registry.js" defer></script>
+    <script src="data/reports/wnba_prop_model_cards.js" defer></script>
+    <script src="data/reports/wnba_prop_model_health.js" defer></script>
+    <script src="data/reports/wnba_prop_dataset_summary.js" defer></script>
+    <script src="data/reports/mlb_prop_model_registry.js" defer></script>
+    <script src="data/reports/mlb_prop_model_cards.js" defer></script>
+    <script src="data/reports/mlb_prop_model_health.js" defer></script>
+    <script src="data/reports/mlb_prop_dataset_summary.js" defer></script>
     <script src="data/models/model_registry.js" defer></script>
     <script src="data/tracking/model_record.js" defer></script>
     <script src="data/tracking/model_predictions_log.js" defer></script>
+    <script src="data/tracking/prop_prediction_log.js" defer></script>
+    <script src="data/tracking/prop_record.js" defer></script>
     <script src="data/bootstrap_status.js" defer></script>
     <script src="data/startup_status.js" defer></script>
     <script src="data/refresh_status.js" defer></script>
@@ -27,6 +37,12 @@
     <script src="data/predictions/mlb_predictions.js" defer></script>
     <script src="data/predictions/wnba_predictions.js" defer></script>
     <script src="data/predictions/wnba_backtest_predictions.js" defer></script>
+    <script src="data/predictions/wnba_prop_predictions.js" defer></script>
+    <script src="data/predictions/mlb_prop_predictions.js" defer></script>
+    <script src="data/odds/player_props.js" defer></script>
+    <script src="data/odds/odds_health.js" defer></script>
+    <script src="data/odds/wnba_availability.js" defer></script>
+    <script src="data/odds/props_matching_diagnostics.js" defer></script>
 </head>
 <body>
     <div id="app-loading" class="app-loading is-visible" role="status" aria-live="polite">
@@ -63,6 +79,7 @@
                     <p class="nav__section-label">Workspace</p>
                     <button class="nav__item nav__item--home is-active" data-view="home"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-home.png" alt="" /></span><span>Home</span></button>
                     <button class="nav__item nav__item--picks" data-view="picks"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 5h14M5 12h10M5 19h6" /></svg></span><span>Picks</span></button>
+                    <button class="nav__item nav__item--props" data-view="props"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 18V6M5 18h14M9 14l3-3 2 2 5-6" /></svg></span><span>Props</span></button>
                     <button class="nav__item nav__item--models" data-view="models"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-models.png" alt="" /></span><span>Model Lab</span></button>
                     <button class="nav__item nav__item--history" data-view="history"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 12a8 8 0 1 0 2.35-5.65L4 8.7M4 4v4.7h4.7" /></svg></span><span>History</span></button>
                     <button class="nav__item nav__item--watchlist" data-view="watchlist"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m12 4 2.45 4.96 5.48.8-3.96 3.86.94 5.45L12 16.5l-4.91 2.57.94-5.45-3.96-3.86 5.48-.8L12 4Z" /></svg></span><span>Watchlist</span></button>
@@ -81,11 +98,13 @@
                     <button class="nav__item nav__item--wnba" data-view="wnba"><span class="nav-sport-mark nav-sport-mark--wnba" aria-hidden="true"><img src="assets/sport-icon-wnba.png" alt="" /></span><span>WNBA</span></button>
                     <button class="nav__item nav__item--soccer" data-view="soccer"><span class="nav-sport-mark nav-sport-mark--soccer" aria-hidden="true"><img src="assets/sport-icon-soccer.png" alt="" /></span><span>Soccer</span></button>
                 </section>
+            </nav>
+            <div class="sidebar__product">
                 <section class="nav__section nav__section--utility" aria-label="Product information">
                     <p class="nav__section-label">Product</p>
                     <button class="nav__item nav__item--about" data-view="about"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8.5" /><path d="M12 10.5v5M12 7.5h.01" /></svg></span><span>About</span></button>
                 </section>
-            </nav>
+            </div>
             <div class="sidebar__note">
                 <span class="status-dot"></span>
                 Windows builds through GitHub Actions.
@@ -115,6 +134,7 @@
             <main>
                 <section class="view is-active" id="view-home"></section>
                 <section class="view" id="view-picks"></section>
+                <section class="view" id="view-props"></section>
                 <section class="view" id="view-nfl"></section>
                 <section class="view" id="view-mlb"></section>
                 <section class="view" id="view-soccer"></section>

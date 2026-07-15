@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "sport": "MLB",
+    "generated_at": "2026-07-15T13:54:12Z",
+    "status": "success",
+    "real_data": true,
+    "source": "pybaseball Statcast",
+    "source_url": "https://pypi.org/project/pybaseball/2.0.0/",
+    "storage": "local parquet chunks and normalized player-game parquet",
+    "targets": [
+      "pitcher_strikeouts",
+      "batter_hits",
+      "batter_total_bases"
+    ],
+    "note": "Pitch-level Statcast rows are aggregated only after real terminal events. Unresolved player IDs are excluded rather than named by inference."
+  },
+  "row_count": 583,
+  "source_chunks": [
+    {
+      "path": "data\\raw\\mlb\\statcast_chunks\\statcast_20250708_20250708.parquet",
+      "start_date": "2025-07-08",
+      "end_date": "2025-07-08",
+      "status": "cached",
+      "rows": 4186
+    },
+    {
+      "path": "data\\raw\\mlb\\statcast_chunks\\statcast_20250709_20250709.parquet",
+      "start_date": "2025-07-09",
+      "end_date": "2025-07-09",
+      "status": "cached",
+      "rows": 3906
+    }
+  ],
+  "output": "data\\raw\\mlb\\player_game_pybaseball.parquet"
+}

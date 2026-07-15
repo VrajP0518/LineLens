@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-14T14:10:12Z",
-  "mode": "all",
+  "generated_at": "2026-07-14T18:06:02Z",
+  "mode": "predict",
   "sports": {
     "NFL": {
       "status": "real_fresh",
@@ -18,25 +18,30 @@
     },
     "WNBA": {
       "status": "model_generated",
-      "message": "WNBA current model probabilities refreshed from real ESPN schedule rows. Cached source used.",
-      "last_success_at": "2026-07-14T14:10:10Z",
-      "used_cache": true,
+      "message": "WNBA current model probabilities refreshed from real ESPN schedule rows.",
+      "last_success_at": "2026-07-14T18:06:00Z",
+      "used_cache": false,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     }
   },
   "odds": {
     "provider": "the_odds_api",
-    "enabled": true,
+    "enabled": false,
     "key_present": true,
     "region": "us",
     "markets": "h2h,spreads,totals",
-    "sports": "MLB,NFL",
+    "sports": "MLB,WNBA,NFL",
+    "prop_markets": "player_points,player_rebounds,player_assists",
+    "max_events": 32,
+    "max_prop_markets": 3,
+    "min_refresh_minutes": 10,
+    "preferred_bookmakers": "",
     "timeout_seconds": "8"
   },
   "model_record": {
     "status": "real_fresh",
-    "message": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v3.0.0\",\n  \"generated_at\": \"2026-07-14T14:10:12Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 313,\n  \"predictions_scored_this_run\": 82,\n  \"pending_predictions\": 5,\n  \"last_scoring_run\": \"2026-07-14T14:10:12Z\"\n}",
-    "last_run_at": "2026-07-14T14:10:12Z"
+    "message": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v3.0.0\",\n  \"generated_at\": \"2026-07-14T18:06:02Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 313,\n  \"predictions_scored_this_run\": 83,\n  \"pending_predictions\": 4,\n  \"last_scoring_run\": \"2026-07-14T18:06:02Z\"\n}",
+    "last_run_at": "2026-07-14T18:06:02Z"
   },
   "version": "v3.0.0",
   "training": {

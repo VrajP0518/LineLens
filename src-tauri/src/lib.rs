@@ -66,6 +66,9 @@ fn scripts_detected(root: &PathBuf) -> bool {
             .exists()
         && root.join("scripts").join("live_scores.py").exists()
         && root.join("scripts").join("odds_snapshots.py").exists()
+        && root.join("scripts").join("refresh_mlb_player_games.py").exists()
+        && root.join("scripts").join("refresh_wnba_availability.py").exists()
+        && root.join("scripts").join("refresh_player_props_pipeline.py").exists()
 }
 
 fn python_candidates(root: &PathBuf) -> Vec<(String, Vec<String>)> {
@@ -128,6 +131,18 @@ fn command_spec(command_name: &str) -> Result<CommandSpec, String> {
         }),
         "odds_snapshots" => Ok(CommandSpec {
             script: "scripts/odds_snapshots.py",
+            args: Vec::new(),
+        }),
+        "wnba_availability" => Ok(CommandSpec {
+            script: "scripts/refresh_wnba_availability.py",
+            args: Vec::new(),
+        }),
+        "mlb_player_games" => Ok(CommandSpec {
+            script: "scripts/refresh_mlb_player_games.py",
+            args: Vec::new(),
+        }),
+        "player_props_pipeline" => Ok(CommandSpec {
+            script: "scripts/refresh_player_props_pipeline.py",
             args: Vec::new(),
         }),
         _ => Err(format!("Unsupported refresh command: {}", command_name)),

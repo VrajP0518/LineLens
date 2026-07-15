@@ -1,0 +1,13 @@
+window.__PROP_PREDICTION_LOG__ = {
+  "metadata": {
+    "sports": [
+      "WNBA",
+      "MLB"
+    ],
+    "generated_at": "2026-07-15T13:26:25Z",
+    "immutable_original_line": true,
+    "duplicate_policy": "prediction_id unique; original line/price/timestamp never overwritten",
+    "source": "real final player-game exports"
+  },
+  "predictions": []
+};

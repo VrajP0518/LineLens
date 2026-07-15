@@ -61,6 +61,13 @@ def main() -> int:
     prediction_log = load_json(DATA_DIR / "tracking" / "model_predictions_log.json")
     model_record = load_json(DATA_DIR / "tracking" / "model_record.json")
     odds = load_json(DATA_DIR / "odds" / "odds_snapshots.json")
+    player_props = load_json(DATA_DIR / "odds" / "player_props.json")
+    odds_health = load_json(DATA_DIR / "odds" / "odds_health.json")
+    prop_predictions = load_json(DATA_DIR / "predictions" / "wnba_prop_predictions.json")
+    mlb_prop_predictions = load_json(DATA_DIR / "predictions" / "mlb_prop_predictions.json")
+    prop_diagnostics = load_json(DATA_DIR / "odds" / "props_matching_diagnostics.json")
+    wnba_availability = load_json(DATA_DIR / "odds" / "wnba_availability.json")
+    prop_record = load_json(DATA_DIR / "tracking" / "prop_record.json")
     selected_models = [row for row in registry.get("models", []) if row.get("selected")]
     selected_model_name = (comparison.get("metadata") or {}).get("selected_model")
     registry_selected_name = selected_models[0].get("model_name") if selected_models else None
@@ -166,6 +173,17 @@ def main() -> int:
             "snapshot_count": (odds.get("metadata") or {}).get("snapshot_count", 0) if odds else 0,
             "new_snapshot_count": (odds.get("metadata") or {}).get("new_snapshot_count", 0) if odds else 0,
             "error": odds.get("_error"),
+        },
+        "player_props": {
+            "status": (player_props.get("metadata") or {}).get("status", "missing"),
+            "markets": len(player_props.get("markets", [])),
+            "sports": (player_props.get("metadata") or {}).get("sports", ["WNBA"]),
+            "predictions": {"WNBA": len(prop_predictions.get("predictions", [])), "MLB": len(mlb_prop_predictions.get("predictions", []))},
+            "candidates": {"WNBA": len(prop_predictions.get("candidate_predictions", [])), "MLB": len(mlb_prop_predictions.get("candidate_predictions", []))},
+            "diagnostics": {sport: {"events_received": value.get("events_received"), "events_matched": value.get("events_matched"), "markets_normalized": value.get("markets_normalized"), "market_rows_available": value.get("market_rows_available")} for sport, value in (prop_diagnostics.get("sports") or {}).items()},
+            "record_scored": (prop_record.get("overall") or {}).get("scored", 0),
+            "quota_remaining": (odds_health.get("metadata") or {}).get("quota", {}).get("x-requests-remaining"),
+            "wnba_availability": {"status": (wnba_availability.get("metadata") or {}).get("status", "missing"), "rows": len(wnba_availability.get("players", [])), "report_url": (wnba_availability.get("metadata") or {}).get("report_url")},
         },
     }
     print(json.dumps(summary, indent=2))

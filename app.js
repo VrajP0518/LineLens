@@ -24,11 +24,27 @@ const DATA_SOURCES = {
     refresh: ["data/refresh_status.json"],
     live: ["data/live/live_scores.json"],
     odds: ["data/odds/odds_snapshots.json"],
+    playerProps: ["data/odds/player_props.json"],
+    oddsHealth: ["data/odds/odds_health.json"],
+    wnbaAvailability: ["data/odds/wnba_availability.json"],
+    propsDiagnostics: ["data/odds/props_matching_diagnostics.json"],
     nfl: ["data/predictions/nfl_predictions.json", "data/predictions.json"],
     mlb: ["data/predictions/mlb_predictions.json"],
     mlbBacktest: ["data/predictions/mlb_backtest_predictions.json"],
     wnba: ["data/predictions/wnba_predictions.json"],
     wnbaBacktest: ["data/predictions/wnba_backtest_predictions.json"],
+    wnbaPropPredictions: ["data/predictions/wnba_prop_predictions.json"],
+    mlbPropPredictions: ["data/predictions/mlb_prop_predictions.json"],
+    propLog: ["data/tracking/prop_prediction_log.json"],
+    propRecord: ["data/tracking/prop_record.json"],
+    wnbaPropModelRegistry: ["data/reports/wnba_prop_model_registry.json"],
+    wnbaPropModelCards: ["data/reports/wnba_prop_model_cards.json"],
+    wnbaPropModelHealth: ["data/reports/wnba_prop_model_health.json"],
+    wnbaPropDatasetSummary: ["data/reports/wnba_prop_dataset_summary.json"],
+    mlbPropModelRegistry: ["data/reports/mlb_prop_model_registry.json"],
+    mlbPropModelCards: ["data/reports/mlb_prop_model_cards.json"],
+    mlbPropModelHealth: ["data/reports/mlb_prop_model_health.json"],
+    mlbPropDatasetSummary: ["data/reports/mlb_prop_dataset_summary.json"],
 };
 
 const state = {
@@ -49,6 +65,22 @@ const state = {
     refreshStatus: window.__REFRESH_STATUS__ || null,
     live: { payload: window.__LIVE_SCORES__ || null, games: [], error: null },
     odds: window.__ODDS_SNAPSHOTS__ || null,
+    playerProps: window.__PLAYER_PROPS__ || null,
+    oddsHealth: window.__ODDS_HEALTH__ || null,
+    wnbaAvailability: window.__WNBA_AVAILABILITY__ || null,
+    propsDiagnostics: window.__PROPS_MATCHING_DIAGNOSTICS__ || null,
+    wnbaPropPredictions: window.__WNBA_PROP_PREDICTIONS__ || null,
+    mlbPropPredictions: window.__MLB_PROP_PREDICTIONS__ || null,
+    propLog: window.__PROP_PREDICTION_LOG__ || null,
+    propRecord: window.__PROP_RECORD__ || null,
+    wnbaPropModelRegistry: window.__WNBA_PROP_MODEL_REGISTRY__ || null,
+    wnbaPropModelCards: window.__WNBA_PROP_MODEL_CARDS__ || null,
+    wnbaPropModelHealth: window.__WNBA_PROP_MODEL_HEALTH__ || null,
+    wnbaPropDatasetSummary: window.__WNBA_PROP_DATASET_SUMMARY__ || null,
+    mlbPropModelRegistry: window.__MLB_PROP_MODEL_REGISTRY__ || null,
+    mlbPropModelCards: window.__MLB_PROP_MODEL_CARDS__ || null,
+    mlbPropModelHealth: window.__MLB_PROP_MODEL_HEALTH__ || null,
+    mlbPropDatasetSummary: window.__MLB_PROP_DATASET_SUMMARY__ || null,
     refreshRuntime: { available: false, active: false, message: "Checking refresh availability..." },
     nfl: { payload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null, games: [], error: null },
     mlb: { payload: window.__MLB_PREDICTIONS__ || null, games: [], error: null },
@@ -77,6 +109,17 @@ const state = {
         picksSort: "confidence",
         picksWatchlist: false,
         picksDisagree: false,
+        propsDate: null,
+        propsSport: "all",
+        propsMarket: "all",
+        propsSide: "all",
+        propsConfidence: "all",
+        propsStatus: "all",
+        propsGame: "all",
+        propsSearch: "",
+        propsSort: "score",
+        propId: null,
+        propPlayer: null,
         homeMlbDate: null,
         mlbDate: null,
         homeMlbRange: "today",
@@ -206,6 +249,21 @@ const REFRESH_COMMANDS = {
         label: "Odds Snapshots",
         manual: "npm run refresh:odds",
         description: "Fetch optional real odds snapshots and join current market lines when a key is configured.",
+    },
+    wnba_availability: {
+        label: "WNBA Availability",
+        manual: "npm run refresh:wnba:availability",
+        description: "Fetch and parse the latest official WNBA injury report. Unlisted players remain unknown.",
+    },
+    mlb_player_games: {
+        label: "MLB Player-Game Data",
+        manual: "npm run refresh:mlb:player-games",
+        description: "Download resumable pybaseball Statcast parquet chunks and build local MLB player-game rows.",
+    },
+    player_props_pipeline: {
+        label: "Player Props Pipeline",
+        manual: "npm run refresh:props:pipeline",
+        description: "Refresh WNBA availability, build MLB player data, train research props models, export candidates, and score real finals.",
     },
 };
 
@@ -815,7 +873,7 @@ const SCOREBOARD_SPORTS = {
     SOCCER: { view: "soccer", navLabel: "Soccer", title: "World Cup scoreboard", eyebrow: "Soccer / World Cup", description: "Live international fixtures and final scores from the bundled real-data feed. Soccer has no LineLens prediction model.", accent: "#70e7c0", emptyTitle: "No World Cup games are available", emptyCopy: "The current bundled live export has no World Cup rows. Run npm run refresh:live yourself when the ESPN scoreboard is available; LineLens will show only real returned rows." },
     NBA: { view: "nba", navLabel: "NBA", title: "NBA scoreboard", eyebrow: "Basketball / NBA", description: "A clean courtside view of real live, upcoming, and final NBA games. No LineLens prediction model is applied.", accent: "#ff9a56", emptyTitle: "No NBA games are available", emptyCopy: "The current bundled live export has no NBA rows. Run npm run refresh:live yourself to load real ESPN scoreboard results." },
     NHL: { view: "nhl", navLabel: "NHL", title: "NHL scoreboard", eyebrow: "Hockey / NHL", description: "Real NHL game status and scores, designed as a compact ice-level scoreboard. No LineLens prediction model is applied.", accent: "#72d8ff", emptyTitle: "No NHL games are available", emptyCopy: "The current bundled live export has no NHL rows. Run npm run refresh:live yourself to load real ESPN scoreboard results." },
-    WNBA: { view: "wnba", navLabel: "WNBA", title: "WNBA scoreboard", eyebrow: "Basketball / WNBA", description: "Real WNBA fixtures, team logos, live state, final scores, and LineLens winner probabilities when the historical model is ready.", accent: "#ef8dff", emptyTitle: "No WNBA games are available", emptyCopy: "The current bundled live export has no WNBA rows. Run npm run refresh:live yourself to load real ESPN scoreboard results." },
+    WNBA: { view: "wnba", navLabel: "WNBA", title: "WNBA scoreboard", eyebrow: "Basketball / WNBA", description: "Real WNBA fixtures, team logos, live state, final scores, and LineLens winner probabilities when the required pregame inputs are available.", accent: "#ef8dff", emptyTitle: "No WNBA games are available", emptyCopy: "The current bundled live export has no WNBA rows. Run npm run refresh:live yourself to load real ESPN scoreboard results." },
 };
 
 function normalizedSportCode(sport) {
@@ -2100,6 +2158,22 @@ async function loadAll() {
         wnbaCard,
         wnba,
         wnbaBacktest,
+        playerProps,
+        oddsHealth,
+        wnbaPropPredictions,
+        propLog,
+        propRecord,
+        wnbaPropModelRegistry,
+        wnbaPropModelCards,
+        wnbaPropModelHealth,
+        wnbaPropDatasetSummary,
+        propsDiagnostics,
+        mlbPropPredictions,
+        mlbPropModelRegistry,
+        mlbPropModelCards,
+        mlbPropModelHealth,
+        mlbPropDatasetSummary,
+        wnbaAvailability,
     ] = await Promise.all([
         loadOptional("app", ["__APP_METADATA__"]),
         loadOptional("teams", ["__TEAM_METADATA__"]),
@@ -2123,6 +2197,22 @@ async function loadAll() {
         loadOptional("wnbaCard", ["__WNBA_MODEL_CARD__"]),
         loadOptional("wnba", ["__WNBA_PREDICTIONS__"]),
         loadOptional("wnbaBacktest", ["__WNBA_BACKTEST_PREDICTIONS__"]),
+        loadOptional("playerProps", ["__PLAYER_PROPS__"]),
+        loadOptional("oddsHealth", ["__ODDS_HEALTH__"]),
+        loadOptional("wnbaPropPredictions", ["__WNBA_PROP_PREDICTIONS__"]),
+        loadOptional("propLog", ["__PROP_PREDICTION_LOG__"]),
+        loadOptional("propRecord", ["__PROP_RECORD__"]),
+        loadOptional("wnbaPropModelRegistry", ["__WNBA_PROP_MODEL_REGISTRY__"]),
+        loadOptional("wnbaPropModelCards", ["__WNBA_PROP_MODEL_CARDS__"]),
+        loadOptional("wnbaPropModelHealth", ["__WNBA_PROP_MODEL_HEALTH__"]),
+        loadOptional("wnbaPropDatasetSummary", ["__WNBA_PROP_DATASET_SUMMARY__"]),
+        loadOptional("propsDiagnostics", ["__PROPS_MATCHING_DIAGNOSTICS__"]),
+        loadOptional("mlbPropPredictions", ["__MLB_PROP_PREDICTIONS__"]),
+        loadOptional("mlbPropModelRegistry", ["__MLB_PROP_MODEL_REGISTRY__"]),
+        loadOptional("mlbPropModelCards", ["__MLB_PROP_MODEL_CARDS__"]),
+        loadOptional("mlbPropModelHealth", ["__MLB_PROP_MODEL_HEALTH__"]),
+        loadOptional("mlbPropDatasetSummary", ["__MLB_PROP_DATASET_SUMMARY__"]),
+        loadOptional("wnbaAvailability", ["__WNBA_AVAILABILITY__"]),
     ]);
 
     setAppLoading("Building the board...", "Model registry / Live board", 66);
@@ -2159,6 +2249,22 @@ async function loadAll() {
     state.wnba.error = wnba ? null : "No WNBA model export found. Run npm run refresh:wnba:all.";
     state.wnbaBacktest.payload = wnbaBacktest;
     state.wnbaBacktest.games = normalizeGames(wnbaBacktest);
+    state.playerProps = playerProps || state.playerProps;
+    state.oddsHealth = oddsHealth || state.oddsHealth;
+    state.wnbaAvailability = wnbaAvailability || state.wnbaAvailability;
+    state.propsDiagnostics = propsDiagnostics || state.propsDiagnostics;
+    state.wnbaPropPredictions = wnbaPropPredictions || state.wnbaPropPredictions;
+    state.mlbPropPredictions = mlbPropPredictions || state.mlbPropPredictions;
+    state.propLog = propLog || state.propLog;
+    state.propRecord = propRecord || state.propRecord;
+    state.wnbaPropModelRegistry = wnbaPropModelRegistry || state.wnbaPropModelRegistry;
+    state.wnbaPropModelCards = wnbaPropModelCards || state.wnbaPropModelCards;
+    state.wnbaPropModelHealth = wnbaPropModelHealth || state.wnbaPropModelHealth;
+    state.wnbaPropDatasetSummary = wnbaPropDatasetSummary || state.wnbaPropDatasetSummary;
+    state.mlbPropModelRegistry = mlbPropModelRegistry || state.mlbPropModelRegistry;
+    state.mlbPropModelCards = mlbPropModelCards || state.mlbPropModelCards;
+    state.mlbPropModelHealth = mlbPropModelHealth || state.mlbPropModelHealth;
+    state.mlbPropDatasetSummary = mlbPropDatasetSummary || state.mlbPropDatasetSummary;
     teamIndex = buildTeamIndex();
 
     $("#sidebar-version").textContent = state.app.version || APP_VERSION;
@@ -2393,7 +2499,7 @@ async function runStartupAutomation(options = {}) {
 }
 
 async function loadAllAfterRefresh() {
-    const [bootstrap, startup, refresh, live, odds, report, modelComparison, moltresCard, featureSummary, modelRegistry, modelRecord, predictionLog, nfl, mlb, mlbBacktest, wnbaModelComparison, wnbaCard, wnbaFeatureSummary, wnba, wnbaBacktest] = await Promise.all([
+    const [bootstrap, startup, refresh, live, odds, report, modelComparison, moltresCard, featureSummary, modelRegistry, modelRecord, predictionLog, nfl, mlb, mlbBacktest, wnbaModelComparison, wnbaCard, wnbaFeatureSummary, wnba, wnbaBacktest, playerProps, oddsHealth, wnbaPropPredictions, propLog, propRecord, wnbaPropModelRegistry, wnbaPropModelCards, wnbaPropModelHealth, wnbaPropDatasetSummary, propsDiagnostics, mlbPropPredictions, mlbPropModelRegistry, mlbPropModelCards, mlbPropModelHealth, mlbPropDatasetSummary, wnbaAvailability] = await Promise.all([
         loadOptional("bootstrap", [], { force: true }),
         loadOptional("startup", [], { force: true }),
         loadOptional("refresh", ["__REFRESH_STATUS__"], { force: true }),
@@ -2414,6 +2520,22 @@ async function loadAllAfterRefresh() {
         loadOptional("wnbaFeatureSummary", [], { force: true }),
         loadOptional("wnba", [], { force: true }),
         loadOptional("wnbaBacktest", [], { force: true }),
+        loadOptional("playerProps", [], { force: true }),
+        loadOptional("oddsHealth", [], { force: true }),
+        loadOptional("wnbaPropPredictions", [], { force: true }),
+        loadOptional("propLog", [], { force: true }),
+        loadOptional("propRecord", [], { force: true }),
+        loadOptional("wnbaPropModelRegistry", [], { force: true }),
+        loadOptional("wnbaPropModelCards", [], { force: true }),
+        loadOptional("wnbaPropModelHealth", [], { force: true }),
+        loadOptional("wnbaPropDatasetSummary", [], { force: true }),
+        loadOptional("propsDiagnostics", [], { force: true }),
+        loadOptional("mlbPropPredictions", [], { force: true }),
+        loadOptional("mlbPropModelRegistry", [], { force: true }),
+        loadOptional("mlbPropModelCards", [], { force: true }),
+        loadOptional("mlbPropModelHealth", [], { force: true }),
+        loadOptional("mlbPropDatasetSummary", [], { force: true }),
+        loadOptional("wnbaAvailability", [], { force: true }),
     ]);
     if (bootstrap) {
         state.bootstrapStatus = bootstrap;
@@ -2484,6 +2606,22 @@ async function loadAllAfterRefresh() {
     if (wnbaFeatureSummary) { state.wnbaFeatureSummary = wnbaFeatureSummary; window.__WNBA_FEATURE_SUMMARY__ = wnbaFeatureSummary; }
     if (wnba) { state.wnba.payload = wnba; state.wnba.games = normalizeGames(wnba); window.__WNBA_PREDICTIONS__ = wnba; }
     if (wnbaBacktest) { state.wnbaBacktest.payload = wnbaBacktest; state.wnbaBacktest.games = normalizeGames(wnbaBacktest); window.__WNBA_BACKTEST_PREDICTIONS__ = wnbaBacktest; }
+    if (playerProps) { state.playerProps = playerProps; window.__PLAYER_PROPS__ = playerProps; }
+    if (oddsHealth) { state.oddsHealth = oddsHealth; window.__ODDS_HEALTH__ = oddsHealth; }
+    if (wnbaAvailability) { state.wnbaAvailability = wnbaAvailability; window.__WNBA_AVAILABILITY__ = wnbaAvailability; }
+    if (propsDiagnostics) { state.propsDiagnostics = propsDiagnostics; window.__PROPS_MATCHING_DIAGNOSTICS__ = propsDiagnostics; }
+    if (wnbaPropPredictions) { state.wnbaPropPredictions = wnbaPropPredictions; window.__WNBA_PROP_PREDICTIONS__ = wnbaPropPredictions; }
+    if (mlbPropPredictions) { state.mlbPropPredictions = mlbPropPredictions; window.__MLB_PROP_PREDICTIONS__ = mlbPropPredictions; }
+    if (propLog) { state.propLog = propLog; window.__PROP_PREDICTION_LOG__ = propLog; }
+    if (propRecord) { state.propRecord = propRecord; window.__PROP_RECORD__ = propRecord; }
+    if (wnbaPropModelRegistry) { state.wnbaPropModelRegistry = wnbaPropModelRegistry; window.__WNBA_PROP_MODEL_REGISTRY__ = wnbaPropModelRegistry; }
+    if (wnbaPropModelCards) { state.wnbaPropModelCards = wnbaPropModelCards; window.__WNBA_PROP_MODEL_CARDS__ = wnbaPropModelCards; }
+    if (wnbaPropModelHealth) { state.wnbaPropModelHealth = wnbaPropModelHealth; window.__WNBA_PROP_MODEL_HEALTH__ = wnbaPropModelHealth; }
+    if (wnbaPropDatasetSummary) { state.wnbaPropDatasetSummary = wnbaPropDatasetSummary; window.__WNBA_PROP_DATASET_SUMMARY__ = wnbaPropDatasetSummary; }
+    if (mlbPropModelRegistry) { state.mlbPropModelRegistry = mlbPropModelRegistry; window.__MLB_PROP_MODEL_REGISTRY__ = mlbPropModelRegistry; }
+    if (mlbPropModelCards) { state.mlbPropModelCards = mlbPropModelCards; window.__MLB_PROP_MODEL_CARDS__ = mlbPropModelCards; }
+    if (mlbPropModelHealth) { state.mlbPropModelHealth = mlbPropModelHealth; window.__MLB_PROP_MODEL_HEALTH__ = mlbPropModelHealth; }
+    if (mlbPropDatasetSummary) { state.mlbPropDatasetSummary = mlbPropDatasetSummary; window.__MLB_PROP_DATASET_SUMMARY__ = mlbPropDatasetSummary; }
 }
 
 function switchView(view) {
@@ -2503,6 +2641,7 @@ function switchView(view) {
     const titles = {
         home: ["LineLens Sports", "Today’s model pulse"],
         picks: ["Picks Hub", "prediction feed"],
+        props: ["Player Props", "WNBA projection feed"],
         nfl: ["NFL Spread Predictor", "spread module"],
         mlb: ["MLB Game Board", "daily broadcast board"],
         soccer: ["Soccer / World Cup", "live international scoreboard"],
@@ -2530,6 +2669,7 @@ function renderView(view = state.selected.view || "home") {
     const renderers = {
         home: renderHome,
         picks: renderPicks,
+        props: renderProps,
         nfl: renderNFL,
         mlb: renderMLB,
         soccer: renderSoccer,
@@ -2939,6 +3079,7 @@ function renderQuickActionsV2() {
         <div class="quick-actions-v2">
             <button class="btn" data-open-live-widget>Open Live Widget</button>
             <button class="btn btn--primary" data-view-link="picks">Open Picks</button>
+            <button class="btn" data-view-link="props">Open Props</button>
             <button class="btn" data-view-link="mlb">Open MLB</button>
             <button class="btn" data-view-link="wnba">Open WNBA</button>
             <button class="btn" data-view-link="nfl">Open NFL</button>
@@ -3258,6 +3399,175 @@ function filteredPicksRows() {
         if (selected.picksDisagree && !picksConsensus(game).disagree) return false;
         return true;
     }));
+}
+
+function propPredictionRows() {
+    const exports = [state.wnbaPropPredictions, state.mlbPropPredictions].filter(Boolean);
+    const exported = exports.flatMap(payload => Array.isArray(payload?.predictions) ? payload.predictions : []);
+    const candidates = exports.flatMap(payload => Array.isArray(payload?.candidate_predictions) ? payload.candidate_predictions : []);
+    const seen = new Set(exported.map(row => row.prediction_id));
+    const predictions = [...exported, ...candidates.filter(row => !seen.has(row.prediction_id))];
+    const logged = new Map((state.propLog?.predictions || []).map(row => [row.prediction_id, row]));
+    const currentMarkets = Array.isArray(state.playerProps?.markets) ? state.playerProps.markets : [];
+    return predictions.map(prediction => {
+        const log = logged.get(prediction.prediction_id) || {};
+        const market = currentMarkets.find(row => String(row.sport || "").toUpperCase() === String(prediction.sport || "").toUpperCase() && row.provider_event_id === prediction.event_id && row.market_key === prediction.market_key && (row.player_id === prediction.player_id || row.normalized_player_id === prediction.player_id || row.player_name === prediction.player_name));
+        return { ...prediction, ...log, current_line: market?.line ?? prediction.current_line ?? prediction.line, current_over_price: market?.over_price ?? prediction.current_over_price ?? prediction.over_price, current_under_price: market?.under_price ?? prediction.current_under_price ?? prediction.under_price, current_odds_snapshot_at: market?.snapshot_at ?? prediction.current_odds_snapshot_at ?? prediction.odds_snapshot_at, availability_status: prediction.availability_status || log.availability_status || market?.availability_status || "unknown", freshness_status: market?.freshness_status || prediction.freshness_status || (state.playerProps?.metadata?.status === "success" ? "Current" : "Bundled snapshot") };
+    });
+}
+
+function propMarketLabel(value) {
+    return String(value || "").replace(/^player_/, "").replaceAll("_", " ").replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+function propStatus(row) {
+    return row.result || row.status || "Pending";
+}
+
+function propConfidence(row) {
+    const probability = safeNumber(row.probability);
+    if (probability === null) return "Unavailable";
+    if (probability >= 0.65) return "High";
+    if (probability >= 0.58) return "Medium";
+    return "Low";
+}
+
+function propStaleState(row) {
+    const availability = String(row.availability_status || "").toLowerCase();
+    if (["out", "dnp", "void"].includes(availability)) return availability === "out" ? "Player out" : availability.toUpperCase();
+    if (["questionable", "doubtful", "probable"].includes(availability)) return "Availability not confirmed";
+    if (["availability_changed", "starter_changed", "lineup_changed", "starting_pitcher_changed", "scratched", "late_out"].includes(availability)) return row.sport === "MLB" ? "Starter or lineup changed" : "Availability changed";
+    if (row.candidate_only && ["", "unknown", "not_used", "not_sourced"].includes(availability)) return "Availability pending";
+    const original = safeNumber(row.original_line ?? row.line);
+    const current = safeNumber(row.current_line ?? row.line);
+    if (original !== null && current !== null && Math.abs(current - original) >= Math.max(1, Math.abs(original) * 0.15)) return "Line moved materially";
+    if (String(row.freshness_status || "").toLowerCase() !== "current") return "Prediction may be stale";
+    return "Prediction current";
+}
+
+function propScore(row) {
+    const probability = safeNumber(row.probability, 0);
+    const edge = Math.abs(safeNumber(row.edge, 0));
+    const interval = Math.max(0, safeNumber(row.upper_projection, 0) - safeNumber(row.lower_projection, 0));
+    const uncertaintyPenalty = Math.min(0.25, interval / Math.max(1, Math.abs(safeNumber(row.projection, 1)) * 10));
+    return probability * 0.55 + Math.min(0.25, edge) * 1.2 - uncertaintyPenalty;
+}
+
+function propMatchesQuality(row) {
+    const line = safeNumber(row.line);
+    const price = safeNumber(row.side === "Over" ? row.over_price : row.under_price);
+    const probability = safeNumber(row.probability);
+    const edge = safeNumber(row.edge);
+    const interval = safeNumber(row.upper_projection) !== null && safeNumber(row.lower_projection) !== null ? safeNumber(row.upper_projection) - safeNumber(row.lower_projection) : null;
+    const availability = String(row.availability_status || "").toLowerCase();
+    const freshness = String(row.freshness_status || "").toLowerCase();
+    const allowedAvailability = String(row.sport || "").toUpperCase() === "MLB" ? ["confirmed_start", "confirmed_lineup", "expected_active", "confirmed_active", "active"] : ["expected_active", "confirmed_active", "active"];
+    return line !== null && price !== null && probability !== null && edge !== null && probability >= 0.55 && edge >= 0.03 && (interval === null || interval <= Math.max(12, Math.abs(line) * 0.9)) && allowedAvailability.includes(availability) && freshness === "current";
+}
+
+function qualifiedPropRows() {
+    const rows = propPredictionRows().filter(propMatchesQuality);
+    const perPlayer = new Map();
+    const perGame = new Map();
+    const selected = [];
+    for (const row of rows.sort((a, b) => propScore(b) - propScore(a))) {
+        const playerKey = String(row.player_id || row.player_name || "").toLowerCase();
+        const gameKeyValue = String(row.event_id || row.game_id || "").toLowerCase();
+        if ((perPlayer.get(playerKey) || 0) >= 2 || (perGame.get(gameKeyValue) || 0) >= 3) continue;
+        if (selected.some(item => item.player_id === row.player_id && item.market_key === row.market_key && item.line === row.line && item.side !== row.side)) continue;
+        perPlayer.set(playerKey, (perPlayer.get(playerKey) || 0) + 1);
+        perGame.set(gameKeyValue, (perGame.get(gameKeyValue) || 0) + 1);
+        selected.push(row);
+        if (selected.length >= 10) break;
+    }
+    return selected;
+}
+
+function renderPlayerMark(row) {
+    const initials = String(row.player_name || "Player").split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+    return `<span class="prop-player-mark" aria-hidden="true">${escapeHtml(initials || "P")}</span>`;
+}
+
+function renderPropCard(row) {
+    const status = propStatus(row);
+    const candidate = Boolean(row.candidate_only);
+    const sport = String(row.sport || "WNBA").toUpperCase();
+    const freshness = propStaleState(row);
+    const interval = safeNumber(row.lower_projection) !== null && safeNumber(row.upper_projection) !== null ? `${formatNumber(row.lower_projection, 1)}–${formatNumber(row.upper_projection, 1)}` : "Unavailable";
+    const over = safeNumber(row.current_over_price ?? row.over_price);
+    const under = safeNumber(row.current_under_price ?? row.under_price);
+    const market = over !== null || under !== null ? `O ${over === null ? "—" : americanOdds(over)} · U ${under === null ? "—" : americanOdds(under)}` : "No current price";
+    return `<article class="prop-card ${candidate ? "prop-card--candidate" : ""}" data-prop-status="${escapeHtml(status.toLowerCase())}"><header><span class="sport-pill sport-pill--${escapeHtml(sport.toLowerCase())}">${escapeHtml(sport)}</span><span class="prop-card__market">${escapeHtml(candidate ? "Model candidate" : propMarketLabel(row.market_key))}</span><span class="prop-card__time">${escapeHtml(row.game_time || row.game_date || "Time not exported")}</span></header><div class="prop-card__identity">${renderPlayerMark(row)}<div><h3>${escapeHtml(row.player_name || "Player not exported")}</h3><p>${escapeHtml(row.team || "Team not exported")} vs ${escapeHtml(row.opponent || "Opponent not exported")}</p></div></div><div class="prop-card__pick"><div><span>${candidate ? "Model lean" : "Pick"}</span><strong>${escapeHtml(row.side || "Not exported")} ${escapeHtml(String(row.line ?? ""))}</strong></div><div><span>Projection</span><strong>${formatNumber(row.projection, 1)}</strong></div><div><span>Probability</span><strong>${formatProbability(row.probability)}</strong></div></div><div class="prop-card__meta"><span>Model edge <b>${formatEdge(row.edge)}</b></span><span>Band <b>${escapeHtml(interval)}</b></span><span>Market <b>${escapeHtml(market)}</b></span></div><footer><span>${resultChip(candidate ? "Availability pending" : status)}</span><small>${escapeHtml(candidate ? (row.candidate_reason || "Review only") : (row.model_id || "Model not exported"))} · ${escapeHtml(freshness)}</small><button class="btn btn--micro" type="button" data-prop-profile="${escapeHtml(row.player_id || row.player_name || "")}" data-prop-profile-sport="${escapeHtml(sport)}">Player profile</button><button class="btn btn--micro" type="button" data-prop-open="${escapeHtml(row.prediction_id)}">Open Analysis</button></footer></article>`;
+}
+
+function renderPropFilters(rows) {
+    const dates = [...new Set(rows.map(row => String(row.game_date || "").slice(0, 10)).filter(Boolean))].sort();
+    const date = state.selected.propsDate || dates[0] || localDateIso();
+    if (!state.selected.propsDate && dates[0]) state.selected.propsDate = dates[0];
+    const games = [...new Set(rows.filter(row => String(row.game_date || "").slice(0, 10) === date).map(row => row.event_id || row.game_id).filter(Boolean))];
+    const markets = [...new Set([...rows.map(row => row.market_key), ...((state.playerProps?.markets || []).map(row => row.market_key))].filter(Boolean))].sort();
+    return `<section class="panel props-filters"><div class="props-filter-heading"><div><p class="eyebrow">Filters</p><h3>Prop feed</h3></div><span class="muted">Sort by Prop Score, probability, edge, time, or freshness</span></div><div class="props-filter-grid"><label>Sport<select id="props-sport"><option value="all" ${state.selected.propsSport === "all" ? "selected" : ""}>All sports</option><option value="WNBA" ${state.selected.propsSport === "WNBA" ? "selected" : ""}>WNBA</option><option value="MLB" ${state.selected.propsSport === "MLB" ? "selected" : ""}>MLB</option></select></label><label>Date<input id="props-date" type="date" value="${escapeHtml(date)}" /></label><label>Market<select id="props-market"><option value="all">All markets</option>${markets.map(value => `<option value="${escapeHtml(value)}" ${state.selected.propsMarket === value ? "selected" : ""}>${escapeHtml(propMarketLabel(value))}</option>`).join("")}</select></label><label>Side<select id="props-side"><option value="all">Over / Under</option><option value="Over" ${state.selected.propsSide === "Over" ? "selected" : ""}>Over</option><option value="Under" ${state.selected.propsSide === "Under" ? "selected" : ""}>Under</option></select></label><label>Confidence<select id="props-confidence"><option value="all">All confidence</option>${["High", "Medium", "Low"].map(value => `<option value="${value}" ${state.selected.propsConfidence === value ? "selected" : ""}>${value}</option>`).join("")}</select></label><label>Game<select id="props-game"><option value="all">All games</option>${games.map(value => `<option value="${escapeHtml(value)}" ${state.selected.propsGame === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}</select></label><label>Player search<input id="props-search" type="search" value="${escapeHtml(state.selected.propsSearch || "")}" placeholder="Search player" /></label><label>Status<select id="props-status"><option value="all">All states</option>${["Pending", "Won", "Lost", "Push", "Void", "DNP"].map(value => `<option value="${value}" ${state.selected.propsStatus === value ? "selected" : ""}>${value}</option>`).join("")}</select></label><label>Sort<select id="props-sort"><option value="score" ${state.selected.propsSort === "score" ? "selected" : ""}>Prop Score</option><option value="probability" ${state.selected.propsSort === "probability" ? "selected" : ""}>Probability</option><option value="edge" ${state.selected.propsSort === "edge" ? "selected" : ""}>Model edge</option><option value="time" ${state.selected.propsSort === "time" ? "selected" : ""}>Game time</option><option value="freshness" ${state.selected.propsSort === "freshness" ? "selected" : ""}>Freshness</option></select></label></div></section>`;
+}
+
+function renderPropAnalysis(row) {
+    if (!row) return "";
+    const band = safeNumber(row.lower_projection) !== null && safeNumber(row.upper_projection) !== null ? `${formatNumber(row.lower_projection, 1)}–${formatNumber(row.upper_projection, 1)}` : "Not exported";
+    const originalOdds = safeNumber(row.side === "Over" ? row.over_price : row.under_price);
+    const currentOdds = safeNumber(row.side === "Over" ? row.current_over_price ?? row.over_price : row.current_under_price ?? row.under_price);
+    const availability = String(row.availability_status || "unknown").toLowerCase() === "unknown" ? "Unknown — official status not exported" : row.availability_status;
+    const summaryReady = row.projection !== null && row.line !== null && row.probability !== null;
+    return `<section class="panel prop-analysis" data-prop-analysis><header class="section-header"><div><p class="eyebrow">Prop analysis</p><h2>${escapeHtml(row.player_name || "Player")}</h2><p class="muted">${escapeHtml(propMarketLabel(row.market_key))} · ${escapeHtml(row.side || "Not exported")} ${escapeHtml(String(row.line ?? ""))}</p></div><button class="btn btn--micro" type="button" data-prop-close>Close</button></header><div class="prop-analysis__summary"><strong>${summaryReady ? `Projected ${formatNumber(row.projection, 1)} against a line of ${formatNumber(row.line, 1)}.` : "Projection context not exported."}</strong><span>${summaryReady ? `${escapeHtml(row.side || "Not exported")} probability ${formatProbability(row.probability)} with model edge ${formatEdge(row.edge)}.` : "This row is a real candidate, but it is not a publishable prop."}</span></div><div class="prop-analysis__facts"><div><span>Prediction interval</span><strong>${escapeHtml(band)}</strong></div><div><span>Original odds</span><strong>${originalOdds === null ? "Not exported" : escapeHtml(americanOdds(originalOdds))}</strong></div><div><span>Current line</span><strong>${escapeHtml(String(row.current_line ?? row.line ?? "Not exported"))}</strong></div><div><span>Current odds</span><strong>${currentOdds === null ? "Not exported" : escapeHtml(americanOdds(currentOdds))}</strong></div><div><span>Closing line</span><strong>${row.closing_line == null ? "Not captured" : escapeHtml(String(row.closing_line))}</strong></div><div><span>Closing odds</span><strong>${row.closing_price == null ? "Not captured" : escapeHtml(americanOdds(row.closing_price))}</strong></div><div><span>Market consensus</span><strong>${escapeHtml(row.market_consensus || "Not exported")}</strong></div><div><span>Line movement</span><strong>${escapeHtml(row.line_movement || "Not exported")}</strong></div><div><span>Snapshot time</span><strong>${escapeHtml(row.current_odds_snapshot_at || row.odds_snapshot_at || "Not exported")}</strong></div><div><span>Model</span><strong>${escapeHtml(row.model_id || "Not exported")}</strong></div><div><span>Availability</span><strong>${escapeHtml(availability)}</strong></div></div><div class="prop-analysis__sections"><section><h3>Recent game log</h3><p class="muted">${escapeHtml(row.recent_game_log || "Not included in the bundled player export")}</p></section><section><h3>Supporting factors</h3><p class="muted">${escapeHtml(row.supporting_factors || "Not exported by the current prop model")}</p></section><section><h3>Opposing factors</h3><p class="muted">${escapeHtml(row.opposing_factors || "Not exported by the current prop model")}</p></section></div></section>`;
+}
+
+function renderPlayerProfile(playerId, sport) {
+    const rows = propPredictionRows().filter(row => String(row.sport || "").toUpperCase() === String(sport || "").toUpperCase() && String(row.player_id || row.player_name || "").toLowerCase() === String(playerId || "").toLowerCase());
+    const row = rows[0];
+    if (!row) return "";
+    const history = (state.propLog?.predictions || []).filter(item => String(item.sport || "").toUpperCase() === String(sport || "").toUpperCase() && String(item.player_id || item.player_name || "").toLowerCase() === String(playerId || "").toLowerCase());
+    const results = history.filter(item => ["Won", "Lost", "Push", "DNP", "Void"].includes(item.result));
+    const marketRows = (state.playerProps?.markets || []).filter(item => String(item.sport || "").toUpperCase() === String(sport || "").toUpperCase() && String(item.player_name || "").toLowerCase() === String(row.player_name || "").toLowerCase());
+    return `<section class="panel prop-analysis prop-profile"><header class="section-header"><div><p class="eyebrow">Player profile</p><h2>${escapeHtml(row.player_name || "Player")}</h2><p class="muted">${escapeHtml(sport)} · ${escapeHtml(row.team || "Team not exported")} vs ${escapeHtml(row.opponent || "Opponent not exported")}</p></div><button class="btn btn--micro" type="button" data-prop-profile-close>Close</button></header><div class="prop-analysis__facts"><div><span>Published prop history</span><strong>${results.length || "No scored rows"}</strong></div><div><span>Current market rows</span><strong>${marketRows.length || "None matched"}</strong></div><div><span>Availability</span><strong>${escapeHtml(propStaleState(row))}</strong></div><div><span>Feature export</span><strong>${row.recent_game_log ? "Available" : "Not bundled"}</strong></div></div><div class="prop-analysis__sections"><section><h3>Current markets</h3><p class="muted">${escapeHtml(marketRows.length ? marketRows.map(item => `${propMarketLabel(item.market_key)} ${item.line ?? "—"}`).join(" · ") : "No additional real player market rows matched this player.")}</p></section><section><h3>Scored results</h3><p class="muted">${escapeHtml(results.length ? results.map(item => `${item.result} ${item.market_key || "prop"}`).join(" · ") : "No scored LineLens prop result is available.")}</p></section><section><h3>Data boundary</h3><p class="muted">${escapeHtml(row.recent_game_log || "The bundled export does not include a separate player-profile season table. No trend or availability values are inferred here.")}</p></section></div></section>`;
+}
+
+function sortPropRows(rows) {
+    const score = row => propScore(row);
+    const value = row => state.selected.propsSort === "probability" ? safeNumber(row.probability, -1) : state.selected.propsSort === "edge" ? safeNumber(row.edge, -1) : state.selected.propsSort === "time" ? String(row.game_time || row.game_date || "") : state.selected.propsSort === "freshness" ? (String(row.freshness_status || "").toLowerCase() === "current" ? 1 : 0) : score(row);
+    return [...rows].sort((a, b) => {
+        const av = value(a); const bv = value(b);
+        if (typeof av === "string") return av.localeCompare(bv);
+        return bv - av;
+    });
+}
+
+function renderPropFunnel(rows) {
+    const diagnostics = state.propsDiagnostics?.sports || {};
+    const sportRows = state.selected.propsSport === "all" ? rows : rows.filter(row => String(row.sport || "").toUpperCase() === state.selected.propsSport);
+    const sources = state.selected.propsSport === "all" ? Object.values(diagnostics) : [diagnostics[state.selected.propsSport] || {}];
+    const received = sources.reduce((sum, item) => sum + safeNumber(item.events_received, 0), 0);
+    const matched = sources.reduce((sum, item) => sum + safeNumber(item.events_matched, 0), 0);
+    const marketRows = sources.reduce((sum, item) => sum + safeNumber(item.markets_normalized ?? item.market_rows_available, 0), 0);
+    const projected = sportRows.filter(row => row.projection !== null && row.projection !== undefined).length;
+    const published = sportRows.filter(row => !row.candidate_only && propStatus(row) !== "Pending").length;
+    const reasons = Object.entries((state.selected.propsSport === "all" ? Object.values(diagnostics).reduce((out, item) => ({ ...out, ...(item.rejection_reason_totals || {}) }), {}) : diagnostics[state.selected.propsSport]?.rejection_reason_totals || {})).map(([reason, count]) => `${reason.replaceAll("_", " ")}: ${count}`).join(" · ");
+    return `<section class="panel props-funnel"><header class="section-header"><div><p class="eyebrow">Publication funnel</p><h3>What cleared the data gates</h3></div><span class="muted">${escapeHtml(reasons || "No rejection totals exported")}</span></header><div class="props-funnel__grid"><div><span>Events received</span><strong>${received || "—"}</strong></div><div><span>Events matched</span><strong>${matched || "—"}</strong></div><div><span>Market rows</span><strong>${marketRows || "—"}</strong></div><div><span>Projections generated</span><strong>${projected || "—"}</strong></div><div><span>Published</span><strong>${published || "0"}</strong></div></div><p class="muted">${sportRows.length ? `${sportRows.length} real rows are available to review.` : "No real projection rows are available for this filter."}</p></section>`;
+}
+
+function renderPropHealth() {
+    const models = [["WNBA", state.wnbaPropModelHealth], ["MLB", state.mlbPropModelHealth]];
+    return `<section class="panel prop-health"><header class="section-header"><div><p class="eyebrow">Prop model health</p><h2>Research and live-sample status</h2></div><div class="report-actions"><span class="chip chip--soft">No cross-sport ranking</span><button class="btn btn--small" data-refresh-command="wnba_availability">Refresh WNBA availability</button><button class="btn btn--small btn--primary" data-refresh-command="player_props_pipeline">Build player props</button></div></header><div class="prop-health__rows">${models.map(([sport, payload]) => { const meta = payload?.metadata || {}; const markets = payload?.markets || []; return `<article><div><strong>${sport}</strong><span>${escapeHtml(meta.status || "Not trained")}</span></div><p>${escapeHtml(meta.reason || (sport === "MLB" ? "Run the manual MLB player-game dataset and training commands." : "Health metrics appear after real player rows, model evaluation, and scored predictions."))}</p><small>${markets.length ? markets.map(market => `${escapeHtml(market.market || "market")}: ${escapeHtml(market.status || "not evaluated")}`).join(" · ") : "No market-level evaluation exported"}</small></article>`; }).join("")}</div></section>`;
+}
+
+function renderProps() {
+    const allRows = propPredictionRows();
+    const marketRows = Array.isArray(state.playerProps?.markets) ? state.playerProps.markets : [];
+    const mlbMarketCount = marketRows.filter(row => String(row.sport || "").toUpperCase() === "MLB").length;
+    const date = state.selected.propsDate || [...new Set(allRows.map(row => String(row.game_date || "").slice(0, 10)).filter(Boolean))].sort()[0] || localDateIso();
+    const matchesFilters = row => String(row.game_date || "").slice(0, 10) === date && (state.selected.propsSport === "all" || String(row.sport || "").toUpperCase() === state.selected.propsSport) && (state.selected.propsMarket === "all" || row.market_key === state.selected.propsMarket) && (state.selected.propsSide === "all" || row.side === state.selected.propsSide) && (state.selected.propsConfidence === "all" || propConfidence(row) === state.selected.propsConfidence) && (state.selected.propsStatus === "all" || propStatus(row) === state.selected.propsStatus) && (state.selected.propsGame === "all" || String(row.event_id || row.game_id) === state.selected.propsGame) && (!state.selected.propsSearch || String(row.player_name || "").toLowerCase().includes(state.selected.propsSearch.toLowerCase()));
+    const rows = sortPropRows(qualifiedPropRows().filter(matchesFilters));
+    const candidates = sortPropRows(allRows.filter(row => row.candidate_only).filter(matchesFilters)).slice(0, 10);
+    const best = rows.slice(0, 10);
+    const drawer = state.selected.propPlayer ? renderPlayerProfile(state.selected.propPlayer.id, state.selected.propPlayer.sport) : state.selected.propId ? renderPropAnalysis(propPredictionRows().find(row => row.prediction_id === state.selected.propId)) : "";
+    $("#view-props").innerHTML = `<section class="props-shell"><header class="props-header"><div><p class="eyebrow">Player props</p><h2>${best.length ? "Top qualified props" : candidates.length ? "Model candidates" : "No qualified props"}</h2><p class="muted">${best.length ? "Published only after real lines, odds, model output, freshness, and player availability pass the quality gate." : candidates.length ? "Real projections and current market prices are shown for review. They are not publishable picks until sport-specific availability or lineup states are verified." : "No real current prop projections are available for the selected date."}</p></div><div class="props-header__status"><strong>${best.length || candidates.length}</strong><span>${best.length ? `${best.length === 1 ? "prop" : "props"} met today’s publication criteria` : candidates.length ? "model candidates awaiting verification" : "rows available"}</span></div></header><p class="data-status" data-variant="${mlbMarketCount ? "info" : "warning"}"><strong>MLB market monitor:</strong> ${mlbMarketCount ? `${mlbMarketCount} real player-market rows loaded; MLB projections remain research-only until a real player-stat model and lineup/starter inputs are available.` : "No selected MLB player markets were returned for the current MLB event, so no MLB player projection is displayed."}</p>${renderPropFilters(allRows)}${renderPropFunnel(allRows)}<section class="props-feed"><header class="section-header"><div><p class="eyebrow">Today’s feed</p><h2>${best.length ? "Published props" : candidates.length ? "Candidates awaiting verification" : "No qualified props"}</h2></div><span class="muted">Up to 10 · maximum two per player and three per game</span></header>${best.length ? `<div class="props-grid">${best.map(renderPropCard).join("")}</div>` : candidates.length ? `<p class="data-status" data-variant="warning">These projections use real player features, current lines, and trained models. Availability is still unknown, so they cannot be treated as publishable picks.</p><div class="props-grid">${candidates.map(renderPropCard).join("")}</div>` : emptyState("No qualified props", "A prop requires a matched current line, real odds, active-player status, sufficient data, a trained model, and a fresh snapshot.")}</section>${renderPropHealth()}${drawer}</section>`;
 }
 
 function renderPicksFilters(rows) {
@@ -3881,7 +4191,8 @@ function modelConsensusForGame(game) {
 function renderModelConsensus(game) {
     const consensus = modelConsensusForGame(game);
     if (!consensus) {
-        return `<div class="mlb-game-card__consensus mlb-game-card__consensus--pending"><header><span>Model consensus</span><small>Production export</small></header><strong>${escapeHtml(getGamePick(game, "MLB"))}</strong><small>Multi-model vote will appear after the next trained export.</small></div>`;
+        const predictionReady = getGameProbability(game, "MLB") !== null && getGamePick(game, "MLB") !== "-";
+        return `<div class="mlb-game-card__consensus mlb-game-card__consensus--pending"><header><span>Model consensus</span><small>${predictionReady ? "Production export" : "Schedule only"}</small></header><strong>${predictionReady ? escapeHtml(getGamePick(game, "MLB")) : "Prediction pending"}</strong><small>${predictionReady ? "Multi-model vote is not available for this row." : "Waiting for required game inputs, including probable pitchers when available."}</small></div>`;
     }
     return `<div class="mlb-game-card__consensus"><header><span>Model consensus</span><strong>${escapeHtml(consensus.consensusPick)} ${consensus.consensusCount}–${consensus.total - consensus.consensusCount}</strong></header><div class="mlb-game-card__consensus-grid">${consensus.rows.map(row => `<span><b>${escapeHtml(row.legend)}</b><em>${escapeHtml(row.pick)} ${formatProbability(row.pick === game.home ? row.homeProbability : 1 - row.homeProbability)}</em></span>`).join("")}</div><footer><span>${escapeHtml(modelPickLabel(game))}: <strong>${escapeHtml(consensus.productionPick)}</strong></span><span>${consensus.consensusCount} of ${consensus.total} agree</span></footer></div>`;
 }
@@ -3942,6 +4253,7 @@ function renderMlbLifecycleCard(game) {
     const homeScore = safeNumber(source?.home_score);
     const score = (stage === "live" || stage === "final") && awayScore !== null && homeScore !== null ? `${awayScore} – ${homeScore}` : "";
     const pick = getGamePick(game, "MLB");
+    const predictionReady = getGameProbability(game, "MLB") !== null && pick !== "-";
     const result = modelResultLabel(game);
     const cardResult = result === "Won" ? "MODEL WON" : result === "Lost" ? "MODEL LOST" : result.toUpperCase();
     const modelWon = result === "Won";
@@ -3960,7 +4272,7 @@ function renderMlbLifecycleCard(game) {
             <div class="mlb-game-card__at">${score ? `<b>${escapeHtml(score)}</b>` : "VS"}<small>${stage === "live" ? "LIVE SCORE" : stage === "final" ? "FINAL" : "FIRST PITCH"}</small></div>
             <div class="mlb-game-card__team mlb-game-card__team--home">${renderTeamLogo("MLB", homeMeta.abbreviation, "lg", homeMeta.full_name)}<strong>${escapeHtml(homeMeta.abbreviation)}</strong></div>
         </div>
-        <div class="mlb-game-card__signal"><span>${escapeHtml(modelPickLabel(game))}</span><strong class="mlb-game-card__signal-pick">${escapeHtml(pick)}</strong><b>${formatProbability(market.pickProbability)}</b></div>
+        <div class="mlb-game-card__signal"><span>${escapeHtml(predictionReady ? modelPickLabel(game) : "Prediction status")}</span><strong class="mlb-game-card__signal-pick">${escapeHtml(predictionReady ? pick : "Pending")}</strong><b>${predictionReady ? formatProbability(market.pickProbability) : "Awaiting inputs"}</b></div>
         ${renderMlbOdds(game)}
         ${renderModelConsensus(game)}
         ${marketRead}${latestPlay}
@@ -4137,9 +4449,12 @@ function renderWNBA() {
     const production = selectedModelEntry("WNBA");
     const config = SCOREBOARD_SPORTS.WNBA;
     const dateLabel = wnbaDateDisplay(selectedDate);
-    const sourceNotice = hasModel ? "Predictions are model-backed for this selected date." : "Schedule-only mode: real fixtures and scores are shown while the historical holdout is being built.";
-    const cards = hasModel ? renderPredictionCards("WNBA", modelGames, "WNBA") : games.map(game => renderScoreboardCard(game, config)).join("");
-    $("#view-wnba").innerHTML = `<section class="scoreboard-shell wnba-model-shell" style="--scoreboard-accent:${escapeHtml(config.accent)}"><section class="panel scoreboard-header wnba-page-header"><div><p class="eyebrow">WNBA / ${hasModel ? "Johto model board" : "live scoreboard"}</p><h2>WNBA Game Board</h2><p class="muted">Real WNBA fixtures with team logos, date navigation, and ${hasModel ? `${escapeHtml(production?.model_name || "Raikou / Entei / Suicune")} home-win probabilities.` : "a clean scoreboard until the model artifact is available."}</p></div><div class="scoreboard-header__meta"><strong>${games.length} loaded</strong><span>${escapeHtml(dateLabel.weekday)} · ${escapeHtml(dateLabel.monthDay)} · ${escapeHtml(status.status || "cached")}</span></div></section><section class="panel wnba-calendar-panel">${renderWnbaDateCalendar()}</section><p class="data-status wnba-mode-note" data-variant="${hasModel ? "success" : "warning"}"><strong>${hasModel ? "Model board" : "Scoreboard mode"}:</strong> ${escapeHtml(sourceNotice)} ${hasModel ? `Production candidate: ${escapeHtml(production?.model_name || "not declared")}.` : `Run <code>npm run refresh:wnba:all</code> when the historical source is reachable.`}</p><section class="prediction-desk wnba-prediction-desk"><article class="panel prediction-board"><header class="desk-header desk-header--nfl"><div class="desk-date-block"><div><p class="eyebrow">${hasModel ? "WNBA model board" : "WNBA schedule board"}</p><h2>${escapeHtml(dateLabel.weekday)} · ${escapeHtml(dateLabel.monthDay)}</h2><div class="desk-record-line"><strong>${games.length}</strong><span>${modelGames.length} model picks</span><span>${games.filter(game => isFinalSportGame(game)).length} final</span></div></div></div><div class="desk-toolbar"><span class="chip chip--soft">${hasModel ? "Score + Elo baseline" : "Real ESPN rows"}</span><button class="btn btn--small" data-refresh-command="wnba_current">Refresh board</button></div></header>${cards || emptyState("No WNBA games on this date", "Choose another date from the calendar. Refresh the live export to discover new fixtures.")}${hasModel ? renderAnalysisDrawer("WNBA", selected) : ""}</article>${hasModel ? renderPredictionRail("WNBA", modelGames, top, state.wnba.payload) : `<aside class="prediction-rail"><section class="rail-card rail-card--top"><header><h3>WNBA model status</h3><span class="rail-status-pill">not active</span></header><div class="rail-performance"><div><span>Current date</span><strong>${escapeHtml(dateLabel.monthDay)}</strong></div><div><span>Model line</span><strong>Raikou · Entei · Suicune</strong></div></div><p class="muted">The board is intentionally showing real fixtures while training data is unavailable.</p><button class="btn btn--primary full-width" data-refresh-command="wnba_all">Build model line</button></section></aside>`}</section></section>`;
+    const sourceNotice = hasModel ? "Predictions are model-backed for this selected date." : "Schedule-only mode: real fixtures and scores are shown while required pregame inputs are unavailable. Predictions will appear when the data is ready.";
+    const scheduleOnlyGames = games.filter(game => !modelGames.some(modelGame => sameGame(modelGame, game)));
+    const cards = hasModel
+        ? `${modelGames.length ? renderPredictionCards("WNBA", modelGames, "WNBA") : ""}${scheduleOnlyGames.map(game => renderScoreboardCard(game, config)).join("")}`
+        : games.map(game => renderScoreboardCard(game, config)).join("");
+    $("#view-wnba").innerHTML = `<section class="scoreboard-shell wnba-model-shell" style="--scoreboard-accent:${escapeHtml(config.accent)}"><section class="panel scoreboard-header wnba-page-header"><div><p class="eyebrow">WNBA / ${hasModel ? "Johto model board" : "live scoreboard"}</p><h2>WNBA Game Board</h2><p class="muted">Real WNBA fixtures with team logos, date navigation, and ${hasModel ? `${escapeHtml(production?.model_name || "Raikou / Entei / Suicune")} home-win probabilities.` : "predictions held until required pregame inputs are available."}</p></div><div class="scoreboard-header__meta"><strong>${games.length} loaded</strong><span>${escapeHtml(dateLabel.weekday)} · ${escapeHtml(dateLabel.monthDay)} · ${escapeHtml(status.status || "cached")}</span></div></section><section class="panel wnba-calendar-panel">${renderWnbaDateCalendar()}</section><p class="data-status wnba-mode-note" data-variant="${hasModel ? "success" : "warning"}"><strong>${hasModel ? "Model board" : "Scoreboard mode"}:</strong> ${escapeHtml(sourceNotice)} ${hasModel ? `Production candidate: ${escapeHtml(production?.model_name || "not declared")}.` : "Refresh the board when new schedule or model inputs are available."}</p><section class="prediction-desk wnba-prediction-desk"><article class="panel prediction-board"><header class="desk-header desk-header--nfl"><div class="desk-date-block"><div><p class="eyebrow">${hasModel ? "WNBA model board" : "WNBA schedule board"}</p><h2>${escapeHtml(dateLabel.weekday)} · ${escapeHtml(dateLabel.monthDay)}</h2><div class="desk-record-line"><strong>${games.length}</strong><span>${modelGames.length} model picks</span><span>${games.filter(game => isFinalSportGame(game)).length} final</span></div></div></div><div class="desk-toolbar"><span class="chip chip--soft">${hasModel ? "Score + Elo baseline" : "Real ESPN rows"}</span><button class="btn btn--small" data-refresh-command="wnba_current">Refresh board</button></div></header>${cards || emptyState("No WNBA games on this date", "Choose another date from the calendar. Refresh the live export to discover new fixtures.")}${hasModel ? renderAnalysisDrawer("WNBA", selected) : ""}</article>${hasModel ? renderPredictionRail("WNBA", modelGames, top, state.wnba.payload) : `<aside class="prediction-rail"><section class="rail-card rail-card--top"><header><h3>WNBA model status</h3><span class="rail-status-pill">waiting for inputs</span></header><div class="rail-performance"><div><span>Current date</span><strong>${escapeHtml(dateLabel.monthDay)}</strong></div><div><span>Model line</span><strong>Raikou · Entei · Suicune</strong></div></div><p class="muted">Real fixtures remain visible; predictions are held until the required model inputs arrive.</p></section></aside>`}</section></section>`;
 }
 
 function recordSummaryText(summary) {
@@ -5190,6 +5505,13 @@ function renderWnbaModelLabCard() {
     return `<section class="panel wnba-model-lab"><header class="section-header"><div><p class="eyebrow">WNBA / Johto line</p><h2>Raikou · Entei · Suicune</h2><p class="muted">${escapeHtml(selected ? `${modelIdentity(selected.model_name).legend} is the evidence-selected production candidate.` : "Three real-data candidates are staged for the WNBA line; no metrics are invented before the holdout exists.")}</p></div><div class="report-actions"><button class="btn" data-refresh-command="wnba_all">Retrain WNBA line</button><button class="btn btn--primary" data-view-link="wnba">Open WNBA Board</button></div></header><div class="summary-grid summary-grid--compact">${card("Production", selected ? modelIdentity(selected.model_name).legend : "Not selected", selected?.technical_name || "candidate selection")}${card("Evaluated", `${trainedCount} / ${candidates.length}`, "chronological comparison")}${card("Data quality", meta.data_quality || "score + Elo", "advanced/player inputs are separate")}</div><div class="wnba-model-gallery">${candidateCards}</div><p class="muted wnba-model-lab__footnote">${trainedCount ? "Metrics are tied to the real WNBA comparison export." : "Cards remain visible while the historical ESPN cache is assembled; the board continues to show real fixtures in the meantime."}</p></section>`;
 }
 
+function renderWnbaPropModelPanel() {
+    const registry = state.wnbaPropModelRegistry || {};
+    const models = registry.models || [];
+    const health = state.wnbaPropModelHealth?.metadata || {};
+    return `<section class="panel prop-model-panel"><header class="section-header"><div><p class="eyebrow">WNBA player props</p><h2>Points, rebounds, assists</h2><p class="muted">Separate regression candidates. No prop model is production until real player rows and chronological evaluation support it.</p></div><span class="chip chip--soft">${escapeHtml(health.status || registry.metadata?.status || "Not trained")}</span></header><div class="prop-model-panel__grid">${models.length ? models.map(model => `<article><strong>${escapeHtml(model.target_stat || "Stat")}</strong><span>${escapeHtml(model.algorithm || "Algorithm unavailable")}</span><small>MAE ${formatNumber(model.metrics?.mae, 2)} · RMSE ${formatNumber(model.metrics?.rmse, 2)} · ${escapeHtml(model.status || "challenger")}</small></article>`).join("") : `<p class="muted">No trained WNBA prop artifacts are bundled. Run the manual dataset and training commands when real player box-score data is available.</p>`}</div></section>`;
+}
+
 function historyRows() {
     const rows = [
         ...state.mlbBacktest.games.map(game => ({ ...game, sport: "MLB", source_type: "backtest" })),
@@ -5335,7 +5657,7 @@ function renderModels() {
         const liveRecord = row.model_name === selected?.model_name ? recordLine(getModelRecord("MLB").live_record || getModelRecord("MLB").overall || {}) : "Not tracked";
         return `<tr><td><span class="model-rank">${index + 1}</span><strong>${escapeHtml(identity.legend)}</strong><small>${escapeHtml(row.model_name)}</small></td><td>${escapeHtml(row.model_name === selected?.model_name ? "Production" : identity.role.replace("Current ", ""))}</td><td>${formatNumber(row.log_loss, 4)}</td><td>${formatNumber(row.brier_score, 4)}</td><td>${escapeHtml(liveRecord)}</td></tr>`;
     }).join("");
-    $("#view-models").innerHTML = `<section class="models-shell"><section class="models-hero"><div><p class="eyebrow">Model comparison</p><h2>Compare models by sport</h2><p>Review production and challenger evidence, then open the detail view for metrics and limitations.</p><div class="models-hero__production"><span>MLB production model</span><strong>${escapeHtml(modelIdentity(selected?.model_name).legend)}</strong><small>${formatProbability(productionMetrics.accuracy)} holdout accuracy · ${formatNumber(productionMetrics.log_loss, 4)} log loss</small></div></div><div class="models-hero__orb"><span></span><i></i><b></b></div></section>${renderCrossSportModelArena()}${renderModelHealthPanel()}<section class="models-command"><div><span class="eyebrow">Production model</span><strong>${escapeHtml(modelIdentity(selected?.model_name).legend)}</strong><small>${selected ? `trained ${formatDate(selected.trained_at)}` : "No registry selection"}</small></div><div><span class="eyebrow">Model gallery</span><strong>${entries.length}</strong><small>unique MLB algorithms</small></div><div><span class="eyebrow">Evaluation rows</span><strong>${comparison.length}</strong><small>real comparison exports</small></div><div><span class="eyebrow">Moltres</span><strong>${escapeHtml(moltresStatusLabel())}</strong><small>${moltresCard() ? "card loaded" : "manual training pending"}</small></div></section>${renderModelOpsPanel()}<section class="panel model-leaderboard"><header class="section-header"><div><p class="eyebrow">Holdout leaderboard</p><h2>Holdout leaderboard</h2></div><span class="chip chip--soft">lower log loss wins</span></header><div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Role</th><th>Log loss</th><th>Brier</th><th>Live record</th></tr></thead><tbody>${leaderboardRows || `<tr><td colspan="5">No comparison rows loaded.</td></tr>`}</tbody></table></div></section><section class="models-legend"><span>Metric guide</span><small>Accuracy ↑</small><small>Log loss ↓</small><small>Brier ↓</small><small>ROC AUC ↑</small><small>Calibration ↓</small><small>Stability ↑</small></section><section class="models-gallery">${entries.length ? entries.map(renderModelGalleryCard).join("") : emptyState("No MLB models in registry", "Train or load a real MLB registry export to populate the model comparison.")}</section>${detail}${renderWnbaModelLabCard()}</section>`;
+    $("#view-models").innerHTML = `<section class="models-shell"><section class="models-hero"><div><p class="eyebrow">Model comparison</p><h2>Compare models by sport</h2><p>Review production and challenger evidence, then open the detail view for metrics and limitations.</p><div class="models-hero__production"><span>MLB production model</span><strong>${escapeHtml(modelIdentity(selected?.model_name).legend)}</strong><small>${formatProbability(productionMetrics.accuracy)} holdout accuracy · ${formatNumber(productionMetrics.log_loss, 4)} log loss</small></div></div><div class="models-hero__orb"><span></span><i></i><b></b></div></section>${renderCrossSportModelArena()}${renderModelHealthPanel()}<section class="models-command"><div><span class="eyebrow">Production model</span><strong>${escapeHtml(modelIdentity(selected?.model_name).legend)}</strong><small>${selected ? `trained ${formatDate(selected.trained_at)}` : "No registry selection"}</small></div><div><span class="eyebrow">Model gallery</span><strong>${entries.length}</strong><small>unique MLB algorithms</small></div><div><span class="eyebrow">Evaluation rows</span><strong>${comparison.length}</strong><small>real comparison exports</small></div><div><span class="eyebrow">Moltres</span><strong>${escapeHtml(moltresStatusLabel())}</strong><small>${moltresCard() ? "card loaded" : "manual training pending"}</small></div></section>${renderModelOpsPanel()}<section class="panel model-leaderboard"><header class="section-header"><div><p class="eyebrow">Holdout leaderboard</p><h2>Holdout leaderboard</h2></div><span class="chip chip--soft">lower log loss wins</span></header><div class="table-wrapper"><table class="data-table"><thead><tr><th>Model</th><th>Role</th><th>Log loss</th><th>Brier</th><th>Live record</th></tr></thead><tbody>${leaderboardRows || `<tr><td colspan="5">No comparison rows loaded.</td></tr>`}</tbody></table></div></section><section class="models-legend"><span>Metric guide</span><small>Accuracy ↑</small><small>Log loss ↓</small><small>Brier ↓</small><small>ROC AUC ↑</small><small>Calibration ↓</small><small>Stability ↑</small></section><section class="models-gallery">${entries.length ? entries.map(renderModelGalleryCard).join("") : emptyState("No MLB models in registry", "Train or load a real MLB registry export to populate the model comparison.")}</section>${detail}${renderWnbaModelLabCard()}${renderWnbaPropModelPanel()}</section>`;
 }
 
 function renderModelTrustCenter(sport) {
@@ -6086,6 +6408,9 @@ function renderDataDoctorPanel() {
         doctorStatus("MLB backtest", Boolean(state.mlbBacktest.games.length), "npm run refresh:mlb:all", `${state.mlbBacktest.games.length} rows`),
         doctorStatus("Live scores", Boolean(state.live.games.length), "npm run refresh:live", `${state.live.games.length} games`),
         doctorStatus("Odds snapshots", Boolean(state.odds?.metadata?.snapshot_count), "npm run refresh:odds", oddsStatusMessage()),
+        doctorStatus("Player prop markets", Boolean(state.playerProps?.markets?.length), "npm run refresh:props", `${state.playerProps?.markets?.length || 0} normalized rows`),
+        doctorStatus("WNBA availability", state.wnbaAvailability?.metadata?.status === "success", "npm run refresh:wnba:availability", `${state.wnbaAvailability?.players?.length || 0} explicit report rows`),
+        doctorStatus("Prop matching", Boolean(state.propsDiagnostics), "npm run refresh:props", state.propsDiagnostics ? "WNBA and MLB diagnostics loaded" : "missing diagnostics export"),
         doctorStatus("Model record", Boolean(state.modelRecord), "npm run score:models", state.modelRecord ? timestamp(state.modelRecord.metadata?.generated_at) : "missing"),
         doctorStatus("Reports", Boolean(state.report && state.modelComparison), "npm run refresh:mlb:all", state.report ? "report found" : "missing"),
         doctorStatus("NFL export", Boolean(state.nfl.games.length), "npm run refresh:nfl:real", `${state.nfl.games.length} rows`),
@@ -6139,6 +6464,9 @@ function renderSettings() {
         ["MLB Stats API", "No key required", "schedule/probable pitchers/status/scores"],
         ["NFL data", "nfl-data-py/cached pipeline", "exported NFL predictions or offseason cache"],
         ["Odds API", oddsStatusLabel(), oddsStatusMessage()],
+        ["WNBA player props", state.wnbaPropPredictions?.metadata?.status || "not trained", "data/predictions/wnba_prop_predictions.json"],
+        ["Prop odds", state.playerProps?.metadata?.status || "no market available", "data/odds/player_props.json"],
+        ["Odds quota", state.oddsHealth?.metadata?.quota?.["x-requests-remaining"] || "not exported", "data/odds/odds_health.json"],
         ["Reports mode", state.report?.metadata?.real_data === false ? "missing" : state.report ? "ready" : "missing", "data/reports/model_report.json"],
         ["MLB feature summary", state.featureSummary ? `${state.featureSummary.feature_count || 0} features` : "missing", "data/reports/mlb_feature_summary.json"],
         ["Model comparison", state.modelComparison ? `${(state.modelComparison.models || []).length} rows` : "missing", "data/reports/mlb_model_comparison.json"],
@@ -6361,6 +6689,35 @@ function bindEvents() {
         }
         if (event.target.closest("[data-copy-picks-brief]")) {
             copyPicksBrief();
+            return;
+        }
+
+        const propOpen = event.target.closest("[data-prop-open]");
+        if (propOpen) {
+            state.selected.propId = propOpen.dataset.propOpen;
+            state.selected.propPlayer = null;
+            persistSettings();
+            renderProps();
+            return;
+        }
+        const propProfile = event.target.closest("[data-prop-profile]");
+        if (propProfile) {
+            state.selected.propId = null;
+            state.selected.propPlayer = { id: propProfile.dataset.propProfile, sport: propProfile.dataset.propProfileSport };
+            persistSettings();
+            renderProps();
+            return;
+        }
+        if (event.target.closest("[data-prop-close]")) {
+            state.selected.propId = null;
+            persistSettings();
+            renderProps();
+            return;
+        }
+        if (event.target.closest("[data-prop-profile-close]")) {
+            state.selected.propPlayer = null;
+            persistSettings();
+            renderProps();
             return;
         }
 
@@ -6698,6 +7055,12 @@ function bindEvents() {
             state.selected.picksDisagree = event.target.checked;
             persistSettings();
             renderPicks();
+        }
+        if (["props-sport", "props-date", "props-market", "props-side", "props-confidence", "props-game", "props-search", "props-status", "props-sort"].includes(event.target.id)) {
+            const mapping = {"props-sport": "propsSport", "props-date": "propsDate", "props-market": "propsMarket", "props-side": "propsSide", "props-confidence": "propsConfidence", "props-game": "propsGame", "props-search": "propsSearch", "props-status": "propsStatus", "props-sort": "propsSort"};
+            state.selected[mapping[event.target.id]] = event.target.value;
+            persistSettings();
+            renderProps();
         }
         if (event.target.id === "home-nfl-season" || event.target.id === "nfl-nfl-season") {
             state.selected.homeNflSeason = safeNumber(event.target.value);

@@ -33,6 +33,9 @@ COMMANDS = {
     "score_models": ("scripts/score_model_predictions.py", []),
     "live_scores": ("scripts/live_scores.py", []),
     "odds_snapshots": ("scripts/odds_snapshots.py", []),
+    "wnba_availability": ("scripts/refresh_wnba_availability.py", []),
+    "mlb_player_games": ("scripts/refresh_mlb_player_games.py", []),
+    "player_props_pipeline": ("scripts/refresh_player_props_pipeline.py", []),
 }
 
 
