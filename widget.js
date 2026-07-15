@@ -175,6 +175,15 @@ async function fetchJson(url, timeoutMs = 3500) {
 async function loadJson(url, globalName, options = {}) {
     let payload = window[globalName] || null;
     if (payload && !options.forceFetch) return payload;
+    if (isTauri()) {
+        try {
+            const raw = await tauriInvoke("read_data_export", { path: url });
+            const tauriPayload = typeof raw === "string" ? JSON.parse(raw) : raw;
+            if (tauriPayload) return tauriPayload;
+        } catch (_error) {
+            // Fall through to the static packaged asset for older installers.
+        }
+    }
     if (window.location.protocol !== "file:") {
         try {
             payload = await fetchJson(url);

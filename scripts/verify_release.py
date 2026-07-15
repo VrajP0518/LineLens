@@ -37,7 +37,7 @@ def required_bundle_files() -> bool:
         "data/models/model_registry.json", "data/reports/mlb_model_comparison.json",
         "data/reports/mlb_moltres_model_card.json", "data/reports/model_report.json",
         "data/tracking/model_record.json", "data/tracking/model_predictions_log.json",
-        "data/odds/player_props.json", "data/odds/odds_health.json", "data/odds/wnba_availability.json",
+        "data/odds/player_props.json", "data/odds/odds_snapshots.json", "data/odds/odds_snapshots.js", "data/odds/odds_health.json", "data/odds/wnba_availability.json",
         "data/odds/props_matching_diagnostics.json", "data/predictions/mlb_prop_predictions.json",
         "data/predictions/wnba_prop_predictions.json", "data/tracking/prop_prediction_log.json",
         "data/tracking/prop_record.json", "data/reports/wnba_prop_model_registry.json",

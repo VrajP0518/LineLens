@@ -472,6 +472,28 @@ function livePayloadIsFresh(payload, maxAgeSeconds = 180) {
 }
 
 async function loadOptional(kind, globals = [], options = {}) {
+    if (isTauriRefreshAvailable()) {
+        const tauriCandidates = [];
+        for (const url of DATA_SOURCES[kind] || []) {
+            try {
+                const raw = await tauriInvoke("read_data_export", { path: url });
+                const payload = typeof raw === "string" ? JSON.parse(raw) : raw;
+                if (payload) tauriCandidates.push(payload);
+            } catch (_error) {
+                // Older installed builds may not expose the resource reader; use the static asset below.
+            }
+        }
+        if (tauriCandidates.length) {
+            if (kind === "live") {
+                return tauriCandidates.sort((a, b) => {
+                    const left = Date.parse(String(normalizeMeta(a).generated_at || "")) || 0;
+                    const right = Date.parse(String(normalizeMeta(b).generated_at || "")) || 0;
+                    return right - left;
+                })[0];
+            }
+            return tauriCandidates[0];
+        }
+    }
     if (kind === "live" && (options.force || window.location.protocol !== "file:")) {
         const candidates = [];
         for (const url of DATA_SOURCES.live || []) {
@@ -581,6 +603,15 @@ function loadSettings() {
     } catch (_error) {
         state.selected = { ...state.selected };
     }
+    // Daily boards always open on today's slate, or the next date with real games.
+    // Date navigation remains available for the rest of the current session.
+    state.selected.homeMlbDate = null;
+    state.selected.mlbDate = null;
+    state.selected.wnbaDate = null;
+    state.selected.picksDate = null;
+    state.selected.propsDate = null;
+    state.selected.propsDateManual = false;
+    state.selected.scoreboardDates = { NBA: null, NHL: null, SOCCER: null };
     setBodyModes();
 }
 

@@ -66,9 +66,32 @@ fn scripts_detected(root: &PathBuf) -> bool {
             .exists()
         && root.join("scripts").join("live_scores.py").exists()
         && root.join("scripts").join("odds_snapshots.py").exists()
-        && root.join("scripts").join("refresh_mlb_player_games.py").exists()
-        && root.join("scripts").join("refresh_wnba_availability.py").exists()
-        && root.join("scripts").join("refresh_player_props_pipeline.py").exists()
+        && root
+            .join("scripts")
+            .join("refresh_mlb_player_games.py")
+            .exists()
+        && root
+            .join("scripts")
+            .join("refresh_wnba_availability.py")
+            .exists()
+        && root
+            .join("scripts")
+            .join("refresh_player_props_pipeline.py")
+            .exists()
+}
+
+#[tauri::command]
+fn read_data_export(path: String) -> Result<String, String> {
+    let normalized = path.replace('\\', "/");
+    if !normalized.starts_with("data/")
+        || normalized.contains("..")
+        || normalized.contains(':')
+        || !normalized.ends_with(".json")
+    {
+        return Err("Only bundled data JSON exports can be read.".to_string());
+    }
+    let root = project_root()?;
+    std::fs::read_to_string(root.join(normalized)).map_err(|error| error.to_string())
 }
 
 fn python_candidates(root: &PathBuf) -> Vec<(String, Vec<String>)> {
@@ -131,7 +154,14 @@ fn command_spec(command_name: &str) -> Result<CommandSpec, String> {
         }),
         "live_scores_fast" => Ok(CommandSpec {
             script: "scripts/live_scores.py",
-            args: vec!["--days-back", "1", "--days-forward", "7", "--output-stem", "live_heartbeat"],
+            args: vec![
+                "--days-back",
+                "1",
+                "--days-forward",
+                "7",
+                "--output-stem",
+                "live_heartbeat",
+            ],
         }),
         "odds_snapshots" => Ok(CommandSpec {
             script: "scripts/odds_snapshots.py",
@@ -440,6 +470,7 @@ pub fn run() {
             run_startup_automation,
             refresh_sports_data,
             run_startup_refresh,
+            read_data_export,
             open_live_widget,
             close_live_widget,
             focus_main_window
