@@ -6766,6 +6766,14 @@ function renderAbout() {
                 <div class="about-page__version"><span>Current version</span><strong>${escapeHtml(version)}</strong><small>${escapeHtml(timestamp(generatedAt) || "Bundled data date unavailable")}</small></div>
             </header>
 
+            <section class="about-brand-showcase" aria-label="LineLens brand assets">
+                <figure class="about-brand-showcase__wide"><img src="assets/branding/Logo3.png" alt="LineLens Sports wordmark on a dark blue background" loading="lazy" decoding="async" /><figcaption>LineLens Sports wordmark</figcaption></figure>
+                <div class="about-brand-showcase__variants">
+                    <figure><img src="assets/branding/Logo1.png" alt="LineLens dark logo" loading="lazy" decoding="async" /><figcaption>Dark application mark</figcaption></figure>
+                    <figure><img src="assets/branding/Logo2.png" alt="LineLens light logo" loading="lazy" decoding="async" /><figcaption>Light presentation mark</figcaption></figure>
+                </div>
+            </section>
+
             <div class="about-page__grid">
                 <div class="about-page__main">
                     <section class="about-section">

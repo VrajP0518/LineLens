@@ -5953,6 +5953,14 @@ body .wnba-model-card__visual { min-height: 74px; background: #101d2a; backgroun
 .about-page__version { display: grid; gap: .2rem; min-width: 150px; padding-top: .25rem; text-align: right; }
 .about-page__version span, .about-page__version small { color: #8396a8; font-size: .75rem; }
 .about-page__version strong { color: #e6edf5; font-size: 1.1rem; }
+.about-brand-showcase { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(220px, .8fr); gap: .75rem; padding-bottom: 1rem; border-bottom: 1px solid var(--ll-line-strong); }
+.about-brand-showcase figure { margin: 0; overflow: hidden; border: 1px solid var(--ll-line-soft); border-radius: 8px; background: #07111f; }
+.about-brand-showcase img { display: block; width: 100%; object-fit: contain; }
+.about-brand-showcase__wide img { height: 148px; object-fit: cover; object-position: center; }
+.about-brand-showcase figcaption { padding: .45rem .6rem; color: #8fa2b3; font-size: .7rem; }
+.about-brand-showcase__variants { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.about-brand-showcase__variants img { height: 102px; padding: .35rem; }
+.about-brand-showcase__variants figure:nth-child(2) { background: #eef3f8; }
 .about-page__grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, .85fr); gap: 1.25rem; align-items: start; }
 .about-page__main, .about-page__side { display: grid; gap: 1rem; }
 .about-section { padding: 1rem 0; border-bottom: 1px solid var(--ll-line-soft); }
@@ -5986,6 +5994,7 @@ body .wnba-model-card__visual { min-height: 74px; background: #101d2a; backgroun
 .settings-support-panel .section-header { margin-bottom: .75rem; }
 
 @media (max-width: 900px) {
+    .about-brand-showcase { grid-template-columns: 1fr; }
     .about-page__grid { grid-template-columns: 1fr; }
     .about-page__side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .about-page__side .about-section--notice { grid-column: 1 / -1; }
@@ -5999,6 +6008,8 @@ body .wnba-model-card__visual { min-height: 74px; background: #101d2a; backgroun
     .about-meta-row { grid-template-columns: auto minmax(0, 1fr); }
     .about-section--credits { grid-template-columns: 1fr; }
     .about-section--credits .about-trademark { grid-column: auto; }
+    .about-brand-showcase__wide img { height: 112px; }
+    .about-brand-showcase__variants img { height: 84px; }
     .global-footer { justify-content: flex-start; }
 }
 
