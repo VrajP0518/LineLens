@@ -103,19 +103,19 @@ def clean(value: Any) -> Any:
     return value
 
 
-def write_json_and_js(payload: dict[str, Any]) -> None:
-    LIVE_DIR.mkdir(parents=True, exist_ok=True)
+def write_json_and_js(payload: dict[str, Any], json_path: Path = LIVE_JSON, js_path: Path = LIVE_JS, variable: str = "__LIVE_SCORES__") -> None:
+    json_path.parent.mkdir(parents=True, exist_ok=True)
     cleaned = clean(payload)
-    LIVE_JSON.write_text(json.dumps(cleaned, indent=2, allow_nan=False), encoding="utf-8")
-    LIVE_JS.write_text(
-        "window.__LIVE_SCORES__ = "
+    json_path.write_text(json.dumps(cleaned, indent=2, allow_nan=False), encoding="utf-8")
+    js_path.write_text(
+        f"window.{variable} = "
         + json.dumps(cleaned, separators=(",", ":"), allow_nan=False)
         + ";\n",
         encoding="utf-8",
     )
 
 
-def write_widget_payload(payload: dict[str, Any]) -> None:
+def write_widget_payload(payload: dict[str, Any], json_path: Path = WIDGET_JSON, js_path: Path = WIDGET_JS, variable: str = "__LIVE_SCORES__") -> None:
     """Write a small near-term snapshot for instant PiP startup."""
     metadata = payload.get("metadata") or {}
     center = parse_iso_date(str(metadata.get("data_window", {}).get("center_date") or today_iso()))
@@ -135,9 +135,10 @@ def write_widget_payload(payload: dict[str, Any]) -> None:
         "games": games,
     }
     cleaned = clean(widget_payload)
-    WIDGET_JSON.write_text(json.dumps(cleaned, indent=2, allow_nan=False), encoding="utf-8")
-    WIDGET_JS.write_text(
-        "window.__LIVE_SCORES__ = "
+    json_path.parent.mkdir(parents=True, exist_ok=True)
+    json_path.write_text(json.dumps(cleaned, indent=2, allow_nan=False), encoding="utf-8")
+    js_path.write_text(
+        f"window.{variable} = "
         + json.dumps(cleaned, separators=(",", ":"), allow_nan=False)
         + ";\n",
         encoding="utf-8",
@@ -977,21 +978,47 @@ def fallback_nfl_from_predictions(predictions: dict[str, dict[str, Any]]) -> lis
     return games
 
 
+def _start_times_are_same_game(first: Any, second: Any) -> bool:
+    if not first or not second:
+        return True
+    try:
+        first_time = datetime.fromisoformat(str(first).replace("Z", "+00:00"))
+        second_time = datetime.fromisoformat(str(second).replace("Z", "+00:00"))
+        if first_time.tzinfo is None:
+            first_time = first_time.replace(tzinfo=timezone.utc)
+        if second_time.tzinfo is None:
+            second_time = second_time.replace(tzinfo=timezone.utc)
+        return abs((first_time - second_time).total_seconds()) <= 30 * 60
+    except ValueError:
+        return str(first)[:16] == str(second)[:16]
+
+
 def dedupe_games(games: list[dict[str, Any]]) -> list[dict[str, Any]]:
     deduped: list[dict[str, Any]] = []
-    seen: set[str] = set()
     for game in games:
-        start_time = str(game.get("game_time") or "")[:16]
-        keys = [
-            f"id:{game.get('sport')}:{game.get('game_id')}" if game.get("game_id") else "",
-            f"match:{game.get('sport')}:{game.get('game_date')}:{game.get('away')}:{game.get('home')}:{start_time}",
-        ]
-        if any(key and key in seen for key in keys):
+        duplicate_index = None
+        for index, existing in enumerate(deduped):
+            same_id = bool(game.get("game_id") and existing.get("game_id") and str(game.get("game_id")) == str(existing.get("game_id")))
+            same_matchup = (
+                str(game.get("sport") or "") == str(existing.get("sport") or "")
+                and str(game.get("game_date") or "") == str(existing.get("game_date") or "")
+                and normalize_team(game.get("away")) == normalize_team(existing.get("away"))
+                and normalize_team(game.get("home")) == normalize_team(existing.get("home"))
+            )
+            if same_id or (same_matchup and _start_times_are_same_game(existing.get("game_time"), game.get("game_time"))):
+                duplicate_index = index
+                break
+        if duplicate_index is None:
+            deduped.append(game)
             continue
-        for key in keys:
-            if key:
-                seen.add(key)
-        deduped.append(game)
+        primary = deduped[duplicate_index]
+        merged = dict(primary)
+        for key, value in game.items():
+            if value not in (None, "", [], {}):
+                merged[key] = value
+        if (primary.get("model") or {}).get("prediction_available") and not (game.get("model") or {}).get("prediction_available"):
+            merged["model"] = primary["model"]
+        deduped[duplicate_index] = merged
     return deduped
 
 
@@ -1095,10 +1122,15 @@ def main() -> int:
     parser.add_argument("--date", default=today_iso(), help="Center schedule date in YYYY-MM-DD format.")
     parser.add_argument("--days-back", type=int, default=CACHE_LOOKBACK_DAYS, help="Days before the center date to include from local cache.")
     parser.add_argument("--days-forward", type=int, default=7, help="Days after the center date to include so upcoming slates remain visible before predictions are ready.")
+    parser.add_argument("--output-stem", default="live_scores", choices=("live_scores", "live_heartbeat"), help="Write the full cache or an isolated fast heartbeat export.")
     args = parser.parse_args()
     payload = build_payload(args.date, max(args.days_back, 0), max(args.days_forward, 0))
-    write_json_and_js(payload)
-    write_widget_payload(payload)
+    if args.output_stem == "live_heartbeat":
+        write_json_and_js(payload, LIVE_DIR / "live_heartbeat.json", LIVE_DIR / "live_heartbeat.js", "__LIVE_HEARTBEAT__")
+        write_widget_payload(payload, LIVE_DIR / "live_widget_heartbeat.json", LIVE_DIR / "live_widget_heartbeat.js", "__LIVE_HEARTBEAT__")
+    else:
+        write_json_and_js(payload)
+        write_widget_payload(payload)
     print(json.dumps(payload["metadata"], indent=2))
     return 0
 

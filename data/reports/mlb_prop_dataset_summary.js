@@ -1,7 +1,7 @@
 window.__MLB_PROP_DATASET_SUMMARY__ = {
   "metadata": {
     "sport": "MLB",
-    "generated_at": "2026-07-15T13:54:21Z",
+    "generated_at": "2026-07-15T16:23:53Z",
     "target_markets": [
       "pitcher_strikeouts",
       "batter_hits",
@@ -15,7 +15,7 @@ window.__MLB_PROP_DATASET_SUMMARY__ = {
     "leakage_policy": "rolling values exclude the game being predicted",
     "training_status": "manual_training_required"
   },
-  "row_count": 1166,
+  "row_count": 13920,
   "feature_count": 9,
   "source_files": [
     "data\\raw\\mlb\\player_game_pybaseball.parquet"

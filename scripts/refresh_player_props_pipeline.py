@@ -34,6 +34,10 @@ def main() -> int:
     if not args.skip_mlb_download:
         run([python, "scripts/refresh_mlb_player_games.py", "--start-date", args.mlb_start_date, "--end-date", args.mlb_end_date])
     run([python, "-m", "src.mlb.props_dataset", "--mode", "all"])
+    # Keep a separate latest-player feature export for current market joins.
+    # The historical training file is intentionally not used as a substitute
+    # when a current player-game source is available.
+    run([python, "-m", "src.mlb.props_dataset", "--mode", "current"])
     if not args.skip_mlb_training:
         run([python, "-m", "src.mlb.train_prop_models"])
     run([python, "-m", "src.wnba.export_prop_predictions"])

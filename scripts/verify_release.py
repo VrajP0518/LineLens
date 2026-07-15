@@ -10,6 +10,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 NPM = "npm.cmd" if os.name == "nt" else "npm"
 
+import sys
+
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.shared.version import APP_VERSION
+
 
 def run(label: str, command: list[str]) -> bool:
     print(f"\n[{label}] {' '.join(command)}")
@@ -26,7 +33,7 @@ def required_bundle_files() -> bool:
         "index.html", "app.js", "styles.css", "widget.html", "widget.js", "widget.css",
         "assets/sportsdesk-hero.png", "data/app_metadata.json", "data/team_metadata.json",
         "data/predictions/mlb_predictions.json", "data/predictions/mlb_backtest_predictions.json",
-        "data/predictions/nfl_predictions.json", "data/live/live_scores.json",
+        "data/predictions/nfl_predictions.json", "data/live/live_scores.json", "data/live/live_heartbeat.json",
         "data/models/model_registry.json", "data/reports/mlb_model_comparison.json",
         "data/reports/mlb_moltres_model_card.json", "data/reports/model_report.json",
         "data/tracking/model_record.json", "data/tracking/model_predictions_log.json",
@@ -37,6 +44,7 @@ def required_bundle_files() -> bool:
         "data/reports/wnba_prop_model_cards.json", "data/reports/wnba_prop_model_health.json",
         "data/reports/mlb_prop_model_registry.json", "data/reports/mlb_prop_model_cards.json",
         "data/reports/mlb_prop_model_health.json", "data/reports/mlb_prop_dataset_summary.json",
+        f"RELEASE_NOTES_{APP_VERSION}.md",
     ]
     missing = [path for path in required if not (ROOT / path).exists()]
     if missing:
@@ -50,9 +58,11 @@ def required_bundle_files() -> bool:
 def git_safety() -> bool:
     tracked = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=True).stdout.decode().split("\0")
     staged = subprocess.run(["git", "diff", "--cached", "--name-only", "-z"], cwd=ROOT, capture_output=True, check=True).stdout.decode().split("\0")
-    paths = sorted({path.replace("\\", "/") for path in tracked + staged if path})
+    untracked = subprocess.run(["git", "ls-files", "--others", "--exclude-standard", "-z"], cwd=ROOT, capture_output=True, check=True).stdout.decode().split("\0")
+    paths = sorted({path.replace("\\", "/") for path in tracked + staged + untracked if path})
     forbidden = (".env", ".venv/", "node_modules/", "dist-web/", "data/raw/", "data/processed/", ".pytest_cache/", "__pycache__/")
-    bad = [path for path in paths if path == ".env" or path.endswith(".env") or any(path.startswith(prefix) for prefix in forbidden[1:])]
+    approved_env_templates = {".env.example", ".env.template"}
+    bad = [path for path in paths if (path == ".env" or path.endswith(".env") or (path.startswith(".env.") and path not in approved_env_templates)) or any(path.startswith(prefix) for prefix in forbidden[1:])]
     temp_markers = (".tmp", "training_output", "checkpoint", ".log")
     bad.extend(path for path in paths if any(marker in path.lower() for marker in temp_markers))
     approved_locks = {"package-lock.json", "src-tauri/Cargo.lock"}
@@ -85,7 +95,7 @@ def main() -> int:
         git_safety(),
     ]
     if all(steps):
-        print("\nRELEASE VERIFY PASS: LineLens Sports v3.0.0 is release-check clean.")
+        print(f"\nRELEASE VERIFY PASS: LineLens Sports {APP_VERSION} is release-check clean.")
         return 0
     print("\nRELEASE VERIFY FAIL: fix the failed release checks before tagging.")
     return 1

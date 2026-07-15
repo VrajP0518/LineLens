@@ -1,12 +1,14 @@
 window.__ODDS_HEALTH__ = {
   "metadata": {
     "app": "LineLens Sports",
-    "version": "v3.0.0",
-    "generated_at": "2026-07-15T13:23:37Z",
+    "version": "v4.0.0",
+    "generated_at": "2026-07-15T17:30:30Z",
     "provider": "the_odds_api",
     "region": "us",
     "status": "success",
     "key_present": true,
+    "sharp_key_present": true,
+    "propline_key_present": true,
     "markets": [
       "batter_hits",
       "batter_total_bases",
@@ -33,11 +35,15 @@ window.__ODDS_HEALTH__ = {
       "maximum_markets_per_event": 3
     },
     "quota": {
-      "x-requests-remaining": "380",
-      "x-requests-last": "0",
-      "x-requests-used": "120"
+      "x-requests-remaining": "287",
+      "x-requests-last": "3",
+      "x-requests-used": "213"
     },
     "normal_event_status": {
+      "WNBA": "success",
+      "MLB": "success"
+    },
+    "event_discovery_status": {
       "WNBA": "success",
       "MLB": "success"
     },
@@ -52,9 +58,9 @@ window.__ODDS_HEALTH__ = {
           "player_assists"
         ],
         "quota": {
-          "x-requests-remaining": "392",
+          "x-requests-remaining": "302",
           "x-requests-last": "3",
-          "x-requests-used": "108"
+          "x-requests-used": "198"
         }
       },
       {
@@ -67,9 +73,9 @@ window.__ODDS_HEALTH__ = {
           "player_assists"
         ],
         "quota": {
-          "x-requests-remaining": "389",
+          "x-requests-remaining": "299",
           "x-requests-last": "3",
-          "x-requests-used": "111"
+          "x-requests-used": "201"
         }
       },
       {
@@ -82,9 +88,9 @@ window.__ODDS_HEALTH__ = {
           "player_assists"
         ],
         "quota": {
-          "x-requests-remaining": "386",
+          "x-requests-remaining": "296",
           "x-requests-last": "3",
-          "x-requests-used": "114"
+          "x-requests-used": "204"
         }
       },
       {
@@ -97,9 +103,9 @@ window.__ODDS_HEALTH__ = {
           "player_assists"
         ],
         "quota": {
-          "x-requests-remaining": "383",
+          "x-requests-remaining": "293",
           "x-requests-last": "3",
-          "x-requests-used": "117"
+          "x-requests-used": "207"
         }
       },
       {
@@ -112,26 +118,378 @@ window.__ODDS_HEALTH__ = {
           "player_assists"
         ],
         "quota": {
-          "x-requests-remaining": "380",
+          "x-requests-remaining": "290",
           "x-requests-last": "3",
-          "x-requests-used": "120"
+          "x-requests-used": "210"
         }
+      },
+      {
+        "sport": "MLB",
+        "event_id": "7ad2e88701ead09625333188a5b653b2",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ],
+        "quota": {
+          "x-requests-remaining": "287",
+          "x-requests-last": "0",
+          "x-requests-used": "213"
+        }
+      },
+      {
+        "sport": "MLB",
+        "provider": "SharpAPI",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ],
+        "quota": {
+          "x-data-delay": "60",
+          "x-ratelimit-limit": "12",
+          "x-ratelimit-remaining": "11",
+          "x-ratelimit-reset": "1784136660",
+          "x-request-id": "1784136632030845-98252"
+        },
+        "rows_received": 0
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "72867",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "18074",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74016",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74017",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74026",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74027",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74028",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74035",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74053",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74105",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74132",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74213",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74214",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74217",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74218",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74219",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "74250",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "75791",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "75822",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "75859",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "75860",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "75861",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "75868",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "76176",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "77564",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "77719",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "77734",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "77798",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
+      },
+      {
+        "sport": "MLB",
+        "provider": "PropLine",
+        "event_id": "77824",
+        "status": "success",
+        "markets": [
+          "pitcher_strikeouts",
+          "batter_hits",
+          "batter_total_bases"
+        ]
       }
     ],
-    "market_count": 319
+    "market_count": 1562
   },
   "sports": {
     "WNBA": {
       "events_received": 5,
       "events_matched": 5,
       "events_unmatched": 0,
-      "markets_normalized": 319
+      "markets_normalized": 224
     },
     "MLB": {
-      "events_received": 0,
-      "events_matched": 0,
+      "events_received": 1,
+      "events_matched": 1,
       "events_unmatched": 0,
-      "markets_normalized": 0
+      "markets_normalized": 1338
     }
   }
 };

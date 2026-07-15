@@ -15,6 +15,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import urllib.parse
+import urllib.request
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -25,6 +27,7 @@ CHUNK_DIR = RAW_DIR / "statcast_chunks"
 COMBINED_PARQUET = RAW_DIR / "player_game_pybaseball.parquet"
 SUMMARY_JSON = ROOT / "data" / "reports" / "mlb_player_games_refresh.json"
 SUMMARY_JS = ROOT / "data" / "reports" / "mlb_player_games_refresh.js"
+NAME_CACHE = RAW_DIR / "player_name_cache.json"
 SOURCE_URL = "https://pypi.org/project/pybaseball/2.0.0/"
 
 HIT_EVENTS = {"single": 1, "double": 2, "triple": 3, "home_run": 4}
@@ -55,6 +58,22 @@ def set_pybaseball_cache() -> None:
     os.environ.setdefault("PYBASEBALL_CACHE", str(cache_dir))
 
 
+def fetch_pybaseball_compat(start: date, end: date) -> Any:
+    """Use pybaseball's raw request when its legacy post-processing breaks.
+
+    pybaseball 2.0.0 still expects columns that Baseball Savant no longer
+    returns. The raw response contains the terminal-event fields needed by
+    LineLens, so this fallback keeps the dependency version unchanged and
+    normalizes only those fields in ``aggregate``.
+    """
+
+    import importlib
+
+    module = importlib.import_module("pybaseball.statcast")
+    frame = module.small_request(str(start), str(end))
+    return frame if frame is not None else __import__("pandas").DataFrame()
+
+
 def fetch_chunk(start: date, end: date, path: Path, force: bool) -> tuple[str, int]:
     if path.exists() and not force:
         try:
@@ -66,9 +85,14 @@ def fetch_chunk(start: date, end: date, path: Path, force: bool) -> tuple[str, i
     from pybaseball import statcast
 
     try:
-        frame = statcast(str(start), str(end), verbose=False, parallel=False)
-    except TypeError:  # pybaseball 2.0.0 does not expose every newer keyword.
-        frame = statcast(str(start), str(end), verbose=False)
+        try:
+            frame = statcast(str(start), str(end), verbose=False, parallel=False)
+        except TypeError:  # pybaseball 2.0.0 does not expose every newer keyword.
+            frame = statcast(str(start), str(end), verbose=False)
+    except (KeyError, AttributeError, ValueError) as error:
+        if "pitcher.1" not in str(error) and "fielder_2.1" not in str(error):
+            raise
+        frame = fetch_pybaseball_compat(start, end)
     if frame is None:
         frame = __import__("pandas").DataFrame()
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -90,21 +114,56 @@ def text(value: Any) -> str:
 def name_map(ids: list[str]) -> dict[str, str]:
     if not ids:
         return {}
+    normalized_ids = sorted({str(value).strip() for value in ids if str(value).strip()})
+    cached: dict[str, str] = {}
+    try:
+        payload = json.loads(NAME_CACHE.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            cached = {str(key): str(value) for key, value in payload.items() if str(value).strip()}
+    except (OSError, json.JSONDecodeError):
+        cached = {}
+    output = {player_id: cached[player_id] for player_id in normalized_ids if player_id in cached}
     try:
         set_pybaseball_cache()
         from pybaseball import playerid_reverse_lookup
 
-        lookup = playerid_reverse_lookup(ids, key_type="mlbam")
-        output: dict[str, str] = {}
+        lookup = playerid_reverse_lookup(normalized_ids, key_type="mlbam")
         for _, row in lookup.iterrows():
             player_id = text(row.get("key_mlbam"))
             first = text(row.get("name_first")).strip()
             last = text(row.get("name_last")).strip()
             if player_id and (first or last):
                 output[player_id] = " ".join(part for part in (first, last) if part).title()
-        return output
-    except Exception:  # noqa: BLE001 - unresolved IDs are excluded, never invented.
-        return {}
+    except Exception:  # noqa: BLE001 - pybaseball 2.0.0 can use an old register schema.
+        pass
+
+    # pybaseball 2.0.0's reverse lookup expects columns removed from the
+    # current Chadwick register. Use MLB's public Stats API as a compatibility
+    # fallback so player IDs are resolved without trusting Statcast's generic
+    # player_name column, which may describe the pitcher on a batter row.
+    missing = [player_id for player_id in normalized_ids if player_id not in output]
+    for offset in range(0, len(missing), 100):
+        batch = missing[offset:offset + 100]
+        query = urllib.parse.urlencode({"personIds": ",".join(batch)})
+        url = f"https://statsapi.mlb.com/api/v1/people?{query}"
+        try:
+            with urllib.request.urlopen(url, timeout=20) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except Exception:  # noqa: BLE001 - unresolved IDs remain excluded.
+            continue
+        for person in payload.get("people", []) if isinstance(payload, dict) else []:
+            player_id = str(person.get("id") or "")
+            full_name = str(person.get("fullName") or "").strip()
+            if player_id and full_name:
+                output[player_id] = full_name
+
+    if output:
+        try:
+            NAME_CACHE.parent.mkdir(parents=True, exist_ok=True)
+            NAME_CACHE.write_text(json.dumps({**cached, **output}, indent=2) + "\n", encoding="utf-8")
+        except OSError:
+            pass
+    return output
 
 
 def aggregate(frames: list[Any]) -> Any:
@@ -138,7 +197,12 @@ def aggregate(frames: list[Any]) -> Any:
 
     batter = terminal.dropna(subset=["batter"]).copy()
     batter["player_id"] = batter["batter"].astype(str)
-    batter["player_name"] = column(batter, "player_name").astype(str)
+    batter_ids = sorted(set(batter["player_id"].tolist()))
+    # Statcast's generic player_name column is not guaranteed to describe the
+    # batter row. Resolve batter IDs independently so a pitcher's name cannot
+    # leak into a batter prop projection.
+    batter["player_name"] = batter["player_id"].map(name_map(batter_ids))
+    batter = batter[batter["player_name"].notna() & batter["player_name"].ne("")]
     batter["hits_value"] = batter["event_name"].isin(HIT_EVENTS).astype(int)
     batter["total_bases_value"] = batter["event_name"].map(HIT_EVENTS).fillna(0).astype(int)
     batter_group = batter.groupby(["game_id", "game_date", "player_id", "player_name", "batter_team", "batter_opponent", "batter_home"], dropna=False)

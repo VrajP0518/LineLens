@@ -1,11 +1,11 @@
 {
   "metadata": {
     "sport": "WNBA",
-    "generated_at": "2026-07-15T13:58:46Z",
+    "generated_at": "2026-07-15T17:36:14Z",
     "status": "success",
     "real_data": true,
     "report_date_label": "July 15",
-    "report_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf",
+    "report_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf",
     "source_url": "https://www.wnba.com/wnba-injury-report",
     "note": "Only explicit official report statuses are exported. Players not listed remain unknown."
   },
@@ -17,12 +17,26 @@
       "matchup": "LAS@MIN",
       "team": "Los Angeles Sparks",
       "player_name": "Cameron Brink",
-      "availability_status": "questionable",
-      "reported_status": "Questionable",
-      "reason": "Injury/Illness - Left Ankle; L Ankle",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "availability_status": "confirmed_active",
+      "reported_status": "Available",
+      "reason": "-",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
+    },
+    {
+      "sport": "WNBA",
+      "game_date": "2026-07-15",
+      "game_time": "01:00",
+      "matchup": "LAS@MIN",
+      "team": "Los Angeles Sparks",
+      "player_name": "Alissa Pili",
+      "availability_status": "out",
+      "reported_status": "Out",
+      "reason": "Coach's Decision",
+      "reported_at": "2026-07-15T17:36:14Z",
+      "source": "WNBA official injury report",
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -34,9 +48,9 @@
       "availability_status": "out",
       "reported_status": "Out",
       "reason": "Injury/Illness - Left Lower Leg; L Lower Leg",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -48,9 +62,9 @@
       "availability_status": "out",
       "reported_status": "Out",
       "reason": "Injury/Illness - Right Knee; Right Knee",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -62,9 +76,9 @@
       "availability_status": "out",
       "reported_status": "Out",
       "reason": "Injury/Illness - Left Ankle; Left Ankle",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -73,12 +87,12 @@
       "matchup": "LAS@MIN",
       "team": "Minnesota Lynx",
       "player_name": "Dorka Juhasz",
-      "availability_status": "questionable",
-      "reported_status": "Questionable",
+      "availability_status": "out",
+      "reported_status": "Out",
       "reason": "Injury/Illness - Right Knee; Right Knee",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -90,9 +104,9 @@
       "availability_status": "questionable",
       "reported_status": "Questionable",
       "reason": "Injury/Illness - Back; Contusion",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -104,9 +118,9 @@
       "availability_status": "probable",
       "reported_status": "Probable",
       "reason": "Injury/Illness - Back; Back",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -118,9 +132,9 @@
       "availability_status": "out",
       "reported_status": "Out",
       "reason": "Not With Team",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -132,9 +146,9 @@
       "availability_status": "out",
       "reported_status": "Out",
       "reason": "Coach's Decision",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -143,12 +157,12 @@
       "matchup": "SEA@CHI",
       "team": "Chicago Sky",
       "player_name": "Kamilla Cardoso",
-      "availability_status": "questionable",
-      "reported_status": "Questionable",
+      "availability_status": "out",
+      "reported_status": "Out",
       "reason": "Injury/Illness - Right Knee; Right Knee",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -160,9 +174,9 @@
       "availability_status": "out",
       "reported_status": "Out",
       "reason": "Injury/Illness - Left Foot; Left Foot",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     },
     {
       "sport": "WNBA",
@@ -174,9 +188,23 @@
       "availability_status": "out",
       "reported_status": "Out",
       "reason": "Injury/Illness - Right Knee; Right Knee",
-      "reported_at": "2026-07-15T13:58:46Z",
+      "reported_at": "2026-07-15T17:36:14Z",
       "source": "WNBA official injury report",
-      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_09_45AM.pdf"
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
+    },
+    {
+      "sport": "WNBA",
+      "game_date": "2026-07-15",
+      "game_time": "12:00",
+      "matchup": "SEA@CHI",
+      "team": "Chicago Sky",
+      "player_name": "Maddy Westbeld",
+      "availability_status": "out",
+      "reported_status": "Out",
+      "reason": "Coach's Decision",
+      "reported_at": "2026-07-15T17:36:14Z",
+      "source": "WNBA official injury report",
+      "source_url": "https://ak-static.cms.nba.com/referee/wnba_injury/Injury-Report_2026-07-15_01_30PM.pdf"
     }
   ]
 }

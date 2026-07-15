@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.shared.odds_provider import fetch_odds, odds_config_status
+from src.shared.odds_provider import fetch_odds, fetch_sharpapi_odds, odds_config_status
 from src.shared.version import APP_VERSION
 
 
@@ -54,7 +54,7 @@ def write_json_js(payload: dict[str, Any], json_path: Path, js_path: Path, js_na
 
 def recent_snapshot(metadata: dict[str, Any], minutes: int) -> bool:
     """Keep normal odds refreshes inside the configured request budget."""
-    if not metadata.get("key_present"):
+    if not (metadata.get("key_present") or metadata.get("sharp_key_present")):
         return False
     try:
         generated = str(metadata.get("generated_at") or "").replace("Z", "+00:00")
@@ -203,14 +203,96 @@ def normalize_event(event: dict[str, Any], sport: str, aliases: dict[str, str], 
         "market_implied_away": american_implied(away_consensus),
         "books": books[:8],
         "spread_books": spread_books[:8],
-        "source": "The Odds API",
+        "source": event.get("_line_lens_source") or "The Odds API",
         "data_mode": "real_odds_snapshot",
         "freshness_status": "Current",
     }
 
 
+def normalize_sharpapi_events(rows: list[dict[str, Any]], sport: str) -> list[dict[str, Any]]:
+    """Convert SharpAPI's flat MLB rows into the event shape used by the exporter."""
+
+    market_map = {"moneyline": "h2h", "run_line": "spreads", "total_runs": "totals"}
+    events: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        market_key = market_map.get(str(row.get("market_type") or "").lower())
+        event_id = str(row.get("event_id") or "")
+        if not market_key or not event_id:
+            continue
+        event = events.setdefault(event_id, {
+            "id": event_id,
+            "commence_time": row.get("event_start_time"),
+            "home_team": row.get("home_team"),
+            "away_team": row.get("away_team"),
+            "bookmakers": [],
+            "_line_lens_source": "SharpAPI",
+        })
+        bookmaker_name = str(row.get("sportsbook") or "SharpAPI")
+        bookmaker = next((book for book in event["bookmakers"] if book.get("key") == bookmaker_name), None)
+        if bookmaker is None:
+            bookmaker = {"key": bookmaker_name, "title": bookmaker_name, "markets": []}
+            event["bookmakers"].append(bookmaker)
+        market = next((item for item in bookmaker["markets"] if item.get("key") == market_key), None)
+        if market is None:
+            market = {"key": market_key, "last_update": row.get("timestamp"), "outcomes": []}
+            bookmaker["markets"].append(market)
+        outcome = {
+            "name": row.get("selection"),
+            "price": row.get("odds_american"),
+        }
+        if row.get("line") is not None:
+            outcome["point"] = row.get("line")
+        market["outcomes"].append(outcome)
+    return list(events.values())
+
+
 def snapshot_key(row: dict[str, Any]) -> tuple[str, str | None, str | None, str | None]:
     return (str(row.get("sport") or ""), row.get("game_date"), row.get("home"), row.get("away"))
+
+
+def odds_row_for_game(game: dict[str, Any], snapshots: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Match a prediction to one odds row without crossing a real matchup.
+
+    Prediction exports use the sport's local calendar date while The Odds API
+    commonly serializes ``game_date`` from the UTC commence timestamp. Exact
+    date matches win. A one-day fallback is allowed only when the same
+    sport/home/away matchup has one unambiguous nearby date, which handles the
+    UTC boundary without risking consecutive-game misjoins.
+    """
+
+    sport = str(game.get("sport") or "")
+    home = game.get("home")
+    away = game.get("away")
+    game_date = game.get("game_date")
+    matchup = [
+        row for row in snapshots
+        if str(row.get("sport") or "") == sport
+        and row.get("home") == home
+        and row.get("away") == away
+    ]
+    if not matchup:
+        return None
+
+    exact = [row for row in matchup if row.get("game_date") == game_date]
+    if exact:
+        return exact[-1]
+
+    try:
+        target = date.fromisoformat(str(game_date))
+    except (TypeError, ValueError):
+        return None
+
+    nearby = []
+    for row in matchup:
+        try:
+            row_date = date.fromisoformat(str(row.get("game_date")))
+        except (TypeError, ValueError):
+            continue
+        if abs((row_date - target).days) <= 1:
+            nearby.append(row)
+    if not nearby or len({row.get("game_date") for row in nearby}) != 1:
+        return None
+    return nearby[-1]
 
 
 def apply_odds_to_predictions(snapshots: list[dict[str, Any]]) -> int:
@@ -223,11 +305,9 @@ def apply_odds_to_predictions(snapshots: list[dict[str, Any]]) -> int:
         payload = load_json(json_path, None)
         if not isinstance(payload, dict) or not isinstance(payload.get("games"), list):
             continue
-        by_game = {snapshot_key(row): row for row in snapshots if row.get("sport") == sport}
         changed = 0
         for game in payload.get("games", []):
-            key = (sport, game.get("game_date"), game.get("home"), game.get("away"))
-            odds = by_game.get(key)
+            odds = odds_row_for_game(game, snapshots)
             if not odds:
                 continue
             for field in ("moneyline_home_current", "moneyline_away_current", "spread_home_current", "spread_away_current", "spread_home_price_current", "spread_away_price_current", "total_current", "total_over_price_current", "total_under_price_current", "market_implied_home", "market_implied_away"):
@@ -262,6 +342,11 @@ def main() -> int:
         metadata = dict(cached.get("metadata", {}))
         metadata["source_status"] = "cache_interval"
         metadata["note"] = "Previous successful odds snapshot is inside the configured refresh interval; cached snapshots were preserved."
+        # A model refresh can run immediately before this command. Re-apply
+        # the still-valid cached lines so newly exported predictions do not
+        # incorrectly show odds as unavailable just because the provider call
+        # was skipped by the refresh interval.
+        metadata["predictions_joined"] = apply_odds_to_predictions(cached.get("snapshots", []))
         cached["metadata"] = metadata
         write_json_js(cached, ODDS_JSON, ODDS_JS, "__ODDS_SNAPSHOTS__")
         print(json.dumps(metadata, indent=2))
@@ -296,6 +381,19 @@ def main() -> int:
         }
         if result.status == "success":
             new_snapshots.extend(normalize_event(event, sport, aliases, generated_at) for event in result.data[: int(config.get("max_events") or 32)])
+        # SharpAPI is a real MLB fallback for both main markets and player
+        # props. Keep The Odds API primary when it returns event rows.
+        if sport == "MLB" and not result.data and config.get("sharp_key_present"):
+            sharp_result = fetch_sharpapi_odds("MLB", "main")
+            sharp_events = normalize_sharpapi_events(sharp_result.data, "MLB") if sharp_result.status == "success" and isinstance(sharp_result.data, list) else []
+            sport_status[sport]["sharp_fallback"] = {
+                "status": sharp_result.status,
+                "provider": "SharpAPI",
+                "events": len(sharp_events),
+                "rows": len(sharp_result.data) if isinstance(sharp_result.data, list) else 0,
+                "requests_remaining": (sharp_result.headers or {}).get("x-ratelimit-remaining"),
+            }
+            new_snapshots.extend(normalize_event(event, sport, aliases, generated_at) for event in sharp_events[: int(config.get("max_events") or 32)])
 
     merged = previous + new_snapshots
     seen: set[str] = set()
@@ -312,7 +410,8 @@ def main() -> int:
     if interrupted:
         source_status = "interrupted"
     else:
-        source_status = "success" if new_snapshots else ("missing_key" if not config.get("key_present") else "failed_or_empty")
+        source_status = "success" if new_snapshots else ("missing_key" if not (config.get("key_present") or config.get("sharp_key_present")) else "failed_or_empty")
+    sources = sorted({str(row.get("source")) for row in new_snapshots if row.get("source")})
     payload = {
         "metadata": {
             "app": "LineLens Sports",
@@ -321,7 +420,7 @@ def main() -> int:
             "real_data": bool(snapshots),
             "new_real_data": bool(new_snapshots),
             "provider": config.get("provider"),
-            "source": "The Odds API",
+            "source": " + ".join(sources) if sources else "The Odds API",
             "source_status": source_status,
             "snapshot_count": len(snapshots),
             "new_snapshot_count": len(new_snapshots),
@@ -340,6 +439,7 @@ def main() -> int:
                 "requests_used": next((row.get("requests_used") for row in sport_status.values() if row.get("requests_used") is not None), None),
                 "cost_last_request": next((row.get("cost_last_request") for row in sport_status.values() if row.get("cost_last_request") is not None), None),
             },
+            "sharp_key_present": bool(config.get("sharp_key_present")),
             "note": "Odds are optional. Missing odds never fabricate lines, movement, or CLV.",
         },
         "sports": sport_status,

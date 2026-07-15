@@ -1,10 +1,12 @@
 window.__PROPS_MATCHING_DIAGNOSTICS__ = {
   "metadata": {
     "app": "LineLens Sports",
-    "version": "v3.0.0",
-    "generated_at": "2026-07-15T13:23:37Z",
+    "version": "v4.0.0",
+    "generated_at": "2026-07-15T17:30:30Z",
     "provider": "the_odds_api",
     "key_present": true,
+    "sharp_key_present": true,
+    "propline_key_present": true,
     "minimum_refresh_minutes": 10,
     "maximum_events": 32,
     "maximum_markets_per_event": 3,
@@ -19,9 +21,7 @@ window.__PROPS_MATCHING_DIAGNOSTICS__ = {
         "batter_hits",
         "batter_total_bases"
       ]
-    },
-    "prediction_exported_at": "2026-07-15T13:49:04Z",
-    "mlb_prediction_exported_at": "2026-07-15T13:55:00Z"
+    }
   },
   "sports": {
     "WNBA": {
@@ -29,36 +29,39 @@ window.__PROPS_MATCHING_DIAGNOSTICS__ = {
       "events_received": 5,
       "events_matched": 5,
       "events_unmatched": 0,
-      "markets_received": 520,
-      "markets_normalized": 319,
+      "event_discovery_status": "success",
+      "markets_received": 410,
+      "markets_normalized": 224,
       "markets_rejected": 0,
-      "players_received": 41,
-      "players_matched": 164,
-      "players_unmatched": 155,
-      "unmatched_events": [],
-      "market_rows_available": 319,
-      "model_projections_generated": 164,
-      "qualified_props_published": 0,
-      "rejection_reason_totals": {
-        "availability_unknown": 164
-      }
+      "players_received": 40,
+      "players_matched": 0,
+      "players_unmatched": 0,
+      "unmatched_events": []
     },
     "MLB": {
       "status": "success",
-      "events_received": 0,
-      "events_matched": 0,
+      "events_received": 1,
+      "events_matched": 1,
       "events_unmatched": 0,
-      "markets_received": 0,
-      "markets_normalized": 0,
-      "markets_rejected": 0,
-      "players_received": 0,
+      "event_discovery_status": "success",
+      "markets_received": 2733,
+      "markets_normalized": 1338,
+      "markets_rejected": 91,
+      "players_received": 287,
       "players_matched": 0,
       "players_unmatched": 0,
       "unmatched_events": [],
-      "market_rows_available": 0,
-      "model_projections_generated": 0,
-      "qualified_props_published": 0,
-      "rejection_reason_totals": {}
+      "sharp_fallback_provider": "SharpAPI",
+      "sharp_fallback_status": "success",
+      "sharp_rows_received": 0,
+      "sharp_events_matched": 0,
+      "sharp_events_unmatched": 0,
+      "sharp_markets_received": 0,
+      "sharp_markets_rejected": 0,
+      "fallback_provider": "PropLine",
+      "fallback_event_discovery_status": "success",
+      "fallback_events_received": 37,
+      "fallback_events_matched": 29
     }
   }
 };

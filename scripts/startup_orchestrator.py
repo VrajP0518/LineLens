@@ -194,6 +194,11 @@ def orchestrate() -> dict[str, Any]:
         write_json_and_js(status, STATUS_JSON, STATUS_JS, "__STARTUP_STATUS__")
         return status
 
+    # Refresh the scoreboard before any slower training or model work. This
+    # keeps the ticker honest even when a model refresh later fails or takes
+    # several minutes.
+    steps.append(run_step("Refresh live widget scores (early)", [python_path, "scripts/live_scores.py", "--days-back", "1", "--days-forward", "1", "--output-stem", "live_heartbeat"], timeout=300))
+
     if not MLB_MODEL.exists() or not MLB_FEATURES.exists() or model_needs_daily_retrain():
         steps.append(run_step("Daily MLB retrain and current predictions", [python_path, "scripts/refresh_data.py", "--sport", "mlb", "--mode", "all"], timeout=1800))
     else:
@@ -207,7 +212,7 @@ def orchestrate() -> dict[str, Any]:
 
     steps.append(run_step("Refresh NFL real/cached predictions", [python_path, "scripts/refresh_data.py", "--sport", "nfl", "--mode", "real"], timeout=1800))
     steps.append(run_step("Refresh WNBA model and current board", [python_path, "scripts/refresh_data.py", "--sport", "wnba", "--mode", "all"], timeout=1800))
-    steps.append(run_step("Refresh live widget scores", [python_path, "scripts/live_scores.py"], timeout=300))
+    steps.append(run_step("Refresh live widget scores (final)", [python_path, "scripts/live_scores.py", "--days-back", "1", "--days-forward", "1", "--output-stem", "live_heartbeat"], timeout=300))
     steps.append(run_step("Refresh optional odds snapshots", [python_path, "scripts/odds_snapshots.py"], timeout=300))
     steps.append(run_step("Score logged model predictions", [python_path, "scripts/score_model_predictions.py"], timeout=300))
     steps.append(run_step("Check data status", [python_path, "scripts/check_data_status.py"], timeout=300))

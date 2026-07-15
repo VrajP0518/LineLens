@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.shared.timezones import safe_zone
+from src.shared.version import APP_VERSION
 
 
 class IntegrityError(RuntimeError):
@@ -144,6 +145,7 @@ def check_exports() -> None:
     check("production model version", prediction_meta.get("version") == selected_model.get("version"), f"prediction version={prediction_meta.get('version')}, registry version={selected_model.get('version')}")
     check("production model UI identity", registry_name == "GradientBoostingClassifier" and "GradientBoostingClassifier" in app_js and 'legend: "Lugia"' in app_js, f"technical model={registry_name}, Lugia mapping present")
     check("app metadata", bool(app.get("version")), f"version={app.get('version')}")
+    check("app release version", app.get("version") == APP_VERSION, f"metadata={app.get('version')}, source={APP_VERSION}")
     check("real bundled exports", all(payload.get("metadata", {}).get("real_data", True) is not False for payload in (predictions, backtest, nfl, comparison, registry, card, record)), "no export marked synthetic")
 
     moltres_selected = registry_name == "Moltres" or comparison_name == "Moltres" or card.get("selection", {}).get("selected_for_production") is True

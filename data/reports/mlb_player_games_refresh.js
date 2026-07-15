@@ -1,7 +1,7 @@
 window.__MLB_PLAYER_GAMES_REFRESH__ = {
   "metadata": {
     "sport": "MLB",
-    "generated_at": "2026-07-15T13:54:12Z",
+    "generated_at": "2026-07-15T16:23:41Z",
     "status": "success",
     "real_data": true,
     "source": "pybaseball Statcast",
@@ -14,21 +14,28 @@ window.__MLB_PLAYER_GAMES_REFRESH__ = {
     ],
     "note": "Pitch-level Statcast rows are aggregated only after real terminal events. Unresolved player IDs are excluded rather than named by inference."
   },
-  "row_count": 583,
+  "row_count": 4640,
   "source_chunks": [
     {
-      "path": "data\\raw\\mlb\\statcast_chunks\\statcast_20250708_20250708.parquet",
-      "start_date": "2025-07-08",
-      "end_date": "2025-07-08",
+      "path": "data\\raw\\mlb\\statcast_chunks\\statcast_20260701_20260707.parquet",
+      "start_date": "2026-07-01",
+      "end_date": "2026-07-07",
       "status": "cached",
-      "rows": 4186
+      "rows": 25000
     },
     {
-      "path": "data\\raw\\mlb\\statcast_chunks\\statcast_20250709_20250709.parquet",
-      "start_date": "2025-07-09",
-      "end_date": "2025-07-09",
+      "path": "data\\raw\\mlb\\statcast_chunks\\statcast_20260708_20260714.parquet",
+      "start_date": "2026-07-08",
+      "end_date": "2026-07-14",
       "status": "cached",
-      "rows": 3906
+      "rows": 21151
+    },
+    {
+      "path": "data\\raw\\mlb\\statcast_chunks\\statcast_20260715_20260715.parquet",
+      "start_date": "2026-07-15",
+      "end_date": "2026-07-15",
+      "status": "cached",
+      "rows": 0
     }
   ],
   "output": "data\\raw\\mlb\\player_game_pybaseball.parquet"

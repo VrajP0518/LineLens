@@ -11,6 +11,7 @@ from typing import Any
 
 import joblib
 import pandas as pd
+from src.shared.version import APP_VERSION
 
 ROOT = Path(__file__).resolve().parents[2]
 CURRENT_FEATURES = ROOT / "data" / "processed" / "wnba" / "wnba_player_props_current.csv"
@@ -85,7 +86,7 @@ def availability_for(market: dict[str, Any], rows: list[dict[str, Any]]) -> dict
 
 
 def empty_payload(status: str, note: str) -> dict[str, Any]:
-    return {"metadata": {"sport": "WNBA", "version": "v3.0.0", "generated_at": now(), "real_data": False, "status": status, "markets": list(TARGETS), "note": note}, "predictions": []}
+    return {"metadata": {"sport": "WNBA", "version": APP_VERSION, "generated_at": now(), "real_data": False, "status": status, "markets": list(TARGETS), "note": note}, "predictions": []}
 
 
 def qualifies(row: dict[str, Any]) -> bool:
@@ -161,7 +162,7 @@ def main() -> int:
     for row in candidates:
         reason = "availability_unknown" if str(row.get("availability_status") or "").lower() not in ALLOWED_AVAILABILITY else "quality_threshold"
         excluded_reasons[reason] = excluded_reasons.get(reason, 0) + 1
-    payload = {"metadata": {"sport": "WNBA", "version": "v3.0.0", "generated_at": now(), "real_data": bool(predictions or candidates), "status": "success" if predictions else ("success_with_candidates" if candidates else "no_qualified_props"), "markets": list(TARGETS), "candidate_count": len(candidates), "excluded_candidate_counts": excluded_reasons, "qualification": {"minimum_probability": 0.55, "minimum_edge": 0.03, "interval_policy": "80 percent normal approximation from held-out error until validated quantile model exists", "prop_score_formula": "0.55 probability + 1.20 capped absolute edge - uncertainty penalty; health, data quality, freshness, consensus, availability confidence, and lineup confidence are hard gates"}, "note": "Real projections are visible as candidates. Publication still requires verified player availability and all quality gates."}, "predictions": predictions, "candidate_predictions": candidates}
+    payload = {"metadata": {"sport": "WNBA", "version": APP_VERSION, "generated_at": now(), "real_data": bool(predictions or candidates), "status": "success" if predictions else ("success_with_candidates" if candidates else "no_qualified_props"), "markets": list(TARGETS), "candidate_count": len(candidates), "excluded_candidate_counts": excluded_reasons, "qualification": {"minimum_probability": 0.55, "minimum_edge": 0.03, "interval_policy": "80 percent normal approximation from held-out error until validated quantile model exists", "prop_score_formula": "0.55 probability + 1.20 capped absolute edge - uncertainty penalty; health, data quality, freshness, consensus, availability confidence, and lineup confidence are hard gates"}, "note": "Real projections are visible as candidates. Publication still requires verified player availability and all quality gates."}, "predictions": predictions, "candidate_predictions": candidates}
     diagnostics = load(DIAGNOSTICS_JSON, {"metadata": {"generated_at": now()}, "sports": {}})
     diagnostics.setdefault("metadata", {})["prediction_exported_at"] = now()
     diagnostics.setdefault("sports", {}).setdefault("WNBA", {})

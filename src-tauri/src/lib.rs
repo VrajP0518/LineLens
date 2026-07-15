@@ -129,6 +129,10 @@ fn command_spec(command_name: &str) -> Result<CommandSpec, String> {
             script: "scripts/live_scores.py",
             args: Vec::new(),
         }),
+        "live_scores_fast" => Ok(CommandSpec {
+            script: "scripts/live_scores.py",
+            args: vec!["--days-back", "1", "--days-forward", "1", "--output-stem", "live_heartbeat"],
+        }),
         "odds_snapshots" => Ok(CommandSpec {
             script: "scripts/odds_snapshots.py",
             args: Vec::new(),

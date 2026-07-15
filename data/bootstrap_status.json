@@ -1,8 +1,8 @@
 {
   "metadata": {
     "app": "LineLens Sports",
-    "version": "v3.0.0",
-    "generated_at": "2026-07-13T20:07:15Z"
+    "version": "v4.0.0",
+    "generated_at": "2026-07-15T17:36:00Z"
   },
   "status": "env_ready",
   "python_found": true,
@@ -10,7 +10,7 @@
   "python_version": "3.11.9",
   "venv_detected": true,
   "venv_created": false,
-  "requirements_hash": "f98b6c645ccc0ca1a3e1ded7242e052a5b5455e420fb32e90f9290b755f64699",
+  "requirements_hash": "7371af66f430f5b9fb4a731f59fa8b8d39c2389a9086ecf4fe1dcb986d14ed47",
   "requirements_installed": false,
   "requirements_skipped": true,
   "imports_verified": true,

@@ -1,4 +1,4 @@
-const APP_VERSION = "v3.0.0";
+const APP_VERSION = "v4.0.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
@@ -22,7 +22,7 @@ const DATA_SOURCES = {
     bootstrap: ["data/bootstrap_status.json"],
     startup: ["data/startup_status.json"],
     refresh: ["data/refresh_status.json"],
-    live: ["data/live/live_scores.json"],
+    live: ["data/live/live_heartbeat.json", "data/live/live_scores.json"],
     odds: ["data/odds/odds_snapshots.json"],
     playerProps: ["data/odds/player_props.json"],
     oddsHealth: ["data/odds/odds_health.json"],
@@ -63,7 +63,7 @@ const state = {
     bootstrapStatus: window.__BOOTSTRAP_STATUS__ || null,
     startupStatus: window.__STARTUP_STATUS__ || null,
     refreshStatus: window.__REFRESH_STATUS__ || null,
-    live: { payload: window.__LIVE_SCORES__ || null, games: [], error: null },
+    live: { payload: window.__LIVE_SCORES__ || null, games: [], error: null, stale: false },
     odds: window.__ODDS_SNAPSHOTS__ || null,
     playerProps: window.__PLAYER_PROPS__ || null,
     oddsHealth: window.__ODDS_HEALTH__ || null,
@@ -110,6 +110,7 @@ const state = {
         picksWatchlist: false,
         picksDisagree: false,
         propsDate: null,
+        propsDateManual: false,
         propsSport: "all",
         propsMarket: "all",
         propsSide: "all",
@@ -244,6 +245,11 @@ const REFRESH_COMMANDS = {
         label: "Live Scores",
         manual: "npm run refresh:live",
         description: "Refresh compact live score data for the LineLens Live desktop widget.",
+    },
+    live_scores_fast: {
+        label: "Live Score Heartbeat",
+        manual: "npm run refresh:live:fast",
+        description: "Refresh yesterday, today, and tomorrow scoreboards quickly for the ticker and live boards.",
     },
     odds_snapshots: {
         label: "Odds Snapshots",
@@ -448,7 +454,41 @@ async function fetchJson(url) {
     return response.json();
 }
 
+function browserRefreshAvailable() {
+    return Boolean(window.location && ["http:", "https:"].includes(window.location.protocol));
+}
+
+function livePayloadAgeSeconds(payload) {
+    const generatedAt = normalizeMeta(payload).generated_at;
+    if (!generatedAt) return Number.POSITIVE_INFINITY;
+    const timestampValue = Date.parse(String(generatedAt));
+    if (!Number.isFinite(timestampValue)) return Number.POSITIVE_INFINITY;
+    return Math.max(0, (Date.now() - timestampValue) / 1000);
+}
+
+function livePayloadIsFresh(payload, maxAgeSeconds = 180) {
+    return livePayloadAgeSeconds(payload) <= maxAgeSeconds;
+}
+
 async function loadOptional(kind, globals = [], options = {}) {
+    if (kind === "live" && (options.force || window.location.protocol !== "file:")) {
+        const candidates = [];
+        for (const url of DATA_SOURCES.live || []) {
+            try {
+                const payload = await fetchJson(url);
+                if (payload) candidates.push(payload);
+            } catch (_error) {
+                // Choose the newest available live export below.
+            }
+        }
+        if (candidates.length) {
+            return candidates.sort((a, b) => {
+                const left = Date.parse(String(normalizeMeta(a).generated_at || "")) || 0;
+                const right = Date.parse(String(normalizeMeta(b).generated_at || "")) || 0;
+                return right - left;
+            })[0];
+        }
+    }
     if (!options.force && window.location.protocol === "file:") {
         for (const name of globals) {
             if (window[name]) return window[name];
@@ -838,7 +878,9 @@ function currentGames() {
 }
 
 function liveGames() {
-    return state.live.games.map(game => ({ ...game, sport: game.sport || "MLB" }));
+    return state.live.games
+        .filter(game => !state.live.stale || !isLiveSportGame(game))
+        .map(game => ({ ...game, sport: game.sport || "MLB" }));
 }
 
 function gameStatusText(game) {
@@ -1056,30 +1098,36 @@ function renderLiveNotifications() {
 
 async function refreshLiveHeartbeat(options = {}) {
     if (!state.selected.liveHeartbeatEnabled || state.liveRefresh.refreshing) return;
-    if (state.refreshRuntime.active && !options.force) return;
+    if (!isTauriRefreshAvailable() && !browserRefreshAvailable()) {
+        state.liveRefresh.lastStatus = "cached";
+        state.liveRefresh.lastMessage = "Static mode cannot refresh live data; start npm run app.";
+        renderLiveNotifications();
+        return;
+    }
+    if (state.refreshRuntime.active && state.refreshRuntime.command !== "startup_auto" && !options.force) return;
     const before = liveGames();
     state.liveRefresh.refreshing = true;
     state.liveRefresh.lastStatus = "refreshing";
     state.liveRefresh.lastMessage = "Refreshing live scores...";
 
     try {
-        if (isTauriRefreshAvailable()) {
-            const result = await tauriInvoke("run_refresh_command", { commandName: "live_scores" });
-            if (!result?.success) {
-                throw new Error(result?.stderr || result?.stdout || "Live score refresh failed.");
-            }
-            state.refreshRuntime.available = true;
-            state.refreshRuntime.message = "Live heartbeat refreshed scores in the background.";
+        const result = await runRefreshCommand("live_scores_fast", {
+            background: true,
+            loadAfterRefresh: false,
+            reloadAfterRefresh: false,
+        });
+        if (result?.success) {
             state.liveRefresh.lastStatus = "fresh";
-        } else {
+            state.refreshRuntime.message = "Live heartbeat refreshed scores in the background.";
+        } else if (!result) {
             state.liveRefresh.lastStatus = "cached";
         }
         await loadAllAfterRefresh();
         const after = liveGames();
         detectLiveAlerts(before, after);
-        state.liveRefresh.lastMessage = isTauriRefreshAvailable()
+        state.liveRefresh.lastMessage = result?.success
             ? `Live heartbeat updated ${after.length} games.`
-            : `Browser mode reloaded cached live export with ${after.length} games.`;
+            : `Live refresh unavailable; retained ${after.length} non-live cached rows.`;
     } catch (error) {
         state.liveRefresh.lastStatus = "cached";
         state.liveRefresh.lastMessage = `Showing cached live data - ${String(error?.message || error || "refresh failed")}`;
@@ -1104,10 +1152,11 @@ function startLiveHeartbeat() {
     }
     const seconds = liveHeartbeatSeconds();
     if (!seconds) return;
-    state.liveRefresh.lastStatus = isTauriRefreshAvailable() ? "waiting" : "cached";
-    state.liveRefresh.lastMessage = isTauriRefreshAvailable()
-        ? `Live heartbeat ready every ${seconds}s.`
-        : `Browser/static mode can reload cached live data every ${seconds}s; desktop mode runs npm run refresh:live.`;
+    const refreshAvailable = isTauriRefreshAvailable() || browserRefreshAvailable();
+    state.liveRefresh.lastStatus = refreshAvailable ? "waiting" : "cached";
+    state.liveRefresh.lastMessage = refreshAvailable
+        ? `Live heartbeat ready every ${seconds}s; live_scores refresh runs in the background.`
+        : `Static mode can only show bundled live data. Start npm run app to enable live refresh.`;
     state.liveRefresh.intervalId = window.setInterval(() => {
         refreshLiveHeartbeat({ source: "interval" });
     }, seconds * 1000);
@@ -1910,7 +1959,16 @@ function setMlbBoardDate(value) {
 }
 
 function moveMlbBoardDate(delta) {
-    return setMlbBoardDate(shiftDateOnly(ensureMlbBoardDate() || localDateIso(), delta));
+    const dates = mlbBoardDates();
+    if (!dates.length) return null;
+    const current = ensureMlbBoardDate();
+    const index = dates.indexOf(current);
+    const nextIndex = index === -1
+        ? (delta < 0 ? 0 : dates.length - 1)
+        : Math.max(0, Math.min(dates.length - 1, index + delta));
+    state.selected.mlbDate = dates[nextIndex];
+    persistSettings();
+    return state.selected.mlbDate;
 }
 
 function ensureMlbReviewDate() {
@@ -2187,7 +2245,7 @@ async function loadAll() {
         loadOptional("bootstrap", ["__BOOTSTRAP_STATUS__"]),
         loadOptional("startup", ["__STARTUP_STATUS__"]),
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
-        loadOptional("live", ["__LIVE_SCORES__"]),
+        loadOptional("live", ["__LIVE_HEARTBEAT__", "__LIVE_SCORES__"]),
         loadOptional("odds", ["__ODDS_SNAPSHOTS__"]),
         loadOptional("nfl", ["__NFL_PREDICTIONS__", "__PREDICTIONS__"]),
         loadOptional("mlb", ["__MLB_PREDICTIONS__"]),
@@ -2234,7 +2292,10 @@ async function loadAll() {
     state.refreshStatus = refresh || state.refreshStatus;
     state.live.payload = live;
     state.live.games = normalizeGames(live);
-    state.live.error = live ? null : "No live widget export found. Run npm run refresh:live.";
+    state.live.stale = !livePayloadIsFresh(live);
+    state.live.error = live
+        ? (state.live.stale ? "Live export is older than three minutes; waiting for background refresh." : null)
+        : "No live widget export found. Run npm run refresh:live.";
     state.odds = odds || state.odds;
     state.nfl.payload = nfl;
     state.nfl.games = normalizeGames(nfl);
@@ -2280,12 +2341,12 @@ async function loadAll() {
     if (resumedAfterFileRefresh) sessionStorage.removeItem(RELOAD_AFTER_REFRESH_KEY);
     if (!state.refreshRuntime.checked) {
         state.refreshRuntime.checked = true;
-        state.refreshRuntime.available = isTauriRefreshAvailable();
+        state.refreshRuntime.available = isTauriRefreshAvailable() || browserRefreshAvailable();
         state.refreshRuntime.message = state.refreshRuntime.available
-            ? "Desktop auto-refresh is available."
-            : window.location?.protocol === "http:" || window.location?.protocol === "https:"
-                ? "Local refresh bridge ready when launched with npm run app."
-                : "Showing bundled exports. Start npm run app to enable local command refresh.";
+            ? isTauriRefreshAvailable()
+                ? "Desktop auto-refresh is available."
+                : "Local refresh bridge detected; background refresh is enabled."
+            : "Showing bundled exports. Start npm run app to enable local command refresh.";
         renderAll();
         if (state.refreshRuntime.available && !resumedAfterFileRefresh) {
             runStartupAutomation({ background: true });
@@ -2365,13 +2426,15 @@ async function runRefreshCommand(commandName = "startup", options = {}) {
             ? `${config.label} completed.`
             : `${config.label} failed with exit code ${result.exit_code ?? "unknown"}.`;
         showToast(result.success ? `${config.label} complete` : `${config.label} failed`);
-        if (result.success && window.location.protocol === "file:") {
+        if (result.success && window.location.protocol === "file:" && options.reloadAfterRefresh !== false) {
             sessionStorage.setItem(RELOAD_AFTER_REFRESH_KEY, "1");
             window.location.reload();
             return;
         }
-        setAppLoading("Loading refreshed exports...", "New data / Model signals", 72);
-        await loadAllAfterRefresh();
+        if (options.loadAfterRefresh !== false) {
+            setAppLoading("Loading refreshed exports...", "New data / Model signals", 72);
+            await loadAllAfterRefresh();
+        }
     } catch (error) {
         state.refreshRuntime.message = String(error?.message || error || "Refresh failed; showing cached data.");
         appendRefreshLog({
@@ -2398,7 +2461,7 @@ async function runRefreshCommand(commandName = "startup", options = {}) {
 
 async function runBrowserRefreshCommand(commandName = "startup", options = {}) {
     const config = REFRESH_COMMANDS[commandName] || REFRESH_COMMANDS.startup;
-    state.refreshRuntime.available = false;
+    state.refreshRuntime.available = browserRefreshAvailable();
     state.refreshRuntime.active = true;
     state.refreshRuntime.command = commandName;
     state.refreshRuntime.message = `Refreshing through the local bridge: ${config.manual}`;
@@ -2410,6 +2473,7 @@ async function runBrowserRefreshCommand(commandName = "startup", options = {}) {
     try {
         const result = await requestLocalRefresh(commandName);
         if (!result) {
+            state.refreshRuntime.available = false;
             state.refreshRuntime.message = browserRefreshMessage(commandName);
             if (!options.background) showToast(state.refreshRuntime.message);
             return null;
@@ -2420,7 +2484,7 @@ async function runBrowserRefreshCommand(commandName = "startup", options = {}) {
             : `${config.label} failed with exit code ${result.exit_code ?? "unknown"}.`;
         if (result.success) {
             showToast(`${config.label} complete`);
-            await loadAllAfterRefresh();
+            if (options.loadAfterRefresh !== false) await loadAllAfterRefresh();
         } else {
             showToast(`${config.label} failed; cached data remains visible`);
         }
@@ -2503,7 +2567,7 @@ async function loadAllAfterRefresh() {
         loadOptional("bootstrap", [], { force: true }),
         loadOptional("startup", [], { force: true }),
         loadOptional("refresh", ["__REFRESH_STATUS__"], { force: true }),
-        loadOptional("live", ["__LIVE_SCORES__"], { force: true }),
+        loadOptional("live", ["__LIVE_HEARTBEAT__", "__LIVE_SCORES__"], { force: true }),
         loadOptional("odds", ["__ODDS_SNAPSHOTS__"], { force: true }),
         loadOptional("reports", [], { force: true }),
         loadOptional("modelComparison", [], { force: true }),
@@ -2552,6 +2616,8 @@ async function loadAllAfterRefresh() {
     if (live) {
         state.live.payload = live;
         state.live.games = normalizeGames(live);
+        state.live.stale = !livePayloadIsFresh(live);
+        state.live.error = state.live.stale ? "Live export is older than three minutes; waiting for background refresh." : null;
         window.__LIVE_SCORES__ = live;
     }
     if (odds) {
@@ -2878,7 +2944,11 @@ function selectedMlbDateDisplay(date) {
 function mlbDateJump(offset) {
     const dates = mlbBoardDates();
     if (!dates.length) return null;
-    setMlbBoardDate(shiftDateOnly(localDateIso(), offset));
+    const target = shiftDateOnly(localDateIso(), offset);
+    const previous = dates.filter(date => date <= target).at(-1);
+    const next = dates.find(date => date >= target);
+    const selected = offset < 0 ? (previous || dates[0]) : offset > 0 ? (next || dates.at(-1)) : (dates.includes(target) ? target : defaultMlbBoardDate());
+    setMlbBoardDate(selected);
     return state.selected.mlbDate;
 }
 
@@ -3405,8 +3475,10 @@ function propPredictionRows() {
     const exports = [state.wnbaPropPredictions, state.mlbPropPredictions].filter(Boolean);
     const exported = exports.flatMap(payload => Array.isArray(payload?.predictions) ? payload.predictions : []);
     const candidates = exports.flatMap(payload => Array.isArray(payload?.candidate_predictions) ? payload.candidate_predictions : []);
+    const modelPicks = exports.flatMap(payload => Array.isArray(payload?.model_picks) ? payload.model_picks : []);
     const seen = new Set(exported.map(row => row.prediction_id));
-    const predictions = [...exported, ...candidates.filter(row => !seen.has(row.prediction_id))];
+    const candidateIds = new Set(candidates.map(row => row.prediction_id));
+    const predictions = [...exported, ...candidates.filter(row => !seen.has(row.prediction_id)), ...modelPicks.filter(row => !seen.has(row.prediction_id) && !candidateIds.has(row.prediction_id))];
     const logged = new Map((state.propLog?.predictions || []).map(row => [row.prediction_id, row]));
     const currentMarkets = Array.isArray(state.playerProps?.markets) ? state.playerProps.markets : [];
     return predictions.map(prediction => {
@@ -3433,6 +3505,8 @@ function propConfidence(row) {
 }
 
 function propStaleState(row) {
+    if (row.model_only_pick) return "Internal threshold / lineup pending";
+    if (row.model_only) return "No bookmaker line / lineup pending";
     const availability = String(row.availability_status || "").toLowerCase();
     if (["out", "dnp", "void"].includes(availability)) return availability === "out" ? "Player out" : availability.toUpperCase();
     if (["questionable", "doubtful", "probable"].includes(availability)) return "Availability not confirmed";
@@ -3491,22 +3565,42 @@ function renderPlayerMark(row) {
 function renderPropCard(row) {
     const status = propStatus(row);
     const candidate = Boolean(row.candidate_only);
+    const modelOnly = Boolean(row.model_only);
+    const modelOnlyPick = Boolean(row.model_only_pick);
     const sport = String(row.sport || "WNBA").toUpperCase();
     const freshness = propStaleState(row);
     const interval = safeNumber(row.lower_projection) !== null && safeNumber(row.upper_projection) !== null ? `${formatNumber(row.lower_projection, 1)}–${formatNumber(row.upper_projection, 1)}` : "Unavailable";
     const over = safeNumber(row.current_over_price ?? row.over_price);
     const under = safeNumber(row.current_under_price ?? row.under_price);
-    const market = over !== null || under !== null ? `O ${over === null ? "—" : americanOdds(over)} · U ${under === null ? "—" : americanOdds(under)}` : "No current price";
-    return `<article class="prop-card ${candidate ? "prop-card--candidate" : ""}" data-prop-status="${escapeHtml(status.toLowerCase())}"><header><span class="sport-pill sport-pill--${escapeHtml(sport.toLowerCase())}">${escapeHtml(sport)}</span><span class="prop-card__market">${escapeHtml(candidate ? "Model candidate" : propMarketLabel(row.market_key))}</span><span class="prop-card__time">${escapeHtml(row.game_time || row.game_date || "Time not exported")}</span></header><div class="prop-card__identity">${renderPlayerMark(row)}<div><h3>${escapeHtml(row.player_name || "Player not exported")}</h3><p>${escapeHtml(row.team || "Team not exported")} vs ${escapeHtml(row.opponent || "Opponent not exported")}</p></div></div><div class="prop-card__pick"><div><span>${candidate ? "Model lean" : "Pick"}</span><strong>${escapeHtml(row.side || "Not exported")} ${escapeHtml(String(row.line ?? ""))}</strong></div><div><span>Projection</span><strong>${formatNumber(row.projection, 1)}</strong></div><div><span>Probability</span><strong>${formatProbability(row.probability)}</strong></div></div><div class="prop-card__meta"><span>Model edge <b>${formatEdge(row.edge)}</b></span><span>Band <b>${escapeHtml(interval)}</b></span><span>Market <b>${escapeHtml(market)}</b></span></div><footer><span>${resultChip(candidate ? "Availability pending" : status)}</span><small>${escapeHtml(candidate ? (row.candidate_reason || "Review only") : (row.model_id || "Model not exported"))} · ${escapeHtml(freshness)}</small><button class="btn btn--micro" type="button" data-prop-profile="${escapeHtml(row.player_id || row.player_name || "")}" data-prop-profile-sport="${escapeHtml(sport)}">Player profile</button><button class="btn btn--micro" type="button" data-prop-open="${escapeHtml(row.prediction_id)}">Open Analysis</button></footer></article>`;
+    const market = modelOnly ? "No bookmaker line" : over !== null || under !== null ? `O ${over === null ? "—" : americanOdds(over)} · U ${under === null ? "—" : americanOdds(under)}` : "No current price";
+    const cardLabel = modelOnlyPick ? "Model pick · internal threshold" : modelOnly ? "Model projection" : candidate ? "Model candidate" : propMarketLabel(row.market_key);
+    const pickLabel = modelOnlyPick ? "Model pick" : modelOnly ? "Projected stat" : candidate ? "Model lean" : "Pick";
+    const pickValue = modelOnlyPick ? `${row.side || "Not exported"} ${formatNumber(row.model_threshold, 1)}` : modelOnly ? `${formatNumber(row.projection, 1)} ${propMarketLabel(row.market_key)}` : `${row.side || "Not exported"}${row.line == null ? "" : ` ${row.line}`}`;
+    const cardClass = [candidate ? "prop-card--candidate" : "", modelOnly ? "prop-card--model-only" : ""].filter(Boolean).join(" ");
+    const statusLabel = modelOnlyPick ? "Model pick" : modelOnly ? "Model-only" : candidate ? "Availability pending" : status;
+    const modelLabel = modelOnlyPick ? `${row.model_id || "Trained model"} · ${row.threshold_label || "Internal threshold"}` : modelOnly ? (row.model_id || "Trained model") : candidate ? (row.candidate_reason || "Review only") : (row.model_id || "Model not exported");
+    return `<article class="prop-card ${cardClass}" data-prop-status="${escapeHtml(status.toLowerCase())}">
+        <header class="prop-card__header"><div class="prop-card__heading"><span class="sport-pill sport-pill--${escapeHtml(sport.toLowerCase())}">${escapeHtml(sport)}</span><span class="prop-card__market">${escapeHtml(cardLabel)}</span></div><span class="prop-card__time">${escapeHtml(row.game_time || row.game_date || "Time not exported")}</span></header>
+        <div class="prop-card__identity">${renderPlayerMark(row)}<div><h3>${escapeHtml(row.player_name || "Player not exported")}</h3><p>${escapeHtml(row.team || "Team not exported")} <span aria-hidden="true">vs</span> ${escapeHtml(row.opponent || "Opponent not exported")}</p></div></div>
+        <div class="prop-card__pick"><div><span>${pickLabel}</span><strong>${escapeHtml(pickValue)}</strong></div><div><span>Projection</span><strong>${formatNumber(row.projection, 1)}</strong></div><div><span>Probability</span><strong>${formatProbability(row.probability)}</strong></div><div><span>Model edge</span><strong>${modelOnly ? "—" : formatEdge(row.edge)}</strong></div></div>
+        <footer class="prop-card__footer"><div class="prop-card__status"><span>${resultChip(statusLabel)}</span><small>${escapeHtml(modelLabel)} · ${escapeHtml(freshness)}</small></div><div class="prop-card__actions"><button class="btn btn--micro btn--quiet" type="button" data-prop-profile="${escapeHtml(row.player_id || row.player_name || "")}" data-prop-profile-sport="${escapeHtml(sport)}">Profile</button><button class="btn btn--micro btn--primary" type="button" data-prop-open="${escapeHtml(row.prediction_id)}">Open analysis</button></div></footer>
+        <div class="prop-card__details" aria-label="Additional market context"><span>${escapeHtml(market)}</span><span>Band ${escapeHtml(interval)}</span></div>
+    </article>`;
 }
 
 function renderPropFilters(rows) {
-    const dates = [...new Set(rows.map(row => String(row.game_date || "").slice(0, 10)).filter(Boolean))].sort();
+    const scopedRows = state.selected.propsSport === "all" ? rows : rows.filter(row => String(row.sport || "").toUpperCase() === state.selected.propsSport);
+    const dates = [...new Set(scopedRows.map(row => String(row.game_date || "").slice(0, 10)).filter(Boolean))].sort();
     const date = state.selected.propsDate || dates[0] || localDateIso();
     if (!state.selected.propsDate && dates[0]) state.selected.propsDate = dates[0];
-    const games = [...new Set(rows.filter(row => String(row.game_date || "").slice(0, 10) === date).map(row => row.event_id || row.game_id).filter(Boolean))];
-    const markets = [...new Set([...rows.map(row => row.market_key), ...((state.playerProps?.markets || []).map(row => row.market_key))].filter(Boolean))].sort();
-    return `<section class="panel props-filters"><div class="props-filter-heading"><div><p class="eyebrow">Filters</p><h3>Prop feed</h3></div><span class="muted">Sort by Prop Score, probability, edge, time, or freshness</span></div><div class="props-filter-grid"><label>Sport<select id="props-sport"><option value="all" ${state.selected.propsSport === "all" ? "selected" : ""}>All sports</option><option value="WNBA" ${state.selected.propsSport === "WNBA" ? "selected" : ""}>WNBA</option><option value="MLB" ${state.selected.propsSport === "MLB" ? "selected" : ""}>MLB</option></select></label><label>Date<input id="props-date" type="date" value="${escapeHtml(date)}" /></label><label>Market<select id="props-market"><option value="all">All markets</option>${markets.map(value => `<option value="${escapeHtml(value)}" ${state.selected.propsMarket === value ? "selected" : ""}>${escapeHtml(propMarketLabel(value))}</option>`).join("")}</select></label><label>Side<select id="props-side"><option value="all">Over / Under</option><option value="Over" ${state.selected.propsSide === "Over" ? "selected" : ""}>Over</option><option value="Under" ${state.selected.propsSide === "Under" ? "selected" : ""}>Under</option></select></label><label>Confidence<select id="props-confidence"><option value="all">All confidence</option>${["High", "Medium", "Low"].map(value => `<option value="${value}" ${state.selected.propsConfidence === value ? "selected" : ""}>${value}</option>`).join("")}</select></label><label>Game<select id="props-game"><option value="all">All games</option>${games.map(value => `<option value="${escapeHtml(value)}" ${state.selected.propsGame === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}</select></label><label>Player search<input id="props-search" type="search" value="${escapeHtml(state.selected.propsSearch || "")}" placeholder="Search player" /></label><label>Status<select id="props-status"><option value="all">All states</option>${["Pending", "Won", "Lost", "Push", "Void", "DNP"].map(value => `<option value="${value}" ${state.selected.propsStatus === value ? "selected" : ""}>${value}</option>`).join("")}</select></label><label>Sort<select id="props-sort"><option value="score" ${state.selected.propsSort === "score" ? "selected" : ""}>Prop Score</option><option value="probability" ${state.selected.propsSort === "probability" ? "selected" : ""}>Probability</option><option value="edge" ${state.selected.propsSort === "edge" ? "selected" : ""}>Model edge</option><option value="time" ${state.selected.propsSort === "time" ? "selected" : ""}>Game time</option><option value="freshness" ${state.selected.propsSort === "freshness" ? "selected" : ""}>Freshness</option></select></label></div></section>`;
+    const games = [...new Set(scopedRows.filter(row => String(row.game_date || "").slice(0, 10) === date).map(row => row.event_id || row.game_id).filter(Boolean))];
+    const markets = [...new Set([...scopedRows.map(row => row.market_key), ...((state.playerProps?.markets || []).filter(row => state.selected.propsSport === "all" || String(row.sport || "").toUpperCase() === state.selected.propsSport).map(row => row.market_key))].filter(Boolean))].sort();
+    const previousDate = [...dates].reverse().find(value => value < date);
+    const nextDate = dates.find(value => value > date);
+    return `<section class="props-filters" aria-label="Prop feed controls">
+        <div class="props-filter-bar"><div class="props-filter-sport" role="group" aria-label="Sport"><button type="button" data-props-sport="all" class="${state.selected.propsSport === "all" ? "is-active" : ""}">All sports</button><button type="button" data-props-sport="MLB" class="${state.selected.propsSport === "MLB" ? "is-active" : ""}">MLB</button><button type="button" data-props-sport="WNBA" class="${state.selected.propsSport === "WNBA" ? "is-active" : ""}">WNBA</button></div><div class="props-date-nav"><button class="icon-btn" type="button" data-props-shift="-1" aria-label="Previous props date" ${previousDate ? "" : "disabled"}>‹</button><label><span>Date</span><input id="props-date" type="date" value="${escapeHtml(date)}" /></label><button class="icon-btn" type="button" data-props-shift="1" aria-label="Next props date" ${nextDate ? "" : "disabled"}>›</button></div><label class="props-search"><span>Search</span><input id="props-search" type="search" value="${escapeHtml(state.selected.propsSearch || "")}" placeholder="Player name" /></label><label class="props-sort"><span>Sort</span><select id="props-sort"><option value="score" ${state.selected.propsSort === "score" ? "selected" : ""}>Prop score</option><option value="probability" ${state.selected.propsSort === "probability" ? "selected" : ""}>Probability</option><option value="edge" ${state.selected.propsSort === "edge" ? "selected" : ""}>Model edge</option><option value="time" ${state.selected.propsSort === "time" ? "selected" : ""}>Game time</option><option value="freshness" ${state.selected.propsSort === "freshness" ? "selected" : ""}>Freshness</option></select></label></div>
+        <details class="props-advanced"><summary>More filters <span>Market, side, confidence, game, and result</span></summary><div class="props-filter-grid"><label>Market<select id="props-market"><option value="all">All markets</option>${markets.map(value => `<option value="${escapeHtml(value)}" ${state.selected.propsMarket === value ? "selected" : ""}>${escapeHtml(propMarketLabel(value))}</option>`).join("")}</select></label><label>Side<select id="props-side"><option value="all">Over / Under</option><option value="Over" ${state.selected.propsSide === "Over" ? "selected" : ""}>Over</option><option value="Under" ${state.selected.propsSide === "Under" ? "selected" : ""}>Under</option></select></label><label>Confidence<select id="props-confidence"><option value="all">All confidence</option>${["High", "Medium", "Low"].map(value => `<option value="${value}" ${state.selected.propsConfidence === value ? "selected" : ""}>${value}</option>`).join("")}</select></label><label>Game<select id="props-game"><option value="all">All games</option>${games.map(value => `<option value="${escapeHtml(value)}" ${state.selected.propsGame === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}</select></label><label>Result<select id="props-status"><option value="all">All states</option>${["Pending", "Won", "Lost", "Push", "Void", "DNP"].map(value => `<option value="${value}" ${state.selected.propsStatus === value ? "selected" : ""}>${value}</option>`).join("")}</select></label></div></details>
+    </section>`;
 }
 
 function renderPropAnalysis(row) {
@@ -3516,7 +3610,11 @@ function renderPropAnalysis(row) {
     const currentOdds = safeNumber(row.side === "Over" ? row.current_over_price ?? row.over_price : row.current_under_price ?? row.under_price);
     const availability = String(row.availability_status || "unknown").toLowerCase() === "unknown" ? "Unknown — official status not exported" : row.availability_status;
     const summaryReady = row.projection !== null && row.line !== null && row.probability !== null;
-    return `<section class="panel prop-analysis" data-prop-analysis><header class="section-header"><div><p class="eyebrow">Prop analysis</p><h2>${escapeHtml(row.player_name || "Player")}</h2><p class="muted">${escapeHtml(propMarketLabel(row.market_key))} · ${escapeHtml(row.side || "Not exported")} ${escapeHtml(String(row.line ?? ""))}</p></div><button class="btn btn--micro" type="button" data-prop-close>Close</button></header><div class="prop-analysis__summary"><strong>${summaryReady ? `Projected ${formatNumber(row.projection, 1)} against a line of ${formatNumber(row.line, 1)}.` : "Projection context not exported."}</strong><span>${summaryReady ? `${escapeHtml(row.side || "Not exported")} probability ${formatProbability(row.probability)} with model edge ${formatEdge(row.edge)}.` : "This row is a real candidate, but it is not a publishable prop."}</span></div><div class="prop-analysis__facts"><div><span>Prediction interval</span><strong>${escapeHtml(band)}</strong></div><div><span>Original odds</span><strong>${originalOdds === null ? "Not exported" : escapeHtml(americanOdds(originalOdds))}</strong></div><div><span>Current line</span><strong>${escapeHtml(String(row.current_line ?? row.line ?? "Not exported"))}</strong></div><div><span>Current odds</span><strong>${currentOdds === null ? "Not exported" : escapeHtml(americanOdds(currentOdds))}</strong></div><div><span>Closing line</span><strong>${row.closing_line == null ? "Not captured" : escapeHtml(String(row.closing_line))}</strong></div><div><span>Closing odds</span><strong>${row.closing_price == null ? "Not captured" : escapeHtml(americanOdds(row.closing_price))}</strong></div><div><span>Market consensus</span><strong>${escapeHtml(row.market_consensus || "Not exported")}</strong></div><div><span>Line movement</span><strong>${escapeHtml(row.line_movement || "Not exported")}</strong></div><div><span>Snapshot time</span><strong>${escapeHtml(row.current_odds_snapshot_at || row.odds_snapshot_at || "Not exported")}</strong></div><div><span>Model</span><strong>${escapeHtml(row.model_id || "Not exported")}</strong></div><div><span>Availability</span><strong>${escapeHtml(availability)}</strong></div></div><div class="prop-analysis__sections"><section><h3>Recent game log</h3><p class="muted">${escapeHtml(row.recent_game_log || "Not included in the bundled player export")}</p></section><section><h3>Supporting factors</h3><p class="muted">${escapeHtml(row.supporting_factors || "Not exported by the current prop model")}</p></section><section><h3>Opposing factors</h3><p class="muted">${escapeHtml(row.opposing_factors || "Not exported by the current prop model")}</p></section></div></section>`;
+    const modelOnly = Boolean(row.model_only);
+    const modelOnlyPick = Boolean(row.model_only_pick);
+    const summary = modelOnlyPick ? `Model pick: ${escapeHtml(row.side || "Not exported")} at the internal ${propMarketLabel(row.market_key).toLowerCase()} threshold of ${formatNumber(row.model_threshold, 1)}.` : modelOnly ? `Real ${propMarketLabel(row.market_key).toLowerCase()} projection: ${formatNumber(row.projection, 1)}.` : summaryReady ? `Projected ${formatNumber(row.projection, 1)} against a line of ${formatNumber(row.line, 1)}.` : "Projection context not exported.";
+    const summaryNote = modelOnlyPick ? `${formatProbability(row.probability)} model probability from the retrained regressor and chronological holdout error. No bookmaker line, odds, or market edge is available.` : modelOnly ? "No bookmaker line, odds, lineup confirmation, or player availability state was returned, so this is not a publishable prop." : summaryReady ? `${escapeHtml(row.side || "Not exported")} probability ${formatProbability(row.probability)} with model edge ${formatEdge(row.edge)}.` : "This row is a real candidate, but it is not a publishable prop.";
+    return `<section class="panel prop-analysis" data-prop-analysis><header class="section-header"><div><p class="eyebrow">Prop analysis</p><h2>${escapeHtml(row.player_name || "Player")}</h2><p class="muted">${escapeHtml(propMarketLabel(row.market_key))} · ${escapeHtml(row.side || "Not exported")} ${escapeHtml(String(row.line ?? ""))}</p></div><button class="btn btn--micro" type="button" data-prop-close>Close</button></header><div class="prop-analysis__summary"><strong>${summary}</strong><span>${summaryNote}</span></div><div class="prop-analysis__facts"><div><span>Prediction interval</span><strong>${escapeHtml(band)}</strong></div><div><span>Original odds</span><strong>${originalOdds === null ? "Not exported" : escapeHtml(americanOdds(originalOdds))}</strong></div><div><span>Current line</span><strong>${escapeHtml(String(row.current_line ?? row.line ?? "Not exported"))}</strong></div><div><span>Current odds</span><strong>${currentOdds === null ? "Not exported" : escapeHtml(americanOdds(currentOdds))}</strong></div><div><span>Closing line</span><strong>${row.closing_line == null ? "Not captured" : escapeHtml(String(row.closing_line))}</strong></div><div><span>Closing odds</span><strong>${row.closing_price == null ? "Not captured" : escapeHtml(americanOdds(row.closing_price))}</strong></div><div><span>Market consensus</span><strong>${escapeHtml(row.market_consensus || "Not exported")}</strong></div><div><span>Line movement</span><strong>${escapeHtml(row.line_movement || "Not exported")}</strong></div><div><span>Snapshot time</span><strong>${escapeHtml(row.current_odds_snapshot_at || row.odds_snapshot_at || "Not exported")}</strong></div><div><span>Model</span><strong>${escapeHtml(row.model_id || "Not exported")}</strong></div><div><span>Availability</span><strong>${escapeHtml(availability)}</strong></div></div><div class="prop-analysis__sections"><section><h3>Recent game log</h3><p class="muted">${escapeHtml(row.recent_game_log || "Not included in the bundled player export")}</p></section><section><h3>Supporting factors</h3><p class="muted">${escapeHtml(row.supporting_factors || "Not exported by the current prop model")}</p></section><section><h3>Opposing factors</h3><p class="muted">${escapeHtml(row.opposing_factors || "Not exported by the current prop model")}</p></section></div></section>`;
 }
 
 function renderPlayerProfile(playerId, sport) {
@@ -3549,25 +3647,43 @@ function renderPropFunnel(rows) {
     const projected = sportRows.filter(row => row.projection !== null && row.projection !== undefined).length;
     const published = sportRows.filter(row => !row.candidate_only && propStatus(row) !== "Pending").length;
     const reasons = Object.entries((state.selected.propsSport === "all" ? Object.values(diagnostics).reduce((out, item) => ({ ...out, ...(item.rejection_reason_totals || {}) }), {}) : diagnostics[state.selected.propsSport]?.rejection_reason_totals || {})).map(([reason, count]) => `${reason.replaceAll("_", " ")}: ${count}`).join(" · ");
-    return `<section class="panel props-funnel"><header class="section-header"><div><p class="eyebrow">Publication funnel</p><h3>What cleared the data gates</h3></div><span class="muted">${escapeHtml(reasons || "No rejection totals exported")}</span></header><div class="props-funnel__grid"><div><span>Events received</span><strong>${received || "—"}</strong></div><div><span>Events matched</span><strong>${matched || "—"}</strong></div><div><span>Market rows</span><strong>${marketRows || "—"}</strong></div><div><span>Projections generated</span><strong>${projected || "—"}</strong></div><div><span>Published</span><strong>${published || "0"}</strong></div></div><p class="muted">${sportRows.length ? `${sportRows.length} real rows are available to review.` : "No real projection rows are available for this filter."}</p></section>`;
+    return `<section class="props-summary" aria-label="Props data summary"><div class="props-summary__stats"><div><span>Events matched</span><strong>${matched || "—"}</strong></div><div><span>Market rows</span><strong>${marketRows || "—"}</strong></div><div><span>Projections</span><strong>${projected || "—"}</strong></div><div><span>Published</span><strong>${published || "0"}</strong></div></div><p class="props-summary__note">${escapeHtml(reasons || (sportRows.length ? `${sportRows.length} real rows available for review.` : "No real projection rows are available for this filter."))}</p></section>`;
 }
 
 function renderPropHealth() {
     const models = [["WNBA", state.wnbaPropModelHealth], ["MLB", state.mlbPropModelHealth]];
-    return `<section class="panel prop-health"><header class="section-header"><div><p class="eyebrow">Prop model health</p><h2>Research and live-sample status</h2></div><div class="report-actions"><span class="chip chip--soft">No cross-sport ranking</span><button class="btn btn--small" data-refresh-command="wnba_availability">Refresh WNBA availability</button><button class="btn btn--small btn--primary" data-refresh-command="player_props_pipeline">Build player props</button></div></header><div class="prop-health__rows">${models.map(([sport, payload]) => { const meta = payload?.metadata || {}; const markets = payload?.markets || []; return `<article><div><strong>${sport}</strong><span>${escapeHtml(meta.status || "Not trained")}</span></div><p>${escapeHtml(meta.reason || (sport === "MLB" ? "Run the manual MLB player-game dataset and training commands." : "Health metrics appear after real player rows, model evaluation, and scored predictions."))}</p><small>${markets.length ? markets.map(market => `${escapeHtml(market.market || "market")}: ${escapeHtml(market.status || "not evaluated")}`).join(" · ") : "No market-level evaluation exported"}</small></article>`; }).join("")}</div></section>`;
+    return `<section class="prop-health"><header class="section-header"><div><p class="eyebrow">Model status</p><h2>Prop model health</h2></div><div class="report-actions"><button class="btn btn--small" data-refresh-command="wnba_availability">Refresh availability</button><button class="btn btn--small btn--primary" data-refresh-command="player_props_pipeline">Build props</button></div></header><div class="prop-health__rows">${models.map(([sport, payload]) => { const meta = payload?.metadata || {}; const markets = payload?.markets || []; return `<article><div class="prop-health__title"><strong>${sport}</strong><span>${escapeHtml(meta.status || "Not trained")}</span></div><p>${escapeHtml(meta.reason || (sport === "MLB" ? "MLB player-game inputs and research artifacts are required for model health." : "Health metrics appear after real player rows, chronological evaluation, and scored predictions."))}</p><small>${markets.length ? markets.map(market => `${escapeHtml(market.market || "market")}: ${escapeHtml(market.status || "not evaluated")}`).join(" · ") : "No market-level evaluation exported"}</small></article>`; }).join("")}</div></section>`;
 }
 
 function renderProps() {
     const allRows = propPredictionRows();
     const marketRows = Array.isArray(state.playerProps?.markets) ? state.playerProps.markets : [];
     const mlbMarketCount = marketRows.filter(row => String(row.sport || "").toUpperCase() === "MLB").length;
-    const date = state.selected.propsDate || [...new Set(allRows.map(row => String(row.game_date || "").slice(0, 10)).filter(Boolean))].sort()[0] || localDateIso();
+    const scopedAllRows = state.selected.propsSport === "all" ? allRows : allRows.filter(row => String(row.sport || "").toUpperCase() === state.selected.propsSport);
+    const dates = [...new Set(scopedAllRows.map(row => String(row.game_date || "").slice(0, 10)).filter(Boolean))].sort();
+    const today = localDateIso();
+    const actionableDates = [...new Set(scopedAllRows.filter(row => !row.candidate_only || row.model_only_pick).map(row => String(row.game_date || "").slice(0, 10)).filter(Boolean))].sort();
+    const savedDateHasActionableRows = state.selected.propsDateManual || (dates.includes(state.selected.propsDate) && actionableDates.includes(state.selected.propsDate));
+    const nextActionableDate = actionableDates.find(value => value > today);
+    const fallbackDate = actionableDates.includes(today) ? today : nextActionableDate || actionableDates[actionableDates.length - 1] || (dates.includes(today) ? today : dates.find(value => value > today) || dates[dates.length - 1] || today);
+    const date = savedDateHasActionableRows ? state.selected.propsDate : fallbackDate;
+    if (state.selected.propsDate !== date) {
+        state.selected.propsDate = date;
+        persistSettings();
+    }
     const matchesFilters = row => String(row.game_date || "").slice(0, 10) === date && (state.selected.propsSport === "all" || String(row.sport || "").toUpperCase() === state.selected.propsSport) && (state.selected.propsMarket === "all" || row.market_key === state.selected.propsMarket) && (state.selected.propsSide === "all" || row.side === state.selected.propsSide) && (state.selected.propsConfidence === "all" || propConfidence(row) === state.selected.propsConfidence) && (state.selected.propsStatus === "all" || propStatus(row) === state.selected.propsStatus) && (state.selected.propsGame === "all" || String(row.event_id || row.game_id) === state.selected.propsGame) && (!state.selected.propsSearch || String(row.player_name || "").toLowerCase().includes(state.selected.propsSearch.toLowerCase()));
     const rows = sortPropRows(qualifiedPropRows().filter(matchesFilters));
-    const candidates = sortPropRows(allRows.filter(row => row.candidate_only).filter(matchesFilters)).slice(0, 10);
+    const candidates = sortPropRows(allRows.filter(row => row.candidate_only && !row.model_only).filter(matchesFilters)).slice(0, 10);
+    const modelPicks = sortPropRows(allRows.filter(row => row.model_only_pick).filter(matchesFilters)).slice(0, 10);
+    const modelOnly = sortPropRows(allRows.filter(row => row.model_only && !row.model_only_pick).filter(matchesFilters)).slice(0, 10);
     const best = rows.slice(0, 10);
+    const visibleCount = best.length || candidates.length || modelPicks.length || modelOnly.length;
+    const heroTitle = best.length ? "Top qualified props" : candidates.length ? "Model candidates" : modelPicks.length ? "MLB model picks" : modelOnly.length ? "MLB model projections" : "No qualified props";
+    const heroText = best.length ? "Published only after real lines, odds, model output, freshness, and player availability pass the quality gate." : candidates.length ? "Real projections and current market prices are shown for review. They are not publishable picks until sport-specific availability or lineup states are verified." : modelPicks.length ? "Real upcoming MLB games and retrained player models are producing internal-threshold picks. They are separate from bookmaker-backed props until a market line is returned." : modelOnly.length ? "Real upcoming MLB games and trained player models are available. Bookmaker lines, odds, probabilities, and availability remain unreturned." : "No real current prop projections are available for the selected date.";
+    const statusText = best.length ? `${best.length === 1 ? "prop" : "props"} met publication criteria` : candidates.length ? "candidates awaiting verification" : modelPicks.length ? "model picks available" : modelOnly.length ? "model-only projections available" : "rows available";
+    const monitorText = mlbMarketCount ? `${mlbMarketCount} real player-market rows loaded; MLB projections remain research-only until a real player-stat model and lineup/starter inputs are available.` : modelPicks.length ? `No current MLB player markets were returned. Showing ${modelPicks.length} model-backed internal-threshold picks and ${modelOnly.length} supporting projections; bookmaker odds and market edge remain unavailable.` : modelOnly.length ? `No current MLB player markets were returned. Showing ${modelOnly.length} real model-only MLB projections; bookmaker line, odds, probability, and availability remain unavailable.` : "No selected MLB player markets were returned for the current MLB event.";
     const drawer = state.selected.propPlayer ? renderPlayerProfile(state.selected.propPlayer.id, state.selected.propPlayer.sport) : state.selected.propId ? renderPropAnalysis(propPredictionRows().find(row => row.prediction_id === state.selected.propId)) : "";
-    $("#view-props").innerHTML = `<section class="props-shell"><header class="props-header"><div><p class="eyebrow">Player props</p><h2>${best.length ? "Top qualified props" : candidates.length ? "Model candidates" : "No qualified props"}</h2><p class="muted">${best.length ? "Published only after real lines, odds, model output, freshness, and player availability pass the quality gate." : candidates.length ? "Real projections and current market prices are shown for review. They are not publishable picks until sport-specific availability or lineup states are verified." : "No real current prop projections are available for the selected date."}</p></div><div class="props-header__status"><strong>${best.length || candidates.length}</strong><span>${best.length ? `${best.length === 1 ? "prop" : "props"} met today’s publication criteria` : candidates.length ? "model candidates awaiting verification" : "rows available"}</span></div></header><p class="data-status" data-variant="${mlbMarketCount ? "info" : "warning"}"><strong>MLB market monitor:</strong> ${mlbMarketCount ? `${mlbMarketCount} real player-market rows loaded; MLB projections remain research-only until a real player-stat model and lineup/starter inputs are available.` : "No selected MLB player markets were returned for the current MLB event, so no MLB player projection is displayed."}</p>${renderPropFilters(allRows)}${renderPropFunnel(allRows)}<section class="props-feed"><header class="section-header"><div><p class="eyebrow">Today’s feed</p><h2>${best.length ? "Published props" : candidates.length ? "Candidates awaiting verification" : "No qualified props"}</h2></div><span class="muted">Up to 10 · maximum two per player and three per game</span></header>${best.length ? `<div class="props-grid">${best.map(renderPropCard).join("")}</div>` : candidates.length ? `<p class="data-status" data-variant="warning">These projections use real player features, current lines, and trained models. Availability is still unknown, so they cannot be treated as publishable picks.</p><div class="props-grid">${candidates.map(renderPropCard).join("")}</div>` : emptyState("No qualified props", "A prop requires a matched current line, real odds, active-player status, sufficient data, a trained model, and a fresh snapshot.")}</section>${renderPropHealth()}${drawer}</section>`;
+    $("#view-props").innerHTML = `<section class="props-shell"><header class="props-header"><div><p class="eyebrow">Player props · ${escapeHtml(formatDate(date))}</p><h2>${heroTitle}</h2><p class="muted">${heroText}</p></div><div class="props-header__status"><strong>${visibleCount}</strong><span>${statusText}</span><small>Data updates stay tied to real exports.</small></div></header><p class="data-status props-monitor" data-variant="${mlbMarketCount ? "info" : modelPicks.length || modelOnly.length ? "warning" : "warning"}"><strong>Market status</strong><span>${monitorText}</span></p>${renderPropFilters(allRows)}${renderPropFunnel(allRows)}<section class="props-feed"><header class="section-header"><div><p class="eyebrow">Review queue</p><h2>${best.length ? "Published props" : candidates.length ? "Candidates awaiting verification" : "No qualified props"}</h2></div><span class="muted">${best.length ? "Quality-gated rows" : "No rows are promoted without the required data"}</span></header>${best.length ? `<div class="props-grid">${best.map(renderPropCard).join("")}</div>` : candidates.length ? `<p class="data-status" data-variant="warning">Real lines and model outputs are available, but availability is not confirmed. These rows remain review-only.</p><div class="props-grid">${candidates.map(renderPropCard).join("")}</div>` : emptyState("No qualified props", "A prop requires a matched current line, real odds, active-player status, sufficient data, a trained model, and a fresh snapshot.")}</section>${modelPicks.length ? `<section class="props-feed props-feed--model-only"><header class="section-header"><div><p class="eyebrow">MLB model lane</p><h2>Internal-threshold picks</h2></div><span class="muted">No bookmaker line</span></header><p class="data-status" data-variant="info">Deterministic model picks against internal baseball thresholds. They are separate from sportsbook props and have no market edge.</p><div class="props-grid">${modelPicks.map(renderPropCard).join("")}</div></section>` : ""}${modelOnly.length ? `<section class="props-feed props-feed--model-only"><header class="section-header"><div><p class="eyebrow">MLB model lane</p><h2>Projection-only rows</h2></div><span class="muted">No bookmaker line</span></header><p class="data-status" data-variant="info">Real schedule and trained player-game models are available while market, lineup, and availability inputs remain pending.</p><div class="props-grid">${modelOnly.map(renderPropCard).join("")}</div></section>` : ""}${renderPropHealth()}${drawer}</section>`;
 }
 
 function renderPicksFilters(rows) {
@@ -6494,7 +6610,7 @@ function renderSettings() {
         ${renderCommandConsole("settings")}
         <section class="panel"><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>
         ${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}
-        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v3.0.0.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
+        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v4.0.0.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
         <section class="panel"><p class="data-status" data-variant="${state.refreshRuntime.available ? "success" : "warning"}">${state.refreshRuntime.available ? "Bundled exports load first. Python refresh commands are available when the packaged app can access the project scripts." : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment."} Tracking data is stored locally in <code>${TRACKER_KEY}</code>. Refresh logs use <code>${REFRESH_LOGS_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
     `;
 }
@@ -6568,7 +6684,7 @@ function renderAbout() {
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens"><span>View source</span><small>GitHub repository</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/releases"><span>View releases</span><small>Windows builds and release history</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues"><span>Report an issue</span><small>Open a repository issue</small><b aria-hidden="true">↗</b></button>
-                            <a class="about-action" href="RELEASE_NOTES_v3.0.0.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
+                            <a class="about-action" href="RELEASE_NOTES_v4.0.0.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
                         </div>
                         <div class="about-meta-row"><span>Build</span><strong>${escapeHtml(state.app.desktop_build || "Desktop build metadata unavailable")}</strong><span>Model record</span><strong>${escapeHtml(timestamp(record?.metadata?.generated_at) || "Unavailable")}</strong></div>
                     </section>
@@ -6680,6 +6796,28 @@ function bindEvents() {
         const picksShift = event.target.closest("[data-picks-shift]");
         if (picksShift) {
             movePicksDate(Number(picksShift.dataset.picksShift));
+            return;
+        }
+        const propsSport = event.target.closest("[data-props-sport]");
+        if (propsSport) {
+            state.selected.propsSport = propsSport.dataset.propsSport;
+            state.selected.propsDateManual = false;
+            persistSettings();
+            renderProps();
+            return;
+        }
+        const propsShift = event.target.closest("[data-props-shift]");
+        if (propsShift) {
+            const dates = [...new Set(propPredictionRows().filter(row => (state.selected.propsSport === "all" || String(row.sport || "").toUpperCase() === state.selected.propsSport) && (!row.candidate_only || row.model_only_pick)).map(row => String(row.game_date || "").slice(0, 10)).filter(Boolean))].sort();
+            const current = state.selected.propsDate || dates[0];
+            const index = dates.indexOf(current);
+            const next = dates[index + Number(propsShift.dataset.propsShift)];
+            if (next) {
+                state.selected.propsDate = next;
+                state.selected.propsDateManual = true;
+                persistSettings();
+                renderProps();
+            }
             return;
         }
         const picksOpen = event.target.closest("[data-picks-open]");
@@ -7059,6 +7197,8 @@ function bindEvents() {
         if (["props-sport", "props-date", "props-market", "props-side", "props-confidence", "props-game", "props-search", "props-status", "props-sort"].includes(event.target.id)) {
             const mapping = {"props-sport": "propsSport", "props-date": "propsDate", "props-market": "propsMarket", "props-side": "propsSide", "props-confidence": "propsConfidence", "props-game": "propsGame", "props-search": "propsSearch", "props-status": "propsStatus", "props-sort": "propsSort"};
             state.selected[mapping[event.target.id]] = event.target.value;
+            if (event.target.id === "props-date") state.selected.propsDateManual = true;
+            if (event.target.id === "props-sport") state.selected.propsDateManual = false;
             persistSettings();
             renderProps();
         }
@@ -7177,7 +7317,7 @@ function setupSidebarResize() {
     const root = document.documentElement;
     const saved = safeNumber(localStorage.getItem("linelens.sidebarWidth.v1"));
     const min = 214;
-    const max = 360;
+    const max = 300;
     const apply = width => {
         const value = Math.max(min, Math.min(max, width));
         root.style.setProperty("--sidebar-width", `${value}px`);

@@ -2,11 +2,11 @@
   "metadata": {
     "app": "LineLens Sports",
     "version": "v3.0.0",
-    "generated_at": "2026-07-14T18:06:02Z",
+    "generated_at": "2026-07-15T15:13:26Z",
     "real_data": true,
-    "row_count": 313,
-    "scored_this_run": 83,
-    "pending": 4
+    "row_count": 317,
+    "scored_this_run": 84,
+    "pending": 7
   },
   "predictions": [
     {
@@ -7950,9 +7950,11 @@
       "confidence_label": "Low",
       "prediction_mode": "model",
       "status_at_prediction": "Scheduled",
-      "result_status": "pending",
-      "actual_winner": null,
-      "model_result": "pending"
+      "result_status": "scored",
+      "actual_winner": "AMERICAN LEAGUE ALL-STARS",
+      "model_result": "loss",
+      "home_score": 0,
+      "away_score": 4
     },
     {
       "sport": "WNBA",
@@ -7994,7 +7996,7 @@
         "away": []
       },
       "result_status": "pending",
-      "generated_at": "2026-07-14T18:06:00Z"
+      "generated_at": "2026-07-15T15:13:24Z"
     },
     {
       "sport": "WNBA",
@@ -8036,7 +8038,7 @@
         "away": []
       },
       "result_status": "pending",
-      "generated_at": "2026-07-14T18:06:00Z"
+      "generated_at": "2026-07-15T15:13:24Z"
     },
     {
       "sport": "WNBA",
@@ -8121,8 +8123,157 @@
         "away": []
       },
       "result_status": "pending",
-      "generated_at": "2026-07-14T18:06:00Z"
+      "generated_at": "2026-07-15T15:13:24Z"
+    },
+    {
+      "prediction_id": "MLB-823440",
+      "sport": "MLB",
+      "model_version": "v3.0.0",
+      "model_id": "mlb_moneyline_v3.0.0_20260713T192249",
+      "model_name": "GradientBoostingClassifier",
+      "generated_at": "2026-07-15T14:57:08Z",
+      "game_id": "823440",
+      "season": 2026,
+      "game_date": "2026-07-16",
+      "home": "PHI",
+      "away": "NYM",
+      "model_pick": "PHI",
+      "home_win_probability": 0.5285259517685206,
+      "away_win_probability": 0.4714740482314794,
+      "confidence": 0.5285259517685206,
+      "confidence_label": "Low",
+      "prediction_mode": "model",
+      "status_at_prediction": "Scheduled",
+      "result_status": "pending",
+      "actual_winner": null,
+      "model_result": "pending"
+    },
+    {
+      "sport": "WNBA",
+      "season": 2026,
+      "game_date": "2026-07-15",
+      "game_id": "401857068",
+      "generated_at": "2026-07-15T15:13:24Z",
+      "home": "CHI",
+      "away": "SEA",
+      "home_display": "Chicago Sky",
+      "away_display": "Seattle Storm",
+      "home_score": 0.0,
+      "away_score": 0.0,
+      "status": "7/15 - 12:00 PM EDT",
+      "home_win_probability": 0.5427655045656619,
+      "away_win_probability": 0.45723449543433814,
+      "model_pick": "CHI",
+      "confidence": "Low",
+      "confidence_score": 0.5427655045656619,
+      "model_name": "Entei",
+      "model_id": "wnba_entei_moneyline",
+      "prediction_mode": "model",
+      "prediction_available": true,
+      "edge": null,
+      "moneyline_home": null,
+      "moneyline_away": null,
+      "result": "Pending",
+      "model_result": "pending",
+      "completed": false,
+      "source": "ESPN WNBA scoreboard + LineLens model",
+      "top_factor_label": "Pregame Elo and recent team form",
+      "trend": {
+        "labels": [
+          "Elo",
+          "Recent form",
+          "Scoring margin",
+          "Rest"
+        ],
+        "home": [],
+        "away": []
+      },
+      "result_status": "pending"
+    },
+    {
+      "sport": "WNBA",
+      "season": 2026,
+      "game_date": "2026-07-15",
+      "game_id": "401857069",
+      "generated_at": "2026-07-15T15:13:24Z",
+      "home": "MIN",
+      "away": "LA",
+      "home_display": "Minnesota Lynx",
+      "away_display": "Los Angeles Sparks",
+      "home_score": 0.0,
+      "away_score": 0.0,
+      "status": "7/15 - 1:00 PM EDT",
+      "home_win_probability": 0.8074495135892186,
+      "away_win_probability": 0.19255048641078143,
+      "model_pick": "MIN",
+      "confidence": "High",
+      "confidence_score": 0.8074495135892186,
+      "model_name": "Entei",
+      "model_id": "wnba_entei_moneyline",
+      "prediction_mode": "model",
+      "prediction_available": true,
+      "edge": null,
+      "moneyline_home": null,
+      "moneyline_away": null,
+      "result": "Pending",
+      "model_result": "pending",
+      "completed": false,
+      "source": "ESPN WNBA scoreboard + LineLens model",
+      "top_factor_label": "Pregame Elo and recent team form",
+      "trend": {
+        "labels": [
+          "Elo",
+          "Recent form",
+          "Scoring margin",
+          "Rest"
+        ],
+        "home": [],
+        "away": []
+      },
+      "result_status": "pending"
+    },
+    {
+      "sport": "WNBA",
+      "season": 2026,
+      "game_date": "2026-07-15",
+      "game_id": "401857070",
+      "generated_at": "2026-07-15T15:13:24Z",
+      "home": "IND",
+      "away": "GS",
+      "home_display": "Indiana Fever",
+      "away_display": "Golden State Valkyries",
+      "home_score": 0.0,
+      "away_score": 0.0,
+      "status": "7/15 - 8:00 PM EDT",
+      "home_win_probability": 0.74191308013485,
+      "away_win_probability": 0.25808691986515,
+      "model_pick": "IND",
+      "confidence": "High",
+      "confidence_score": 0.74191308013485,
+      "model_name": "Entei",
+      "model_id": "wnba_entei_moneyline",
+      "prediction_mode": "model",
+      "prediction_available": true,
+      "edge": null,
+      "moneyline_home": null,
+      "moneyline_away": null,
+      "result": "Pending",
+      "model_result": "pending",
+      "completed": false,
+      "source": "ESPN WNBA scoreboard + LineLens model",
+      "top_factor_label": "Pregame Elo and recent team form",
+      "trend": {
+        "labels": [
+          "Elo",
+          "Recent form",
+          "Scoring margin",
+          "Rest"
+        ],
+        "home": [],
+        "away": []
+      },
+      "result_status": "pending"
     }
   ],
-  "generated_at": "2026-07-14T18:06:00Z"
+  "generated_at": "2026-07-15T15:13:24Z"
 }

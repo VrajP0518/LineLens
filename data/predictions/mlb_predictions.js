@@ -1,1 +1,433 @@
-window.__MLB_PREDICTIONS__ = {"metadata":{"sport":"MLB","app":"LineLens Sports","version":"v3.0.0","generated_at":"2026-07-13T19:24:30Z","model_type":"GradientBoostingClassifier","target":"home_win","row_count":16,"real_data":true,"mode":"real","reason":null,"odds_status":"Optional odds API hooks only; no odds provider required.","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","feature_count":127,"model_count":4,"consensus_available":true},"games":[{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"822708","home":"WSH","away":"NYY","home_display":"Washington Nationals","away_display":"New York Yankees","home_score":3.0,"away_score":5.0,"status":"Final","home_win_probability":0.40418240536973055,"away_win_probability":0.5958175946302695,"model_pick":"NYY","confidence":"Medium","confidence_score":0.5958175946302695,"home_probable_pitcher":"Cade Cavalli","away_probable_pitcher":"Will Warren","home_pitcher_summary":"Pitcher proxy: 10 prior starts, 4.50 runs allowed avg, 4.33 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 36 prior starts, 5.36 runs allowed avg, 7.33 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Away won","model_result":"Win","actual_result":"Away won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.3036974305472474,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.38161787079804665,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.40418240536973055,"weight":null},{"model_name":"Moltres","home_probability":0.39395324647847574,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.3036974305472474,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.38161787079804665,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.40418240536973055,"weight":null},{"model_name":"Moltres","home_probability":0.39395324647847574,"weight":null}],"top_factor_label":"Recent run differential","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":-4.5,"win_pct_14_diff":-0.3571428571428571,"pitcher_runs_allowed_diff":0.8611111111111107,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":-0.2773109243697479},"explanation":{"summary":"Model leans NYY with top factors around recent run differential, volatility edge, runs allowed trend.","top_factors":[{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":-2.071428571428572,"away_value":2.4285714285714284,"impact":"supports_away","strength":1.0},{"label":"Volatility edge","feature":"volatility_diff","home_value":2.267786838055364,"away_value":1.772810520855851,"impact":"supports_home","strength":0.5177},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":5.285714285714286,"away_value":1.8571428571428568,"impact":"supports_away","strength":0.2743},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.5714285714285714,"away_value":1.0,"impact":"supports_away","strength":0.1071},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":4.857142857142857,"away_value":6.142857142857143,"impact":"supports_away","strength":0.1029}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.3036974305472474,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.38161787079804665,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.40418240536973055,"weight":null},{"model_name":"Moltres","home_probability":0.39395324647847574,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.5714285714285714,-0.4285714285714285,4.857142857142857,5.285714285714286],"away":[1.0,4.285714285714286,6.142857142857143,1.8571428571428568]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"822876","home":"TEX","away":"HOU","home_display":"Texas Rangers","away_display":"Houston Astros","home_score":6.0,"away_score":5.0,"status":"Final","home_win_probability":0.519097512354373,"away_win_probability":0.48090248764562704,"model_pick":"TEX","confidence":"Low","confidence_score":0.519097512354373,"home_probable_pitcher":"MacKenzie Gore","away_probable_pitcher":"Cristian Javier","home_pitcher_summary":"Pitcher proxy: 100 prior starts, 4.77 runs allowed avg, 5.00 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 79 prior starts, 4.13 runs allowed avg, 5.33 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Home won","model_result":"Win","actual_result":"Home won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.5472641192937473,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.46359388797550777,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.519097512354373,"weight":null},{"model_name":"Moltres","home_probability":0.49481952834675735,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.5472641192937473,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.46359388797550777,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.519097512354373,"weight":null},{"model_name":"Moltres","home_probability":0.49481952834675735,"weight":null}],"top_factor_label":"Volatility edge","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":-1.0714285714285714,"win_pct_14_diff":-0.2142857142857143,"pitcher_runs_allowed_diff":-0.6434177215189871,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":6.0,"away_is_road_trip_opener":0.0,"home_split_advantage":0.1339285714285714},"explanation":{"summary":"Model leans TEX with top factors around volatility edge, recent run differential, runs allowed trend.","top_factors":[{"label":"Volatility edge","feature":"volatility_diff","home_value":2.288688541085343,"away_value":3.651483716701102,"impact":"supports_away","strength":0.4415},{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":-0.7857142857142857,"away_value":0.2857142857142857,"impact":"supports_away","strength":0.2679},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":3.4285714285714284,"away_value":4.857142857142857,"impact":"supports_home","strength":0.1143},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":2.7142857142857144,"away_value":4.0,"impact":"supports_away","strength":0.1029},{"label":"Starting pitcher proxy","feature":"pitcher_runs_allowed_diff","home_value":4.77,"away_value":4.1265822784810124,"impact":"supports_away","strength":0.0606}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.5472641192937473,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.46359388797550777,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.519097512354373,"weight":null},{"model_name":"Moltres","home_probability":0.49481952834675735,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.2857142857142857,-0.7142857142857143,2.7142857142857144,3.4285714285714284],"away":[0.2857142857142857,-0.8571428571428571,4.0,4.857142857142857]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"822951","home":"TB","away":"SEA","home_display":"Tampa Bay Rays","away_display":"Seattle Mariners","home_score":2.0,"away_score":8.0,"status":"Final","home_win_probability":0.43979924620034777,"away_win_probability":0.5602007537996523,"model_pick":"SEA","confidence":"Medium","confidence_score":0.5602007537996523,"home_probable_pitcher":"Ian Seymour","away_probable_pitcher":"Emerson Hancock","home_pitcher_summary":"Pitcher proxy: 4 prior starts, 2.50 runs allowed avg, 3.33 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 29 prior starts, 5.41 runs allowed avg, 8.67 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Away won","model_result":"Win","actual_result":"Away won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.40011451871901815,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.4559558823693577,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.43979924620034777,"weight":null},{"model_name":"Moltres","home_probability":0.4373095874343286,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.40011451871901815,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.4559558823693577,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.43979924620034777,"weight":null},{"model_name":"Moltres","home_probability":0.4373095874343286,"weight":null}],"top_factor_label":"Recent run differential","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":-3.357142857142857,"win_pct_14_diff":-0.4285714285714285,"pitcher_runs_allowed_diff":2.913793103448276,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":-0.0333333333333333},"explanation":{"summary":"Model leans SEA with top factors around recent run differential, starting pitcher proxy, runs scored trend.","top_factors":[{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":-0.6428571428571429,"away_value":2.7142857142857144,"impact":"supports_away","strength":0.8393},{"label":"Starting pitcher proxy","feature":"pitcher_runs_allowed_diff","home_value":2.5,"away_value":5.413793103448276,"impact":"supports_home","strength":0.2743},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":3.4285714285714284,"away_value":5.285714285714286,"impact":"supports_away","strength":0.1486},{"label":"Volatility edge","feature":"volatility_diff","home_value":2.6367367999823035,"away_value":2.4299715851758226,"impact":"supports_home","strength":0.1321},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":4.571428571428571,"away_value":3.142857142857143,"impact":"supports_away","strength":0.1143}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.40011451871901815,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.4559558823693577,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.43979924620034777,"weight":null},{"model_name":"Moltres","home_probability":0.4373095874343286,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.2857142857142857,-1.1428571428571428,3.4285714285714284,4.571428571428571],"away":[0.7142857142857143,2.142857142857143,5.285714285714286,3.142857142857143]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"823029","home":"STL","away":"ATL","home_display":"St. Louis Cardinals","away_display":"Atlanta Braves","home_score":3.0,"away_score":4.0,"status":"Final","home_win_probability":0.4116830108308705,"away_win_probability":0.5883169891691296,"model_pick":"ATL","confidence":"Medium","confidence_score":0.5883169891691296,"home_probable_pitcher":"Dustin May","away_probable_pitcher":"Danny Young","home_pitcher_summary":"Pitcher proxy: 42 prior starts, 4.29 runs allowed avg, 4.67 recent RA avg.","away_pitcher_summary":"Probable pitcher listed, but prior-start proxy data is unavailable.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"partial_proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Away won","model_result":"Win","actual_result":"Away won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.4688234870182372,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.45483727397400237,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4116830108308705,"weight":null},{"model_name":"Moltres","home_probability":0.4357580395964091,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.4688234870182372,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.45483727397400237,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4116830108308705,"weight":null},{"model_name":"Moltres","home_probability":0.4357580395964091,"weight":null}],"top_factor_label":"Recent run differential","data_quality":{"pitcher_data":"partial_proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":-2.8571428571428568,"win_pct_14_diff":-0.2142857142857143,"pitcher_runs_allowed_diff":0.1142857142857147,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":-0.0625},"explanation":{"summary":"Model leans ATL with top factors around recent run differential, runs allowed trend, volatility edge.","top_factors":[{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":-1.2142857142857142,"away_value":1.6428571428571428,"impact":"supports_away","strength":0.7143},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":5.714285714285714,"away_value":4.285714285714286,"impact":"supports_away","strength":0.1143},{"label":"Volatility edge","feature":"volatility_diff","home_value":2.7342623276105904,"away_value":3.30223589477825,"impact":"supports_home","strength":0.1119},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":4.142857142857143,"away_value":4.714285714285714,"impact":"supports_away","strength":0.0457},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.4285714285714285,"away_value":0.5714285714285714,"impact":"supports_away","strength":0.0357}],"data_quality":{"pitcher_data":"partial_proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":4,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.4688234870182372,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.45483727397400237,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4116830108308705,"weight":null},{"model_name":"Moltres","home_probability":0.4357580395964091,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.4285714285714285,-1.5714285714285714,4.142857142857143,5.714285714285714],"away":[0.5714285714285714,0.4285714285714285,4.714285714285714,4.285714285714286]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"823199","home":"SF","away":"COL","home_display":"San Francisco Giants","away_display":"Colorado Rockies","home_score":3.0,"away_score":1.0,"status":"Final","home_win_probability":0.6354943819903919,"away_win_probability":0.3645056180096081,"model_pick":"SF","confidence":"High","confidence_score":0.6354943819903919,"home_probable_pitcher":"Trevor McDonald","away_probable_pitcher":"Michael Lorenzen","home_pitcher_summary":"Pitcher proxy: 1 prior starts, 1.00 runs allowed avg, 1.00 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 90 prior starts, 4.23 runs allowed avg, 4.67 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Home won","model_result":"Win","actual_result":"Home won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.5622827377082401,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.6762696664952043,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.6354943819903919,"weight":null},{"model_name":"Moltres","home_probability":0.5876574778626095,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.5622827377082401,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.6762696664952043,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.6354943819903919,"weight":null},{"model_name":"Moltres","home_probability":0.5876574778626095,"weight":null}],"top_factor_label":"Starting pitcher proxy","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":0.9285714285714284,"win_pct_14_diff":0.1428571428571428,"pitcher_runs_allowed_diff":3.2333333333333334,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":6.0,"away_is_road_trip_opener":0.0,"home_split_advantage":0.5137254901960785},"explanation":{"summary":"Model leans SF with top factors around starting pitcher proxy, recent run differential, runs scored trend.","top_factors":[{"label":"Starting pitcher proxy","feature":"pitcher_runs_allowed_diff","home_value":1.0,"away_value":4.233333333333333,"impact":"supports_home","strength":0.3044},{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":-1.3571428571428572,"away_value":-2.2857142857142856,"impact":"supports_home","strength":0.2321},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":5.0,"away_value":2.2857142857142856,"impact":"supports_home","strength":0.2171},{"label":"Volatility edge","feature":"volatility_diff","home_value":1.632993161855455,"away_value":1.1126972805283322,"impact":"supports_home","strength":0.1357},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.5714285714285714,"away_value":0.1428571428571428,"impact":"supports_home","strength":0.1071}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.5622827377082401,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.6762696664952043,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.6354943819903919,"weight":null},{"model_name":"Moltres","home_probability":0.5876574778626095,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.5714285714285714,0.4285714285714285,5.0,4.571428571428571],"away":[0.1428571428571428,-2.4285714285714284,2.2857142857142856,4.714285714285714]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"823274","home":"SD","away":"TOR","home_display":"San Diego Padres","away_display":"Toronto Blue Jays","home_score":5.0,"away_score":4.0,"status":"Final","home_win_probability":0.4987180957825523,"away_win_probability":0.5012819042174477,"model_pick":"TOR","confidence":"Low","confidence_score":0.5012819042174477,"home_probable_pitcher":"Germ\u00e1n M\u00e1rquez","away_probable_pitcher":"Kevin Gausman","home_pitcher_summary":"Pitcher proxy: 89 prior starts, 5.12 runs allowed avg, 6.33 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 156 prior starts, 3.94 runs allowed avg, 2.00 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Home won","model_result":"Loss","actual_result":"Home won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.4786964889989697,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.5371497698067735,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4987180957825523,"weight":null},{"model_name":"Moltres","home_probability":0.49013998056096475,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.4786964889989697,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.5371497698067735,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4987180957825523,"weight":null},{"model_name":"Moltres","home_probability":0.49013998056096475,"weight":null}],"top_factor_label":"Recent run differential","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":1.9285714285714288,"win_pct_14_diff":0.0714285714285715,"pitcher_runs_allowed_diff":-1.181287813310285,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":0.0717948717948717},"explanation":{"summary":"Model leans TOR with top factors around recent run differential, volatility edge, starting pitcher proxy.","top_factors":[{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":1.3571428571428572,"away_value":-0.5714285714285714,"impact":"supports_home","strength":0.4821},{"label":"Volatility edge","feature":"volatility_diff","home_value":2.3094010767585,"away_value":2.811540841738197,"impact":"supports_away","strength":0.2197},{"label":"Starting pitcher proxy","feature":"pitcher_runs_allowed_diff","home_value":5.123595505617978,"away_value":3.942307692307693,"impact":"supports_away","strength":0.1112},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":5.0,"away_value":3.7142857142857135,"impact":"supports_home","strength":0.1029},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.8571428571428571,"away_value":0.5714285714285714,"impact":"supports_home","strength":0.0714}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.4786964889989697,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.5371497698067735,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4987180957825523,"weight":null},{"model_name":"Moltres","home_probability":0.49013998056096475,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.8571428571428571,2.571428571428572,5.0,2.4285714285714284],"away":[0.5714285714285714,0.5714285714285714,3.7142857142857135,3.142857142857143]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"823358","home":"PIT","away":"MIL","home_display":"Pittsburgh Pirates","away_display":"Milwaukee Brewers","home_score":14.0,"away_score":5.0,"status":"Final","home_win_probability":0.5529209440688218,"away_win_probability":0.44707905593117825,"model_pick":"PIT","confidence":"Medium","confidence_score":0.5529209440688218,"home_probable_pitcher":"Paul Skenes","away_probable_pitcher":"Robert Gasser","home_pitcher_summary":"Pitcher proxy: 52 prior starts, 3.12 runs allowed avg, 3.00 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 6 prior starts, 3.00 runs allowed avg, 3.00 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Home won","model_result":"Win","actual_result":"Home won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.5065729624264744,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.4824332641232752,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5529209440688218,"weight":null},{"model_name":"Moltres","home_probability":0.5066353553934503,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.5065729624264744,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.4824332641232752,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5529209440688218,"weight":null},{"model_name":"Moltres","home_probability":0.5066353553934503,"weight":null}],"top_factor_label":"Runs allowed trend","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":0.7142857142857143,"win_pct_14_diff":0.0,"pitcher_runs_allowed_diff":-0.1153846153846154,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":-0.0499999999999999},"explanation":{"summary":"Model leans PIT with top factors around runs allowed trend, runs scored trend, volatility edge.","top_factors":[{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":1.5714285714285714,"away_value":4.285714285714286,"impact":"supports_home","strength":0.2171},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":4.857142857142857,"away_value":2.2857142857142856,"impact":"supports_home","strength":0.2057},{"label":"Volatility edge","feature":"volatility_diff","home_value":3.7161167647860354,"away_value":1.6035674514745406,"impact":"supports_home","strength":0.179},{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":0.9285714285714286,"away_value":0.2142857142857142,"impact":"supports_home","strength":0.1786},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.8571428571428571,"away_value":0.2857142857142857,"impact":"supports_home","strength":0.1429}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.5065729624264744,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.4824332641232752,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5529209440688218,"weight":null},{"model_name":"Moltres","home_probability":0.5066353553934503,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.8571428571428571,3.2857142857142856,4.857142857142857,1.5714285714285714],"away":[0.2857142857142857,-2.0,2.2857142857142856,4.285714285714286]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"823602","home":"NYM","away":"BOS","home_display":"New York Mets","away_display":"Boston Red Sox","home_score":2.0,"away_score":3.0,"status":"Final","home_win_probability":0.4580318862585045,"away_win_probability":0.5419681137414956,"model_pick":"BOS","confidence":"Low","confidence_score":0.5419681137414956,"home_probable_pitcher":"Zach Thornton","away_probable_pitcher":"Payton Tolle","home_pitcher_summary":"Probable pitcher listed, but prior-start proxy data is unavailable.","away_pitcher_summary":"Pitcher proxy: 2 prior starts, 7.00 runs allowed avg, 7.00 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"partial_proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Away won","model_result":"Win","actual_result":"Away won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.45377309338905514,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.44475834506551126,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4580318862585045,"weight":null},{"model_name":"Moltres","home_probability":0.4509296186589126,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.45377309338905514,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.44475834506551126,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4580318862585045,"weight":null},{"model_name":"Moltres","home_probability":0.4509296186589126,"weight":null}],"top_factor_label":"Starting pitcher proxy","data_quality":{"pitcher_data":"partial_proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":0.2857142857142857,"win_pct_14_diff":0.0,"pitcher_runs_allowed_diff":2.6,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":-0.2208333333333333},"explanation":{"summary":"Model leans BOS with top factors around starting pitcher proxy, volatility edge, runs allowed trend.","top_factors":[{"label":"Starting pitcher proxy","feature":"pitcher_runs_allowed_diff","home_value":null,"away_value":7.0,"impact":"supports_home","strength":0.2448},{"label":"Volatility edge","feature":"volatility_diff","home_value":2.878491668515699,"away_value":2.288688541085313,"impact":"supports_home","strength":0.2378},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":5.142857142857143,"away_value":3.2857142857142856,"impact":"supports_away","strength":0.1486},{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":0.4285714285714285,"away_value":0.1428571428571428,"impact":"supports_home","strength":0.0714},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":4.571428571428571,"away_value":3.7142857142857135,"impact":"supports_home","strength":0.0686}],"data_quality":{"pitcher_data":"partial_proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":4,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.45377309338905514,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.44475834506551126,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4580318862585045,"weight":null},{"model_name":"Moltres","home_probability":0.4509296186589126,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.4285714285714285,-0.5714285714285714,4.571428571428571,5.142857142857143],"away":[0.5714285714285714,0.4285714285714285,3.7142857142857135,3.2857142857142856]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"823681","home":"MIN","away":"LAA","home_display":"Minnesota Twins","away_display":"Los Angeles Angels","home_score":4.0,"away_score":2.0,"status":"Final","home_win_probability":0.5634868295128905,"away_win_probability":0.43651317048710947,"model_pick":"MIN","confidence":"Medium","confidence_score":0.5634868295128905,"home_probable_pitcher":"Taj Bradley","away_probable_pitcher":"Jos\u00e9 Soriano","home_pitcher_summary":"Pitcher proxy: 72 prior starts, 5.06 runs allowed avg, 8.33 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 50 prior starts, 4.74 runs allowed avg, 5.67 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Home won","model_result":"Win","actual_result":"Home won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.5118530632857381,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.5202695888579895,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5634868295128905,"weight":null},{"model_name":"Moltres","home_probability":0.51940079617188,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.5118530632857381,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.5202695888579895,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5634868295128905,"weight":null},{"model_name":"Moltres","home_probability":0.51940079617188,"weight":null}],"top_factor_label":"Recent run differential","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":2.714285714285714,"win_pct_14_diff":0.2142857142857142,"pitcher_runs_allowed_diff":-0.3155555555555551,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":0.0493421052631579},"explanation":{"summary":"Model leans MIN with top factors around recent run differential, runs allowed trend, volatility edge.","top_factors":[{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":-0.2142857142857142,"away_value":-2.9285714285714284,"impact":"supports_home","strength":0.6786},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":2.571428571428572,"away_value":4.428571428571429,"impact":"supports_home","strength":0.1486},{"label":"Volatility edge","feature":"volatility_diff","home_value":2.193062655175144,"away_value":1.3451854182690952,"impact":"supports_home","strength":0.0626},{"label":"Month-long form","feature":"win_pct_30_diff","home_value":0.5,"away_value":0.3333333333333333,"impact":"supports_home","strength":0.0417},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.5714285714285714,"away_value":0.4285714285714285,"impact":"supports_home","strength":0.0357}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.5118530632857381,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.5202695888579895,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5634868295128905,"weight":null},{"model_name":"Moltres","home_probability":0.51940079617188,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.5714285714285714,0.5714285714285714,3.142857142857143,2.571428571428572],"away":[0.4285714285714285,-1.5714285714285714,2.857142857142857,4.428571428571429]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"823842","home":"MIA","away":"CLE","home_display":"Miami Marlins","away_display":"Cleveland Guardians","home_score":2.0,"away_score":5.0,"status":"Final","home_win_probability":0.4310959712166405,"away_win_probability":0.5689040287833595,"model_pick":"CLE","confidence":"Medium","confidence_score":0.5689040287833595,"home_probable_pitcher":"Tyler Phillips","away_probable_pitcher":"Joey Cantillo","home_pitcher_summary":"Pitcher proxy: 7 prior starts, 4.71 runs allowed avg, 6.00 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 19 prior starts, 3.58 runs allowed avg, 3.67 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Away won","model_result":"Win","actual_result":"Away won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.3193349376257063,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.3921683213388661,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4310959712166405,"weight":null},{"model_name":"Moltres","home_probability":0.4092554247644617,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.3193349376257063,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.3921683213388661,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4310959712166405,"weight":null},{"model_name":"Moltres","home_probability":0.4092554247644617,"weight":null}],"top_factor_label":"Recent run differential","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":-1.2857142857142858,"win_pct_14_diff":-0.0714285714285714,"pitcher_runs_allowed_diff":-1.1353383458646618,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":-0.2637362637362637},"explanation":{"summary":"Model leans CLE with top factors around recent run differential, volatility edge, starting pitcher proxy.","top_factors":[{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":0.5,"away_value":1.7857142857142858,"impact":"supports_away","strength":0.3214},{"label":"Volatility edge","feature":"volatility_diff","home_value":2.6457513110645965,"away_value":2.1602468994692954,"impact":"supports_home","strength":0.2207},{"label":"Starting pitcher proxy","feature":"pitcher_runs_allowed_diff","home_value":4.714285714285714,"away_value":3.5789473684210527,"impact":"supports_away","strength":0.1069},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":3.0,"away_value":4.0,"impact":"supports_away","strength":0.08},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":4.142857142857143,"away_value":3.142857142857143,"impact":"supports_away","strength":0.08}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.3193349376257063,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.3921683213388661,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4310959712166405,"weight":null},{"model_name":"Moltres","home_probability":0.4092554247644617,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.5714285714285714,-1.1428571428571428,3.0,4.142857142857143],"away":[0.5714285714285714,0.8571428571428571,4.0,3.142857142857143]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"823925","home":"LAD","away":"AZ","home_display":"Los Angeles Dodgers","away_display":"Arizona Diamondbacks","home_score":3.0,"away_score":5.0,"status":"Final","home_win_probability":0.527110980504217,"away_win_probability":0.472889019495783,"model_pick":"LAD","confidence":"Low","confidence_score":0.527110980504217,"home_probable_pitcher":"Emmet Sheehan","away_probable_pitcher":"Mitch Bratt","home_pitcher_summary":"Pitcher proxy: 22 prior starts, 4.14 runs allowed avg, 2.67 recent RA avg.","away_pitcher_summary":"Probable pitcher listed, but prior-start proxy data is unavailable.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"partial_proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Away won","model_result":"Loss","actual_result":"Away won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.5389742720683048,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.5866163528227017,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.527110980504217,"weight":null},{"model_name":"Moltres","home_probability":0.5212380590470262,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.5389742720683048,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.5866163528227017,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.527110980504217,"weight":null},{"model_name":"Moltres","home_probability":0.5212380590470262,"weight":null}],"top_factor_label":"Recent run differential","data_quality":{"pitcher_data":"partial_proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":2.5,"win_pct_14_diff":0.2142857142857143,"pitcher_runs_allowed_diff":0.2636363636363636,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":3.0,"away_is_road_trip_opener":0.0,"home_split_advantage":0.2208333333333333},"explanation":{"summary":"Model leans LAD with top factors around recent run differential, volatility edge, runs allowed trend.","top_factors":[{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":2.142857142857143,"away_value":-0.3571428571428571,"impact":"supports_home","strength":0.625},{"label":"Volatility edge","feature":"volatility_diff","home_value":2.3603873774083364,"away_value":2.9113897843110093,"impact":"supports_away","strength":0.1561},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":3.142857142857143,"away_value":4.857142857142857,"impact":"supports_home","strength":0.1371},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.7142857142857143,"away_value":0.4285714285714285,"impact":"supports_home","strength":0.0714},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":4.714285714285714,"away_value":3.857142857142857,"impact":"supports_home","strength":0.0686}],"data_quality":{"pitcher_data":"partial_proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":4,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.5389742720683048,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.5866163528227017,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.527110980504217,"weight":null},{"model_name":"Moltres","home_probability":0.5212380590470262,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.7142857142857143,1.5714285714285714,4.714285714285714,3.142857142857143],"away":[0.4285714285714285,-1.0,3.857142857142857,4.857142857142857]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"824250","home":"DET","away":"PHI","home_display":"Detroit Tigers","away_display":"Philadelphia Phillies","home_score":0.0,"away_score":5.0,"status":"Final","home_win_probability":0.4430888876232281,"away_win_probability":0.5569111123767718,"model_pick":"PHI","confidence":"Medium","confidence_score":0.5569111123767718,"home_probable_pitcher":"Tarik Skubal","away_probable_pitcher":"Zack Wheeler","home_pitcher_summary":"Pitcher proxy: 124 prior starts, 3.58 runs allowed avg, 3.67 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 141 prior starts, 3.45 runs allowed avg, 4.33 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Away won","model_result":"Win","actual_result":"Away won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.4026437875302053,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.45546175986341864,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4430888876232281,"weight":null},{"model_name":"Moltres","home_probability":0.4389724119334284,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.4026437875302053,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.45546175986341864,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4430888876232281,"weight":null},{"model_name":"Moltres","home_probability":0.4389724119334284,"weight":null}],"top_factor_label":"Recent run differential","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":-2.7142857142857144,"win_pct_14_diff":-0.3571428571428571,"pitcher_runs_allowed_diff":-0.1338366506520247,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":-0.3461538461538461},"explanation":{"summary":"Model leans PHI with top factors around recent run differential, volatility edge, runs scored trend.","top_factors":[{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":-2.357142857142857,"away_value":0.3571428571428571,"impact":"supports_away","strength":0.6786},{"label":"Volatility edge","feature":"volatility_diff","home_value":1.3801311186847045,"away_value":3.6449573777637294,"impact":"supports_away","strength":0.6226},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":2.7142857142857144,"away_value":3.571428571428572,"impact":"supports_away","strength":0.0686},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.2857142857142857,"away_value":0.4285714285714285,"impact":"supports_away","strength":0.0357},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":4.142857142857143,"away_value":3.7142857142857135,"impact":"supports_away","strength":0.0343}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.4026437875302053,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.45546175986341864,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.4430888876232281,"weight":null},{"model_name":"Moltres","home_probability":0.4389724119334284,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.2857142857142857,-1.4285714285714286,2.7142857142857144,4.142857142857143],"away":[0.4285714285714285,-0.1428571428571428,3.571428571428572,3.7142857142857135]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"824491","home":"CIN","away":"CHC","home_display":"Cincinnati Reds","away_display":"Chicago Cubs","home_score":4.0,"away_score":8.0,"status":"Final","home_win_probability":0.5093234148611873,"away_win_probability":0.49067658513881274,"model_pick":"CIN","confidence":"Low","confidence_score":0.5093234148611873,"home_probable_pitcher":"Andrew Abbott","away_probable_pitcher":"Matthew Boyd","home_pitcher_summary":"Pitcher proxy: 74 prior starts, 3.53 runs allowed avg, 1.33 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 65 prior starts, 3.89 runs allowed avg, 3.33 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Away won","model_result":"Loss","actual_result":"Away won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.4516863813169805,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.49858580907437705,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5093234148611873,"weight":null},{"model_name":"Moltres","home_probability":0.48286932062755655,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.4516863813169805,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.49858580907437705,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5093234148611873,"weight":null},{"model_name":"Moltres","home_probability":0.48286932062755655,"weight":null}],"top_factor_label":"Volatility edge","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":-0.8571428571428572,"win_pct_14_diff":0.1428571428571429,"pitcher_runs_allowed_diff":0.365280665280665,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":0.125},"explanation":{"summary":"Model leans CIN with top factors around volatility edge, runs scored trend, recent run differential.","top_factors":[{"label":"Volatility edge","feature":"volatility_diff","home_value":2.2253945610567323,"away_value":4.070801956792867,"impact":"supports_away","strength":0.5914},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":3.4285714285714284,"away_value":6.285714285714286,"impact":"supports_away","strength":0.2286},{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":0.5714285714285714,"away_value":1.4285714285714286,"impact":"supports_away","strength":0.2143},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":2.4285714285714284,"away_value":4.428571428571429,"impact":"supports_home","strength":0.16},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.7142857142857143,"away_value":0.4285714285714285,"impact":"supports_home","strength":0.0714}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.4516863813169805,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.49858580907437705,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5093234148611873,"weight":null},{"model_name":"Moltres","home_probability":0.48286932062755655,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.7142857142857143,1.0,3.4285714285714284,2.4285714285714284],"away":[0.4285714285714285,1.8571428571428568,6.285714285714286,4.428571428571429]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"824574","home":"CWS","away":"ATH","home_display":"Chicago White Sox","away_display":"Athletics","home_score":9.0,"away_score":1.0,"status":"Final","home_win_probability":0.471078407545927,"away_win_probability":0.528921592454073,"model_pick":"ATH","confidence":"Low","confidence_score":0.528921592454073,"home_probable_pitcher":"Noah Schultz","away_probable_pitcher":"J.T. Ginn","home_pitcher_summary":"Probable pitcher listed, but prior-start proxy data is unavailable.","away_pitcher_summary":"Pitcher proxy: 21 prior starts, 4.43 runs allowed avg, 2.33 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"partial_proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Home won","model_result":"Loss","actual_result":"Home won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.4306169176956192,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.38444868268636917,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.471078407545927,"weight":null},{"model_name":"Moltres","home_probability":0.44110349340620214,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.4306169176956192,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.38444868268636917,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.471078407545927,"weight":null},{"model_name":"Moltres","home_probability":0.44110349340620214,"weight":null}],"top_factor_label":"Recent run differential","data_quality":{"pitcher_data":"partial_proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":-2.2857142857142856,"win_pct_14_diff":-0.5,"pitcher_runs_allowed_diff":0.0285714285714284,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":-0.1948717948717949},"explanation":{"summary":"Model leans ATH with top factors around recent run differential, volatility edge, runs allowed trend.","top_factors":[{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":-1.9285714285714288,"away_value":0.3571428571428571,"impact":"supports_away","strength":0.5714},{"label":"Volatility edge","feature":"volatility_diff","home_value":3.0394235042348527,"away_value":2.4784787961282158,"impact":"supports_away","strength":0.2928},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":5.857142857142857,"away_value":4.571428571428571,"impact":"supports_away","strength":0.1029},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.1428571428571428,"away_value":0.4285714285714285,"impact":"supports_away","strength":0.0714},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":3.7142857142857135,"away_value":3.142857142857143,"impact":"supports_home","strength":0.0457}],"data_quality":{"pitcher_data":"partial_proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":4,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.4306169176956192,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.38444868268636917,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.471078407545927,"weight":null},{"model_name":"Moltres","home_probability":0.44110349340620214,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.1428571428571428,-2.142857142857143,3.7142857142857135,5.857142857142857],"away":[0.4285714285714285,-1.4285714285714286,3.142857142857143,4.571428571428571]}},{"sport":"MLB","season":2026,"game_date":"2026-07-12","game_id":"824814","home":"BAL","away":"KC","home_display":"Baltimore Orioles","away_display":"Kansas City Royals","home_score":8.0,"away_score":2.0,"status":"Final","home_win_probability":0.470020116755582,"away_win_probability":0.529979883244418,"model_pick":"KC","confidence":"Low","confidence_score":0.529979883244418,"home_probable_pitcher":"Shane Baz","away_probable_pitcher":"Seth Lugo","home_pitcher_summary":"Pitcher proxy: 53 prior starts, 3.91 runs allowed avg, 3.00 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 84 prior starts, 3.83 runs allowed avg, 6.00 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Home won","model_result":"Loss","actual_result":"Home won","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.4582468329050216,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.45471160751847745,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.470020116755582,"weight":null},{"model_name":"Moltres","home_probability":0.4586116979564687,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.4582468329050216,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.45471160751847745,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.470020116755582,"weight":null},{"model_name":"Moltres","home_probability":0.4586116979564687,"weight":null}],"top_factor_label":"Recent run differential","data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":-3.1428571428571432,"win_pct_14_diff":-0.0714285714285714,"pitcher_runs_allowed_diff":-0.0723270440251568,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":6.0,"away_is_road_trip_opener":0.0,"home_split_advantage":0.0333333333333333},"explanation":{"summary":"Model leans KC with top factors around recent run differential, runs scored trend, runs allowed trend.","top_factors":[{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":-1.8571428571428568,"away_value":1.2857142857142858,"impact":"supports_away","strength":0.7857},{"label":"Runs scored trend","feature":"runs_scored_7_diff","home_value":3.0,"away_value":4.714285714285714,"impact":"supports_away","strength":0.1371},{"label":"Runs allowed trend","feature":"runs_allowed_7_diff","home_value":5.428571428571429,"away_value":3.7142857142857135,"impact":"supports_away","strength":0.1371},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.2857142857142857,"away_value":0.5714285714285714,"impact":"supports_away","strength":0.0714},{"label":"Volatility edge","feature":"volatility_diff","home_value":2.3094010767585185,"away_value":2.811540841738194,"impact":"supports_away","strength":0.0252}],"data_quality":{"pitcher_data":"proxy","travel_data":"estimated","schedule_fatigue":"used","feature_missing_count":0,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.4582468329050216,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.45471160751847745,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.470020116755582,"weight":null},{"model_name":"Moltres","home_probability":0.4586116979564687,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.2857142857142857,-2.4285714285714284,3.0,5.428571428571429],"away":[0.5714285714285714,1.0,4.714285714285714,3.7142857142857135]}},{"sport":"MLB","season":2026,"game_date":"2026-07-14","game_id":"823443","home":"NATIONAL LEAGUE ALL-STARS","away":"AMERICAN LEAGUE ALL-STARS","home_display":"National League All-Stars","away_display":"American League All-Stars","home_score":null,"away_score":null,"status":"Scheduled","home_win_probability":0.5412301143045475,"away_win_probability":0.4587698856954525,"model_pick":"NATIONAL LEAGUE ALL-STARS","confidence":"Low","confidence_score":0.5412301143045475,"home_probable_pitcher":"Cristopher S\u00e1nchez","away_probable_pitcher":"Dylan Cease","home_pitcher_summary":"Pitcher proxy: 80 prior starts, 3.71 runs allowed avg, 5.00 recent RA avg.","away_pitcher_summary":"Pitcher proxy: 159 prior starts, 4.13 runs allowed avg, 2.67 recent RA avg.","pitcher_edge":"Pitcher proxy edge","pitcher_data_status":"proxy","moneyline_home":null,"moneyline_away":null,"market_implied_home":null,"moneyline_home_open":null,"moneyline_home_current":null,"moneyline_home_close":null,"moneyline_away_open":null,"moneyline_away_current":null,"moneyline_away_close":null,"edge":null,"movement_label":"Line movement unavailable. Add odds provider later.","clv":null,"clv_label":"CLV unavailable","result":"Pending","model_result":"Pending","actual_result":"Pending","prediction_mode":"model","model_name":"GradientBoostingClassifier","model_id":"mlb_moneyline_v3.0.0_20260713T192249","model_components":[{"model_name":"LogisticRegression","home_probability":0.4843135820823312,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.515123038821769,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5412301143045475,"weight":null},{"model_name":"Moltres","home_probability":0.5047021221002382,"weight":null}],"model_consensus":[{"model_name":"LogisticRegression","home_probability":0.4843135820823312,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.515123038821769,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5412301143045475,"weight":null},{"model_name":"Moltres","home_probability":0.5047021221002382,"weight":null}],"top_factor_label":"Starting pitcher proxy","data_quality":{"pitcher_data":"proxy","travel_data":"missing","schedule_fatigue":"used"},"feature_values":{"run_diff_14_diff":0.0,"win_pct_14_diff":0.0,"pitcher_runs_allowed_diff":0.4132861635220126,"schedule_fatigue_diff":0.0,"travel_km_diff":0.0,"travel_fatigue_km_diff":0.0,"away_road_trip_game_number":0.0,"away_is_road_trip_opener":0.0,"home_split_advantage":0.0},"explanation":{"summary":"Model leans NATIONAL LEAGUE ALL-STARS with top factors around starting pitcher proxy, pitcher team-win proxy, recent run differential.","top_factors":[{"label":"Starting pitcher proxy","feature":"pitcher_runs_allowed_diff","home_value":3.7125,"away_value":4.1257861635220126,"impact":"supports_home","strength":0.0389},{"label":"Pitcher team-win proxy","feature":"pitcher_win_pct_diff","home_value":0.6,"away_value":0.5660377358490566,"impact":"supports_home","strength":0.0027},{"label":"Recent run differential","feature":"run_diff_14_diff","home_value":0.0,"away_value":0.0,"impact":"supports_home","strength":0.0},{"label":"Short-term form","feature":"win_pct_7_diff","home_value":0.5,"away_value":0.5,"impact":"supports_home","strength":0.0},{"label":"Month-long form","feature":"win_pct_30_diff","home_value":0.5,"away_value":0.5,"impact":"supports_home","strength":0.0}],"data_quality":{"pitcher_data":"proxy","travel_data":"missing","schedule_fatigue":"used","feature_missing_count":13,"explanation_type":"local feature values with global model driver weights"},"component_contributions":[{"model_name":"LogisticRegression","home_probability":0.4843135820823312,"weight":null},{"model_name":"RandomForestClassifier","home_probability":0.515123038821769,"weight":null},{"model_name":"GradientBoostingClassifier","home_probability":0.5412301143045475,"weight":null},{"model_name":"Moltres","home_probability":0.5047021221002382,"weight":null}],"explanation_type":"multi-model probability panel plus local feature values"},"trend":{"labels":["Win %","Run diff","Runs scored","Runs allowed"],"home":[0.5,0.0,4.4,4.4],"away":[0.5,0.0,4.4,4.4]}}]};
+window.__MLB_PREDICTIONS__ = {
+  "metadata": {
+    "sport": "MLB",
+    "app": "LineLens Sports",
+    "version": "v3.0.0",
+    "generated_at": "2026-07-15T14:57:34Z",
+    "model_type": "GradientBoostingClassifier",
+    "target": "home_win",
+    "row_count": 2,
+    "real_data": true,
+    "mode": "real",
+    "reason": null,
+    "odds_status": "Optional odds API hooks only; no odds provider required.",
+    "prediction_mode": "model",
+    "model_name": "GradientBoostingClassifier",
+    "model_id": "mlb_moneyline_v3.0.0_20260713T192249",
+    "feature_count": 127,
+    "model_count": 4,
+    "consensus_available": true
+  },
+  "games": [
+    {
+      "sport": "MLB",
+      "season": 2026,
+      "game_date": "2026-07-14",
+      "game_id": "823443",
+      "home": "NATIONAL LEAGUE ALL-STARS",
+      "away": "AMERICAN LEAGUE ALL-STARS",
+      "home_display": "National League All-Stars",
+      "away_display": "American League All-Stars",
+      "home_score": 0.0,
+      "away_score": 4.0,
+      "status": "Final",
+      "home_win_probability": 0.5412301143045475,
+      "away_win_probability": 0.4587698856954525,
+      "model_pick": "NATIONAL LEAGUE ALL-STARS",
+      "confidence": "Low",
+      "confidence_score": 0.5412301143045475,
+      "home_probable_pitcher": "Cristopher Sánchez",
+      "away_probable_pitcher": "Dylan Cease",
+      "home_pitcher_summary": "Pitcher proxy: 80 prior starts, 3.71 runs allowed avg, 5.00 recent RA avg.",
+      "away_pitcher_summary": "Pitcher proxy: 159 prior starts, 4.13 runs allowed avg, 2.67 recent RA avg.",
+      "pitcher_edge": "Pitcher proxy edge",
+      "pitcher_data_status": "proxy",
+      "moneyline_home": null,
+      "moneyline_away": null,
+      "market_implied_home": null,
+      "moneyline_home_open": null,
+      "moneyline_home_current": null,
+      "moneyline_home_close": null,
+      "moneyline_away_open": null,
+      "moneyline_away_current": null,
+      "moneyline_away_close": null,
+      "edge": null,
+      "movement_label": "Line movement unavailable. Add odds provider later.",
+      "clv": null,
+      "clv_label": "CLV unavailable",
+      "result": "Away won",
+      "model_result": "Loss",
+      "actual_result": "Away won",
+      "prediction_mode": "model",
+      "model_name": "GradientBoostingClassifier",
+      "model_id": "mlb_moneyline_v3.0.0_20260713T192249",
+      "model_components": [
+        {
+          "model_name": "LogisticRegression",
+          "home_probability": 0.4843135820823312,
+          "weight": null
+        },
+        {
+          "model_name": "RandomForestClassifier",
+          "home_probability": 0.515123038821769,
+          "weight": null
+        },
+        {
+          "model_name": "GradientBoostingClassifier",
+          "home_probability": 0.5412301143045475,
+          "weight": null
+        },
+        {
+          "model_name": "Moltres",
+          "home_probability": 0.5047021221002382,
+          "weight": null
+        }
+      ],
+      "model_consensus": [
+        {
+          "model_name": "LogisticRegression",
+          "home_probability": 0.4843135820823312,
+          "weight": null
+        },
+        {
+          "model_name": "RandomForestClassifier",
+          "home_probability": 0.515123038821769,
+          "weight": null
+        },
+        {
+          "model_name": "GradientBoostingClassifier",
+          "home_probability": 0.5412301143045475,
+          "weight": null
+        },
+        {
+          "model_name": "Moltres",
+          "home_probability": 0.5047021221002382,
+          "weight": null
+        }
+      ],
+      "top_factor_label": "Starting pitcher proxy",
+      "data_quality": {
+        "pitcher_data": "proxy",
+        "travel_data": "missing",
+        "schedule_fatigue": "used"
+      },
+      "feature_values": {
+        "run_diff_14_diff": 0.0,
+        "win_pct_14_diff": 0.0,
+        "pitcher_runs_allowed_diff": 0.4132861635220126,
+        "schedule_fatigue_diff": 0.0,
+        "travel_km_diff": 0.0,
+        "travel_fatigue_km_diff": 0.0,
+        "away_road_trip_game_number": 0.0,
+        "away_is_road_trip_opener": 0.0,
+        "home_split_advantage": 0.0
+      },
+      "explanation": {
+        "summary": "Model leans NATIONAL LEAGUE ALL-STARS with top factors around starting pitcher proxy, pitcher team-win proxy, recent run differential.",
+        "top_factors": [
+          {
+            "label": "Starting pitcher proxy",
+            "feature": "pitcher_runs_allowed_diff",
+            "home_value": 3.7125,
+            "away_value": 4.1257861635220126,
+            "impact": "supports_home",
+            "strength": 0.0389
+          },
+          {
+            "label": "Pitcher team-win proxy",
+            "feature": "pitcher_win_pct_diff",
+            "home_value": 0.6,
+            "away_value": 0.5660377358490566,
+            "impact": "supports_home",
+            "strength": 0.0027
+          },
+          {
+            "label": "Recent run differential",
+            "feature": "run_diff_14_diff",
+            "home_value": 0.0,
+            "away_value": 0.0,
+            "impact": "supports_home",
+            "strength": 0.0
+          },
+          {
+            "label": "Short-term form",
+            "feature": "win_pct_7_diff",
+            "home_value": 0.5,
+            "away_value": 0.5,
+            "impact": "supports_home",
+            "strength": 0.0
+          },
+          {
+            "label": "Month-long form",
+            "feature": "win_pct_30_diff",
+            "home_value": 0.5,
+            "away_value": 0.5,
+            "impact": "supports_home",
+            "strength": 0.0
+          }
+        ],
+        "data_quality": {
+          "pitcher_data": "proxy",
+          "travel_data": "missing",
+          "schedule_fatigue": "used",
+          "feature_missing_count": 13,
+          "explanation_type": "local feature values with global model driver weights"
+        },
+        "component_contributions": [
+          {
+            "model_name": "LogisticRegression",
+            "home_probability": 0.4843135820823312,
+            "weight": null
+          },
+          {
+            "model_name": "RandomForestClassifier",
+            "home_probability": 0.515123038821769,
+            "weight": null
+          },
+          {
+            "model_name": "GradientBoostingClassifier",
+            "home_probability": 0.5412301143045475,
+            "weight": null
+          },
+          {
+            "model_name": "Moltres",
+            "home_probability": 0.5047021221002382,
+            "weight": null
+          }
+        ],
+        "explanation_type": "multi-model probability panel plus local feature values"
+      },
+      "trend": {
+        "labels": [
+          "Win %",
+          "Run diff",
+          "Runs scored",
+          "Runs allowed"
+        ],
+        "home": [
+          0.5,
+          0.0,
+          4.4,
+          4.4
+        ],
+        "away": [
+          0.5,
+          0.0,
+          4.4,
+          4.4
+        ]
+      }
+    },
+    {
+      "sport": "MLB",
+      "season": 2026,
+      "game_date": "2026-07-16",
+      "game_id": "823440",
+      "home": "PHI",
+      "away": "NYM",
+      "home_display": "Philadelphia Phillies",
+      "away_display": "New York Mets",
+      "home_score": null,
+      "away_score": null,
+      "status": "Scheduled",
+      "home_win_probability": 0.5285259517685206,
+      "away_win_probability": 0.4714740482314794,
+      "model_pick": "PHI",
+      "confidence": "Low",
+      "confidence_score": 0.5285259517685206,
+      "home_probable_pitcher": null,
+      "away_probable_pitcher": "Christian Scott",
+      "home_pitcher_summary": "Probable pitcher listed, but prior-start proxy data is unavailable.",
+      "away_pitcher_summary": "Pitcher proxy: 8 prior starts, 5.38 runs allowed avg, 6.00 recent RA avg.",
+      "pitcher_edge": "Pitcher proxy edge",
+      "pitcher_data_status": "partial_proxy",
+      "moneyline_home": -134.7,
+      "moneyline_away": 119.3,
+      "market_implied_home": 0.573924158500213,
+      "moneyline_home_open": null,
+      "moneyline_home_current": -134.7,
+      "moneyline_home_close": null,
+      "moneyline_away_open": null,
+      "moneyline_away_current": 119.3,
+      "moneyline_away_close": null,
+      "edge": null,
+      "movement_label": "Line movement unavailable. Add odds provider later.",
+      "clv": null,
+      "clv_label": "CLV unavailable",
+      "result": "Pending",
+      "model_result": "Pending",
+      "actual_result": "Pending",
+      "prediction_mode": "model",
+      "model_name": "GradientBoostingClassifier",
+      "model_id": "mlb_moneyline_v3.0.0_20260713T192249",
+      "model_components": [
+        {
+          "model_name": "LogisticRegression",
+          "home_probability": 0.5305624233567969,
+          "weight": null
+        },
+        {
+          "model_name": "RandomForestClassifier",
+          "home_probability": 0.603137098015914,
+          "weight": null
+        },
+        {
+          "model_name": "GradientBoostingClassifier",
+          "home_probability": 0.5285259517685206,
+          "weight": null
+        },
+        {
+          "model_name": "Moltres",
+          "home_probability": 0.5238021358419661,
+          "weight": null
+        }
+      ],
+      "model_consensus": [
+        {
+          "model_name": "LogisticRegression",
+          "home_probability": 0.5305624233567969,
+          "weight": null
+        },
+        {
+          "model_name": "RandomForestClassifier",
+          "home_probability": 0.603137098015914,
+          "weight": null
+        },
+        {
+          "model_name": "GradientBoostingClassifier",
+          "home_probability": 0.5285259517685206,
+          "weight": null
+        },
+        {
+          "model_name": "Moltres",
+          "home_probability": 0.5238021358419661,
+          "weight": null
+        }
+      ],
+      "top_factor_label": "Volatility edge",
+      "data_quality": {
+        "pitcher_data": "partial_proxy",
+        "travel_data": "estimated",
+        "schedule_fatigue": "used"
+      },
+      "feature_values": {
+        "run_diff_14_diff": -0.0714285714285714,
+        "win_pct_14_diff": 0.0714285714285714,
+        "pitcher_runs_allowed_diff": 0.9749999999999996,
+        "schedule_fatigue_diff": 0.0,
+        "travel_km_diff": 0.0,
+        "travel_fatigue_km_diff": 0.0,
+        "away_road_trip_game_number": 6.0,
+        "away_is_road_trip_opener": 0.0,
+        "home_split_advantage": 0.35
+      },
+      "explanation": {
+        "summary": "Model leans PHI with top factors around volatility edge, runs allowed trend, starting pitcher proxy.",
+        "top_factors": [
+          {
+            "label": "Volatility edge",
+            "feature": "volatility_diff",
+            "home_value": 3.6449573777637294,
+            "away_value": 2.878491668515699,
+            "impact": "supports_home",
+            "strength": 0.1547
+          },
+          {
+            "label": "Runs allowed trend",
+            "feature": "runs_allowed_7_diff",
+            "home_value": 3.7142857142857135,
+            "away_value": 5.142857142857143,
+            "impact": "supports_home",
+            "strength": 0.1143
+          },
+          {
+            "label": "Starting pitcher proxy",
+            "feature": "pitcher_runs_allowed_diff",
+            "home_value": null,
+            "away_value": 5.375,
+            "impact": "supports_home",
+            "strength": 0.0918
+          },
+          {
+            "label": "Runs scored trend",
+            "feature": "runs_scored_7_diff",
+            "home_value": 3.571428571428572,
+            "away_value": 4.571428571428571,
+            "impact": "supports_away",
+            "strength": 0.08
+          },
+          {
+            "label": "Home/away split",
+            "feature": "home_split_advantage",
+            "home_value": 0.75,
+            "away_value": 0.4,
+            "impact": "supports_home",
+            "strength": 0.028
+          }
+        ],
+        "data_quality": {
+          "pitcher_data": "partial_proxy",
+          "travel_data": "estimated",
+          "schedule_fatigue": "used",
+          "feature_missing_count": 4,
+          "explanation_type": "local feature values with global model driver weights"
+        },
+        "component_contributions": [
+          {
+            "model_name": "LogisticRegression",
+            "home_probability": 0.5305624233567969,
+            "weight": null
+          },
+          {
+            "model_name": "RandomForestClassifier",
+            "home_probability": 0.603137098015914,
+            "weight": null
+          },
+          {
+            "model_name": "GradientBoostingClassifier",
+            "home_probability": 0.5285259517685206,
+            "weight": null
+          },
+          {
+            "model_name": "Moltres",
+            "home_probability": 0.5238021358419661,
+            "weight": null
+          }
+        ],
+        "explanation_type": "multi-model probability panel plus local feature values"
+      },
+      "trend": {
+        "labels": [
+          "Win %",
+          "Run diff",
+          "Runs scored",
+          "Runs allowed"
+        ],
+        "home": [
+          0.4285714285714285,
+          -0.1428571428571428,
+          3.571428571428572,
+          3.7142857142857135
+        ],
+        "away": [
+          0.4285714285714285,
+          -0.5714285714285714,
+          4.571428571428571,
+          5.142857142857143
+        ]
+      },
+      "spread_home_current": -1.5,
+      "spread_away_current": 1.5,
+      "spread_home_price_current": 152.3,
+      "spread_away_price_current": -177.3,
+      "total_current": 9.8,
+      "total_over_price_current": -109.7,
+      "total_under_price_current": -42.7,
+      "market_implied_away": 0.45599635202918376,
+      "market_edge_home": -0.0454,
+      "odds_status": "real_odds_snapshot",
+      "odds_snapshot_at": "2026-07-15T15:15:12Z",
+      "odds_provider_event_id": "7ad2e88701ead09625333188a5b653b2"
+    }
+  ]
+};

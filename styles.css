@@ -1,5 +1,5 @@
 :root {
-    --sidebar-width: clamp(214px, 15vw, 260px);
+    --sidebar-width: clamp(214px, 15vw, 300px);
     --sidebar-scale: 1;
     color-scheme: dark;
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -2613,7 +2613,7 @@ body {
 }
 
 /* ==========================================================
-   Sprint 3 art direction: broadcast-night / luxury utility
+   Sprint 4 art direction: broadcast-night / luxury utility
    Inspired by Apple Materials and modern live-score products:
    translucent navigation, high-contrast content, calm motion.
    ========================================================== */
@@ -6259,4 +6259,281 @@ body .wnba-model-card__visual { min-height: 74px; background: #101d2a; backgroun
     .ll-sidebar-engine {
         display: none;
     }
+}
+
+/* Stable desk canvas and rail behavior. The background is a bundled asset;
+   it must remain visible even when the app is opened without live data. */
+body {
+    background-color: #03050a;
+    background-image:
+        linear-gradient(180deg, rgba(3, 5, 12, 0.62), rgba(3, 7, 18, 0.9) 78%, rgba(2, 3, 8, 0.98)),
+        url("assets/linelens-stadium-bg.png");
+    background-position: center, right center;
+    background-size: cover, cover;
+    background-attachment: fixed;
+}
+
+.sidebar {
+    overflow: hidden;
+}
+
+.sidebar > .nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+}
+
+/* Props desk refresh: compact controls, row-like cards, and quieter diagnostics. */
+.props-shell {
+    gap: 1.15rem;
+    max-width: 1280px;
+}
+
+.props-header {
+    padding: .25rem 0 .95rem;
+    align-items: end;
+}
+
+.props-header h2 {
+    font-size: clamp(1.55rem, 2.6vw, 2.15rem);
+    letter-spacing: -.025em;
+}
+
+.props-header__status {
+    min-width: 150px;
+    padding-left: 1rem;
+}
+
+.props-header__status strong {
+    font-size: 1.65rem;
+}
+
+.props-header__status small {
+    color: #8292a1;
+    font-size: .68rem;
+    line-height: 1.3;
+}
+
+.props-monitor {
+    display: flex;
+    align-items: baseline;
+    gap: .55rem;
+    margin: -.3rem 0 0;
+    padding: .6rem .75rem;
+    border-left-width: 2px;
+}
+
+.props-monitor strong {
+    flex: 0 0 auto;
+    color: #dbe7f0;
+    font-size: .78rem;
+}
+
+.props-monitor span {
+    color: #a7b7c5;
+    font-size: .76rem;
+}
+
+.props-filters {
+    padding: .75rem .9rem;
+    border: 1px solid #293b4c;
+    border-radius: 8px;
+    background: #0a131d;
+}
+
+.props-filter-bar {
+    display: grid;
+    grid-template-columns: auto minmax(220px, .8fr) minmax(150px, 1fr) minmax(150px, .7fr);
+    gap: .7rem;
+    align-items: end;
+}
+
+.props-filter-sport {
+    display: inline-flex;
+    gap: 0;
+    align-self: end;
+    border: 1px solid #334859;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.props-filter-sport button {
+    min-height: 36px;
+    padding: .45rem .65rem;
+    border: 0;
+    border-right: 1px solid #334859;
+    background: #0d1823;
+    color: #9dafbe;
+    font: inherit;
+    font-size: .75rem;
+    cursor: pointer;
+}
+
+.props-filter-sport button:last-child { border-right: 0; }
+.props-filter-sport button:hover,
+.props-filter-sport button:focus-visible,
+.props-filter-sport button.is-active { background: #1d3548; color: #f1f6fa; }
+
+.props-date-nav {
+    display: grid;
+    grid-template-columns: 34px minmax(130px, 1fr) 34px;
+    gap: .35rem;
+    align-items: end;
+}
+
+.props-date-nav .icon-btn {
+    width: 34px;
+    height: 36px;
+    border: 1px solid #334859;
+    border-radius: 5px;
+    background: #0d1823;
+    color: #c8d9e5;
+}
+
+.props-date-nav .icon-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+.props-filter-bar label,
+.props-advanced label {
+    display: grid;
+    gap: .25rem;
+    color: #91a3b2;
+    font-size: .68rem;
+}
+
+.props-filter-bar input,
+.props-filter-bar select,
+.props-advanced input,
+.props-advanced select {
+    min-width: 0;
+    min-height: 36px;
+    border: 1px solid #334859;
+    border-radius: 5px;
+    background: #08111a;
+    color: #e5edf3;
+    padding: .42rem .55rem;
+    font: inherit;
+    font-size: .76rem;
+}
+
+.props-advanced {
+    margin-top: .7rem;
+    border-top: 1px solid #223443;
+}
+
+.props-advanced summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .65rem 0 .15rem;
+    color: #c6d6e1;
+    font-size: .76rem;
+    cursor: pointer;
+    list-style-position: inside;
+}
+
+.props-advanced summary span { color: #738696; }
+.props-filter-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .6rem; padding-top: .65rem; }
+
+.props-summary {
+    padding: .2rem 0 .85rem;
+    border-bottom: 1px solid #223443;
+}
+
+.props-summary__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.props-summary__stats div { display: grid; gap: .12rem; }
+.props-summary__stats span { color: #8293a2; font-size: .68rem; }
+.props-summary__stats strong { color: #e7eff4; font-size: 1.2rem; }
+.props-summary__note { margin: .6rem 0 0; color: #8293a2; font-size: .72rem; }
+
+.props-feed { gap: .8rem; }
+.props-feed > .section-header { margin-bottom: 0; }
+.props-feed > .section-header h2 { font-size: 1.15rem; }
+.props-feed > .section-header .muted { font-size: .72rem; }
+
+.props-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+
+.prop-card {
+    gap: .6rem;
+    padding: .85rem .9rem;
+    border: 1px solid #2a3c4d;
+    border-top: 2px solid #3c5b70;
+    border-radius: 6px;
+    background: #0b151f;
+    box-shadow: none;
+}
+
+.prop-card--candidate { border-top-color: #b58a42; }
+.prop-card--model-only { border-top-color: #537f9e; }
+.prop-card__header { justify-content: space-between; }
+.prop-card__heading { display: flex; align-items: center; gap: .5rem; min-width: 0; }
+.prop-card__market { overflow: hidden; color: #a9bac6; text-overflow: ellipsis; white-space: nowrap; }
+.prop-card__time { color: #8294a4; font-size: .7rem; }
+.prop-card__identity { gap: .6rem; }
+.prop-player-mark { width: 40px; height: 40px; border-radius: 5px; background: #173044; font-size: .78rem; }
+.prop-card__identity h3 { font-size: 1rem; }
+.prop-card__identity p { font-size: .73rem; }
+
+.prop-card__pick {
+    grid-template-columns: minmax(130px, 1.4fr) repeat(3, minmax(70px, 1fr));
+    gap: .55rem;
+    padding: .65rem 0;
+    border-top: 1px solid #223443;
+    border-bottom: 1px solid #223443;
+}
+
+.prop-card__pick span { font-size: .66rem; }
+.prop-card__pick strong { font-size: .95rem; }
+.prop-card__footer { justify-content: space-between; align-items: center; }
+.prop-card__status { display: flex; align-items: center; gap: .45rem; min-width: 0; }
+.prop-card__status small { max-width: 24ch; overflow: hidden; color: #8293a2; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }
+.prop-card__actions { display: flex; gap: .35rem; }
+.prop-card__actions .btn { white-space: nowrap; }
+.btn--quiet { border-color: transparent; background: transparent; color: #9db6c7; }
+.btn--quiet:hover, .btn--quiet:focus-visible { border-color: #3b5b70; background: #112231; color: #f2f7fa; }
+.prop-card__details { display: flex; gap: .75rem; color: #718595; font-size: .66rem; }
+.prop-card__details span + span { padding-left: .75rem; border-left: 1px solid #273b4a; }
+
+.props-feed--model-only { padding-top: .9rem; border-top: 1px solid #253947; }
+.prop-health { padding-top: .9rem; border-top: 1px solid #253947; }
+.prop-health .section-header h2 { font-size: 1.05rem; }
+.prop-health__rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.prop-health__rows article { padding: .7rem 0; border-bottom: 1px solid #253947; }
+.prop-health__title { display: flex; justify-content: space-between; gap: 1rem; }
+.prop-health__title strong { color: #e7eff4; }
+.prop-health__title span { color: #9db4c2; font-size: .72rem; }
+.prop-health__rows p { margin: .35rem 0; color: #899ba9; font-size: .74rem; }
+.prop-health__rows small { color: #718595; font-size: .67rem; }
+
+@media (max-width: 980px) {
+    .props-filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .props-filter-sport { justify-self: start; }
+    .props-search, .props-sort { min-width: 0; }
+    .props-filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+    .props-header { display: grid; gap: .7rem; }
+    .props-header__status { padding-left: 0; border-left: 0; }
+    .props-filter-bar { grid-template-columns: 1fr; }
+    .props-filter-sport { width: 100%; }
+    .props-filter-sport button { flex: 1; }
+    .props-date-nav { max-width: 320px; }
+    .props-filter-grid, .props-summary__stats, .props-health__rows, .prop-health__rows { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .props-grid { grid-template-columns: 1fr; }
+    .prop-card__pick { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 460px) {
+    .props-filter-grid, .props-summary__stats, .prop-health__rows { grid-template-columns: 1fr; }
+    .props-advanced summary { align-items: flex-start; flex-direction: column; gap: .2rem; }
+    .prop-card__footer { align-items: flex-start; flex-direction: column; }
+    .prop-card__status { width: 100%; }
 }

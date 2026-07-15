@@ -1,6 +1,6 @@
 {
   "name": "linelens-sports",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "private": true,
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
@@ -50,6 +50,7 @@
     "check:integrity": "python scripts/check_data_integrity.py",
     "verify:release": "python scripts/verify_release.py",
     "refresh:live": "python scripts/live_scores.py",
+    "refresh:live:fast": "python scripts/live_scores.py --days-back 1 --days-forward 1 --output-stem live_heartbeat",
     "refresh:widget": "python scripts/live_scores.py",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",

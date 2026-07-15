@@ -2,54 +2,44 @@
   "metadata": {
     "app": "LineLens Sports",
     "version": "v3.0.0",
-    "generated_at": "2026-07-14T18:06:02Z",
+    "generated_at": "2026-07-15T15:13:26Z",
     "real_data": true,
-    "predictions_logged": 313,
-    "predictions_scored_this_run": 83,
-    "pending_predictions": 4,
-    "last_scoring_run": "2026-07-14T18:06:02Z"
+    "predictions_logged": 317,
+    "predictions_scored_this_run": 84,
+    "pending_predictions": 7,
+    "last_scoring_run": "2026-07-15T15:13:26Z"
   },
   "sports": {
     "MLB": {
       "overall": {
         "wins": 36,
-        "losses": 46,
+        "losses": 47,
         "pushes": 0,
         "pending": 1,
-        "accuracy": 0.43902439024390244,
-        "sample_size": 83,
-        "scored": 82,
+        "accuracy": 0.43373493975903615,
+        "sample_size": 84,
+        "scored": 83,
         "label": "Live Record",
         "source": "data\\tracking\\model_predictions_log.json",
         "note": "Only the latest logged LineLens MLB prediction per game is counted here.",
-        "logged_rows": 83,
-        "unique_games": 83
+        "logged_rows": 84,
+        "unique_games": 84
       },
       "live_record": {
         "wins": 36,
-        "losses": 46,
+        "losses": 47,
         "pushes": 0,
         "pending": 1,
-        "accuracy": 0.43902439024390244,
-        "sample_size": 83,
-        "scored": 82,
+        "accuracy": 0.43373493975903615,
+        "sample_size": 84,
+        "scored": 83,
         "label": "Live Record",
         "source": "data\\tracking\\model_predictions_log.json",
         "note": "Only the latest logged LineLens MLB prediction per game is counted here.",
-        "logged_rows": 83,
-        "unique_games": 83
+        "logged_rows": 84,
+        "unique_games": 84
       },
       "today_record": {
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "pending": 1,
-        "accuracy": null,
-        "sample_size": 1,
-        "scored": 0,
-        "label": "Today"
-      },
-      "yesterday_record": {
         "wins": 0,
         "losses": 0,
         "pushes": 0,
@@ -57,39 +47,49 @@
         "accuracy": null,
         "sample_size": 0,
         "scored": 0,
+        "label": "Today"
+      },
+      "yesterday_record": {
+        "wins": 0,
+        "losses": 1,
+        "pushes": 0,
+        "pending": 0,
+        "accuracy": 0.0,
+        "sample_size": 1,
+        "scored": 1,
         "label": "Yesterday"
       },
       "recent_7_days": {
-        "wins": 24,
-        "losses": 37,
+        "wins": 18,
+        "losses": 26,
         "pushes": 0,
         "pending": 1,
-        "accuracy": 0.39344262295081966,
-        "sample_size": 62,
-        "scored": 61,
+        "accuracy": 0.4090909090909091,
+        "sample_size": 45,
+        "scored": 44,
         "label": "Last 7 Days"
       },
       "recent_30_days": {
         "wins": 36,
-        "losses": 46,
+        "losses": 47,
         "pushes": 0,
         "pending": 1,
-        "accuracy": 0.43902439024390244,
-        "sample_size": 83,
-        "scored": 82,
+        "accuracy": 0.43373493975903615,
+        "sample_size": 84,
+        "scored": 83,
         "label": "Last 30 Days"
       },
       "pending_predictions": [
         {
           "sport": "MLB",
-          "generated_at": "2026-07-13T19:24:30Z",
-          "game_date": "2026-07-14",
-          "away": "AMERICAN LEAGUE ALL-STARS",
-          "home": "NATIONAL LEAGUE ALL-STARS",
-          "model_pick": "NATIONAL LEAGUE ALL-STARS",
-          "home_win_probability": 0.5412301143045475,
-          "away_win_probability": 0.4587698856954525,
-          "confidence": 0.5412301143045475,
+          "generated_at": "2026-07-15T14:57:08Z",
+          "game_date": "2026-07-16",
+          "away": "NYM",
+          "home": "PHI",
+          "model_pick": "PHI",
+          "home_win_probability": 0.5285259517685206,
+          "away_win_probability": 0.4714740482314794,
+          "confidence": 0.5285259517685206,
           "model_result": "pending",
           "result_status": "pending",
           "home_score": null,
@@ -98,18 +98,18 @@
       ],
       "last_scored_game": {
         "sport": "MLB",
-        "generated_at": "2026-07-13T13:47:00Z",
-        "game_date": "2026-07-12",
-        "away": "NYY",
-        "home": "WSH",
-        "model_pick": "NYY",
-        "home_win_probability": 0.4312316104403362,
-        "away_win_probability": 0.5687683895596638,
-        "confidence": 0.5687683895596638,
-        "model_result": "win",
+        "generated_at": "2026-07-13T19:24:30Z",
+        "game_date": "2026-07-14",
+        "away": "AMERICAN LEAGUE ALL-STARS",
+        "home": "NATIONAL LEAGUE ALL-STARS",
+        "model_pick": "NATIONAL LEAGUE ALL-STARS",
+        "home_win_probability": 0.5412301143045475,
+        "away_win_probability": 0.4587698856954525,
+        "confidence": 0.5412301143045475,
+        "model_result": "loss",
         "result_status": "scored",
-        "home_score": 3,
-        "away_score": 5
+        "home_score": 0,
+        "away_score": 4
       },
       "by_model_version": {
         "v0.6.0": {
@@ -150,12 +150,12 @@
         },
         "v3.0.0": {
           "wins": 0,
-          "losses": 0,
+          "losses": 1,
           "pushes": 0,
           "pending": 1,
-          "accuracy": null,
-          "sample_size": 1,
-          "scored": 0
+          "accuracy": 0.0,
+          "sample_size": 2,
+          "scored": 1
         }
       },
       "by_confidence": {
@@ -170,12 +170,12 @@
         },
         "52.5-55%": {
           "wins": 11,
-          "losses": 10,
+          "losses": 11,
           "pushes": 0,
           "pending": 1,
-          "accuracy": 0.5238095238095238,
-          "sample_size": 22,
-          "scored": 21
+          "accuracy": 0.5,
+          "sample_size": 23,
+          "scored": 22
         },
         "55-57.5%": {
           "wins": 6,
@@ -217,15 +217,30 @@
       "by_month": {
         "2026-07": {
           "wins": 36,
-          "losses": 46,
+          "losses": 47,
           "pushes": 0,
           "pending": 1,
-          "accuracy": 0.43902439024390244,
-          "sample_size": 83,
-          "scored": 82
+          "accuracy": 0.43373493975903615,
+          "sample_size": 84,
+          "scored": 83
         }
       },
       "recent_predictions": [
+        {
+          "sport": "MLB",
+          "generated_at": "2026-07-15T14:57:08Z",
+          "game_date": "2026-07-16",
+          "away": "NYM",
+          "home": "PHI",
+          "model_pick": "PHI",
+          "home_win_probability": 0.5285259517685206,
+          "away_win_probability": 0.4714740482314794,
+          "confidence": 0.5285259517685206,
+          "model_result": "pending",
+          "result_status": "pending",
+          "home_score": null,
+          "away_score": null
+        },
         {
           "sport": "MLB",
           "generated_at": "2026-07-13T19:24:30Z",
@@ -236,10 +251,10 @@
           "home_win_probability": 0.5412301143045475,
           "away_win_probability": 0.4587698856954525,
           "confidence": 0.5412301143045475,
-          "model_result": "pending",
-          "result_status": "pending",
-          "home_score": null,
-          "away_score": null
+          "model_result": "loss",
+          "result_status": "scored",
+          "home_score": 0,
+          "away_score": 4
         },
         {
           "sport": "MLB",
@@ -390,21 +405,6 @@
           "result_status": "scored",
           "home_score": 2,
           "away_score": 5
-        },
-        {
-          "sport": "MLB",
-          "generated_at": "2026-07-13T13:47:00Z",
-          "game_date": "2026-07-12",
-          "away": "AZ",
-          "home": "LAD",
-          "model_pick": "LAD",
-          "home_win_probability": 0.5655257328374581,
-          "away_win_probability": 0.4344742671625419,
-          "confidence": 0.5655257328374581,
-          "model_result": "loss",
-          "result_status": "scored",
-          "home_score": 3,
-          "away_score": 5
         }
       ],
       "backtest_record": {
@@ -448,31 +448,41 @@
         "wins": 1,
         "losses": 0,
         "pushes": 0,
-        "pending": 3,
+        "pending": 6,
         "accuracy": 1.0,
-        "sample_size": 4,
+        "sample_size": 7,
         "scored": 1,
         "label": "WNBA Live Record",
         "source": "data\\tracking\\model_predictions_log.json",
         "note": "Only exported WNBA model predictions are counted; schedule-only rows do not count.",
-        "logged_rows": 4,
-        "unique_games": 4
+        "logged_rows": 7,
+        "unique_games": 7
       },
       "live_record": {
         "wins": 1,
         "losses": 0,
         "pushes": 0,
-        "pending": 3,
+        "pending": 6,
         "accuracy": 1.0,
-        "sample_size": 4,
+        "sample_size": 7,
         "scored": 1,
         "label": "WNBA Live Record",
         "source": "data\\tracking\\model_predictions_log.json",
         "note": "Only exported WNBA model predictions are counted; schedule-only rows do not count.",
-        "logged_rows": 4,
-        "unique_games": 4
+        "logged_rows": 7,
+        "unique_games": 7
       },
       "today_record": {
+        "wins": 0,
+        "losses": 0,
+        "pushes": 0,
+        "pending": 3,
+        "accuracy": null,
+        "sample_size": 3,
+        "scored": 0,
+        "label": "Today"
+      },
+      "yesterday_record": {
         "wins": 1,
         "losses": 0,
         "pushes": 0,
@@ -480,25 +490,15 @@
         "accuracy": 1.0,
         "sample_size": 2,
         "scored": 1,
-        "label": "Today"
-      },
-      "yesterday_record": {
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "pending": 2,
-        "accuracy": null,
-        "sample_size": 2,
-        "scored": 0,
         "label": "Yesterday"
       },
       "recent_7_days": {
         "wins": 1,
         "losses": 0,
         "pushes": 0,
-        "pending": 3,
+        "pending": 6,
         "accuracy": 1.0,
-        "sample_size": 4,
+        "sample_size": 7,
         "scored": 1,
         "label": "Last 7 Days"
       },
@@ -506,16 +506,16 @@
         "wins": 1,
         "losses": 0,
         "pushes": 0,
-        "pending": 3,
+        "pending": 6,
         "accuracy": 1.0,
-        "sample_size": 4,
+        "sample_size": 7,
         "scored": 1,
         "label": "Last 30 Days"
       },
       "pending_predictions": [
         {
           "sport": "WNBA",
-          "generated_at": "2026-07-14T18:06:00Z",
+          "generated_at": "2026-07-15T15:13:24Z",
           "game_date": "2026-07-13",
           "away": "LA",
           "home": "ATL",
@@ -530,7 +530,7 @@
         },
         {
           "sport": "WNBA",
-          "generated_at": "2026-07-14T18:06:00Z",
+          "generated_at": "2026-07-15T15:13:24Z",
           "game_date": "2026-07-13",
           "away": "PHX",
           "home": "MIN",
@@ -545,7 +545,7 @@
         },
         {
           "sport": "WNBA",
-          "generated_at": "2026-07-14T18:06:00Z",
+          "generated_at": "2026-07-15T15:13:24Z",
           "game_date": "2026-07-14",
           "away": "WSH",
           "home": "TOR",
@@ -553,6 +553,51 @@
           "home_win_probability": 0.42311560112294466,
           "away_win_probability": 0.5768843988770553,
           "confidence": "Medium",
+          "model_result": "pending",
+          "result_status": "pending",
+          "home_score": 0.0,
+          "away_score": 0.0
+        },
+        {
+          "sport": "WNBA",
+          "generated_at": "2026-07-15T15:13:24Z",
+          "game_date": "2026-07-15",
+          "away": "SEA",
+          "home": "CHI",
+          "model_pick": "CHI",
+          "home_win_probability": 0.5427655045656619,
+          "away_win_probability": 0.45723449543433814,
+          "confidence": "Low",
+          "model_result": "pending",
+          "result_status": "pending",
+          "home_score": 0.0,
+          "away_score": 0.0
+        },
+        {
+          "sport": "WNBA",
+          "generated_at": "2026-07-15T15:13:24Z",
+          "game_date": "2026-07-15",
+          "away": "LA",
+          "home": "MIN",
+          "model_pick": "MIN",
+          "home_win_probability": 0.8074495135892186,
+          "away_win_probability": 0.19255048641078143,
+          "confidence": "High",
+          "model_result": "pending",
+          "result_status": "pending",
+          "home_score": 0.0,
+          "away_score": 0.0
+        },
+        {
+          "sport": "WNBA",
+          "generated_at": "2026-07-15T15:13:24Z",
+          "game_date": "2026-07-15",
+          "away": "GS",
+          "home": "IND",
+          "model_pick": "IND",
+          "home_win_probability": 0.74191308013485,
+          "away_win_probability": 0.25808691986515,
+          "confidence": "High",
           "model_result": "pending",
           "result_status": "pending",
           "home_score": 0.0,

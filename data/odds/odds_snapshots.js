@@ -2,15 +2,15 @@ window.__ODDS_SNAPSHOTS__ = {
   "metadata": {
     "app": "LineLens Sports",
     "version": "v3.0.0",
-    "generated_at": "2026-07-14T18:24:06Z",
+    "generated_at": "2026-07-15T15:15:12Z",
     "real_data": true,
     "new_real_data": true,
     "provider": "the_odds_api",
     "source": "The Odds API",
     "source_status": "success",
-    "snapshot_count": 371,
-    "new_snapshot_count": 37,
-    "mlb_predictions_joined": 1,
+    "snapshot_count": 485,
+    "new_snapshot_count": 38,
+    "mlb_predictions_joined": 4,
     "sports_requested": [
       "MLB",
       "WNBA",
@@ -25,8 +25,8 @@ window.__ODDS_SNAPSHOTS__ = {
       "preferred_bookmakers": ""
     },
     "quota": {
-      "requests_remaining": "470",
-      "requests_used": "30",
+      "requests_remaining": "359",
+      "requests_used": "141",
       "cost_last_request": "3"
     },
     "note": "Odds are optional. Missing odds never fabricate lines, movement, or CLV."
@@ -38,18 +38,18 @@ window.__ODDS_SNAPSHOTS__ = {
       "enabled": true,
       "provider": "the_odds_api",
       "events": 1,
-      "requests_remaining": "470",
-      "requests_used": "30",
+      "requests_remaining": "359",
+      "requests_used": "141",
       "cost_last_request": "3"
     },
     "WNBA": {
       "status": "success",
-      "message": "Fetched 4 odds rows from The Odds API.",
+      "message": "Fetched 5 odds rows from The Odds API.",
       "enabled": true,
       "provider": "the_odds_api",
-      "events": 4,
-      "requests_remaining": "467",
-      "requests_used": "33",
+      "events": 5,
+      "requests_remaining": "356",
+      "requests_used": "144",
       "cost_last_request": "3"
     },
     "NFL": {
@@ -58,8 +58,8 @@ window.__ODDS_SNAPSHOTS__ = {
       "enabled": true,
       "provider": "the_odds_api",
       "events": 75,
-      "requests_remaining": "464",
-      "requests_used": "36",
+      "requests_remaining": "353",
+      "requests_used": "147",
       "cost_last_request": "3"
     }
   },
@@ -22463,6 +22463,14064 @@ window.__ODDS_SNAPSHOTS__ = {
         {
           "book": "BetUS",
           "last_update": "2026-07-14T18:23:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "MLB:7ad2e88701ead09625333188a5b653b2:2026-07-15T15:12:06Z",
+      "sport": "MLB",
+      "provider_event_id": "7ad2e88701ead09625333188a5b653b2",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-07-16",
+      "commence_time": "2026-07-16T23:11:00Z",
+      "home": "PHI",
+      "away": "NYM",
+      "home_display": "Philadelphia Phillies",
+      "away_display": "New York Mets",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 3,
+      "moneyline_home_current": -134.7,
+      "moneyline_away_current": 119.3,
+      "best_home_moneyline": -132.0,
+      "best_away_moneyline": 123.0,
+      "spread_home_current": -1.5,
+      "spread_away_current": 1.5,
+      "spread_home_price_current": 153.0,
+      "spread_away_price_current": -178.0,
+      "total_current": 10.0,
+      "total_over_price_current": -103.0,
+      "total_under_price_current": -116.0,
+      "market_implied_home": 0.573924158500213,
+      "market_implied_away": 0.45599635202918376,
+      "books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -132,
+          "away": 112
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:03Z",
+          "home": -136,
+          "away": 123
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:03Z",
+          "home": -136,
+          "away": 123
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": -1.5,
+            "price": 152
+          },
+          "away": {
+            "point": 1.5,
+            "price": -184
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:03Z",
+          "home": {
+            "point": -1.5,
+            "price": 153
+          },
+          "away": {
+            "point": 1.5,
+            "price": -175
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:03Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:03Z",
+          "home": {
+            "point": -1.5,
+            "price": 154
+          },
+          "away": {
+            "point": 1.5,
+            "price": -175
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:03Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:dd23179c4373849ae1da8476ec21def3:2026-07-15T15:12:06Z",
+      "sport": "WNBA",
+      "provider_event_id": "dd23179c4373849ae1da8476ec21def3",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-07-15",
+      "commence_time": "2026-07-15T16:10:00Z",
+      "home": "CHI",
+      "away": "SEA",
+      "home_display": "Chicago Sky",
+      "away_display": "Seattle Storm",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -160.9,
+      "moneyline_away_current": 135.1,
+      "best_home_moneyline": -158.0,
+      "best_away_moneyline": 140.0,
+      "spread_home_current": -3.4,
+      "spread_away_current": 3.4,
+      "spread_home_price_current": -111.2,
+      "spread_away_price_current": -108.9,
+      "total_current": 171.0,
+      "total_over_price_current": -109.4,
+      "total_under_price_current": -110.6,
+      "market_implied_home": 0.616711383671905,
+      "market_implied_away": 0.4253509145044662,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": -162,
+          "away": 136
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:10:53Z",
+          "home": -159,
+          "away": 129
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": -158,
+          "away": 128
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": -159,
+          "away": 128
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:05Z",
+          "home": -160,
+          "away": 140
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:11:27Z",
+          "home": -160,
+          "away": 140
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:09:26Z",
+          "home": -165,
+          "away": 140
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": -165,
+          "away": 135
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:10:53Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:10:53Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": {
+            "point": -3.5,
+            "price": -108
+          },
+          "away": {
+            "point": 3.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": {
+            "point": -2.5,
+            "price": -120
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:4db11d33553fba68fc607aaf009071aa:2026-07-15T15:12:06Z",
+      "sport": "WNBA",
+      "provider_event_id": "4db11d33553fba68fc607aaf009071aa",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-07-15",
+      "commence_time": "2026-07-15T17:10:00Z",
+      "home": "MIN",
+      "away": "LA",
+      "home_display": "Minnesota Lynx",
+      "away_display": "Los Angeles Sparks",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -648.2,
+      "moneyline_away_current": 458.6,
+      "best_home_moneyline": -600.0,
+      "best_away_moneyline": 480.0,
+      "spread_home_current": -11.5,
+      "spread_away_current": 11.5,
+      "spread_home_price_current": -110.2,
+      "spread_away_price_current": -109.6,
+      "total_current": 181.3,
+      "total_over_price_current": -109.0,
+      "total_under_price_current": -111.0,
+      "market_implied_home": 0.8663458968190324,
+      "market_implied_away": 0.17901897601145722,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": -625,
+          "away": 455
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": -620,
+          "away": 430
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": -715,
+          "away": 475
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:05Z",
+          "home": -650,
+          "away": 476
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:11:27Z",
+          "home": -650,
+          "away": 476
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:09:26Z",
+          "home": -675,
+          "away": 460
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": -600,
+          "away": 425
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": -650,
+          "away": 480
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": {
+            "point": -11.5,
+            "price": -110
+          },
+          "away": {
+            "point": 11.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": {
+            "point": -11.5,
+            "price": -114
+          },
+          "away": {
+            "point": 11.5,
+            "price": -106
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": {
+            "point": -11.5,
+            "price": -110
+          },
+          "away": {
+            "point": 11.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:05Z",
+          "home": {
+            "point": -11.5,
+            "price": -108
+          },
+          "away": {
+            "point": 11.5,
+            "price": -108
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:05Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:8eace0d4309db9d618e7ba857166324b:2026-07-15T15:12:06Z",
+      "sport": "WNBA",
+      "provider_event_id": "8eace0d4309db9d618e7ba857166324b",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-07-16",
+      "commence_time": "2026-07-16T00:10:00Z",
+      "home": "IND",
+      "away": "GS",
+      "home_display": "Indiana Fever",
+      "away_display": "Golden State Valkyries",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -123.8,
+      "moneyline_away_current": 80.7,
+      "best_home_moneyline": -118.0,
+      "best_away_moneyline": 105.0,
+      "spread_home_current": -1.4,
+      "spread_away_current": 1.4,
+      "spread_home_price_current": -110.4,
+      "spread_away_price_current": -109.6,
+      "total_current": 166.1,
+      "total_over_price_current": -109.1,
+      "total_under_price_current": -110.8,
+      "market_implied_home": 0.5531724754244861,
+      "market_implied_away": 0.5534034311012729,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:10:53Z",
+          "home": -122,
+          "away": 100
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": -124,
+          "away": 102
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": -118,
+          "away": -106
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:05Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:11:27Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:09:26Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": -125,
+          "away": 105
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": {
+            "point": -1.5,
+            "price": -108
+          },
+          "away": {
+            "point": 1.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:10:53Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:10:53Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": {
+            "point": -0.5,
+            "price": -118
+          },
+          "away": {
+            "point": 0.5,
+            "price": -106
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:00a997433337939ebda3beb882a1e2db:2026-07-15T15:12:06Z",
+      "sport": "WNBA",
+      "provider_event_id": "00a997433337939ebda3beb882a1e2db",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-07-16",
+      "commence_time": "2026-07-16T23:10:00Z",
+      "home": "WSH",
+      "away": "POR",
+      "home_display": "Washington Mystics",
+      "away_display": "Portland Fire",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 6,
+      "moneyline_home_current": -194.0,
+      "moneyline_away_current": 157.0,
+      "best_home_moneyline": -185.0,
+      "best_away_moneyline": 163.0,
+      "spread_home_current": -4.9,
+      "spread_away_current": 4.9,
+      "spread_home_price_current": -109.5,
+      "spread_away_price_current": -110.3,
+      "total_current": 164.1,
+      "total_over_price_current": -106.8,
+      "total_under_price_current": -113.0,
+      "market_implied_home": 0.6598639455782312,
+      "market_implied_away": 0.38910505836575876,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": -185,
+          "away": 154
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": -192,
+          "away": 154
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": -205,
+          "away": 163
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": {
+            "point": -5.5,
+            "price": -102
+          },
+          "away": {
+            "point": 5.5,
+            "price": -118
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": {
+            "point": -4.5,
+            "price": -114
+          },
+          "away": {
+            "point": 4.5,
+            "price": -106
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:11:27Z",
+          "home": {
+            "point": -5.0,
+            "price": -110
+          },
+          "away": {
+            "point": 5.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:11:27Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:05Z",
+          "home": {
+            "point": -5.0,
+            "price": -108
+          },
+          "away": {
+            "point": 5.0,
+            "price": -108
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:05Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:51f9e00bb8d7debd5a922a21f0736e36:2026-07-15T15:12:06Z",
+      "sport": "WNBA",
+      "provider_event_id": "51f9e00bb8d7debd5a922a21f0736e36",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-07-17",
+      "commence_time": "2026-07-17T01:00:00Z",
+      "home": "DAL",
+      "away": "NY",
+      "home_display": "Dallas Wings",
+      "away_display": "New York Liberty",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 6,
+      "moneyline_home_current": -124.3,
+      "moneyline_away_current": 102.0,
+      "best_home_moneyline": -122.0,
+      "best_away_moneyline": 104.0,
+      "spread_home_current": -1.5,
+      "spread_away_current": 1.5,
+      "spread_home_price_current": -109.5,
+      "spread_away_price_current": -110.2,
+      "total_current": 175.5,
+      "total_over_price_current": -110.2,
+      "total_under_price_current": -109.7,
+      "market_implied_home": 0.5541685242978154,
+      "market_implied_away": 0.49504950495049505,
+      "books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": -122,
+          "away": 100
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": -122,
+          "away": 102
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:26Z",
+          "home": -129,
+          "away": 104
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:47Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:10:34Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:05Z",
+          "home": {
+            "point": -1.5,
+            "price": -108
+          },
+          "away": {
+            "point": 1.5,
+            "price": -108
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:12:05Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:11:27Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:11:27Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:8c94552d022acec4a0458d70c19d3da9:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "8c94552d022acec4a0458d70c19d3da9",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-10",
+      "commence_time": "2026-09-10T00:15:00Z",
+      "home": "SEA",
+      "away": "NE",
+      "home_display": "Seattle Seahawks",
+      "away_display": "New England Patriots",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -201.1,
+      "moneyline_away_current": 166.9,
+      "best_home_moneyline": -192.0,
+      "best_away_moneyline": 185.0,
+      "spread_home_current": -3.8,
+      "spread_away_current": 3.8,
+      "spread_home_price_current": -108.8,
+      "spread_away_price_current": -110.8,
+      "total_current": 44.1,
+      "total_over_price_current": -110.6,
+      "total_under_price_current": -109.1,
+      "market_implied_home": 0.6678844237794752,
+      "market_implied_away": 0.37467216185837393,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -192,
+          "away": 160
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -195,
+          "away": 167
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -198,
+          "away": 166
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -195,
+          "away": 170
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -195,
+          "away": 170
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -240,
+          "away": 185
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -200,
+          "away": 165
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -195,
+          "away": 165
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -4.5,
+            "price": -102
+          },
+          "away": {
+            "point": 4.5,
+            "price": -120
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": -3.5,
+            "price": -105
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:acc580d74344ea3b31bbcdd057fe6a9c:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "acc580d74344ea3b31bbcdd057fe6a9c",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-11",
+      "commence_time": "2026-09-11T00:35:00Z",
+      "home": "LAR",
+      "away": "SF",
+      "home_display": "Los Angeles Rams",
+      "away_display": "San Francisco 49ers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -186.7,
+      "moneyline_away_current": 155.3,
+      "best_home_moneyline": -170.0,
+      "best_away_moneyline": 176.0,
+      "spread_home_current": -3.4,
+      "spread_away_current": 3.4,
+      "spread_home_price_current": -112.5,
+      "spread_away_price_current": -56.5,
+      "total_current": 48.6,
+      "total_over_price_current": -109.3,
+      "total_under_price_current": -110.6,
+      "market_implied_home": 0.6512033484478549,
+      "market_implied_away": 0.3916960438699569,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -170,
+          "away": 142
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -200,
+          "away": 165
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:44Z",
+          "home": -210,
+          "away": 176
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -195,
+          "away": 150
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -170,
+          "away": 145
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -180,
+          "away": 155
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:44Z",
+          "home": {
+            "point": -3.5,
+            "price": -115
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:95c01d1bb797d6df14824b106c5a9130:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "95c01d1bb797d6df14824b106c5a9130",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "PIT",
+      "away": "ATL",
+      "home_display": "Pittsburgh Steelers",
+      "away_display": "Atlanta Falcons",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -161.0,
+      "moneyline_away_current": 135.7,
+      "best_home_moneyline": -146.0,
+      "best_away_moneyline": 145.0,
+      "spread_home_current": -2.9,
+      "spread_away_current": 2.9,
+      "spread_home_price_current": -112.8,
+      "spread_away_price_current": -62.2,
+      "total_current": 41.8,
+      "total_over_price_current": -109.7,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6168582375478927,
+      "market_implied_away": 0.42426813746287656,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -170,
+          "away": 142
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -157,
+          "away": 128
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -160,
+          "away": 140
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -146,
+          "away": 124
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -160,
+          "away": 140
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -160,
+          "away": 138
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -160,
+          "away": 135
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -170,
+          "away": 145
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.0,
+            "price": -105
+          },
+          "away": {
+            "point": 3.0,
+            "price": -118
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -3.0,
+            "price": -110
+          },
+          "away": {
+            "point": 3.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -2.5,
+            "price": -120
+          },
+          "away": {
+            "point": 2.5,
+            "price": -102
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:b6cfdcbafa61ce220ba87dc2d9b80c77:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "b6cfdcbafa61ce220ba87dc2d9b80c77",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "IND",
+      "away": "BAL",
+      "home_display": "Indianapolis Colts",
+      "away_display": "Baltimore Ravens",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": 163.9,
+      "moneyline_away_current": -197.0,
+      "best_home_moneyline": 168.0,
+      "best_away_moneyline": -190.0,
+      "spread_home_current": 3.5,
+      "spread_away_current": -3.5,
+      "spread_home_price_current": -108.2,
+      "spread_away_price_current": -110.9,
+      "total_current": 48.6,
+      "total_over_price_current": -108.3,
+      "total_under_price_current": -111.4,
+      "market_implied_home": 0.3789314134141721,
+      "market_implied_away": 0.6632996632996633,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 160,
+          "away": -192
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": 163,
+          "away": -190
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": 165,
+          "away": -190
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 165,
+          "away": -210
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": 165,
+          "away": -190
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 168,
+          "away": -200
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 165,
+          "away": -200
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": 165,
+          "away": -195
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 3.5,
+            "price": -110
+          },
+          "away": {
+            "point": -3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": 3.5,
+            "price": -110
+          },
+          "away": {
+            "point": -3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": 3.5,
+            "price": -105
+          },
+          "away": {
+            "point": -3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 3.5,
+            "price": -109
+          },
+          "away": {
+            "point": -3.5,
+            "price": -113
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:7e09efed7e12c659b82740b67ce2f9a1:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "7e09efed7e12c659b82740b67ce2f9a1",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "HOU",
+      "away": "BUF",
+      "home_display": "Houston Texans",
+      "away_display": "Buffalo Bills",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -106.3,
+      "moneyline_away_current": -114.3,
+      "best_home_moneyline": -104.0,
+      "best_away_moneyline": -110.0,
+      "spread_home_current": 1.2,
+      "spread_away_current": -1.2,
+      "spread_home_price_current": -115.2,
+      "spread_away_price_current": 6.9,
+      "total_current": 44.7,
+      "total_over_price_current": -108.2,
+      "total_under_price_current": -111.4,
+      "market_implied_home": 0.5152690256907416,
+      "market_implied_away": 0.5333644423705086,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -108,
+          "away": -112
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -104,
+          "away": -120
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -106,
+          "away": -110
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -110,
+          "away": -110
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 1.5,
+            "price": -120
+          },
+          "away": {
+            "point": -1.5,
+            "price": 100
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": 1.0,
+            "price": -110
+          },
+          "away": {
+            "point": -1.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": 1.0,
+            "price": -110
+          },
+          "away": {
+            "point": -1.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 1.0,
+            "price": -110
+          },
+          "away": {
+            "point": -1.0,
+            "price": -113
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:fc362aff0d889ec52d358307a70c32ed:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "fc362aff0d889ec52d358307a70c32ed",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "CAR",
+      "away": "CHI",
+      "home_display": "Carolina Panthers",
+      "away_display": "Chicago Bears",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": 116.2,
+      "moneyline_away_current": -139.4,
+      "best_home_moneyline": 120.0,
+      "best_away_moneyline": -135.0,
+      "spread_home_current": 2.4,
+      "spread_away_current": -2.4,
+      "spread_home_price_current": -62.0,
+      "spread_away_price_current": -112.8,
+      "total_current": 45.1,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -109.7,
+      "market_implied_home": 0.46253469010175763,
+      "market_implied_away": 0.5822890559732665,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 114,
+          "away": -135
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 118,
+          "away": -138
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 108,
+          "away": -143
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 118,
+          "away": -140
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": 115,
+          "away": -135
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 2.5,
+            "price": -110
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 2.5,
+            "price": -105
+          },
+          "away": {
+            "point": -2.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": 2.5,
+            "price": 100
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": 2.0,
+            "price": 100
+          },
+          "away": {
+            "point": -2.0,
+            "price": -120
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:ed6d24ff979f9c71979fead577b0b3f7:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "ed6d24ff979f9c71979fead577b0b3f7",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "CIN",
+      "away": "TB",
+      "home_display": "Cincinnati Bengals",
+      "away_display": "Tampa Bay Buccaneers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -197.9,
+      "moneyline_away_current": 164.7,
+      "best_home_moneyline": -190.0,
+      "best_away_moneyline": 176.0,
+      "spread_home_current": -3.5,
+      "spread_away_current": 3.5,
+      "spread_home_price_current": -110.3,
+      "spread_away_price_current": -108.9,
+      "total_current": 51.6,
+      "total_over_price_current": -111.3,
+      "total_under_price_current": -108.3,
+      "market_implied_home": 0.6643168848606916,
+      "market_implied_away": 0.37778617302606726,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -198,
+          "away": 164
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -210,
+          "away": 176
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -190,
+          "away": 165
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -190,
+          "away": 163
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -190,
+          "away": 165
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -200,
+          "away": 160
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -200,
+          "away": 165
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -195,
+          "away": 165
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.5,
+            "price": -115
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": -3.5,
+            "price": -105
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:e55c6fe19fce094ce214c8b0e5b504e9:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "e55c6fe19fce094ce214c8b0e5b504e9",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "JAX",
+      "away": "CLE",
+      "home_display": "Jacksonville Jaguars",
+      "away_display": "Cleveland Browns",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -382.1,
+      "moneyline_away_current": 295.9,
+      "best_home_moneyline": -340.0,
+      "best_away_moneyline": 325.0,
+      "spread_home_current": -7.5,
+      "spread_away_current": 7.5,
+      "spread_home_price_current": -109.9,
+      "spread_away_price_current": -109.3,
+      "total_current": 40.5,
+      "total_over_price_current": -112.6,
+      "total_under_price_current": -107.2,
+      "market_implied_home": 0.7925741547396806,
+      "market_implied_away": 0.2525890376357666,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -340,
+          "away": 270
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -405,
+          "away": 320
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -360,
+          "away": 290
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -420,
+          "away": 310
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -360,
+          "away": 289
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -360,
+          "away": 289
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -425,
+          "away": 325
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -340,
+          "away": 270
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -7.5,
+            "price": -115
+          },
+          "away": {
+            "point": 7.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -7.5,
+            "price": -109
+          },
+          "away": {
+            "point": 7.5,
+            "price": -114
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:c1d3fcec25aaeb06ebd2244d33d338e0:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "c1d3fcec25aaeb06ebd2244d33d338e0",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "DET",
+      "away": "NO",
+      "home_display": "Detroit Lions",
+      "away_display": "New Orleans Saints",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -349.4,
+      "moneyline_away_current": 274.7,
+      "best_home_moneyline": -325.0,
+      "best_away_moneyline": 300.0,
+      "spread_home_current": -7.1,
+      "spread_away_current": 7.1,
+      "spread_home_price_current": -109.7,
+      "spread_away_price_current": -109.7,
+      "total_current": 49.2,
+      "total_over_price_current": -111.3,
+      "total_under_price_current": -108.3,
+      "market_implied_home": 0.7774810858923008,
+      "market_implied_away": 0.26688017080330934,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -325,
+          "away": 260
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -370,
+          "away": 295
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -335,
+          "away": 270
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -335,
+          "away": 270
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -335,
+          "away": 272
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -400,
+          "away": 290
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -375,
+          "away": 300
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -330,
+          "away": 265
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -7.0,
+            "price": -110
+          },
+          "away": {
+            "point": 7.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -7.0,
+            "price": -115
+          },
+          "away": {
+            "point": 7.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": -7.0,
+            "price": -105
+          },
+          "away": {
+            "point": 7.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -7.0,
+            "price": -110
+          },
+          "away": {
+            "point": 7.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:7dddb296a42e7a41a774b24bd1709ce1:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "7dddb296a42e7a41a774b24bd1709ce1",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "TEN",
+      "away": "NYJ",
+      "home_display": "Tennessee Titans",
+      "away_display": "New York Jets",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -149.8,
+      "moneyline_away_current": 126.2,
+      "best_home_moneyline": -134.0,
+      "best_away_moneyline": 136.0,
+      "spread_home_current": -2.6,
+      "spread_away_current": 2.6,
+      "spread_home_price_current": -112.4,
+      "spread_away_price_current": -40.2,
+      "total_current": 38.8,
+      "total_over_price_current": -110.6,
+      "total_under_price_current": -109.1,
+      "market_implied_home": 0.5996797437950361,
+      "market_implied_away": 0.4420866489832007,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -162,
+          "away": 136
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -134,
+          "away": 116
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -150,
+          "away": 130
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -150,
+          "away": 129
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -150,
+          "away": 130
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -150,
+          "away": 120
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -155,
+          "away": 130
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -150,
+          "away": 130
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.0,
+            "price": -110
+          },
+          "away": {
+            "point": 3.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": 100
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -2.0,
+            "price": -120
+          },
+          "away": {
+            "point": 2.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:1edfa5ceaa1ad2cb57df1c1b908731f6:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "1edfa5ceaa1ad2cb57df1c1b908731f6",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "LAC",
+      "away": "ARI",
+      "home_display": "Los Angeles Chargers",
+      "away_display": "Arizona Cardinals",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -621.1,
+      "moneyline_away_current": 441.9,
+      "best_home_moneyline": -500.0,
+      "best_away_moneyline": 475.0,
+      "spread_home_current": -10.8,
+      "spread_away_current": 10.8,
+      "spread_home_price_current": -109.0,
+      "spread_away_price_current": -110.2,
+      "total_current": 46.0,
+      "total_over_price_current": -111.7,
+      "total_under_price_current": -108.0,
+      "market_implied_home": 0.8613229787824157,
+      "market_implied_away": 0.18453589223103894,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -600,
+          "away": 440
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -600,
+          "away": 446
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -600,
+          "away": 446
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -600,
+          "away": 450
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -500,
+          "away": 360
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -590,
+          "away": 440
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -650,
+          "away": 475
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -650,
+          "away": 450
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -11.5,
+            "price": -110
+          },
+          "away": {
+            "point": 11.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": -10.5,
+            "price": -105
+          },
+          "away": {
+            "point": 10.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:cb77efed7e711d25a72c1a2a0a1af119:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "cb77efed7e711d25a72c1a2a0a1af119",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "MIN",
+      "away": "GB",
+      "home_display": "Minnesota Vikings",
+      "away_display": "Green Bay Packers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -111.3,
+      "moneyline_away_current": -110.0,
+      "best_home_moneyline": -104.0,
+      "best_away_moneyline": -105.0,
+      "spread_home_current": 0.2,
+      "spread_away_current": -0.2,
+      "spread_home_price_current": -91.4,
+      "spread_away_price_current": -61.3,
+      "total_current": 45.2,
+      "total_over_price_current": -111.8,
+      "total_under_price_current": -107.9,
+      "market_implied_home": 0.5267392333175579,
+      "market_implied_away": 0.5238095238095238,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -108,
+          "away": -112
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -106,
+          "away": -120
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -104,
+          "away": -112
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -115,
+          "away": -105
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -115,
+          "away": -105
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -120,
+          "away": -106
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 1.5,
+            "price": -125
+          },
+          "away": {
+            "point": -1.5,
+            "price": 105
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": 0.0,
+            "price": -105
+          },
+          "away": {
+            "point": 0.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": 0.0,
+            "price": -110
+          },
+          "away": {
+            "point": 0.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -1.0,
+            "price": -110
+          },
+          "away": {
+            "point": 1.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:c5d95f48a16849ab6bebc68fbbfcb74a:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "c5d95f48a16849ab6bebc68fbbfcb74a",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "LV",
+      "away": "MIA",
+      "home_display": "Las Vegas Raiders",
+      "away_display": "Miami Dolphins",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -186.2,
+      "moneyline_away_current": 154.2,
+      "best_home_moneyline": -170.0,
+      "best_away_moneyline": 176.0,
+      "spread_home_current": -3.2,
+      "spread_away_current": 3.2,
+      "spread_home_price_current": -116.0,
+      "spread_away_price_current": -14.6,
+      "total_current": 40.6,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -109.7,
+      "market_implied_home": 0.6505939902166317,
+      "market_implied_away": 0.39339103068450043,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -170,
+          "away": 142
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -180,
+          "away": 155
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -200,
+          "away": 150
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -210,
+          "away": 176
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -190,
+          "away": 155
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -170,
+          "away": 145
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.0,
+            "price": -118
+          },
+          "away": {
+            "point": 3.0,
+            "price": -102
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.5,
+            "price": -120
+          },
+          "away": {
+            "point": 3.5,
+            "price": -102
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:17885cb8dcade8f6c3bce14b2de805e8:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "17885cb8dcade8f6c3bce14b2de805e8",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "PHI",
+      "away": "WAS",
+      "home_display": "Philadelphia Eagles",
+      "away_display": "Washington Commanders",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -218.1,
+      "moneyline_away_current": 180.1,
+      "best_home_moneyline": -210.0,
+      "best_away_moneyline": 195.0,
+      "spread_home_current": -4.6,
+      "spread_away_current": 4.6,
+      "spread_home_price_current": -110.3,
+      "spread_away_price_current": -86.7,
+      "total_current": 47.2,
+      "total_over_price_current": -112.2,
+      "total_under_price_current": -107.7,
+      "market_implied_home": 0.6856334486010688,
+      "market_implied_away": 0.3570153516601214,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -238,
+          "away": 195
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -215,
+          "away": 180
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -210,
+          "away": 180
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -215,
+          "away": 170
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -210,
+          "away": 180
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -210,
+          "away": 180
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -220,
+          "away": 180
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -235,
+          "away": 195
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -5.5,
+            "price": -110
+          },
+          "away": {
+            "point": 5.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -4.5,
+            "price": -105
+          },
+          "away": {
+            "point": 4.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -4.0,
+            "price": -115
+          },
+          "away": {
+            "point": 4.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -4.5,
+            "price": -113
+          },
+          "away": {
+            "point": 4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:3e646c7479c57f5d9752d8c7dfe7059b:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "3e646c7479c57f5d9752d8c7dfe7059b",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-14",
+      "commence_time": "2026-09-14T00:20:00Z",
+      "home": "NYG",
+      "away": "DAL",
+      "home_display": "New York Giants",
+      "away_display": "Dallas Cowboys",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": 118.6,
+      "moneyline_away_current": -142.4,
+      "best_home_moneyline": 129.0,
+      "best_away_moneyline": -132.0,
+      "spread_home_current": 2.6,
+      "spread_away_current": -2.6,
+      "spread_home_price_current": -84.8,
+      "spread_away_price_current": -112.6,
+      "total_current": 48.2,
+      "total_over_price_current": -109.7,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.4574565416285453,
+      "market_implied_away": 0.5874587458745875,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 114,
+          "away": -135
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:44Z",
+          "home": 128,
+          "away": -152
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 125,
+          "away": -150
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 112,
+          "away": -148
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": 115,
+          "away": -135
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": 129,
+          "away": -150
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 2.5,
+            "price": -110
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:44Z",
+          "home": {
+            "point": 2.5,
+            "price": -102
+          },
+          "away": {
+            "point": -2.5,
+            "price": -120
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": 2.5,
+            "price": -105
+          },
+          "away": {
+            "point": -2.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 2.5,
+            "price": -110
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:5ad8135dc2b5f27de0b777acd317855a:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "5ad8135dc2b5f27de0b777acd317855a",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-15",
+      "commence_time": "2026-09-15T00:15:00Z",
+      "home": "KC",
+      "away": "DEN",
+      "home_display": "Kansas City Chiefs",
+      "away_display": "Denver Broncos",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -146.1,
+      "moneyline_away_current": 121.6,
+      "best_home_moneyline": -140.0,
+      "best_away_moneyline": 135.0,
+      "spread_home_current": -2.7,
+      "spread_away_current": 2.7,
+      "spread_home_price_current": -110.3,
+      "spread_away_price_current": -87.1,
+      "total_current": 42.8,
+      "total_over_price_current": -109.8,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.5936611133685493,
+      "market_implied_away": 0.4512635379061372,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -148,
+          "away": 124
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:44Z",
+          "home": -146,
+          "away": 124
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -160,
+          "away": 135
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:10:37Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -155,
+          "away": 117
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -2.5,
+            "price": -115
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:44Z",
+          "home": {
+            "point": -2.5,
+            "price": -118
+          },
+          "away": {
+            "point": 2.5,
+            "price": -104
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:11:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": 100
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -2.5,
+            "price": -115
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:56e8897681915f7ec92baeee952bb1ae:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "56e8897681915f7ec92baeee952bb1ae",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-18",
+      "commence_time": "2026-09-18T00:15:00Z",
+      "home": "BUF",
+      "away": "DET",
+      "home_display": "Buffalo Bills",
+      "away_display": "Detroit Lions",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 5,
+      "moneyline_home_current": -164.0,
+      "moneyline_away_current": 136.3,
+      "best_home_moneyline": -162.0,
+      "best_away_moneyline": 140.0,
+      "spread_home_current": -3.0,
+      "spread_away_current": 3.0,
+      "spread_home_price_current": -111.4,
+      "spread_away_price_current": -27.6,
+      "total_current": 52.9,
+      "total_over_price_current": -110.8,
+      "total_under_price_current": -108.8,
+      "market_implied_home": 0.6212121212121212,
+      "market_implied_away": 0.4231908590774439,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -162,
+          "away": 136
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -165,
+          "away": 140
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -165,
+          "away": 133
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.0,
+            "price": -110
+          },
+          "away": {
+            "point": 3.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:12:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.0,
+            "price": -105
+          },
+          "away": {
+            "point": 3.0,
+            "price": -115
+          }
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": {
+            "point": -3.0,
+            "price": -116
+          },
+          "away": {
+            "point": 3.0,
+            "price": 105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:11:46Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:2143ade9684fd876b68a4e8cbf451f05:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "2143ade9684fd876b68a4e8cbf451f05",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "BAL",
+      "away": "NO",
+      "home_display": "Baltimore Ravens",
+      "away_display": "New Orleans Saints",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -395.0,
+      "moneyline_away_current": 310.0,
+      "best_home_moneyline": -395.0,
+      "best_away_moneyline": 310.0,
+      "spread_home_current": -7.5,
+      "spread_away_current": 7.5,
+      "spread_home_price_current": -111.0,
+      "spread_away_price_current": -109.0,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.797979797979798,
+      "market_implied_away": 0.24390243902439024,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -395,
+          "away": 310
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -7.5,
+            "price": -112
+          },
+          "away": {
+            "point": 7.5,
+            "price": -108
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:0283a29e1b38ef78b29b904fd56a16dd:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "0283a29e1b38ef78b29b904fd56a16dd",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "CHI",
+      "away": "MIN",
+      "home_display": "Chicago Bears",
+      "away_display": "Minnesota Vikings",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 1,
+      "moneyline_home_current": -180.0,
+      "moneyline_away_current": 150.0,
+      "best_home_moneyline": -180.0,
+      "best_away_moneyline": 150.0,
+      "spread_home_current": -3.5,
+      "spread_away_current": 3.5,
+      "spread_home_price_current": -105.0,
+      "spread_away_price_current": -115.0,
+      "total_current": 45.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6428571428571429,
+      "market_implied_away": 0.4,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -180,
+          "away": 150
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.5,
+            "price": -105
+          },
+          "away": {
+            "point": 3.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:36ad2fa722f4915ef23d2c81351261de:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "36ad2fa722f4915ef23d2c81351261de",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "HOU",
+      "away": "CIN",
+      "home_display": "Houston Texans",
+      "away_display": "Cincinnati Bengals",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -135.0,
+      "moneyline_away_current": 114.0,
+      "best_home_moneyline": -135.0,
+      "best_away_moneyline": 114.0,
+      "spread_home_current": -2.5,
+      "spread_away_current": 2.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.574468085106383,
+      "market_implied_away": 0.4672897196261682,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -135,
+          "away": 114
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:0636ebff776d43f8c829a36713c80b22:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "0636ebff776d43f8c829a36713c80b22",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "TB",
+      "away": "CLE",
+      "home_display": "Tampa Bay Buccaneers",
+      "away_display": "Cleveland Browns",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -285.0,
+      "moneyline_away_current": 230.0,
+      "best_home_moneyline": -285.0,
+      "best_away_moneyline": 230.0,
+      "spread_home_current": -6.5,
+      "spread_away_current": 6.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.7402597402597403,
+      "market_implied_away": 0.30303030303030304,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -285,
+          "away": 230
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -6.5,
+            "price": -110
+          },
+          "away": {
+            "point": 6.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -6.5,
+            "price": -110
+          },
+          "away": {
+            "point": 6.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:4aeee070bb6ec60bdfae4dede61b9014:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "4aeee070bb6ec60bdfae4dede61b9014",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "NYJ",
+      "away": "GB",
+      "home_display": "New York Jets",
+      "away_display": "Green Bay Packers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 1,
+      "moneyline_home_current": 215.0,
+      "moneyline_away_current": -265.0,
+      "best_home_moneyline": 215.0,
+      "best_away_moneyline": -265.0,
+      "spread_home_current": 6.0,
+      "spread_away_current": -6.0,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.31746031746031744,
+      "market_implied_away": 0.726027397260274,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 215,
+          "away": -265
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 6.0,
+            "price": -110
+          },
+          "away": {
+            "point": -6.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:9d14f87600f6edc74dbcb5c74edf6246:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "9d14f87600f6edc74dbcb5c74edf6246",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "NE",
+      "away": "PIT",
+      "home_display": "New England Patriots",
+      "away_display": "Pittsburgh Steelers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -225.0,
+      "moneyline_away_current": 185.0,
+      "best_home_moneyline": -225.0,
+      "best_away_moneyline": 185.0,
+      "spread_home_current": -4.5,
+      "spread_away_current": 4.5,
+      "spread_home_price_current": -109.0,
+      "spread_away_price_current": -111.0,
+      "total_current": 43.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6923076923076923,
+      "market_implied_away": 0.3508771929824561,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -225,
+          "away": 185
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -4.5,
+            "price": -108
+          },
+          "away": {
+            "point": 4.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -4.5,
+            "price": -110
+          },
+          "away": {
+            "point": 4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:fafc649c455e32a0f2ba1bd06e2039bc:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "fafc649c455e32a0f2ba1bd06e2039bc",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "TEN",
+      "away": "PHI",
+      "home_display": "Tennessee Titans",
+      "away_display": "Philadelphia Eagles",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": 180.0,
+      "moneyline_away_current": -218.0,
+      "best_home_moneyline": 180.0,
+      "best_away_moneyline": -218.0,
+      "spread_home_current": 4.5,
+      "spread_away_current": -4.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.35714285714285715,
+      "market_implied_away": 0.6855345911949685,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 180,
+          "away": -218
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 4.5,
+            "price": -110
+          },
+          "away": {
+            "point": -4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": 4.5,
+            "price": -110
+          },
+          "away": {
+            "point": -4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:1fd6628c781f556a7a19638e97d7107f:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "1fd6628c781f556a7a19638e97d7107f",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:05:00Z",
+      "home": "DEN",
+      "away": "JAX",
+      "home_display": "Denver Broncos",
+      "away_display": "Jacksonville Jaguars",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -148.0,
+      "moneyline_away_current": 124.0,
+      "best_home_moneyline": -148.0,
+      "best_away_moneyline": 124.0,
+      "spread_home_current": -2.8,
+      "spread_away_current": 2.8,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 43.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.5967741935483871,
+      "market_implied_away": 0.44642857142857145,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -148,
+          "away": 124
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -3.0,
+            "price": -105
+          },
+          "away": {
+            "point": 3.0,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -2.5,
+            "price": -115
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:71b3b83747589efdc5baef2c5cf811bf:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "71b3b83747589efdc5baef2c5cf811bf",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:05:00Z",
+      "home": "LAC",
+      "away": "LV",
+      "home_display": "Los Angeles Chargers",
+      "away_display": "Las Vegas Raiders",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -425.0,
+      "moneyline_away_current": 330.0,
+      "best_home_moneyline": -425.0,
+      "best_away_moneyline": 330.0,
+      "spread_home_current": -8.5,
+      "spread_away_current": 8.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.8095238095238095,
+      "market_implied_away": 0.23255813953488372,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -425,
+          "away": 330
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -8.5,
+            "price": -110
+          },
+          "away": {
+            "point": 8.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -8.5,
+            "price": -110
+          },
+          "away": {
+            "point": 8.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:4dd8020192a544385db42374e5555303:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "4dd8020192a544385db42374e5555303",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:25:00Z",
+      "home": "ARI",
+      "away": "SEA",
+      "home_display": "Arizona Cardinals",
+      "away_display": "Seattle Seahawks",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": 370.0,
+      "moneyline_away_current": -485.0,
+      "best_home_moneyline": 370.0,
+      "best_away_moneyline": -485.0,
+      "spread_home_current": 10.0,
+      "spread_away_current": -10.0,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 44.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.2127659574468085,
+      "market_implied_away": 0.8290598290598291,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": 370,
+          "away": -485
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": 10.0,
+            "price": -110
+          },
+          "away": {
+            "point": -10.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": 10.0,
+            "price": -110
+          },
+          "away": {
+            "point": -10.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:85ef85098ddd22fe4ecf45e7e3c0a9c0:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "85ef85098ddd22fe4ecf45e7e3c0a9c0",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:25:00Z",
+      "home": "DAL",
+      "away": "WAS",
+      "home_display": "Dallas Cowboys",
+      "away_display": "Washington Commanders",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -205.0,
+      "moneyline_away_current": 170.0,
+      "best_home_moneyline": -205.0,
+      "best_away_moneyline": 170.0,
+      "spread_home_current": -4.5,
+      "spread_away_current": 4.5,
+      "spread_home_price_current": -105.0,
+      "spread_away_price_current": -115.0,
+      "total_current": 51.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6721311475409836,
+      "market_implied_away": 0.37037037037037035,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -205,
+          "away": 170
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -4.5,
+            "price": -105
+          },
+          "away": {
+            "point": 4.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -4.5,
+            "price": -105
+          },
+          "away": {
+            "point": 4.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:68bc55903f50af4af4766adcc89fcc61:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "68bc55903f50af4af4766adcc89fcc61",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:25:00Z",
+      "home": "SF",
+      "away": "MIA",
+      "home_display": "San Francisco 49ers",
+      "away_display": "Miami Dolphins",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -535.0,
+      "moneyline_away_current": 400.0,
+      "best_home_moneyline": -535.0,
+      "best_away_moneyline": 400.0,
+      "spread_home_current": -10.5,
+      "spread_away_current": 10.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.84251968503937,
+      "market_implied_away": 0.2,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -535,
+          "away": 400
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:50bc247030707d823b9c3581d7eb5760:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "50bc247030707d823b9c3581d7eb5760",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-21",
+      "commence_time": "2026-09-21T00:20:00Z",
+      "home": "KC",
+      "away": "IND",
+      "home_display": "Kansas City Chiefs",
+      "away_display": "Indianapolis Colts",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -265.0,
+      "moneyline_away_current": 215.0,
+      "best_home_moneyline": -265.0,
+      "best_away_moneyline": 215.0,
+      "spread_home_current": -5.8,
+      "spread_away_current": 5.8,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 47.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.726027397260274,
+      "market_implied_away": 0.31746031746031744,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -265,
+          "away": 215
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -6.0,
+            "price": -110
+          },
+          "away": {
+            "point": 6.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -5.5,
+            "price": -110
+          },
+          "away": {
+            "point": 5.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:32367f882fac1a0c20a6335619922025:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "32367f882fac1a0c20a6335619922025",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-22",
+      "commence_time": "2026-09-22T00:15:00Z",
+      "home": "LAR",
+      "away": "NYG",
+      "home_display": "Los Angeles Rams",
+      "away_display": "New York Giants",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -410.0,
+      "moneyline_away_current": 320.0,
+      "best_home_moneyline": -410.0,
+      "best_away_moneyline": 320.0,
+      "spread_home_current": -9.5,
+      "spread_away_current": 9.5,
+      "spread_home_price_current": -109.0,
+      "spread_away_price_current": -111.0,
+      "total_current": 47.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.803921568627451,
+      "market_implied_away": 0.23809523809523808,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -410,
+          "away": 320
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -9.5,
+            "price": -108
+          },
+          "away": {
+            "point": 9.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -9.5,
+            "price": -110
+          },
+          "away": {
+            "point": 9.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:e5fbd3b3953b896b1bf897ddadb3cc4b:2026-07-15T15:12:06Z",
+      "sport": "NFL",
+      "provider_event_id": "e5fbd3b3953b896b1bf897ddadb3cc4b",
+      "snapshot_at": "2026-07-15T15:12:06Z",
+      "game_date": "2026-09-25",
+      "commence_time": "2026-09-25T00:15:00Z",
+      "home": "GB",
+      "away": "ATL",
+      "home_display": "Green Bay Packers",
+      "away_display": "Atlanta Falcons",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -345.0,
+      "moneyline_away_current": 275.0,
+      "best_home_moneyline": -345.0,
+      "best_away_moneyline": 275.0,
+      "spread_home_current": -7.5,
+      "spread_away_current": 7.5,
+      "spread_home_price_current": -107.5,
+      "spread_away_price_current": -112.5,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.7752808988764045,
+      "market_implied_away": 0.26666666666666666,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -345,
+          "away": 275
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": {
+            "point": -7.5,
+            "price": -105
+          },
+          "away": {
+            "point": 7.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:12:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "MLB:7ad2e88701ead09625333188a5b653b2:2026-07-15T15:13:44Z",
+      "sport": "MLB",
+      "provider_event_id": "7ad2e88701ead09625333188a5b653b2",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-07-16",
+      "commence_time": "2026-07-16T23:11:00Z",
+      "home": "PHI",
+      "away": "NYM",
+      "home_display": "Philadelphia Phillies",
+      "away_display": "New York Mets",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 3,
+      "moneyline_home_current": -134.7,
+      "moneyline_away_current": 119.3,
+      "best_home_moneyline": -132.0,
+      "best_away_moneyline": 123.0,
+      "spread_home_current": -1.5,
+      "spread_away_current": 1.5,
+      "spread_home_price_current": 152.3,
+      "spread_away_price_current": -177.3,
+      "total_current": 9.8,
+      "total_over_price_current": -109.7,
+      "total_under_price_current": -42.7,
+      "market_implied_home": 0.573924158500213,
+      "market_implied_away": 0.45599635202918376,
+      "books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:35Z",
+          "home": -132,
+          "away": 112
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:17Z",
+          "home": -136,
+          "away": 123
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -136,
+          "away": 123
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:35Z",
+          "home": {
+            "point": -1.5,
+            "price": 150
+          },
+          "away": {
+            "point": 1.5,
+            "price": -182
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:35Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:17Z",
+          "home": {
+            "point": -1.5,
+            "price": 153
+          },
+          "away": {
+            "point": 1.5,
+            "price": -175
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:17Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": {
+            "point": -1.5,
+            "price": 154
+          },
+          "away": {
+            "point": 1.5,
+            "price": -175
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:dd23179c4373849ae1da8476ec21def3:2026-07-15T15:13:44Z",
+      "sport": "WNBA",
+      "provider_event_id": "dd23179c4373849ae1da8476ec21def3",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-07-15",
+      "commence_time": "2026-07-15T16:10:00Z",
+      "home": "CHI",
+      "away": "SEA",
+      "home_display": "Chicago Sky",
+      "away_display": "Seattle Storm",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -161.4,
+      "moneyline_away_current": 135.7,
+      "best_home_moneyline": -158.0,
+      "best_away_moneyline": 145.0,
+      "spread_home_current": -3.4,
+      "spread_away_current": 3.4,
+      "spread_home_price_current": -111.8,
+      "spread_away_price_current": -108.3,
+      "total_current": 171.0,
+      "total_over_price_current": -109.4,
+      "total_under_price_current": -110.6,
+      "market_implied_home": 0.6174445294567713,
+      "market_implied_away": 0.42426813746287656,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": -162,
+          "away": 136
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:13:02Z",
+          "home": -159,
+          "away": 129
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": -158,
+          "away": 128
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": -159,
+          "away": 128
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:21Z",
+          "home": -160,
+          "away": 140
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": -160,
+          "away": 140
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:12:08Z",
+          "home": -170,
+          "away": 145
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": -165,
+          "away": 135
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:13:02Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:13:02Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": {
+            "point": -3.5,
+            "price": -108
+          },
+          "away": {
+            "point": 3.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": {
+            "point": -2.5,
+            "price": -120
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:4db11d33553fba68fc607aaf009071aa:2026-07-15T15:13:44Z",
+      "sport": "WNBA",
+      "provider_event_id": "4db11d33553fba68fc607aaf009071aa",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-07-15",
+      "commence_time": "2026-07-15T17:10:00Z",
+      "home": "MIN",
+      "away": "LA",
+      "home_display": "Minnesota Lynx",
+      "away_display": "Los Angeles Sparks",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -648.2,
+      "moneyline_away_current": 458.6,
+      "best_home_moneyline": -600.0,
+      "best_away_moneyline": 480.0,
+      "spread_home_current": -11.5,
+      "spread_away_current": 11.5,
+      "spread_home_price_current": -110.2,
+      "spread_away_price_current": -109.6,
+      "total_current": 181.3,
+      "total_over_price_current": -109.0,
+      "total_under_price_current": -111.0,
+      "market_implied_home": 0.8663458968190324,
+      "market_implied_away": 0.17901897601145722,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": -625,
+          "away": 455
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": -620,
+          "away": 430
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": -715,
+          "away": 475
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:21Z",
+          "home": -650,
+          "away": 476
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": -650,
+          "away": 476
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:12:08Z",
+          "home": -675,
+          "away": 460
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": -600,
+          "away": 425
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:21Z",
+          "home": -650,
+          "away": 480
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": {
+            "point": -11.5,
+            "price": -110
+          },
+          "away": {
+            "point": 11.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": {
+            "point": -11.5,
+            "price": -114
+          },
+          "away": {
+            "point": 11.5,
+            "price": -106
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": {
+            "point": -11.5,
+            "price": -110
+          },
+          "away": {
+            "point": 11.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:21Z",
+          "home": {
+            "point": -11.5,
+            "price": -108
+          },
+          "away": {
+            "point": 11.5,
+            "price": -108
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:21Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:8eace0d4309db9d618e7ba857166324b:2026-07-15T15:13:44Z",
+      "sport": "WNBA",
+      "provider_event_id": "8eace0d4309db9d618e7ba857166324b",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-07-16",
+      "commence_time": "2026-07-16T00:10:00Z",
+      "home": "IND",
+      "away": "GS",
+      "home_display": "Indiana Fever",
+      "away_display": "Golden State Valkyries",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -123.8,
+      "moneyline_away_current": 80.7,
+      "best_home_moneyline": -118.0,
+      "best_away_moneyline": 105.0,
+      "spread_home_current": -1.4,
+      "spread_away_current": 1.4,
+      "spread_home_price_current": -110.4,
+      "spread_away_price_current": -109.6,
+      "total_current": 166.1,
+      "total_over_price_current": -109.1,
+      "total_under_price_current": -110.8,
+      "market_implied_home": 0.5531724754244861,
+      "market_implied_away": 0.5534034311012729,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:13:02Z",
+          "home": -122,
+          "away": 100
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": -124,
+          "away": 102
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": -118,
+          "away": -106
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:21Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:12:08Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": -125,
+          "away": 105
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": {
+            "point": -1.5,
+            "price": -108
+          },
+          "away": {
+            "point": 1.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:13:02Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:13:02Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": {
+            "point": -0.5,
+            "price": -118
+          },
+          "away": {
+            "point": 0.5,
+            "price": -106
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:00a997433337939ebda3beb882a1e2db:2026-07-15T15:13:44Z",
+      "sport": "WNBA",
+      "provider_event_id": "00a997433337939ebda3beb882a1e2db",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-07-16",
+      "commence_time": "2026-07-16T23:10:00Z",
+      "home": "WSH",
+      "away": "POR",
+      "home_display": "Washington Mystics",
+      "away_display": "Portland Fire",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 6,
+      "moneyline_home_current": -203.3,
+      "moneyline_away_current": 164.3,
+      "best_home_moneyline": -185.0,
+      "best_away_moneyline": 176.0,
+      "spread_home_current": -5.1,
+      "spread_away_current": 5.1,
+      "spread_home_price_current": -108.8,
+      "spread_away_price_current": -111.0,
+      "total_current": 164.1,
+      "total_over_price_current": -106.8,
+      "total_under_price_current": -113.0,
+      "market_implied_home": 0.6702934388394329,
+      "market_implied_away": 0.3783579265985622,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": -185,
+          "away": 154
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": -220,
+          "away": 176
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": -205,
+          "away": 163
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": {
+            "point": -5.5,
+            "price": -102
+          },
+          "away": {
+            "point": 5.5,
+            "price": -118
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": {
+            "point": -5.5,
+            "price": -110
+          },
+          "away": {
+            "point": 5.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": {
+            "point": -5.0,
+            "price": -110
+          },
+          "away": {
+            "point": 5.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:21Z",
+          "home": {
+            "point": -5.0,
+            "price": -108
+          },
+          "away": {
+            "point": 5.0,
+            "price": -108
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:21Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:51f9e00bb8d7debd5a922a21f0736e36:2026-07-15T15:13:44Z",
+      "sport": "WNBA",
+      "provider_event_id": "51f9e00bb8d7debd5a922a21f0736e36",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-07-17",
+      "commence_time": "2026-07-17T01:00:00Z",
+      "home": "DAL",
+      "away": "NY",
+      "home_display": "Dallas Wings",
+      "away_display": "New York Liberty",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 6,
+      "moneyline_home_current": -124.3,
+      "moneyline_away_current": 102.0,
+      "best_home_moneyline": -122.0,
+      "best_away_moneyline": 104.0,
+      "spread_home_current": -1.5,
+      "spread_away_current": 1.5,
+      "spread_home_price_current": -109.5,
+      "spread_away_price_current": -110.2,
+      "total_current": 175.5,
+      "total_over_price_current": -110.2,
+      "total_under_price_current": -109.7,
+      "market_implied_home": 0.5541685242978154,
+      "market_implied_away": 0.49504950495049505,
+      "books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": -122,
+          "away": 100
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": -122,
+          "away": 102
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:13:19Z",
+          "home": -129,
+          "away": 104
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:37Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:21Z",
+          "home": {
+            "point": -1.5,
+            "price": -108
+          },
+          "away": {
+            "point": 1.5,
+            "price": -108
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:21Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:20Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:8c94552d022acec4a0458d70c19d3da9:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "8c94552d022acec4a0458d70c19d3da9",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-10",
+      "commence_time": "2026-09-10T00:15:00Z",
+      "home": "SEA",
+      "away": "NE",
+      "home_display": "Seattle Seahawks",
+      "away_display": "New England Patriots",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -201.1,
+      "moneyline_away_current": 166.9,
+      "best_home_moneyline": -192.0,
+      "best_away_moneyline": 185.0,
+      "spread_home_current": -3.8,
+      "spread_away_current": 3.8,
+      "spread_home_price_current": -108.8,
+      "spread_away_price_current": -110.8,
+      "total_current": 44.1,
+      "total_over_price_current": -110.6,
+      "total_under_price_current": -109.1,
+      "market_implied_home": 0.6678844237794752,
+      "market_implied_away": 0.37467216185837393,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -192,
+          "away": 160
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -195,
+          "away": 167
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -198,
+          "away": 166
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -195,
+          "away": 170
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -195,
+          "away": 170
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -240,
+          "away": 185
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -200,
+          "away": 165
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -195,
+          "away": 165
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": -4.5,
+            "price": -102
+          },
+          "away": {
+            "point": 4.5,
+            "price": -120
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -3.5,
+            "price": -105
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:acc580d74344ea3b31bbcdd057fe6a9c:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "acc580d74344ea3b31bbcdd057fe6a9c",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-11",
+      "commence_time": "2026-09-11T00:35:00Z",
+      "home": "LAR",
+      "away": "SF",
+      "home_display": "Los Angeles Rams",
+      "away_display": "San Francisco 49ers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -186.7,
+      "moneyline_away_current": 155.3,
+      "best_home_moneyline": -170.0,
+      "best_away_moneyline": 176.0,
+      "spread_home_current": -3.4,
+      "spread_away_current": 3.4,
+      "spread_home_price_current": -112.5,
+      "spread_away_price_current": -56.5,
+      "total_current": 48.6,
+      "total_over_price_current": -109.3,
+      "total_under_price_current": -110.6,
+      "market_implied_home": 0.6512033484478549,
+      "market_implied_away": 0.3916960438699569,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -170,
+          "away": 142
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -200,
+          "away": 165
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -210,
+          "away": 176
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -195,
+          "away": 150
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -170,
+          "away": 145
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -180,
+          "away": 155
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": -3.5,
+            "price": -115
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:95c01d1bb797d6df14824b106c5a9130:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "95c01d1bb797d6df14824b106c5a9130",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "PIT",
+      "away": "ATL",
+      "home_display": "Pittsburgh Steelers",
+      "away_display": "Atlanta Falcons",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -161.0,
+      "moneyline_away_current": 135.7,
+      "best_home_moneyline": -146.0,
+      "best_away_moneyline": 145.0,
+      "spread_home_current": -2.9,
+      "spread_away_current": 2.9,
+      "spread_home_price_current": -112.8,
+      "spread_away_price_current": -62.2,
+      "total_current": 41.8,
+      "total_over_price_current": -109.7,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6168582375478927,
+      "market_implied_away": 0.42426813746287656,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -170,
+          "away": 142
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -157,
+          "away": 128
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -160,
+          "away": 140
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -146,
+          "away": 124
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -160,
+          "away": 140
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -160,
+          "away": 138
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -160,
+          "away": 135
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -170,
+          "away": 145
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": {
+            "point": -3.0,
+            "price": -105
+          },
+          "away": {
+            "point": 3.0,
+            "price": -118
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": {
+            "point": -3.0,
+            "price": -110
+          },
+          "away": {
+            "point": 3.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": -2.5,
+            "price": -120
+          },
+          "away": {
+            "point": 2.5,
+            "price": -102
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:b6cfdcbafa61ce220ba87dc2d9b80c77:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "b6cfdcbafa61ce220ba87dc2d9b80c77",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "IND",
+      "away": "BAL",
+      "home_display": "Indianapolis Colts",
+      "away_display": "Baltimore Ravens",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": 163.9,
+      "moneyline_away_current": -197.0,
+      "best_home_moneyline": 168.0,
+      "best_away_moneyline": -190.0,
+      "spread_home_current": 3.5,
+      "spread_away_current": -3.5,
+      "spread_home_price_current": -108.2,
+      "spread_away_price_current": -110.9,
+      "total_current": 48.6,
+      "total_over_price_current": -108.3,
+      "total_under_price_current": -111.4,
+      "market_implied_home": 0.3789314134141721,
+      "market_implied_away": 0.6632996632996633,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": 160,
+          "away": -192
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": 163,
+          "away": -190
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": 165,
+          "away": -190
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": 165,
+          "away": -210
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": 165,
+          "away": -190
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": 168,
+          "away": -200
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": 165,
+          "away": -200
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": 165,
+          "away": -195
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 3.5,
+            "price": -110
+          },
+          "away": {
+            "point": -3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": 3.5,
+            "price": -110
+          },
+          "away": {
+            "point": -3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 3.5,
+            "price": -105
+          },
+          "away": {
+            "point": -3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": {
+            "point": 3.5,
+            "price": -109
+          },
+          "away": {
+            "point": -3.5,
+            "price": -113
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:7e09efed7e12c659b82740b67ce2f9a1:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "7e09efed7e12c659b82740b67ce2f9a1",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "HOU",
+      "away": "BUF",
+      "home_display": "Houston Texans",
+      "away_display": "Buffalo Bills",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -106.3,
+      "moneyline_away_current": -114.3,
+      "best_home_moneyline": -104.0,
+      "best_away_moneyline": -110.0,
+      "spread_home_current": 1.2,
+      "spread_away_current": -1.2,
+      "spread_home_price_current": -115.2,
+      "spread_away_price_current": 6.9,
+      "total_current": 44.7,
+      "total_over_price_current": -108.2,
+      "total_under_price_current": -111.4,
+      "market_implied_home": 0.5152690256907416,
+      "market_implied_away": 0.5333644423705086,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -108,
+          "away": -112
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -104,
+          "away": -120
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -106,
+          "away": -110
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -110,
+          "away": -110
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 1.5,
+            "price": -120
+          },
+          "away": {
+            "point": -1.5,
+            "price": 100
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": 1.0,
+            "price": -110
+          },
+          "away": {
+            "point": -1.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 1.0,
+            "price": -110
+          },
+          "away": {
+            "point": -1.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": {
+            "point": 1.0,
+            "price": -110
+          },
+          "away": {
+            "point": -1.0,
+            "price": -113
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:fc362aff0d889ec52d358307a70c32ed:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "fc362aff0d889ec52d358307a70c32ed",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "CAR",
+      "away": "CHI",
+      "home_display": "Carolina Panthers",
+      "away_display": "Chicago Bears",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": 116.2,
+      "moneyline_away_current": -139.4,
+      "best_home_moneyline": 120.0,
+      "best_away_moneyline": -135.0,
+      "spread_home_current": 2.4,
+      "spread_away_current": -2.4,
+      "spread_home_price_current": -62.0,
+      "spread_away_price_current": -112.8,
+      "total_current": 45.1,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -109.7,
+      "market_implied_home": 0.46253469010175763,
+      "market_implied_away": 0.5822890559732665,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": 114,
+          "away": -135
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": 118,
+          "away": -138
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": 108,
+          "away": -143
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": 118,
+          "away": -140
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": 115,
+          "away": -135
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 2.5,
+            "price": -110
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": 2.5,
+            "price": -105
+          },
+          "away": {
+            "point": -2.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 2.5,
+            "price": 100
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": 2.0,
+            "price": 100
+          },
+          "away": {
+            "point": -2.0,
+            "price": -120
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:ed6d24ff979f9c71979fead577b0b3f7:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "ed6d24ff979f9c71979fead577b0b3f7",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "CIN",
+      "away": "TB",
+      "home_display": "Cincinnati Bengals",
+      "away_display": "Tampa Bay Buccaneers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -197.9,
+      "moneyline_away_current": 164.7,
+      "best_home_moneyline": -190.0,
+      "best_away_moneyline": 176.0,
+      "spread_home_current": -3.5,
+      "spread_away_current": 3.5,
+      "spread_home_price_current": -110.3,
+      "spread_away_price_current": -108.9,
+      "total_current": 51.6,
+      "total_over_price_current": -111.3,
+      "total_under_price_current": -108.3,
+      "market_implied_home": 0.6643168848606916,
+      "market_implied_away": 0.37778617302606726,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -198,
+          "away": 164
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -210,
+          "away": 176
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -190,
+          "away": 165
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -190,
+          "away": 163
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -190,
+          "away": 165
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -200,
+          "away": 160
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -200,
+          "away": 165
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -195,
+          "away": 165
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": -3.5,
+            "price": -115
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -3.5,
+            "price": -105
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:e55c6fe19fce094ce214c8b0e5b504e9:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "e55c6fe19fce094ce214c8b0e5b504e9",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "JAX",
+      "away": "CLE",
+      "home_display": "Jacksonville Jaguars",
+      "away_display": "Cleveland Browns",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -382.1,
+      "moneyline_away_current": 295.9,
+      "best_home_moneyline": -340.0,
+      "best_away_moneyline": 325.0,
+      "spread_home_current": -7.5,
+      "spread_away_current": 7.5,
+      "spread_home_price_current": -109.9,
+      "spread_away_price_current": -109.3,
+      "total_current": 40.5,
+      "total_over_price_current": -112.6,
+      "total_under_price_current": -107.2,
+      "market_implied_home": 0.7925741547396806,
+      "market_implied_away": 0.2525890376357666,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -340,
+          "away": 270
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -405,
+          "away": 320
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -360,
+          "away": 290
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -420,
+          "away": 310
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -360,
+          "away": 289
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -360,
+          "away": 289
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -425,
+          "away": 325
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -340,
+          "away": 270
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": -7.5,
+            "price": -115
+          },
+          "away": {
+            "point": 7.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": {
+            "point": -7.5,
+            "price": -109
+          },
+          "away": {
+            "point": 7.5,
+            "price": -114
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:c1d3fcec25aaeb06ebd2244d33d338e0:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "c1d3fcec25aaeb06ebd2244d33d338e0",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "DET",
+      "away": "NO",
+      "home_display": "Detroit Lions",
+      "away_display": "New Orleans Saints",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -349.4,
+      "moneyline_away_current": 274.7,
+      "best_home_moneyline": -325.0,
+      "best_away_moneyline": 300.0,
+      "spread_home_current": -7.1,
+      "spread_away_current": 7.1,
+      "spread_home_price_current": -109.7,
+      "spread_away_price_current": -109.7,
+      "total_current": 49.2,
+      "total_over_price_current": -111.3,
+      "total_under_price_current": -108.3,
+      "market_implied_home": 0.7774810858923008,
+      "market_implied_away": 0.26688017080330934,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -325,
+          "away": 260
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -370,
+          "away": 295
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -335,
+          "away": 270
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -335,
+          "away": 270
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -335,
+          "away": 272
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -400,
+          "away": 290
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -375,
+          "away": 300
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -330,
+          "away": 265
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -7.0,
+            "price": -110
+          },
+          "away": {
+            "point": 7.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": -7.0,
+            "price": -115
+          },
+          "away": {
+            "point": 7.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -7.0,
+            "price": -105
+          },
+          "away": {
+            "point": 7.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": {
+            "point": -7.0,
+            "price": -110
+          },
+          "away": {
+            "point": 7.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:7dddb296a42e7a41a774b24bd1709ce1:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "7dddb296a42e7a41a774b24bd1709ce1",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "TEN",
+      "away": "NYJ",
+      "home_display": "Tennessee Titans",
+      "away_display": "New York Jets",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -149.8,
+      "moneyline_away_current": 126.2,
+      "best_home_moneyline": -134.0,
+      "best_away_moneyline": 136.0,
+      "spread_home_current": -2.6,
+      "spread_away_current": 2.6,
+      "spread_home_price_current": -112.4,
+      "spread_away_price_current": -40.2,
+      "total_current": 38.8,
+      "total_over_price_current": -110.6,
+      "total_under_price_current": -109.1,
+      "market_implied_home": 0.5996797437950361,
+      "market_implied_away": 0.4420866489832007,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -162,
+          "away": 136
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -134,
+          "away": 116
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -150,
+          "away": 130
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -150,
+          "away": 129
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -150,
+          "away": 130
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -150,
+          "away": 120
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -155,
+          "away": 130
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -150,
+          "away": 130
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -3.0,
+            "price": -110
+          },
+          "away": {
+            "point": 3.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": 100
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": -2.0,
+            "price": -120
+          },
+          "away": {
+            "point": 2.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:1edfa5ceaa1ad2cb57df1c1b908731f6:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "1edfa5ceaa1ad2cb57df1c1b908731f6",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "LAC",
+      "away": "ARI",
+      "home_display": "Los Angeles Chargers",
+      "away_display": "Arizona Cardinals",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -621.1,
+      "moneyline_away_current": 441.9,
+      "best_home_moneyline": -500.0,
+      "best_away_moneyline": 475.0,
+      "spread_home_current": -10.8,
+      "spread_away_current": 10.8,
+      "spread_home_price_current": -109.0,
+      "spread_away_price_current": -110.2,
+      "total_current": 46.0,
+      "total_over_price_current": -111.7,
+      "total_under_price_current": -108.0,
+      "market_implied_home": 0.8613229787824157,
+      "market_implied_away": 0.18453589223103894,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -600,
+          "away": 440
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -600,
+          "away": 446
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -600,
+          "away": 446
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -600,
+          "away": 450
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -500,
+          "away": 360
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -590,
+          "away": 440
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -650,
+          "away": 475
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -650,
+          "away": 450
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -11.5,
+            "price": -110
+          },
+          "away": {
+            "point": 11.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -10.5,
+            "price": -105
+          },
+          "away": {
+            "point": 10.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:cb77efed7e711d25a72c1a2a0a1af119:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "cb77efed7e711d25a72c1a2a0a1af119",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "MIN",
+      "away": "GB",
+      "home_display": "Minnesota Vikings",
+      "away_display": "Green Bay Packers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -111.3,
+      "moneyline_away_current": -110.0,
+      "best_home_moneyline": -104.0,
+      "best_away_moneyline": -105.0,
+      "spread_home_current": 0.2,
+      "spread_away_current": -0.2,
+      "spread_home_price_current": -91.4,
+      "spread_away_price_current": -61.3,
+      "total_current": 45.2,
+      "total_over_price_current": -111.8,
+      "total_under_price_current": -107.9,
+      "market_implied_home": 0.5267392333175579,
+      "market_implied_away": 0.5238095238095238,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -108,
+          "away": -112
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -106,
+          "away": -120
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -104,
+          "away": -112
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -115,
+          "away": -105
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -115,
+          "away": -105
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:11:45Z",
+          "home": -120,
+          "away": -106
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 1.5,
+            "price": -125
+          },
+          "away": {
+            "point": -1.5,
+            "price": 105
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 0.0,
+            "price": -105
+          },
+          "away": {
+            "point": 0.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": {
+            "point": 0.0,
+            "price": -110
+          },
+          "away": {
+            "point": 0.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": -1.0,
+            "price": -110
+          },
+          "away": {
+            "point": 1.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:c5d95f48a16849ab6bebc68fbbfcb74a:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "c5d95f48a16849ab6bebc68fbbfcb74a",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "LV",
+      "away": "MIA",
+      "home_display": "Las Vegas Raiders",
+      "away_display": "Miami Dolphins",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -186.2,
+      "moneyline_away_current": 154.2,
+      "best_home_moneyline": -170.0,
+      "best_away_moneyline": 176.0,
+      "spread_home_current": -3.2,
+      "spread_away_current": 3.2,
+      "spread_home_price_current": -116.0,
+      "spread_away_price_current": -14.6,
+      "total_current": 40.6,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -109.7,
+      "market_implied_home": 0.6505939902166317,
+      "market_implied_away": 0.39339103068450043,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -170,
+          "away": 142
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -180,
+          "away": 155
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -200,
+          "away": 150
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -210,
+          "away": 176
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -190,
+          "away": 155
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -170,
+          "away": 145
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -3.0,
+            "price": -118
+          },
+          "away": {
+            "point": 3.0,
+            "price": -102
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": -3.5,
+            "price": -120
+          },
+          "away": {
+            "point": 3.5,
+            "price": -102
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:17885cb8dcade8f6c3bce14b2de805e8:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "17885cb8dcade8f6c3bce14b2de805e8",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "PHI",
+      "away": "WAS",
+      "home_display": "Philadelphia Eagles",
+      "away_display": "Washington Commanders",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -218.1,
+      "moneyline_away_current": 180.1,
+      "best_home_moneyline": -210.0,
+      "best_away_moneyline": 195.0,
+      "spread_home_current": -4.6,
+      "spread_away_current": 4.6,
+      "spread_home_price_current": -110.3,
+      "spread_away_price_current": -86.7,
+      "total_current": 47.2,
+      "total_over_price_current": -112.2,
+      "total_under_price_current": -107.7,
+      "market_implied_home": 0.6856334486010688,
+      "market_implied_away": 0.3570153516601214,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -238,
+          "away": 195
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -215,
+          "away": 180
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -210,
+          "away": 180
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -215,
+          "away": 170
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -210,
+          "away": 180
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -210,
+          "away": 180
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -220,
+          "away": 180
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -235,
+          "away": 195
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -5.5,
+            "price": -110
+          },
+          "away": {
+            "point": 5.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": -4.5,
+            "price": -105
+          },
+          "away": {
+            "point": 4.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": {
+            "point": -4.0,
+            "price": -115
+          },
+          "away": {
+            "point": 4.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": {
+            "point": -4.5,
+            "price": -113
+          },
+          "away": {
+            "point": 4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:3e646c7479c57f5d9752d8c7dfe7059b:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "3e646c7479c57f5d9752d8c7dfe7059b",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-14",
+      "commence_time": "2026-09-14T00:20:00Z",
+      "home": "NYG",
+      "away": "DAL",
+      "home_display": "New York Giants",
+      "away_display": "Dallas Cowboys",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": 118.6,
+      "moneyline_away_current": -142.4,
+      "best_home_moneyline": 129.0,
+      "best_away_moneyline": -132.0,
+      "spread_home_current": 2.6,
+      "spread_away_current": -2.6,
+      "spread_home_price_current": -84.8,
+      "spread_away_price_current": -112.6,
+      "total_current": 48.2,
+      "total_over_price_current": -109.7,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.4574565416285453,
+      "market_implied_away": 0.5874587458745875,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": 114,
+          "away": -135
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": 128,
+          "away": -152
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": 125,
+          "away": -150
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": 112,
+          "away": -148
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": 115,
+          "away": -135
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": 129,
+          "away": -150
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 2.5,
+            "price": -110
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": 2.5,
+            "price": -102
+          },
+          "away": {
+            "point": -2.5,
+            "price": -120
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": {
+            "point": 2.5,
+            "price": -105
+          },
+          "away": {
+            "point": -2.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": {
+            "point": 2.5,
+            "price": -110
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:5ad8135dc2b5f27de0b777acd317855a:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "5ad8135dc2b5f27de0b777acd317855a",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-15",
+      "commence_time": "2026-09-15T00:15:00Z",
+      "home": "KC",
+      "away": "DEN",
+      "home_display": "Kansas City Chiefs",
+      "away_display": "Denver Broncos",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -146.1,
+      "moneyline_away_current": 121.6,
+      "best_home_moneyline": -140.0,
+      "best_away_moneyline": 135.0,
+      "spread_home_current": -2.7,
+      "spread_away_current": 2.7,
+      "spread_home_price_current": -110.3,
+      "spread_away_price_current": -87.1,
+      "total_current": 42.8,
+      "total_over_price_current": -109.8,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.5936611133685493,
+      "market_implied_away": 0.4512635379061372,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -148,
+          "away": 124
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": -146,
+          "away": 124
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -160,
+          "away": 135
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:15Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -155,
+          "away": 117
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -2.5,
+            "price": -115
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": {
+            "point": -2.5,
+            "price": -118
+          },
+          "away": {
+            "point": 2.5,
+            "price": -104
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:13:33Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": 100
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": {
+            "point": -2.5,
+            "price": -115
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:56e8897681915f7ec92baeee952bb1ae:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "56e8897681915f7ec92baeee952bb1ae",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-18",
+      "commence_time": "2026-09-18T00:15:00Z",
+      "home": "BUF",
+      "away": "DET",
+      "home_display": "Buffalo Bills",
+      "away_display": "Detroit Lions",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 5,
+      "moneyline_home_current": -164.0,
+      "moneyline_away_current": 136.3,
+      "best_home_moneyline": -162.0,
+      "best_away_moneyline": 140.0,
+      "spread_home_current": -3.0,
+      "spread_away_current": 3.0,
+      "spread_home_price_current": -111.4,
+      "spread_away_price_current": -27.6,
+      "total_current": 52.9,
+      "total_over_price_current": -110.8,
+      "total_under_price_current": -108.8,
+      "market_implied_home": 0.6212121212121212,
+      "market_implied_away": 0.4231908590774439,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -162,
+          "away": 136
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -165,
+          "away": 140
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": -165,
+          "away": 133
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -3.0,
+            "price": -110
+          },
+          "away": {
+            "point": 3.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:13:18Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": {
+            "point": -3.0,
+            "price": -105
+          },
+          "away": {
+            "point": 3.0,
+            "price": -115
+          }
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:12:59Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -3.0,
+            "price": -116
+          },
+          "away": {
+            "point": 3.0,
+            "price": 105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:2143ade9684fd876b68a4e8cbf451f05:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "2143ade9684fd876b68a4e8cbf451f05",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "BAL",
+      "away": "NO",
+      "home_display": "Baltimore Ravens",
+      "away_display": "New Orleans Saints",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -395.0,
+      "moneyline_away_current": 310.0,
+      "best_home_moneyline": -395.0,
+      "best_away_moneyline": 310.0,
+      "spread_home_current": -7.5,
+      "spread_away_current": 7.5,
+      "spread_home_price_current": -111.0,
+      "spread_away_price_current": -109.0,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.797979797979798,
+      "market_implied_away": 0.24390243902439024,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -395,
+          "away": 310
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -7.5,
+            "price": -112
+          },
+          "away": {
+            "point": 7.5,
+            "price": -108
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:0283a29e1b38ef78b29b904fd56a16dd:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "0283a29e1b38ef78b29b904fd56a16dd",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "CHI",
+      "away": "MIN",
+      "home_display": "Chicago Bears",
+      "away_display": "Minnesota Vikings",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 1,
+      "moneyline_home_current": -180.0,
+      "moneyline_away_current": 150.0,
+      "best_home_moneyline": -180.0,
+      "best_away_moneyline": 150.0,
+      "spread_home_current": -3.5,
+      "spread_away_current": 3.5,
+      "spread_home_price_current": -105.0,
+      "spread_away_price_current": -115.0,
+      "total_current": 45.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6428571428571429,
+      "market_implied_away": 0.4,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": -180,
+          "away": 150
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": {
+            "point": -3.5,
+            "price": -105
+          },
+          "away": {
+            "point": 3.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:36ad2fa722f4915ef23d2c81351261de:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "36ad2fa722f4915ef23d2c81351261de",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "HOU",
+      "away": "CIN",
+      "home_display": "Houston Texans",
+      "away_display": "Cincinnati Bengals",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -135.0,
+      "moneyline_away_current": 114.0,
+      "best_home_moneyline": -135.0,
+      "best_away_moneyline": 114.0,
+      "spread_home_current": -2.5,
+      "spread_away_current": 2.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.574468085106383,
+      "market_implied_away": 0.4672897196261682,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -135,
+          "away": 114
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:0636ebff776d43f8c829a36713c80b22:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "0636ebff776d43f8c829a36713c80b22",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "TB",
+      "away": "CLE",
+      "home_display": "Tampa Bay Buccaneers",
+      "away_display": "Cleveland Browns",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -285.0,
+      "moneyline_away_current": 230.0,
+      "best_home_moneyline": -285.0,
+      "best_away_moneyline": 230.0,
+      "spread_home_current": -6.5,
+      "spread_away_current": 6.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.7402597402597403,
+      "market_implied_away": 0.30303030303030304,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -285,
+          "away": 230
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -6.5,
+            "price": -110
+          },
+          "away": {
+            "point": 6.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -6.5,
+            "price": -110
+          },
+          "away": {
+            "point": 6.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:4aeee070bb6ec60bdfae4dede61b9014:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "4aeee070bb6ec60bdfae4dede61b9014",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "NYJ",
+      "away": "GB",
+      "home_display": "New York Jets",
+      "away_display": "Green Bay Packers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 1,
+      "moneyline_home_current": 215.0,
+      "moneyline_away_current": -265.0,
+      "best_home_moneyline": 215.0,
+      "best_away_moneyline": -265.0,
+      "spread_home_current": 6.0,
+      "spread_away_current": -6.0,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.31746031746031744,
+      "market_implied_away": 0.726027397260274,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": 215,
+          "away": -265
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 6.0,
+            "price": -110
+          },
+          "away": {
+            "point": -6.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:9d14f87600f6edc74dbcb5c74edf6246:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "9d14f87600f6edc74dbcb5c74edf6246",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "NE",
+      "away": "PIT",
+      "home_display": "New England Patriots",
+      "away_display": "Pittsburgh Steelers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -225.0,
+      "moneyline_away_current": 185.0,
+      "best_home_moneyline": -225.0,
+      "best_away_moneyline": 185.0,
+      "spread_home_current": -4.5,
+      "spread_away_current": 4.5,
+      "spread_home_price_current": -109.0,
+      "spread_away_price_current": -111.0,
+      "total_current": 43.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6923076923076923,
+      "market_implied_away": 0.3508771929824561,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": -225,
+          "away": 185
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": -4.5,
+            "price": -108
+          },
+          "away": {
+            "point": 4.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -4.5,
+            "price": -110
+          },
+          "away": {
+            "point": 4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:fafc649c455e32a0f2ba1bd06e2039bc:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "fafc649c455e32a0f2ba1bd06e2039bc",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "TEN",
+      "away": "PHI",
+      "home_display": "Tennessee Titans",
+      "away_display": "Philadelphia Eagles",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": 180.0,
+      "moneyline_away_current": -218.0,
+      "best_home_moneyline": 180.0,
+      "best_away_moneyline": -218.0,
+      "spread_home_current": 4.5,
+      "spread_away_current": -4.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.35714285714285715,
+      "market_implied_away": 0.6855345911949685,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": 180,
+          "away": -218
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": {
+            "point": 4.5,
+            "price": -110
+          },
+          "away": {
+            "point": -4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:00Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": 4.5,
+            "price": -110
+          },
+          "away": {
+            "point": -4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:1fd6628c781f556a7a19638e97d7107f:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "1fd6628c781f556a7a19638e97d7107f",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:05:00Z",
+      "home": "DEN",
+      "away": "JAX",
+      "home_display": "Denver Broncos",
+      "away_display": "Jacksonville Jaguars",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -148.0,
+      "moneyline_away_current": 124.0,
+      "best_home_moneyline": -148.0,
+      "best_away_moneyline": 124.0,
+      "spread_home_current": -2.8,
+      "spread_away_current": 2.8,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 43.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.5967741935483871,
+      "market_implied_away": 0.44642857142857145,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": -148,
+          "away": 124
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": {
+            "point": -3.0,
+            "price": -105
+          },
+          "away": {
+            "point": 3.0,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -2.5,
+            "price": -115
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:71b3b83747589efdc5baef2c5cf811bf:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "71b3b83747589efdc5baef2c5cf811bf",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:05:00Z",
+      "home": "LAC",
+      "away": "LV",
+      "home_display": "Los Angeles Chargers",
+      "away_display": "Las Vegas Raiders",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -425.0,
+      "moneyline_away_current": 330.0,
+      "best_home_moneyline": -425.0,
+      "best_away_moneyline": 330.0,
+      "spread_home_current": -8.5,
+      "spread_away_current": 8.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.8095238095238095,
+      "market_implied_away": 0.23255813953488372,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": -425,
+          "away": 330
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": {
+            "point": -8.5,
+            "price": -110
+          },
+          "away": {
+            "point": 8.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -8.5,
+            "price": -110
+          },
+          "away": {
+            "point": 8.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:4dd8020192a544385db42374e5555303:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "4dd8020192a544385db42374e5555303",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:25:00Z",
+      "home": "ARI",
+      "away": "SEA",
+      "home_display": "Arizona Cardinals",
+      "away_display": "Seattle Seahawks",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": 370.0,
+      "moneyline_away_current": -485.0,
+      "best_home_moneyline": 370.0,
+      "best_away_moneyline": -485.0,
+      "spread_home_current": 10.0,
+      "spread_away_current": -10.0,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 44.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.2127659574468085,
+      "market_implied_away": 0.8290598290598291,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": 370,
+          "away": -485
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": {
+            "point": 10.0,
+            "price": -110
+          },
+          "away": {
+            "point": -10.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": 10.0,
+            "price": -110
+          },
+          "away": {
+            "point": -10.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:85ef85098ddd22fe4ecf45e7e3c0a9c0:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "85ef85098ddd22fe4ecf45e7e3c0a9c0",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:25:00Z",
+      "home": "DAL",
+      "away": "WAS",
+      "home_display": "Dallas Cowboys",
+      "away_display": "Washington Commanders",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -205.0,
+      "moneyline_away_current": 170.0,
+      "best_home_moneyline": -205.0,
+      "best_away_moneyline": 170.0,
+      "spread_home_current": -4.5,
+      "spread_away_current": 4.5,
+      "spread_home_price_current": -105.0,
+      "spread_away_price_current": -115.0,
+      "total_current": 51.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6721311475409836,
+      "market_implied_away": 0.37037037037037035,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": -205,
+          "away": 170
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": {
+            "point": -4.5,
+            "price": -105
+          },
+          "away": {
+            "point": 4.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -4.5,
+            "price": -105
+          },
+          "away": {
+            "point": 4.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:68bc55903f50af4af4766adcc89fcc61:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "68bc55903f50af4af4766adcc89fcc61",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:25:00Z",
+      "home": "SF",
+      "away": "MIA",
+      "home_display": "San Francisco 49ers",
+      "away_display": "Miami Dolphins",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -535.0,
+      "moneyline_away_current": 400.0,
+      "best_home_moneyline": -535.0,
+      "best_away_moneyline": 400.0,
+      "spread_home_current": -10.5,
+      "spread_away_current": 10.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.84251968503937,
+      "market_implied_away": 0.2,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": -535,
+          "away": 400
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:50bc247030707d823b9c3581d7eb5760:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "50bc247030707d823b9c3581d7eb5760",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-21",
+      "commence_time": "2026-09-21T00:20:00Z",
+      "home": "KC",
+      "away": "IND",
+      "home_display": "Kansas City Chiefs",
+      "away_display": "Indianapolis Colts",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -265.0,
+      "moneyline_away_current": 215.0,
+      "best_home_moneyline": -265.0,
+      "best_away_moneyline": 215.0,
+      "spread_home_current": -5.8,
+      "spread_away_current": 5.8,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 47.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.726027397260274,
+      "market_implied_away": 0.31746031746031744,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": -265,
+          "away": 215
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": {
+            "point": -6.0,
+            "price": -110
+          },
+          "away": {
+            "point": 6.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -5.5,
+            "price": -110
+          },
+          "away": {
+            "point": 5.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:32367f882fac1a0c20a6335619922025:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "32367f882fac1a0c20a6335619922025",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-22",
+      "commence_time": "2026-09-22T00:15:00Z",
+      "home": "LAR",
+      "away": "NYG",
+      "home_display": "Los Angeles Rams",
+      "away_display": "New York Giants",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -410.0,
+      "moneyline_away_current": 320.0,
+      "best_home_moneyline": -410.0,
+      "best_away_moneyline": 320.0,
+      "spread_home_current": -9.5,
+      "spread_away_current": 9.5,
+      "spread_home_price_current": -109.0,
+      "spread_away_price_current": -111.0,
+      "total_current": 47.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.803921568627451,
+      "market_implied_away": 0.23809523809523808,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": -410,
+          "away": 320
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": {
+            "point": -9.5,
+            "price": -108
+          },
+          "away": {
+            "point": 9.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -9.5,
+            "price": -110
+          },
+          "away": {
+            "point": 9.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:e5fbd3b3953b896b1bf897ddadb3cc4b:2026-07-15T15:13:44Z",
+      "sport": "NFL",
+      "provider_event_id": "e5fbd3b3953b896b1bf897ddadb3cc4b",
+      "snapshot_at": "2026-07-15T15:13:44Z",
+      "game_date": "2026-09-25",
+      "commence_time": "2026-09-25T00:15:00Z",
+      "home": "GB",
+      "away": "ATL",
+      "home_display": "Green Bay Packers",
+      "away_display": "Atlanta Falcons",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -345.0,
+      "moneyline_away_current": 275.0,
+      "best_home_moneyline": -345.0,
+      "best_away_moneyline": 275.0,
+      "spread_home_current": -7.5,
+      "spread_away_current": 7.5,
+      "spread_home_price_current": -107.5,
+      "spread_away_price_current": -112.5,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.7752808988764045,
+      "market_implied_away": 0.26666666666666666,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": -345,
+          "away": 275
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": {
+            "point": -7.5,
+            "price": -105
+          },
+          "away": {
+            "point": 7.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:13:01Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:13:16Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "MLB:7ad2e88701ead09625333188a5b653b2:2026-07-15T15:15:12Z",
+      "sport": "MLB",
+      "provider_event_id": "7ad2e88701ead09625333188a5b653b2",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-07-16",
+      "commence_time": "2026-07-16T23:11:00Z",
+      "home": "PHI",
+      "away": "NYM",
+      "home_display": "Philadelphia Phillies",
+      "away_display": "New York Mets",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 3,
+      "moneyline_home_current": -134.7,
+      "moneyline_away_current": 119.3,
+      "best_home_moneyline": -132.0,
+      "best_away_moneyline": 123.0,
+      "spread_home_current": -1.5,
+      "spread_away_current": 1.5,
+      "spread_home_price_current": 152.3,
+      "spread_away_price_current": -177.3,
+      "total_current": 9.8,
+      "total_over_price_current": -109.7,
+      "total_under_price_current": -42.7,
+      "market_implied_home": 0.573924158500213,
+      "market_implied_away": 0.45599635202918376,
+      "books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:46Z",
+          "home": -132,
+          "away": 112
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -136,
+          "away": 123
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": -136,
+          "away": 123
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:46Z",
+          "home": {
+            "point": -1.5,
+            "price": 150
+          },
+          "away": {
+            "point": 1.5,
+            "price": -182
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:46Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": -1.5,
+            "price": 153
+          },
+          "away": {
+            "point": 1.5,
+            "price": -175
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -1.5,
+            "price": 154
+          },
+          "away": {
+            "point": 1.5,
+            "price": -175
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:dd23179c4373849ae1da8476ec21def3:2026-07-15T15:15:12Z",
+      "sport": "WNBA",
+      "provider_event_id": "dd23179c4373849ae1da8476ec21def3",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-07-15",
+      "commence_time": "2026-07-15T16:10:00Z",
+      "home": "CHI",
+      "away": "SEA",
+      "home_display": "Chicago Sky",
+      "away_display": "Seattle Storm",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -161.9,
+      "moneyline_away_current": 136.1,
+      "best_home_moneyline": -158.0,
+      "best_away_moneyline": 145.0,
+      "spread_home_current": -3.4,
+      "spread_away_current": 3.4,
+      "spread_home_price_current": -111.8,
+      "spread_away_price_current": -108.3,
+      "total_current": 171.0,
+      "total_over_price_current": -109.4,
+      "total_under_price_current": -110.6,
+      "market_implied_home": 0.6181748759068347,
+      "market_implied_away": 0.4235493434985176,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": -162,
+          "away": 136
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -159,
+          "away": 129
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": -158,
+          "away": 128
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -159,
+          "away": 128
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:32Z",
+          "home": -162,
+          "away": 142
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -162,
+          "away": 142
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:14:50Z",
+          "home": -170,
+          "away": 145
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:30Z",
+          "home": -165,
+          "away": 135
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": {
+            "point": -3.5,
+            "price": -108
+          },
+          "away": {
+            "point": 3.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": {
+            "point": -2.5,
+            "price": -120
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:4db11d33553fba68fc607aaf009071aa:2026-07-15T15:15:12Z",
+      "sport": "WNBA",
+      "provider_event_id": "4db11d33553fba68fc607aaf009071aa",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-07-15",
+      "commence_time": "2026-07-15T17:10:00Z",
+      "home": "MIN",
+      "away": "LA",
+      "home_display": "Minnesota Lynx",
+      "away_display": "Los Angeles Sparks",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -648.2,
+      "moneyline_away_current": 458.6,
+      "best_home_moneyline": -600.0,
+      "best_away_moneyline": 480.0,
+      "spread_home_current": -11.5,
+      "spread_away_current": 11.5,
+      "spread_home_price_current": -110.2,
+      "spread_away_price_current": -109.6,
+      "total_current": 181.3,
+      "total_over_price_current": -109.0,
+      "total_under_price_current": -111.0,
+      "market_implied_home": 0.8663458968190324,
+      "market_implied_away": 0.17901897601145722,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": -625,
+          "away": 455
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": -620,
+          "away": 430
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -715,
+          "away": 475
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:32Z",
+          "home": -650,
+          "away": 476
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -650,
+          "away": 476
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:14:50Z",
+          "home": -675,
+          "away": 460
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:31Z",
+          "home": -600,
+          "away": 425
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -650,
+          "away": 480
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": {
+            "point": -11.5,
+            "price": -110
+          },
+          "away": {
+            "point": 11.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": {
+            "point": -11.5,
+            "price": -114
+          },
+          "away": {
+            "point": 11.5,
+            "price": -106
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": {
+            "point": -11.5,
+            "price": -110
+          },
+          "away": {
+            "point": 11.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:32Z",
+          "home": {
+            "point": -11.5,
+            "price": -108
+          },
+          "away": {
+            "point": 11.5,
+            "price": -108
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:32Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:8eace0d4309db9d618e7ba857166324b:2026-07-15T15:15:12Z",
+      "sport": "WNBA",
+      "provider_event_id": "8eace0d4309db9d618e7ba857166324b",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-07-16",
+      "commence_time": "2026-07-16T00:10:00Z",
+      "home": "IND",
+      "away": "GS",
+      "home_display": "Indiana Fever",
+      "away_display": "Golden State Valkyries",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -123.8,
+      "moneyline_away_current": 80.7,
+      "best_home_moneyline": -118.0,
+      "best_away_moneyline": 105.0,
+      "spread_home_current": -1.4,
+      "spread_away_current": 1.4,
+      "spread_home_price_current": -110.4,
+      "spread_away_price_current": -109.6,
+      "total_current": 166.1,
+      "total_over_price_current": -109.1,
+      "total_under_price_current": -110.8,
+      "market_implied_home": 0.5531724754244861,
+      "market_implied_away": 0.5534034311012729,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -122,
+          "away": 100
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": -124,
+          "away": 102
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -118,
+          "away": -106
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:32Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:14:50Z",
+          "home": -125,
+          "away": 105
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:31Z",
+          "home": -125,
+          "away": 105
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": {
+            "point": -1.5,
+            "price": -108
+          },
+          "away": {
+            "point": 1.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": {
+            "point": -0.5,
+            "price": -118
+          },
+          "away": {
+            "point": 0.5,
+            "price": -106
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:00a997433337939ebda3beb882a1e2db:2026-07-15T15:15:12Z",
+      "sport": "WNBA",
+      "provider_event_id": "00a997433337939ebda3beb882a1e2db",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-07-16",
+      "commence_time": "2026-07-16T23:10:00Z",
+      "home": "WSH",
+      "away": "POR",
+      "home_display": "Washington Mystics",
+      "away_display": "Portland Fire",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 6,
+      "moneyline_home_current": -205.0,
+      "moneyline_away_current": 165.7,
+      "best_home_moneyline": -185.0,
+      "best_away_moneyline": 180.0,
+      "spread_home_current": -5.1,
+      "spread_away_current": 5.1,
+      "spread_home_price_current": -109.2,
+      "spread_away_price_current": -110.7,
+      "total_current": 163.9,
+      "total_over_price_current": -106.8,
+      "total_under_price_current": -113.0,
+      "market_implied_home": 0.6721311475409836,
+      "market_implied_away": 0.3763643206624012,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": -185,
+          "away": 154
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": -225,
+          "away": 180
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -205,
+          "away": 163
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": {
+            "point": -5.5,
+            "price": -102
+          },
+          "away": {
+            "point": 5.5,
+            "price": -118
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": {
+            "point": -5.5,
+            "price": -112
+          },
+          "away": {
+            "point": 5.5,
+            "price": -108
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": {
+            "point": -5.0,
+            "price": -110
+          },
+          "away": {
+            "point": 5.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:32Z",
+          "home": {
+            "point": -5.0,
+            "price": -108
+          },
+          "away": {
+            "point": 5.0,
+            "price": -108
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:32Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "WNBA:51f9e00bb8d7debd5a922a21f0736e36:2026-07-15T15:15:12Z",
+      "sport": "WNBA",
+      "provider_event_id": "51f9e00bb8d7debd5a922a21f0736e36",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-07-17",
+      "commence_time": "2026-07-17T01:00:00Z",
+      "home": "DAL",
+      "away": "NY",
+      "home_display": "Dallas Wings",
+      "away_display": "New York Liberty",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 6,
+      "moneyline_home_current": -124.3,
+      "moneyline_away_current": 102.0,
+      "best_home_moneyline": -122.0,
+      "best_away_moneyline": 104.0,
+      "spread_home_current": -1.5,
+      "spread_away_current": 1.5,
+      "spread_home_price_current": -109.5,
+      "spread_away_price_current": -110.2,
+      "total_current": 175.5,
+      "total_over_price_current": -110.2,
+      "total_under_price_current": -109.7,
+      "market_implied_home": 0.5541685242978154,
+      "market_implied_away": 0.49504950495049505,
+      "books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": -122,
+          "away": 100
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": -122,
+          "away": 102
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": -129,
+          "away": 104
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:47Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:15Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:32Z",
+          "home": {
+            "point": -1.5,
+            "price": -108
+          },
+          "away": {
+            "point": 1.5,
+            "price": -108
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:32Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": {
+            "point": -1.5,
+            "price": -110
+          },
+          "away": {
+            "point": 1.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:15:05Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:8c94552d022acec4a0458d70c19d3da9:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "8c94552d022acec4a0458d70c19d3da9",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-10",
+      "commence_time": "2026-09-10T00:15:00Z",
+      "home": "SEA",
+      "away": "NE",
+      "home_display": "Seattle Seahawks",
+      "away_display": "New England Patriots",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -201.1,
+      "moneyline_away_current": 166.9,
+      "best_home_moneyline": -192.0,
+      "best_away_moneyline": 185.0,
+      "spread_home_current": -3.8,
+      "spread_away_current": 3.8,
+      "spread_home_price_current": -108.8,
+      "spread_away_price_current": -110.8,
+      "total_current": 44.1,
+      "total_over_price_current": -110.6,
+      "total_under_price_current": -109.1,
+      "market_implied_home": 0.6678844237794752,
+      "market_implied_away": 0.37467216185837393,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -192,
+          "away": 160
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -195,
+          "away": 167
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -198,
+          "away": 166
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -195,
+          "away": 170
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -195,
+          "away": 170
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -240,
+          "away": 185
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -200,
+          "away": 165
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -195,
+          "away": 165
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": -4.5,
+            "price": -102
+          },
+          "away": {
+            "point": 4.5,
+            "price": -120
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -3.5,
+            "price": -105
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:acc580d74344ea3b31bbcdd057fe6a9c:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "acc580d74344ea3b31bbcdd057fe6a9c",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-11",
+      "commence_time": "2026-09-11T00:35:00Z",
+      "home": "LAR",
+      "away": "SF",
+      "home_display": "Los Angeles Rams",
+      "away_display": "San Francisco 49ers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -186.7,
+      "moneyline_away_current": 155.3,
+      "best_home_moneyline": -170.0,
+      "best_away_moneyline": 176.0,
+      "spread_home_current": -3.4,
+      "spread_away_current": 3.4,
+      "spread_home_price_current": -112.5,
+      "spread_away_price_current": -56.5,
+      "total_current": 48.6,
+      "total_over_price_current": -109.3,
+      "total_under_price_current": -110.6,
+      "market_implied_home": 0.6512033484478549,
+      "market_implied_away": 0.3916960438699569,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -170,
+          "away": 142
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -200,
+          "away": 165
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -210,
+          "away": 176
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -195,
+          "away": 150
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -170,
+          "away": 145
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -180,
+          "away": 155
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": -3.5,
+            "price": -115
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:95c01d1bb797d6df14824b106c5a9130:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "95c01d1bb797d6df14824b106c5a9130",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "PIT",
+      "away": "ATL",
+      "home_display": "Pittsburgh Steelers",
+      "away_display": "Atlanta Falcons",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -161.0,
+      "moneyline_away_current": 135.7,
+      "best_home_moneyline": -146.0,
+      "best_away_moneyline": 145.0,
+      "spread_home_current": -2.9,
+      "spread_away_current": 2.9,
+      "spread_home_price_current": -112.8,
+      "spread_away_price_current": -62.2,
+      "total_current": 41.8,
+      "total_over_price_current": -109.7,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6168582375478927,
+      "market_implied_away": 0.42426813746287656,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -170,
+          "away": 142
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -157,
+          "away": 128
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -160,
+          "away": 140
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -146,
+          "away": 124
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -160,
+          "away": 140
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -160,
+          "away": 138
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -160,
+          "away": 135
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -170,
+          "away": 145
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -3.0,
+            "price": -105
+          },
+          "away": {
+            "point": 3.0,
+            "price": -118
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": {
+            "point": -3.0,
+            "price": -110
+          },
+          "away": {
+            "point": 3.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": -2.5,
+            "price": -120
+          },
+          "away": {
+            "point": 2.5,
+            "price": -102
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:b6cfdcbafa61ce220ba87dc2d9b80c77:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "b6cfdcbafa61ce220ba87dc2d9b80c77",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "IND",
+      "away": "BAL",
+      "home_display": "Indianapolis Colts",
+      "away_display": "Baltimore Ravens",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": 163.9,
+      "moneyline_away_current": -197.0,
+      "best_home_moneyline": 168.0,
+      "best_away_moneyline": -190.0,
+      "spread_home_current": 3.5,
+      "spread_away_current": -3.5,
+      "spread_home_price_current": -108.2,
+      "spread_away_price_current": -110.9,
+      "total_current": 48.6,
+      "total_over_price_current": -108.3,
+      "total_under_price_current": -111.4,
+      "market_implied_home": 0.3789314134141721,
+      "market_implied_away": 0.6632996632996633,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": 160,
+          "away": -192
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": 163,
+          "away": -190
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": 165,
+          "away": -190
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": 165,
+          "away": -210
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": 165,
+          "away": -190
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": 168,
+          "away": -200
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": 165,
+          "away": -200
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": 165,
+          "away": -195
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": 3.5,
+            "price": -110
+          },
+          "away": {
+            "point": -3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": 3.5,
+            "price": -110
+          },
+          "away": {
+            "point": -3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": 3.5,
+            "price": -105
+          },
+          "away": {
+            "point": -3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": 3.5,
+            "price": -109
+          },
+          "away": {
+            "point": -3.5,
+            "price": -113
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:7e09efed7e12c659b82740b67ce2f9a1:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "7e09efed7e12c659b82740b67ce2f9a1",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "HOU",
+      "away": "BUF",
+      "home_display": "Houston Texans",
+      "away_display": "Buffalo Bills",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -106.3,
+      "moneyline_away_current": -114.3,
+      "best_home_moneyline": -104.0,
+      "best_away_moneyline": -110.0,
+      "spread_home_current": 1.2,
+      "spread_away_current": -1.2,
+      "spread_home_price_current": -115.2,
+      "spread_away_price_current": 6.9,
+      "total_current": 44.7,
+      "total_over_price_current": -108.2,
+      "total_under_price_current": -111.4,
+      "market_implied_home": 0.5152690256907416,
+      "market_implied_away": 0.5333644423705086,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -108,
+          "away": -112
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -104,
+          "away": -120
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -106,
+          "away": -110
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -105,
+          "away": -115
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -110,
+          "away": -110
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": 1.5,
+            "price": -120
+          },
+          "away": {
+            "point": -1.5,
+            "price": 100
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": 1.0,
+            "price": -110
+          },
+          "away": {
+            "point": -1.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": 1.0,
+            "price": -110
+          },
+          "away": {
+            "point": -1.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": 1.0,
+            "price": -110
+          },
+          "away": {
+            "point": -1.0,
+            "price": -113
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:fc362aff0d889ec52d358307a70c32ed:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "fc362aff0d889ec52d358307a70c32ed",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "CAR",
+      "away": "CHI",
+      "home_display": "Carolina Panthers",
+      "away_display": "Chicago Bears",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": 116.2,
+      "moneyline_away_current": -139.4,
+      "best_home_moneyline": 120.0,
+      "best_away_moneyline": -135.0,
+      "spread_home_current": 2.4,
+      "spread_away_current": -2.4,
+      "spread_home_price_current": -62.0,
+      "spread_away_price_current": -112.8,
+      "total_current": 45.1,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -109.7,
+      "market_implied_home": 0.46253469010175763,
+      "market_implied_away": 0.5822890559732665,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": 114,
+          "away": -135
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": 118,
+          "away": -138
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": 108,
+          "away": -143
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": 118,
+          "away": -140
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": 115,
+          "away": -135
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": 2.5,
+            "price": -110
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": 2.5,
+            "price": -105
+          },
+          "away": {
+            "point": -2.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": 2.5,
+            "price": 100
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": 2.0,
+            "price": 100
+          },
+          "away": {
+            "point": -2.0,
+            "price": -120
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:ed6d24ff979f9c71979fead577b0b3f7:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "ed6d24ff979f9c71979fead577b0b3f7",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "CIN",
+      "away": "TB",
+      "home_display": "Cincinnati Bengals",
+      "away_display": "Tampa Bay Buccaneers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -197.9,
+      "moneyline_away_current": 164.7,
+      "best_home_moneyline": -190.0,
+      "best_away_moneyline": 176.0,
+      "spread_home_current": -3.5,
+      "spread_away_current": 3.5,
+      "spread_home_price_current": -110.3,
+      "spread_away_price_current": -108.9,
+      "total_current": 51.6,
+      "total_over_price_current": -111.3,
+      "total_under_price_current": -108.3,
+      "market_implied_home": 0.6643168848606916,
+      "market_implied_away": 0.37778617302606726,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -198,
+          "away": 164
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -210,
+          "away": 176
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -190,
+          "away": 165
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -190,
+          "away": 163
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -190,
+          "away": 165
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -200,
+          "away": 160
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -200,
+          "away": 165
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -195,
+          "away": 165
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": -3.5,
+            "price": -115
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -3.5,
+            "price": -105
+          },
+          "away": {
+            "point": 3.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:e55c6fe19fce094ce214c8b0e5b504e9:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "e55c6fe19fce094ce214c8b0e5b504e9",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "JAX",
+      "away": "CLE",
+      "home_display": "Jacksonville Jaguars",
+      "away_display": "Cleveland Browns",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -382.1,
+      "moneyline_away_current": 295.9,
+      "best_home_moneyline": -340.0,
+      "best_away_moneyline": 325.0,
+      "spread_home_current": -7.5,
+      "spread_away_current": 7.5,
+      "spread_home_price_current": -109.9,
+      "spread_away_price_current": -109.3,
+      "total_current": 40.5,
+      "total_over_price_current": -112.6,
+      "total_under_price_current": -107.2,
+      "market_implied_home": 0.7925741547396806,
+      "market_implied_away": 0.2525890376357666,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -340,
+          "away": 270
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -405,
+          "away": 320
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -360,
+          "away": 290
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -420,
+          "away": 310
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -360,
+          "away": 289
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -360,
+          "away": 289
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -425,
+          "away": 325
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -340,
+          "away": 270
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": -7.5,
+            "price": -115
+          },
+          "away": {
+            "point": 7.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -7.5,
+            "price": -109
+          },
+          "away": {
+            "point": 7.5,
+            "price": -114
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:c1d3fcec25aaeb06ebd2244d33d338e0:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "c1d3fcec25aaeb06ebd2244d33d338e0",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "DET",
+      "away": "NO",
+      "home_display": "Detroit Lions",
+      "away_display": "New Orleans Saints",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -349.4,
+      "moneyline_away_current": 274.7,
+      "best_home_moneyline": -325.0,
+      "best_away_moneyline": 300.0,
+      "spread_home_current": -7.1,
+      "spread_away_current": 7.1,
+      "spread_home_price_current": -109.7,
+      "spread_away_price_current": -109.7,
+      "total_current": 49.2,
+      "total_over_price_current": -111.3,
+      "total_under_price_current": -108.3,
+      "market_implied_home": 0.7774810858923008,
+      "market_implied_away": 0.26688017080330934,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -325,
+          "away": 260
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -370,
+          "away": 295
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -335,
+          "away": 270
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -335,
+          "away": 270
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -335,
+          "away": 272
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -400,
+          "away": 290
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -375,
+          "away": 300
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -330,
+          "away": 265
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -7.0,
+            "price": -110
+          },
+          "away": {
+            "point": 7.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": -7.0,
+            "price": -115
+          },
+          "away": {
+            "point": 7.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -7.0,
+            "price": -105
+          },
+          "away": {
+            "point": 7.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": {
+            "point": -7.0,
+            "price": -110
+          },
+          "away": {
+            "point": 7.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:7dddb296a42e7a41a774b24bd1709ce1:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "7dddb296a42e7a41a774b24bd1709ce1",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T17:00:00Z",
+      "home": "TEN",
+      "away": "NYJ",
+      "home_display": "Tennessee Titans",
+      "away_display": "New York Jets",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -149.8,
+      "moneyline_away_current": 126.2,
+      "best_home_moneyline": -134.0,
+      "best_away_moneyline": 136.0,
+      "spread_home_current": -2.6,
+      "spread_away_current": 2.6,
+      "spread_home_price_current": -112.4,
+      "spread_away_price_current": -40.2,
+      "total_current": 38.8,
+      "total_over_price_current": -110.6,
+      "total_under_price_current": -109.1,
+      "market_implied_home": 0.5996797437950361,
+      "market_implied_away": 0.4420866489832007,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -162,
+          "away": 136
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -134,
+          "away": 116
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -150,
+          "away": 130
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -150,
+          "away": 129
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -150,
+          "away": 130
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -150,
+          "away": 120
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -155,
+          "away": 130
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -150,
+          "away": 130
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -3.0,
+            "price": -110
+          },
+          "away": {
+            "point": 3.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": 100
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": -2.0,
+            "price": -120
+          },
+          "away": {
+            "point": 2.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:1edfa5ceaa1ad2cb57df1c1b908731f6:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "1edfa5ceaa1ad2cb57df1c1b908731f6",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "LAC",
+      "away": "ARI",
+      "home_display": "Los Angeles Chargers",
+      "away_display": "Arizona Cardinals",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -621.1,
+      "moneyline_away_current": 441.9,
+      "best_home_moneyline": -500.0,
+      "best_away_moneyline": 475.0,
+      "spread_home_current": -10.8,
+      "spread_away_current": 10.8,
+      "spread_home_price_current": -109.0,
+      "spread_away_price_current": -110.2,
+      "total_current": 46.0,
+      "total_over_price_current": -111.7,
+      "total_under_price_current": -108.0,
+      "market_implied_home": 0.8613229787824157,
+      "market_implied_away": 0.18453589223103894,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -600,
+          "away": 440
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -600,
+          "away": 446
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -600,
+          "away": 446
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -600,
+          "away": 450
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -500,
+          "away": 360
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -590,
+          "away": 440
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -650,
+          "away": 475
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -650,
+          "away": 450
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -11.5,
+            "price": -110
+          },
+          "away": {
+            "point": 11.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -10.5,
+            "price": -105
+          },
+          "away": {
+            "point": 10.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:cb77efed7e711d25a72c1a2a0a1af119:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "cb77efed7e711d25a72c1a2a0a1af119",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "MIN",
+      "away": "GB",
+      "home_display": "Minnesota Vikings",
+      "away_display": "Green Bay Packers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -111.3,
+      "moneyline_away_current": -110.0,
+      "best_home_moneyline": -104.0,
+      "best_away_moneyline": -105.0,
+      "spread_home_current": 0.2,
+      "spread_away_current": -0.2,
+      "spread_home_price_current": -91.4,
+      "spread_away_price_current": -61.3,
+      "total_current": 45.2,
+      "total_over_price_current": -111.8,
+      "total_under_price_current": -107.9,
+      "market_implied_home": 0.5267392333175579,
+      "market_implied_away": 0.5238095238095238,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -108,
+          "away": -112
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -106,
+          "away": -120
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -104,
+          "away": -112
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -115,
+          "away": -105
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -115,
+          "away": -105
+        },
+        {
+          "book": "MyBookie.ag",
+          "last_update": "2026-07-15T15:13:50Z",
+          "home": -120,
+          "away": -106
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": 1.5,
+            "price": -125
+          },
+          "away": {
+            "point": -1.5,
+            "price": 105
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": 0.0,
+            "price": -105
+          },
+          "away": {
+            "point": 0.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": {
+            "point": 0.0,
+            "price": -110
+          },
+          "away": {
+            "point": 0.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": -1.0,
+            "price": -110
+          },
+          "away": {
+            "point": 1.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:c5d95f48a16849ab6bebc68fbbfcb74a:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "c5d95f48a16849ab6bebc68fbbfcb74a",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "LV",
+      "away": "MIA",
+      "home_display": "Las Vegas Raiders",
+      "away_display": "Miami Dolphins",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -186.2,
+      "moneyline_away_current": 154.2,
+      "best_home_moneyline": -170.0,
+      "best_away_moneyline": 176.0,
+      "spread_home_current": -3.2,
+      "spread_away_current": 3.2,
+      "spread_home_price_current": -116.0,
+      "spread_away_price_current": -14.6,
+      "total_current": 40.6,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -109.7,
+      "market_implied_home": 0.6505939902166317,
+      "market_implied_away": 0.39339103068450043,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -170,
+          "away": 142
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -180,
+          "away": 155
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -200,
+          "away": 150
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -210,
+          "away": 176
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -180,
+          "away": 157
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -190,
+          "away": 155
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -170,
+          "away": 145
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -3.0,
+            "price": -118
+          },
+          "away": {
+            "point": 3.0,
+            "price": -102
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -3.5,
+            "price": -110
+          },
+          "away": {
+            "point": 3.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": -3.5,
+            "price": -120
+          },
+          "away": {
+            "point": 3.5,
+            "price": -102
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:17885cb8dcade8f6c3bce14b2de805e8:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "17885cb8dcade8f6c3bce14b2de805e8",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-13",
+      "commence_time": "2026-09-13T20:25:00Z",
+      "home": "PHI",
+      "away": "WAS",
+      "home_display": "Philadelphia Eagles",
+      "away_display": "Washington Commanders",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -218.1,
+      "moneyline_away_current": 180.1,
+      "best_home_moneyline": -210.0,
+      "best_away_moneyline": 195.0,
+      "spread_home_current": -4.6,
+      "spread_away_current": 4.6,
+      "spread_home_price_current": -110.3,
+      "spread_away_price_current": -86.7,
+      "total_current": 47.2,
+      "total_over_price_current": -112.2,
+      "total_under_price_current": -107.7,
+      "market_implied_home": 0.6856334486010688,
+      "market_implied_away": 0.3570153516601214,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -238,
+          "away": 195
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -215,
+          "away": 180
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -210,
+          "away": 180
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -215,
+          "away": 170
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -210,
+          "away": 180
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -210,
+          "away": 180
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -220,
+          "away": 180
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -235,
+          "away": 195
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -5.5,
+            "price": -110
+          },
+          "away": {
+            "point": 5.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": -4.5,
+            "price": -105
+          },
+          "away": {
+            "point": 4.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": {
+            "point": -4.0,
+            "price": -115
+          },
+          "away": {
+            "point": 4.0,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -4.5,
+            "price": -113
+          },
+          "away": {
+            "point": 4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:3e646c7479c57f5d9752d8c7dfe7059b:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "3e646c7479c57f5d9752d8c7dfe7059b",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-14",
+      "commence_time": "2026-09-14T00:20:00Z",
+      "home": "NYG",
+      "away": "DAL",
+      "home_display": "New York Giants",
+      "away_display": "Dallas Cowboys",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": 118.6,
+      "moneyline_away_current": -142.4,
+      "best_home_moneyline": 129.0,
+      "best_away_moneyline": -132.0,
+      "spread_home_current": 2.6,
+      "spread_away_current": -2.6,
+      "spread_home_price_current": -84.8,
+      "spread_away_price_current": -112.6,
+      "total_current": 48.2,
+      "total_over_price_current": -109.7,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.4574565416285453,
+      "market_implied_away": 0.5874587458745875,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": 114,
+          "away": -135
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": 128,
+          "away": -152
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": 125,
+          "away": -150
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": 120,
+          "away": -140
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": 112,
+          "away": -148
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": 115,
+          "away": -135
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": 129,
+          "away": -150
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": 2.5,
+            "price": -110
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": 2.5,
+            "price": -102
+          },
+          "away": {
+            "point": -2.5,
+            "price": -120
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": {
+            "point": 2.5,
+            "price": -105
+          },
+          "away": {
+            "point": -2.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": 2.5,
+            "price": -110
+          },
+          "away": {
+            "point": -2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:5ad8135dc2b5f27de0b777acd317855a:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "5ad8135dc2b5f27de0b777acd317855a",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-15",
+      "commence_time": "2026-09-15T00:15:00Z",
+      "home": "KC",
+      "away": "DEN",
+      "home_display": "Kansas City Chiefs",
+      "away_display": "Denver Broncos",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 9,
+      "moneyline_home_current": -146.1,
+      "moneyline_away_current": 121.6,
+      "best_home_moneyline": -140.0,
+      "best_away_moneyline": 135.0,
+      "spread_home_current": -2.7,
+      "spread_away_current": 2.7,
+      "spread_home_price_current": -110.3,
+      "spread_away_price_current": -87.1,
+      "total_current": 42.8,
+      "total_over_price_current": -109.8,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.5936611133685493,
+      "market_implied_away": 0.4512635379061372,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -148,
+          "away": 124
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": -146,
+          "away": 124
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -160,
+          "away": 135
+        },
+        {
+          "book": "Bovada",
+          "last_update": "2026-07-15T15:13:03Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:28Z",
+          "home": -140,
+          "away": 120
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -155,
+          "away": 117
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -2.5,
+            "price": -115
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": {
+            "point": -2.5,
+            "price": -118
+          },
+          "away": {
+            "point": 2.5,
+            "price": -104
+          }
+        },
+        {
+          "book": "FanDuel",
+          "last_update": "2026-07-15T15:14:44Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": 100
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": {
+            "point": -2.5,
+            "price": -115
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:56e8897681915f7ec92baeee952bb1ae:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "56e8897681915f7ec92baeee952bb1ae",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-18",
+      "commence_time": "2026-09-18T00:15:00Z",
+      "home": "BUF",
+      "away": "DET",
+      "home_display": "Buffalo Bills",
+      "away_display": "Detroit Lions",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 5,
+      "moneyline_home_current": -164.0,
+      "moneyline_away_current": 136.3,
+      "best_home_moneyline": -162.0,
+      "best_away_moneyline": 140.0,
+      "spread_home_current": -3.0,
+      "spread_away_current": 3.0,
+      "spread_home_price_current": -111.4,
+      "spread_away_price_current": -27.6,
+      "total_current": 52.9,
+      "total_over_price_current": -110.8,
+      "total_under_price_current": -108.8,
+      "market_implied_home": 0.6212121212121212,
+      "market_implied_away": 0.4231908590774439,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -162,
+          "away": 136
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -165,
+          "away": 140
+        },
+        {
+          "book": "BetRivers",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": -165,
+          "away": 133
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -3.0,
+            "price": -110
+          },
+          "away": {
+            "point": 3.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": {
+            "point": -3.0,
+            "price": -120
+          },
+          "away": {
+            "point": 3.0,
+            "price": 100
+          }
+        },
+        {
+          "book": "BetOnline.ag",
+          "last_update": "2026-07-15T15:14:27Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -3.0,
+            "price": -105
+          },
+          "away": {
+            "point": 3.0,
+            "price": -115
+          }
+        },
+        {
+          "book": "BetMGM",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": {
+            "point": -3.0,
+            "price": -116
+          },
+          "away": {
+            "point": 3.0,
+            "price": 105
+          }
+        },
+        {
+          "book": "LowVig.ag",
+          "last_update": "2026-07-15T15:14:12Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:2143ade9684fd876b68a4e8cbf451f05:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "2143ade9684fd876b68a4e8cbf451f05",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "BAL",
+      "away": "NO",
+      "home_display": "Baltimore Ravens",
+      "away_display": "New Orleans Saints",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -395.0,
+      "moneyline_away_current": 310.0,
+      "best_home_moneyline": -395.0,
+      "best_away_moneyline": 310.0,
+      "spread_home_current": -7.5,
+      "spread_away_current": 7.5,
+      "spread_home_price_current": -111.0,
+      "spread_away_price_current": -109.0,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.797979797979798,
+      "market_implied_away": 0.24390243902439024,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -395,
+          "away": 310
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -7.5,
+            "price": -112
+          },
+          "away": {
+            "point": 7.5,
+            "price": -108
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:0283a29e1b38ef78b29b904fd56a16dd:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "0283a29e1b38ef78b29b904fd56a16dd",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "CHI",
+      "away": "MIN",
+      "home_display": "Chicago Bears",
+      "away_display": "Minnesota Vikings",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 1,
+      "moneyline_home_current": -180.0,
+      "moneyline_away_current": 150.0,
+      "best_home_moneyline": -180.0,
+      "best_away_moneyline": 150.0,
+      "spread_home_current": -3.5,
+      "spread_away_current": 3.5,
+      "spread_home_price_current": -105.0,
+      "spread_away_price_current": -115.0,
+      "total_current": 45.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6428571428571429,
+      "market_implied_away": 0.4,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -180,
+          "away": 150
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -3.5,
+            "price": -105
+          },
+          "away": {
+            "point": 3.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:36ad2fa722f4915ef23d2c81351261de:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "36ad2fa722f4915ef23d2c81351261de",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "HOU",
+      "away": "CIN",
+      "home_display": "Houston Texans",
+      "away_display": "Cincinnati Bengals",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -135.0,
+      "moneyline_away_current": 114.0,
+      "best_home_moneyline": -135.0,
+      "best_away_moneyline": 114.0,
+      "spread_home_current": -2.5,
+      "spread_away_current": 2.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.574468085106383,
+      "market_implied_away": 0.4672897196261682,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -135,
+          "away": 114
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -2.5,
+            "price": -110
+          },
+          "away": {
+            "point": 2.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:0636ebff776d43f8c829a36713c80b22:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "0636ebff776d43f8c829a36713c80b22",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "TB",
+      "away": "CLE",
+      "home_display": "Tampa Bay Buccaneers",
+      "away_display": "Cleveland Browns",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -285.0,
+      "moneyline_away_current": 230.0,
+      "best_home_moneyline": -285.0,
+      "best_away_moneyline": 230.0,
+      "spread_home_current": -6.5,
+      "spread_away_current": 6.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.7402597402597403,
+      "market_implied_away": 0.30303030303030304,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -285,
+          "away": 230
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -6.5,
+            "price": -110
+          },
+          "away": {
+            "point": 6.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -6.5,
+            "price": -110
+          },
+          "away": {
+            "point": 6.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:4aeee070bb6ec60bdfae4dede61b9014:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "4aeee070bb6ec60bdfae4dede61b9014",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "NYJ",
+      "away": "GB",
+      "home_display": "New York Jets",
+      "away_display": "Green Bay Packers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 1,
+      "moneyline_home_current": 215.0,
+      "moneyline_away_current": -265.0,
+      "best_home_moneyline": 215.0,
+      "best_away_moneyline": -265.0,
+      "spread_home_current": 6.0,
+      "spread_away_current": -6.0,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.31746031746031744,
+      "market_implied_away": 0.726027397260274,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": 215,
+          "away": -265
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": 6.0,
+            "price": -110
+          },
+          "away": {
+            "point": -6.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:9d14f87600f6edc74dbcb5c74edf6246:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "9d14f87600f6edc74dbcb5c74edf6246",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "NE",
+      "away": "PIT",
+      "home_display": "New England Patriots",
+      "away_display": "Pittsburgh Steelers",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -225.0,
+      "moneyline_away_current": 185.0,
+      "best_home_moneyline": -225.0,
+      "best_away_moneyline": 185.0,
+      "spread_home_current": -4.5,
+      "spread_away_current": 4.5,
+      "spread_home_price_current": -109.0,
+      "spread_away_price_current": -111.0,
+      "total_current": 43.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6923076923076923,
+      "market_implied_away": 0.3508771929824561,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -225,
+          "away": 185
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -4.5,
+            "price": -108
+          },
+          "away": {
+            "point": 4.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -4.5,
+            "price": -110
+          },
+          "away": {
+            "point": 4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:fafc649c455e32a0f2ba1bd06e2039bc:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "fafc649c455e32a0f2ba1bd06e2039bc",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T17:00:00Z",
+      "home": "TEN",
+      "away": "PHI",
+      "home_display": "Tennessee Titans",
+      "away_display": "Philadelphia Eagles",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": 180.0,
+      "moneyline_away_current": -218.0,
+      "best_home_moneyline": 180.0,
+      "best_away_moneyline": -218.0,
+      "spread_home_current": 4.5,
+      "spread_away_current": -4.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.35714285714285715,
+      "market_implied_away": 0.6855345911949685,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": 180,
+          "away": -218
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": 4.5,
+            "price": -110
+          },
+          "away": {
+            "point": -4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": 4.5,
+            "price": -110
+          },
+          "away": {
+            "point": -4.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:1fd6628c781f556a7a19638e97d7107f:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "1fd6628c781f556a7a19638e97d7107f",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:05:00Z",
+      "home": "DEN",
+      "away": "JAX",
+      "home_display": "Denver Broncos",
+      "away_display": "Jacksonville Jaguars",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -148.0,
+      "moneyline_away_current": 124.0,
+      "best_home_moneyline": -148.0,
+      "best_away_moneyline": 124.0,
+      "spread_home_current": -2.8,
+      "spread_away_current": 2.8,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 43.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.5967741935483871,
+      "market_implied_away": 0.44642857142857145,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -148,
+          "away": 124
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -3.0,
+            "price": -105
+          },
+          "away": {
+            "point": 3.0,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -2.5,
+            "price": -115
+          },
+          "away": {
+            "point": 2.5,
+            "price": -105
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:71b3b83747589efdc5baef2c5cf811bf:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "71b3b83747589efdc5baef2c5cf811bf",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:05:00Z",
+      "home": "LAC",
+      "away": "LV",
+      "home_display": "Los Angeles Chargers",
+      "away_display": "Las Vegas Raiders",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -425.0,
+      "moneyline_away_current": 330.0,
+      "best_home_moneyline": -425.0,
+      "best_away_moneyline": 330.0,
+      "spread_home_current": -8.5,
+      "spread_away_current": 8.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 42.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.8095238095238095,
+      "market_implied_away": 0.23255813953488372,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -425,
+          "away": 330
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -8.5,
+            "price": -110
+          },
+          "away": {
+            "point": 8.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -8.5,
+            "price": -110
+          },
+          "away": {
+            "point": 8.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:4dd8020192a544385db42374e5555303:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "4dd8020192a544385db42374e5555303",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:25:00Z",
+      "home": "ARI",
+      "away": "SEA",
+      "home_display": "Arizona Cardinals",
+      "away_display": "Seattle Seahawks",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": 370.0,
+      "moneyline_away_current": -485.0,
+      "best_home_moneyline": 370.0,
+      "best_away_moneyline": -485.0,
+      "spread_home_current": 10.0,
+      "spread_away_current": -10.0,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 44.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.2127659574468085,
+      "market_implied_away": 0.8290598290598291,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": 370,
+          "away": -485
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": 10.0,
+            "price": -110
+          },
+          "away": {
+            "point": -10.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": 10.0,
+            "price": -110
+          },
+          "away": {
+            "point": -10.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:85ef85098ddd22fe4ecf45e7e3c0a9c0:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "85ef85098ddd22fe4ecf45e7e3c0a9c0",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:25:00Z",
+      "home": "DAL",
+      "away": "WAS",
+      "home_display": "Dallas Cowboys",
+      "away_display": "Washington Commanders",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -205.0,
+      "moneyline_away_current": 170.0,
+      "best_home_moneyline": -205.0,
+      "best_away_moneyline": 170.0,
+      "spread_home_current": -4.5,
+      "spread_away_current": 4.5,
+      "spread_home_price_current": -105.0,
+      "spread_away_price_current": -115.0,
+      "total_current": 51.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.6721311475409836,
+      "market_implied_away": 0.37037037037037035,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -205,
+          "away": 170
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -4.5,
+            "price": -105
+          },
+          "away": {
+            "point": 4.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -4.5,
+            "price": -105
+          },
+          "away": {
+            "point": 4.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:68bc55903f50af4af4766adcc89fcc61:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "68bc55903f50af4af4766adcc89fcc61",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-20",
+      "commence_time": "2026-09-20T20:25:00Z",
+      "home": "SF",
+      "away": "MIA",
+      "home_display": "San Francisco 49ers",
+      "away_display": "Miami Dolphins",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -535.0,
+      "moneyline_away_current": 400.0,
+      "best_home_moneyline": -535.0,
+      "best_away_moneyline": 400.0,
+      "spread_home_current": -10.5,
+      "spread_away_current": 10.5,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.84251968503937,
+      "market_implied_away": 0.2,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -535,
+          "away": 400
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -10.5,
+            "price": -110
+          },
+          "away": {
+            "point": 10.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:50bc247030707d823b9c3581d7eb5760:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "50bc247030707d823b9c3581d7eb5760",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-21",
+      "commence_time": "2026-09-21T00:20:00Z",
+      "home": "KC",
+      "away": "IND",
+      "home_display": "Kansas City Chiefs",
+      "away_display": "Indianapolis Colts",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -265.0,
+      "moneyline_away_current": 215.0,
+      "best_home_moneyline": -265.0,
+      "best_away_moneyline": 215.0,
+      "spread_home_current": -5.8,
+      "spread_away_current": 5.8,
+      "spread_home_price_current": -110.0,
+      "spread_away_price_current": -110.0,
+      "total_current": 47.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.726027397260274,
+      "market_implied_away": 0.31746031746031744,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -265,
+          "away": 215
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -6.0,
+            "price": -110
+          },
+          "away": {
+            "point": 6.0,
+            "price": -110
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -5.5,
+            "price": -110
+          },
+          "away": {
+            "point": 5.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:32367f882fac1a0c20a6335619922025:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "32367f882fac1a0c20a6335619922025",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-22",
+      "commence_time": "2026-09-22T00:15:00Z",
+      "home": "LAR",
+      "away": "NYG",
+      "home_display": "Los Angeles Rams",
+      "away_display": "New York Giants",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -410.0,
+      "moneyline_away_current": 320.0,
+      "best_home_moneyline": -410.0,
+      "best_away_moneyline": 320.0,
+      "spread_home_current": -9.5,
+      "spread_away_current": 9.5,
+      "spread_home_price_current": -109.0,
+      "spread_away_price_current": -111.0,
+      "total_current": 47.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.803921568627451,
+      "market_implied_away": 0.23809523809523808,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -410,
+          "away": 320
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -9.5,
+            "price": -108
+          },
+          "away": {
+            "point": 9.5,
+            "price": -112
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -9.5,
+            "price": -110
+          },
+          "away": {
+            "point": 9.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": null,
+          "away": null
+        }
+      ],
+      "source": "The Odds API",
+      "data_mode": "real_odds_snapshot",
+      "freshness_status": "Current"
+    },
+    {
+      "snapshot_id": "NFL:e5fbd3b3953b896b1bf897ddadb3cc4b:2026-07-15T15:15:12Z",
+      "sport": "NFL",
+      "provider_event_id": "e5fbd3b3953b896b1bf897ddadb3cc4b",
+      "snapshot_at": "2026-07-15T15:15:12Z",
+      "game_date": "2026-09-25",
+      "commence_time": "2026-09-25T00:15:00Z",
+      "home": "GB",
+      "away": "ATL",
+      "home_display": "Green Bay Packers",
+      "away_display": "Atlanta Falcons",
+      "market": "h2h",
+      "markets_available": [
+        "h2h",
+        "spreads",
+        "totals"
+      ],
+      "bookmakers_count": 2,
+      "moneyline_home_current": -345.0,
+      "moneyline_away_current": 275.0,
+      "best_home_moneyline": -345.0,
+      "best_away_moneyline": 275.0,
+      "spread_home_current": -7.5,
+      "spread_away_current": 7.5,
+      "spread_home_price_current": -107.5,
+      "spread_away_price_current": -112.5,
+      "total_current": 46.5,
+      "total_over_price_current": -110.0,
+      "total_under_price_current": -110.0,
+      "market_implied_home": 0.7752808988764045,
+      "market_implied_away": 0.26666666666666666,
+      "books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": -345,
+          "away": 275
+        }
+      ],
+      "spread_books": [
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": {
+            "point": -7.5,
+            "price": -105
+          },
+          "away": {
+            "point": 7.5,
+            "price": -115
+          }
+        },
+        {
+          "book": "DraftKings",
+          "last_update": "2026-07-15T15:14:14Z",
+          "home": null,
+          "away": null
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
+          "home": {
+            "point": -7.5,
+            "price": -110
+          },
+          "away": {
+            "point": 7.5,
+            "price": -110
+          }
+        },
+        {
+          "book": "BetUS",
+          "last_update": "2026-07-15T15:14:29Z",
           "home": null,
           "away": null
         }

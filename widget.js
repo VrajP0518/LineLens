@@ -1,7 +1,7 @@
 const WIDGET_KEY = "linelens.liveWidget.v1";
 
 const state = {
-    payload: window.__LIVE_SCORES__ || { metadata: { source_status: "missing" }, games: [] },
+    payload: window.__LIVE_HEARTBEAT__ || window.__LIVE_SCORES__ || { metadata: { source_status: "missing" }, games: [] },
     teams: window.__TEAM_METADATA__ || { teams: [] },
     mlbPayload: window.__MLB_PREDICTIONS__ || null,
     mlbBacktestPayload: window.__MLB_BACKTEST_PREDICTIONS__ || null,
