@@ -6556,12 +6556,15 @@ body {
 .game-date-calendar__top > span { font-size: 0.76rem; }
 .game-date-calendar__rail { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.55rem; align-items: center; }
 .game-date-calendar__days { display: grid; grid-template-columns: repeat(7, minmax(86px, 1fr)); gap: 0.48rem; overflow-x: auto; }
-.game-date-chip { display: grid; gap: 0.18rem; min-width: 86px; min-height: 74px; padding: 0.68rem 0.62rem; border: 1px solid rgba(150,170,195,0.22); border-radius: 0.7rem; color: #cbd6e3; background: rgba(255,255,255,0.035); text-align: left; cursor: pointer; }
+.game-date-chip { display: grid; grid-template-rows: auto auto auto; align-content: start; gap: 0.22rem; min-width: 86px; min-height: 82px; padding: 0.68rem 0.62rem; border: 1px solid rgba(150,170,195,0.22); border-radius: 0.7rem; color: #cbd6e3; background: rgba(255,255,255,0.035); text-align: left; cursor: pointer; }
 .game-date-chip:hover,
 .game-date-chip.is-active { border-color: color-mix(in srgb, var(--scoreboard-accent, #8ce6f4) 75%, white); color: #fff; background: color-mix(in srgb, var(--scoreboard-accent, #8ce6f4) 15%, rgba(8,13,23,0.9)); box-shadow: 0 0 18px color-mix(in srgb, var(--scoreboard-accent, #8ce6f4) 14%, transparent); }
+.game-date-chip span,
+.game-date-chip strong,
+.game-date-chip small { display: block; visibility: visible; }
 .game-date-chip span { color: color-mix(in srgb, var(--scoreboard-accent, #8ce6f4) 60%, #e6eff7); font-size: 0.86rem; font-weight: 900; letter-spacing: 0.03em; }
-.game-date-chip strong { color: #f7fbff; font-size: 1rem; line-height: 1.15; }
-.game-date-chip small { color: var(--muted); font-size: 0.7rem; }
+.game-date-chip strong { color: #f7fbff; font-size: 1.06rem; line-height: 1.15; }
+.game-date-chip small { color: var(--muted); font-size: 0.72rem; }
 .game-date-chip.is-active small { color: #f3d4ff; }
 .game-date-calendar__picker { justify-content: flex-start; }
 .game-date-calendar__picker input { margin-left: 0.3rem; padding: 0.4rem 0.55rem; border: 1px solid rgba(150,170,195,0.22); border-radius: 0.45rem; color: #eaf0f7; background: rgba(255,255,255,0.05); }

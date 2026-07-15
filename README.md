@@ -1,4 +1,4 @@
-# LineLens Sports v4.0.0
+# LineLens Sports v4.1.0
 
 LineLens Sports is a desktop sports-intelligence and model-evaluation app built around real bundled exports.
 

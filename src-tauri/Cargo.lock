@@ -1898,7 +1898,7 @@ dependencies = [
 
 [[package]]
 name = "linelens-sports"
-version = "4.0.0"
+version = "4.1.0"
 dependencies = [
  "serde",
  "tauri",

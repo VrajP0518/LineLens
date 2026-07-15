@@ -178,6 +178,14 @@ def check_exports() -> None:
     check("late-night schedule date", source_date(late_night) == "2026-07-10", "source calendar date is preserved")
     check("canonical date path", "function ensureMlbReviewDate" in app_js and "function selectedMlbDateDisplay" in app_js, "MLB date state and display helpers present")
     check("date-only UTC guard", "function localDateIso" in app_js and "return localDateIso(date);" in app_js, "date offsets use local calendar values")
+    board_start = app_js.find("function mlbBoardDateRows")
+    board_end = app_js.find("function mlbBoardDates", board_start)
+    board_calendar = app_js[board_start:board_end] if board_start >= 0 and board_end >= 0 else ""
+    check(
+        "board calendar excludes backtest rows",
+        "return mlbCurrentBoardRows();" in board_calendar and "allMlbReviewRows" not in board_calendar,
+        "MLB date rail uses current/live schedule rows only",
+    )
 
 
 def main() -> int:

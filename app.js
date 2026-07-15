@@ -1,4 +1,4 @@
-const APP_VERSION = "v4.0.0";
+const APP_VERSION = "v4.1.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
@@ -1010,11 +1010,15 @@ function moveScoreboardDate(sport, delta) {
 }
 
 function gameDateDisplay(iso) {
-    if (!iso) return { weekday: "Date", monthDay: "Unavailable" };
-    const date = new Date(`${iso}T12:00:00`);
+    const normalized = toIsoDate(iso);
+    if (!normalized) return { weekday: "Date", monthDay: "Unavailable" };
+    const date = new Date(`${normalized}T12:00:00`);
+    if (Number.isNaN(date.getTime())) return { weekday: "Date", monthDay: normalized };
+    const weekday = date.toLocaleDateString([], { weekday: "short" }) || "Date";
+    const monthDay = date.toLocaleDateString([], { month: "short", day: "numeric" }) || normalized;
     return {
-        weekday: date.toLocaleDateString([], { weekday: "short" }),
-        monthDay: date.toLocaleDateString([], { month: "short", day: "numeric" }),
+        weekday,
+        monthDay,
     };
 }
 
@@ -1995,11 +1999,20 @@ function defaultMlbReviewDate() {
     return dates.find(date => date > today) || dates[dates.length - 1];
 }
 
+function mlbCurrentBoardRows() {
+    return mergeCanonicalGameRows([
+        ...state.mlb.games.map(game => ({ ...game, sport: "MLB", source_type: "current" })),
+        ...liveGames()
+            .filter(game => game.sport === "MLB")
+            .map(game => ({ ...game, sport: "MLB", source_type: "live" })),
+    ].filter(game => gameIsoDate(game)));
+}
+
 function mlbBoardDateRows() {
-    return [
-        ...allMlbReviewRows(),
-        ...liveGames().filter(game => game.sport === "MLB"),
-    ];
+    // The board calendar is for the current schedule/live window only. Backtest
+    // and prediction-log rows belong in History/Record and must not inflate the
+    // visible dates or daily game counts.
+    return mlbCurrentBoardRows();
 }
 
 function mlbBoardDates() {
@@ -2012,6 +2025,11 @@ function mlbBoardDates() {
     derivedCache.mlbBoardDates = uniqueSortedStrings(mlbBoardDateRows().map(gameIsoDate), "asc");
     derivedCache.mlbBoardDatesKey = key;
     return derivedCache.mlbBoardDates;
+}
+
+function mlbBoardRowsForDate(date = ensureMlbBoardDate()) {
+    if (!date) return [];
+    return sortedGamesByTime(mlbCurrentBoardRows().filter(game => gameIsoDate(game) === date));
 }
 
 function defaultMlbBoardDate() {
@@ -4276,18 +4294,7 @@ function lifecycleBoardGames() {
     const selectedDate = ensureMlbBoardDate();
     const key = `${selectedDate || ""}|${derivedCache.mlbReviewKey}|${normalizeMeta(state.live.payload).generated_at || ""}|${state.live.games.length}`;
     if (derivedCache.mlbBoardGames && derivedCache.mlbBoardKey === key) return derivedCache.mlbBoardGames;
-    const boardRows = mlbRowsForDate(selectedDate).map(game => ({ ...game, sport: "MLB" }));
-    const liveRows = liveGames().filter(game => game.sport === "MLB" && gameIsoDate(game) === selectedDate);
-    liveRows.forEach(live => {
-        const existingIndex = boardRows.findIndex(game => sameGame(game, live));
-        if (existingIndex === -1) {
-            boardRows.push({ ...live, sport: "MLB" });
-            return;
-        }
-        // Live status/score fields win, while the prediction export keeps the model fields.
-        boardRows[existingIndex] = { ...boardRows[existingIndex], ...live, ...Object.fromEntries(Object.entries(boardRows[existingIndex]).filter(([key]) => live[key] === null || live[key] === undefined || live[key] === "")) };
-    });
-    derivedCache.mlbBoardGames = mergeCanonicalGameRows(boardRows);
+    derivedCache.mlbBoardGames = mlbBoardRowsForDate(selectedDate);
     derivedCache.mlbBoardKey = key;
     return derivedCache.mlbBoardGames;
 }
@@ -6703,7 +6710,7 @@ function renderSettings() {
         ${renderCommandConsole("settings")}
         <section class="panel"><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>
         ${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}
-        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v4.0.0.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
+        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v4.1.0.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
         <section class="panel"><p class="data-status" data-variant="${state.refreshRuntime.available ? "success" : "warning"}">${state.refreshRuntime.available ? "Bundled exports load first. Python refresh commands are available when the packaged app can access the project scripts." : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment."} Tracking data is stored locally in <code>${TRACKER_KEY}</code>. Refresh logs use <code>${REFRESH_LOGS_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
     `;
 }
@@ -6777,7 +6784,7 @@ function renderAbout() {
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens"><span>View source</span><small>GitHub repository</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/releases"><span>View releases</span><small>Windows builds and release history</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues"><span>Report an issue</span><small>Open a repository issue</small><b aria-hidden="true">↗</b></button>
-                            <a class="about-action" href="RELEASE_NOTES_v4.0.0.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
+                            <a class="about-action" href="RELEASE_NOTES_v4.1.0.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
                         </div>
                         <div class="about-meta-row"><span>Build</span><strong>${escapeHtml(state.app.desktop_build || "Desktop build metadata unavailable")}</strong><span>Model record</span><strong>${escapeHtml(timestamp(record?.metadata?.generated_at) || "Unavailable")}</strong></div>
                     </section>
