@@ -32,7 +32,7 @@ COMMANDS = {
     "check_data": ("scripts/check_data_status.py", []),
     "score_models": ("scripts/score_model_predictions.py", []),
     "live_scores": ("scripts/live_scores.py", []),
-    "live_scores_fast": ("scripts/live_scores.py", ["--days-back", "1", "--days-forward", "1", "--output-stem", "live_heartbeat"]),
+    "live_scores_fast": ("scripts/live_scores.py", ["--days-back", "1", "--days-forward", "7", "--output-stem", "live_heartbeat"]),
     "odds_snapshots": ("scripts/odds_snapshots.py", []),
     "wnba_availability": ("scripts/refresh_wnba_availability.py", []),
     "mlb_player_games": ("scripts/refresh_mlb_player_games.py", []),

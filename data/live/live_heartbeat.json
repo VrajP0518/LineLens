@@ -2,7 +2,7 @@
   "metadata": {
     "app": "LineLens Sports",
     "version": "v4.0.0",
-    "generated_at": "2026-07-15T17:36:12Z",
+    "generated_at": "2026-07-15T18:14:02Z",
     "real_data": true,
     "source": "ESPN Scoreboard API + MLB Stats API + LineLens prediction exports; optional World Cup, NBA, NHL, and WNBA scoreboards",
     "sports": [
@@ -16,13 +16,13 @@
     "data_window": {
       "center_date": "2026-07-15",
       "start_date": "2026-07-14",
-      "end_date": "2026-07-16",
+      "end_date": "2026-07-22",
       "days_back": 1,
-      "days_forward": 1,
+      "days_forward": 7,
       "fresh_start_date": "2026-07-14",
       "cache_lookback_days": 120
     },
-    "row_count": 12,
+    "row_count": 123,
     "warnings": []
   },
   "games": [
@@ -127,6 +127,4056 @@
         "home": null
       },
       "live_note": "Showing exported LineLens MLB row because live schedule refresh was unavailable."
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824766",
+      "espn_event_id": "401872178",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TB",
+      "home": "BOS",
+      "away_display": "Tampa Bay Rays",
+      "home_display": "Boston Red Sox",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-17T17:35:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401872178/rays-red-sox"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Griffin Jax",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823524",
+      "espn_event_id": "401816142",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "LAD",
+      "home": "NYY",
+      "away_display": "Los Angeles Dodgers",
+      "home_display": "New York Yankees",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-17T23:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816142/dodgers-yankees"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824414",
+      "espn_event_id": "401816144",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "PIT",
+      "home": "CLE",
+      "away_display": "Pittsburgh Pirates",
+      "home_display": "Cleveland Guardians",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-17T23:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816144/pirates-guardians"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824737",
+      "espn_event_id": "401816145",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TB",
+      "home": "BOS",
+      "away_display": "Tampa Bay Rays",
+      "home_display": "Boston Red Sox",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-17T23:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816145/rays-red-sox"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822789",
+      "espn_event_id": "401816141",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CWS",
+      "home": "TOR",
+      "away_display": "Chicago White Sox",
+      "home_display": "Toronto Blue Jays",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-17T23:15:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816141/white-sox-blue-jays"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Anthony Kay",
+        "home": "Spencer Miles"
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824901",
+      "espn_event_id": "401816146",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TEX",
+      "home": "ATL",
+      "away_display": "Texas Rangers",
+      "home_display": "Atlanta Braves",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-17T23:15:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816146/rangers-braves"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": "Chris Sale"
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823766",
+      "espn_event_id": "401816148",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIA",
+      "home": "MIL",
+      "away_display": "Miami Marlins",
+      "home_display": "Milwaukee Brewers",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-17T23:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816148/marlins-brewers"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824655",
+      "espn_event_id": "401816149",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIN",
+      "home": "CHC",
+      "away_display": "Minnesota Twins",
+      "home_display": "Chicago Cubs",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T00:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816149/twins-cubs"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824170",
+      "espn_event_id": "401816147",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "BAL",
+      "home": "HOU",
+      "away_display": "Baltimore Orioles",
+      "home_display": "Houston Astros",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T00:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816147/orioles-astros"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824090",
+      "espn_event_id": "401816150",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SD",
+      "home": "KC",
+      "away_display": "San Diego Padres",
+      "home_display": "Kansas City Royals",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T00:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816150/padres-royals"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824332",
+      "espn_event_id": "401816151",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CIN",
+      "home": "COL",
+      "away_display": "Cincinnati Reds",
+      "home_display": "Colorado Rockies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T00:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816151/reds-rockies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Brady Singer",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824009",
+      "espn_event_id": "401816152",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "DET",
+      "home": "LAA",
+      "away_display": "Detroit Tigers",
+      "home_display": "Los Angeles Angels",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T01:38:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816152/tigers-angels"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Troy Melton",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "825060",
+      "espn_event_id": "401816154",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "STL",
+      "home": "AZ",
+      "away_display": "St. Louis Cardinals",
+      "home_display": "Arizona Diamondbacks",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T01:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816154/cardinals-diamondbacks"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824981",
+      "espn_event_id": "401816155",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "WSH",
+      "home": "ATH",
+      "away_display": "Washington Nationals",
+      "home_display": "Athletics",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T01:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816155/nationals-athletics"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823115",
+      "espn_event_id": "401816153",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SF",
+      "home": "SEA",
+      "away_display": "San Francisco Giants",
+      "home_display": "Seattle Mariners",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T02:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816153/giants-mariners"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Landen Roupp",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824657",
+      "espn_event_id": "401816164",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIN",
+      "home": "CHC",
+      "away_display": "Minnesota Twins",
+      "home_display": "Chicago Cubs",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T18:20:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816164/twins-cubs"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822790",
+      "espn_event_id": "401816156",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CWS",
+      "home": "TOR",
+      "away_display": "Chicago White Sox",
+      "home_display": "Toronto Blue Jays",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T19:07:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816156/white-sox-blue-jays"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Davis Martin",
+        "home": "Shane Bieber"
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824331",
+      "espn_event_id": "401816166",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CIN",
+      "home": "COL",
+      "away_display": "Cincinnati Reds",
+      "home_display": "Colorado Rockies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T19:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816166/reds-rockies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Rhett Lowder",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823441",
+      "espn_event_id": "401816158",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "NYM",
+      "home": "PHI",
+      "away_display": "New York Mets",
+      "home_display": "Philadelphia Phillies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T20:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816158/mets-phillies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Sean Manaea",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824412",
+      "espn_event_id": "401816159",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "PIT",
+      "home": "CLE",
+      "away_display": "Pittsburgh Pirates",
+      "home_display": "Cleveland Guardians",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T20:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816159/pirates-guardians"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824738",
+      "espn_event_id": "401816160",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TB",
+      "home": "BOS",
+      "away_display": "Tampa Bay Rays",
+      "home_display": "Boston Red Sox",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T20:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816160/rays-red-sox"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824899",
+      "espn_event_id": "401816161",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TEX",
+      "home": "ATL",
+      "away_display": "Texas Rangers",
+      "home_display": "Atlanta Braves",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T20:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816161/rangers-braves"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": "Owen Murphy"
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824169",
+      "espn_event_id": "401816162",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "BAL",
+      "home": "HOU",
+      "away_display": "Baltimore Orioles",
+      "home_display": "Houston Astros",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T20:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816162/orioles-astros"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823763",
+      "espn_event_id": "401816163",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIA",
+      "home": "MIL",
+      "away_display": "Miami Marlins",
+      "home_display": "Milwaukee Brewers",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T20:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816163/marlins-brewers"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824088",
+      "espn_event_id": "401816165",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SD",
+      "home": "KC",
+      "away_display": "San Diego Padres",
+      "home_display": "Kansas City Royals",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T20:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816165/padres-royals"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "825059",
+      "espn_event_id": "401816169",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "STL",
+      "home": "AZ",
+      "away_display": "St. Louis Cardinals",
+      "home_display": "Arizona Diamondbacks",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T20:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816169/cardinals-diamondbacks"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823523",
+      "espn_event_id": "401816157",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "LAD",
+      "home": "NYY",
+      "away_display": "Los Angeles Dodgers",
+      "home_display": "New York Yankees",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T00:08:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816157/dodgers-yankees"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823116",
+      "espn_event_id": "401816168",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SF",
+      "home": "SEA",
+      "away_display": "San Francisco Giants",
+      "home_display": "Seattle Mariners",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T00:08:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816168/giants-mariners"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Logan Webb",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824979",
+      "espn_event_id": "401816170",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "WSH",
+      "home": "ATH",
+      "away_display": "Washington Nationals",
+      "home_display": "Athletics",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T02:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816170/nationals-athletics"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824008",
+      "espn_event_id": "401816167",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "DET",
+      "home": "LAA",
+      "away_display": "Detroit Tigers",
+      "home_display": "Los Angeles Angels",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T02:07:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816167/tigers-angels"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Tarik Skubal",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822786",
+      "espn_event_id": "401816171",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CWS",
+      "home": "TOR",
+      "away_display": "Chicago White Sox",
+      "home_display": "Toronto Blue Jays",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T16:15:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816171/white-sox-blue-jays"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Sean Burke",
+        "home": "Trey Yesavage"
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823439",
+      "espn_event_id": "401816173",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "NYM",
+      "home": "PHI",
+      "away_display": "New York Mets",
+      "home_display": "Philadelphia Phillies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T17:35:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816173/mets-phillies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Nolan McLean",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824739",
+      "espn_event_id": "401816175",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TB",
+      "home": "BOS",
+      "away_display": "Tampa Bay Rays",
+      "home_display": "Boston Red Sox",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T17:35:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816175/rays-red-sox"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824897",
+      "espn_event_id": "401816176",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TEX",
+      "home": "ATL",
+      "away_display": "Texas Rangers",
+      "home_display": "Atlanta Braves",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T17:35:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816176/rangers-braves"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": "Grant Holmes"
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824411",
+      "espn_event_id": "401816174",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "PIT",
+      "home": "CLE",
+      "away_display": "Pittsburgh Pirates",
+      "home_display": "Cleveland Guardians",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T17:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816174/pirates-guardians"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824168",
+      "espn_event_id": "401816177",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "BAL",
+      "home": "HOU",
+      "away_display": "Baltimore Orioles",
+      "home_display": "Houston Astros",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T18:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816177/orioles-astros"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823764",
+      "espn_event_id": "401816178",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIA",
+      "home": "MIL",
+      "away_display": "Miami Marlins",
+      "home_display": "Milwaukee Brewers",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T18:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816178/marlins-brewers"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824086",
+      "espn_event_id": "401816180",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SD",
+      "home": "KC",
+      "away_display": "San Diego Padres",
+      "home_display": "Kansas City Royals",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T18:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816180/padres-royals"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824653",
+      "espn_event_id": "401816179",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIN",
+      "home": "CHC",
+      "away_display": "Minnesota Twins",
+      "home_display": "Chicago Cubs",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T18:20:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816179/twins-cubs"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824330",
+      "espn_event_id": "401816181",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CIN",
+      "home": "COL",
+      "away_display": "Cincinnati Reds",
+      "home_display": "Colorado Rockies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T19:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816181/reds-rockies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Hunter Greene",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824978",
+      "espn_event_id": "401816185",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "WSH",
+      "home": "ATH",
+      "away_display": "Washington Nationals",
+      "home_display": "Athletics",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T20:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816185/nationals-athletics"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824007",
+      "espn_event_id": "401816182",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "DET",
+      "home": "LAA",
+      "away_display": "Detroit Tigers",
+      "home_display": "Los Angeles Angels",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T20:07:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816182/tigers-angels"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Casey Mize",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823113",
+      "espn_event_id": "401816183",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SF",
+      "home": "SEA",
+      "away_display": "San Francisco Giants",
+      "home_display": "Seattle Mariners",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T20:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816183/giants-mariners"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Robbie Ray",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "825057",
+      "espn_event_id": "401816184",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "STL",
+      "home": "AZ",
+      "away_display": "St. Louis Cardinals",
+      "home_display": "Arizona Diamondbacks",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T20:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816184/cardinals-diamondbacks"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823521",
+      "espn_event_id": "401816172",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "LAD",
+      "home": "NYY",
+      "away_display": "Los Angeles Dodgers",
+      "home_display": "New York Yankees",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T23:20:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816172/dodgers-yankees"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824410",
+      "espn_event_id": "401816188",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIN",
+      "home": "CLE",
+      "away_display": "Minnesota Twins",
+      "home_display": "Cleveland Guardians",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-20T22:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816188/twins-guardians"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823436",
+      "espn_event_id": "401816187",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "LAD",
+      "home": "PHI",
+      "away_display": "Los Angeles Dodgers",
+      "home_display": "Philadelphia Phillies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-20T23:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816187/dodgers-phillies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823522",
+      "espn_event_id": "401816189",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "PIT",
+      "home": "NYY",
+      "away_display": "Pittsburgh Pirates",
+      "home_display": "New York Yankees",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-20T23:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816189/pirates-yankees"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822788",
+      "espn_event_id": "401816191",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TB",
+      "home": "TOR",
+      "away_display": "Tampa Bay Rays",
+      "home_display": "Toronto Blue Jays",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-20T23:07:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816191/rays-blue-jays"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": "Dylan Cease"
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824736",
+      "espn_event_id": "401816186",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "BAL",
+      "home": "BOS",
+      "away_display": "Baltimore Orioles",
+      "home_display": "Boston Red Sox",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-20T23:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816186/orioles-red-sox"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824898",
+      "espn_event_id": "401816190",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SD",
+      "home": "ATL",
+      "away_display": "San Diego Padres",
+      "home_display": "Atlanta Braves",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-20T23:15:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816190/padres-braves"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823762",
+      "espn_event_id": "401816195",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "NYM",
+      "home": "MIL",
+      "away_display": "New York Mets",
+      "home_display": "Milwaukee Brewers",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-20T23:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816195/mets-brewers"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Freddy Peralta",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824087",
+      "espn_event_id": "401816196",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SF",
+      "home": "KC",
+      "away_display": "San Francisco Giants",
+      "home_display": "Kansas City Royals",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-20T23:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816196/giants-royals"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822874",
+      "espn_event_id": "401816192",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CWS",
+      "home": "TEX",
+      "away_display": "Chicago White Sox",
+      "home_display": "Texas Rangers",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T00:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816192/white-sox-rangers"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Erick Fedde",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824654",
+      "espn_event_id": "401816193",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "DET",
+      "home": "CHC",
+      "away_display": "Detroit Tigers",
+      "home_display": "Chicago Cubs",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T00:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816193/tigers-cubs"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824167",
+      "espn_event_id": "401816194",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIA",
+      "home": "HOU",
+      "away_display": "Miami Marlins",
+      "home_display": "Houston Astros",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T00:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816194/marlins-astros"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824328",
+      "espn_event_id": "401816197",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "WSH",
+      "home": "COL",
+      "away_display": "Washington Nationals",
+      "home_display": "Colorado Rockies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T00:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816197/nationals-rockies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "825058",
+      "espn_event_id": "401816198",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "ATH",
+      "home": "AZ",
+      "away_display": "Athletics",
+      "home_display": "Arizona Diamondbacks",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T01:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816198/athletics-diamondbacks"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823112",
+      "espn_event_id": "401816199",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CIN",
+      "home": "SEA",
+      "away_display": "Cincinnati Reds",
+      "home_display": "Seattle Mariners",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T01:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816199/reds-mariners"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Andrew Abbott",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824006",
+      "espn_event_id": "401816200",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "STL",
+      "home": "LAA",
+      "away_display": "St. Louis Cardinals",
+      "home_display": "Los Angeles Angels",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T02:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816200/cardinals-angels"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823437",
+      "espn_event_id": "401816202",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "LAD",
+      "home": "PHI",
+      "away_display": "Los Angeles Dodgers",
+      "home_display": "Philadelphia Phillies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T22:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816202/dodgers-phillies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824409",
+      "espn_event_id": "401816203",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIN",
+      "home": "CLE",
+      "away_display": "Minnesota Twins",
+      "home_display": "Cleveland Guardians",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T22:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816203/twins-guardians"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823519",
+      "espn_event_id": "401816204",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "PIT",
+      "home": "NYY",
+      "away_display": "Pittsburgh Pirates",
+      "home_display": "New York Yankees",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T23:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816204/pirates-yankees"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822787",
+      "espn_event_id": "401816206",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TB",
+      "home": "TOR",
+      "away_display": "Tampa Bay Rays",
+      "home_display": "Toronto Blue Jays",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T23:07:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816206/rays-blue-jays"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": "Kevin Gausman"
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824735",
+      "espn_event_id": "401816201",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "BAL",
+      "home": "BOS",
+      "away_display": "Baltimore Orioles",
+      "home_display": "Boston Red Sox",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T23:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816201/orioles-red-sox"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824895",
+      "espn_event_id": "401816205",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SD",
+      "home": "ATL",
+      "away_display": "San Diego Padres",
+      "home_display": "Atlanta Braves",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T23:15:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816205/padres-braves"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823760",
+      "espn_event_id": "401816210",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "NYM",
+      "home": "MIL",
+      "away_display": "New York Mets",
+      "home_display": "Milwaukee Brewers",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T23:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816210/mets-brewers"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824085",
+      "espn_event_id": "401816211",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SF",
+      "home": "KC",
+      "away_display": "San Francisco Giants",
+      "home_display": "Kansas City Royals",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T23:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816211/giants-royals"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822871",
+      "espn_event_id": "401816207",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CWS",
+      "home": "TEX",
+      "away_display": "Chicago White Sox",
+      "home_display": "Texas Rangers",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T00:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816207/white-sox-rangers"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Noah Schultz",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824652",
+      "espn_event_id": "401816208",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "DET",
+      "home": "CHC",
+      "away_display": "Detroit Tigers",
+      "home_display": "Chicago Cubs",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T00:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816208/tigers-cubs"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824165",
+      "espn_event_id": "401816209",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIA",
+      "home": "HOU",
+      "away_display": "Miami Marlins",
+      "home_display": "Houston Astros",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T00:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816209/marlins-astros"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824329",
+      "espn_event_id": "401816212",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "WSH",
+      "home": "COL",
+      "away_display": "Washington Nationals",
+      "home_display": "Colorado Rockies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T00:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816212/nationals-rockies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824005",
+      "espn_event_id": "401816215",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "STL",
+      "home": "LAA",
+      "away_display": "St. Louis Cardinals",
+      "home_display": "Los Angeles Angels",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T01:38:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816215/cardinals-angels"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "825056",
+      "espn_event_id": "401816213",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "ATH",
+      "home": "AZ",
+      "away_display": "Athletics",
+      "home_display": "Arizona Diamondbacks",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T01:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816213/athletics-diamondbacks"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823114",
+      "espn_event_id": "401816214",
+      "game_date": "2026-07-21",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CIN",
+      "home": "SEA",
+      "away_display": "Cincinnati Reds",
+      "home_display": "Seattle Mariners",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T01:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816214/reds-mariners"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Chase Burns",
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823518",
+      "espn_event_id": "401816219",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "PIT",
+      "home": "NYY",
+      "away_display": "Pittsburgh Pirates",
+      "home_display": "New York Yankees",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T17:35:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816219/pirates-yankees"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823761",
+      "espn_event_id": "401816225",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "NYM",
+      "home": "MIL",
+      "away_display": "New York Mets",
+      "home_display": "Milwaukee Brewers",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T18:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816225/mets-brewers"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824083",
+      "espn_event_id": "401816226",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SF",
+      "home": "KC",
+      "away_display": "San Francisco Giants",
+      "home_display": "Kansas City Royals",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T18:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816226/giants-royals"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824327",
+      "espn_event_id": "401816227",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "WSH",
+      "home": "COL",
+      "away_display": "Washington Nationals",
+      "home_display": "Colorado Rockies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T19:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816227/nationals-rockies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "825055",
+      "espn_event_id": "401816228",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "ATH",
+      "home": "AZ",
+      "away_display": "Athletics",
+      "home_display": "Arizona Diamondbacks",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T19:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816228/athletics-diamondbacks"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823110",
+      "espn_event_id": "401816229",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CIN",
+      "home": "SEA",
+      "away_display": "Cincinnati Reds",
+      "home_display": "Seattle Mariners",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T19:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816229/reds-mariners"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824004",
+      "espn_event_id": "401816230",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "STL",
+      "home": "LAA",
+      "away_display": "St. Louis Cardinals",
+      "home_display": "Los Angeles Angels",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T20:07:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816230/cardinals-angels"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823438",
+      "espn_event_id": "401816217",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "LAD",
+      "home": "PHI",
+      "away_display": "Los Angeles Dodgers",
+      "home_display": "Philadelphia Phillies",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T22:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816217/dodgers-phillies"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824408",
+      "espn_event_id": "401816218",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIN",
+      "home": "CLE",
+      "away_display": "Minnesota Twins",
+      "home_display": "Cleveland Guardians",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T22:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816218/twins-guardians"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822784",
+      "espn_event_id": "401816221",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TB",
+      "home": "TOR",
+      "away_display": "Tampa Bay Rays",
+      "home_display": "Toronto Blue Jays",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T23:07:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816221/rays-blue-jays"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824732",
+      "espn_event_id": "401816216",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "BAL",
+      "home": "BOS",
+      "away_display": "Baltimore Orioles",
+      "home_display": "Boston Red Sox",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T23:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816216/orioles-red-sox"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824896",
+      "espn_event_id": "401816220",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SD",
+      "home": "ATL",
+      "away_display": "San Diego Padres",
+      "home_display": "Atlanta Braves",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T23:15:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816220/padres-braves"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824650",
+      "espn_event_id": "401816223",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "DET",
+      "home": "CHC",
+      "away_display": "Detroit Tigers",
+      "home_display": "Chicago Cubs",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-23T00:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816223/tigers-cubs"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822873",
+      "espn_event_id": "401816222",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CWS",
+      "home": "TEX",
+      "away_display": "Chicago White Sox",
+      "home_display": "Texas Rangers",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-23T00:05:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816222/white-sox-rangers"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824166",
+      "espn_event_id": "401816224",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIA",
+      "home": "HOU",
+      "away_display": "Miami Marlins",
+      "home_display": "Houston Astros",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-23T00:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816224/marlins-astros"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
     },
     {
       "sport": "MLB",
@@ -248,6 +4298,79 @@
       "live_note": "ESPN scoreboard row; no LineLens prediction model is applied."
     },
     {
+      "sport": "SOCCER",
+      "game_id": "760516",
+      "espn_event_id": "760516",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SF L2",
+      "home": "FRA",
+      "away_display": "Semifinal 2 Loser",
+      "home_display": "France",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T21:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Scoreboard-only ESPN row; LineLens does not model this sport"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/soccer/match/_/gameId/760516/semifinal-2-loser-france",
+        "https://www.espn.com/soccer/matchstats/_/gameId/760516"
+      ],
+      "period": null,
+      "clock": "0'",
+      "competition": "FIFA World Cup",
+      "live_note": "ESPN scoreboard row; no LineLens prediction model is applied."
+    },
+    {
+      "sport": "SOCCER",
+      "game_id": "760517",
+      "espn_event_id": "760517",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SFW2",
+      "home": "ESP",
+      "away_display": "Semifinal 2 Winner",
+      "home_display": "Spain",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T19:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Scoreboard-only ESPN row; LineLens does not model this sport"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/soccer/match/_/gameId/760517/semifinal-2-winner-spain",
+        "https://www.espn.com/soccer/matchstats/_/gameId/760517",
+        "https://www.espn.com/soccer/bracket/_/season/2026/league/fifa.world"
+      ],
+      "period": null,
+      "clock": "0'",
+      "competition": "FIFA World Cup",
+      "live_note": "ESPN scoreboard row; no LineLens prediction model is applied."
+    },
+    {
       "sport": "WNBA",
       "game_id": "401857066",
       "espn_event_id": "401857066",
@@ -342,8 +4465,8 @@
       "game_id": "401857068",
       "espn_event_id": "401857068",
       "game_date": "2026-07-15",
-      "status": "Scheduled",
-      "status_detail": "6:24 - 4th",
+      "status": "Final",
+      "status_detail": "Final",
       "source": "ESPN Scoreboard API",
       "source_status": "espn_live_fresh",
       "data_mode": "prediction_joined",
@@ -353,8 +4476,8 @@
       "home_display": "Chicago Sky",
       "away_logo": null,
       "home_logo": null,
-      "away_score": 75,
-      "home_score": 86,
+      "away_score": 90,
+      "home_score": 95,
       "game_time": "2026-07-15T16:00Z",
       "model": {
         "prediction_available": true,
@@ -370,15 +4493,15 @@
         "prediction_status": "prediction_joined"
       },
       "plays": [],
-      "latest_play": "Natisha Hiedeman enters the game for Katie Lou Samuelson",
+      "latest_play": null,
       "espn_links": [
-        "https://www.espn.com/wnba/game?gameId=401857068",
+        "https://www.espn.com/wnba/game/_/gameId/401857068/storm-sky",
         "https://www.espn.com/wnba/boxscore/_/gameId/401857068",
         "https://www.espn.com/wnba/video?gameId=401857068",
         "https://www.espn.com/wnba/playbyplay/_/gameId/401857068"
       ],
       "period": 4,
-      "clock": "6:24",
+      "clock": "0.0",
       "competition": "WNBA",
       "live_note": "ESPN scoreboard row; WNBA model joined when available."
     },
@@ -388,7 +4511,7 @@
       "espn_event_id": "401857069",
       "game_date": "2026-07-15",
       "status": "Scheduled",
-      "status_detail": "7:04 - 2nd",
+      "status_detail": "7:44 - 3rd",
       "source": "ESPN Scoreboard API",
       "source_status": "espn_live_fresh",
       "data_mode": "prediction_joined",
@@ -398,8 +4521,8 @@
       "home_display": "Minnesota Lynx",
       "away_logo": null,
       "home_logo": null,
-      "away_score": 20,
-      "home_score": 23,
+      "away_score": 45,
+      "home_score": 42,
       "game_time": "2026-07-15T17:00Z",
       "model": {
         "prediction_available": true,
@@ -415,15 +4538,14 @@
         "prediction_status": "prediction_joined"
       },
       "plays": [],
-      "latest_play": "Ariel Atkins vs. Anastasiia Olairi Kosu (Olivia Miles gains possession)",
+      "latest_play": "Erica Wheeler defensive rebound",
       "espn_links": [
         "https://www.espn.com/wnba/game?gameId=401857069",
         "https://www.espn.com/wnba/boxscore/_/gameId/401857069",
-        "https://www.espn.com/wnba/video?gameId=401857069",
         "https://www.espn.com/wnba/playbyplay/_/gameId/401857069"
       ],
-      "period": 2,
-      "clock": "7:04",
+      "period": 3,
+      "clock": "7:44",
       "competition": "WNBA",
       "live_note": "ESPN scoreboard row; WNBA model joined when available."
     },
@@ -533,6 +4655,671 @@
       "latest_play": null,
       "espn_links": [
         "https://www.espn.com/wnba/game/_/gameId/401857072/liberty-wings"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857073",
+      "espn_event_id": "401857073",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "7/17 - 7:30 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SEA",
+      "home": "IND",
+      "away_display": "Seattle Storm",
+      "home_display": "Indiana Fever",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-17T23:30Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857073/storm-fever"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857074",
+      "espn_event_id": "401857074",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "7/17 - 7:30 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "ATL",
+      "home": "TOR",
+      "away_display": "Atlanta Dream",
+      "home_display": "Toronto Tempo",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-17T23:30Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857074/dream-tempo"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857075",
+      "espn_event_id": "401857075",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "7/17 - 7:30 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "LA",
+      "home": "CHI",
+      "away_display": "Los Angeles Sparks",
+      "home_display": "Chicago Sky",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-17T23:30Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857075/sparks-sky"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857076",
+      "espn_event_id": "401857076",
+      "game_date": "2026-07-17",
+      "status": "Scheduled",
+      "status_detail": "7/17 - 10:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CON",
+      "home": "PHX",
+      "away_display": "Connecticut Sun",
+      "home_display": "Phoenix Mercury",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-18T02:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857076/sun-mercury"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857077",
+      "espn_event_id": "401857077",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "7/18 - 8:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "NY",
+      "home": "IND",
+      "away_display": "New York Liberty",
+      "home_display": "Indiana Fever",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T00:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857077/liberty-fever"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857078",
+      "espn_event_id": "401857078",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "7/18 - 8:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "POR",
+      "home": "MIN",
+      "away_display": "Portland Fire",
+      "home_display": "Minnesota Lynx",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T00:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857078/fire-lynx"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857079",
+      "espn_event_id": "401857079",
+      "game_date": "2026-07-18",
+      "status": "Scheduled",
+      "status_detail": "7/18 - 8:30 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "WSH",
+      "home": "GS",
+      "away_display": "Washington Mystics",
+      "home_display": "Golden State Valkyries",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T00:30Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857079/mystics-valkyries"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857080",
+      "espn_event_id": "401857080",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "7/19 - 1:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "LA",
+      "home": "DAL",
+      "away_display": "Los Angeles Sparks",
+      "home_display": "Dallas Wings",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T17:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857080/sparks-wings"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857081",
+      "espn_event_id": "401857081",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "7/19 - 4:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CHI",
+      "home": "ATL",
+      "away_display": "Chicago Sky",
+      "home_display": "Atlanta Dream",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T20:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857081/sky-dream"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857082",
+      "espn_event_id": "401857082",
+      "game_date": "2026-07-19",
+      "status": "Scheduled",
+      "status_detail": "7/19 - 7:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CON",
+      "home": "PHX",
+      "away_display": "Connecticut Sun",
+      "home_display": "Phoenix Mercury",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-19T23:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857082/sun-mercury"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857083",
+      "espn_event_id": "401857083",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "7/20 - 8:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "LV",
+      "home": "TOR",
+      "away_display": "Las Vegas Aces",
+      "home_display": "Toronto Tempo",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T00:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857083/aces-tempo"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857084",
+      "espn_event_id": "401857084",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "7/20 - 10:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "WSH",
+      "home": "GS",
+      "away_display": "Washington Mystics",
+      "home_display": "Golden State Valkyries",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T02:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857084/mystics-valkyries"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857085",
+      "espn_event_id": "401857085",
+      "game_date": "2026-07-20",
+      "status": "Scheduled",
+      "status_detail": "7/20 - 10:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIN",
+      "home": "SEA",
+      "away_display": "Minnesota Lynx",
+      "home_display": "Seattle Storm",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-21T02:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857085/lynx-storm"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857086",
+      "espn_event_id": "401857086",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "7/22 - 3:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "PHX",
+      "home": "LA",
+      "away_display": "Phoenix Mercury",
+      "home_display": "Los Angeles Sparks",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T19:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857086/mercury-sparks"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857087",
+      "espn_event_id": "401857087",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "7/22 - 3:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIN",
+      "home": "SEA",
+      "away_display": "Minnesota Lynx",
+      "home_display": "Seattle Storm",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T19:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857087/lynx-storm"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857088",
+      "espn_event_id": "401857088",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "7/22 - 7:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CHI",
+      "home": "NY",
+      "away_display": "Chicago Sky",
+      "home_display": "New York Liberty",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T23:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857088/sky-liberty"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857089",
+      "espn_event_id": "401857089",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "7/22 - 7:30 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "LV",
+      "home": "WSH",
+      "away_display": "Las Vegas Aces",
+      "home_display": "Washington Mystics",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-22T23:30Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857089/aces-mystics"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857090",
+      "espn_event_id": "401857090",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "7/22 - 8:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "CON",
+      "home": "IND",
+      "away_display": "Connecticut Sun",
+      "home_display": "Indiana Fever",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-23T00:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857090/sun-fever"
+      ],
+      "period": 0,
+      "clock": "0.0",
+      "competition": "WNBA",
+      "live_note": "ESPN scoreboard row; WNBA model joined when available."
+    },
+    {
+      "sport": "WNBA",
+      "game_id": "401857091",
+      "espn_event_id": "401857091",
+      "game_date": "2026-07-22",
+      "status": "Scheduled",
+      "status_detail": "7/22 - 10:00 PM EDT",
+      "source": "ESPN Scoreboard API",
+      "source_status": "espn_live_fresh",
+      "data_mode": "schedule_only",
+      "away": "DAL",
+      "home": "POR",
+      "away_display": "Dallas Wings",
+      "home_display": "Portland Fire",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-23T02:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/wnba/game/_/gameId/401857091/wings-fire"
       ],
       "period": 0,
       "clock": "0.0",

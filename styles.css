@@ -6289,7 +6289,9 @@ body {
 /* Props desk refresh: compact controls, row-like cards, and quieter diagnostics. */
 .props-shell {
     gap: 1.15rem;
-    max-width: 1280px;
+    max-width: none;
+    width: 100%;
+    margin: 0;
 }
 
 .props-header {
@@ -6477,7 +6479,9 @@ body {
 .prop-card__market { overflow: hidden; color: #a9bac6; text-overflow: ellipsis; white-space: nowrap; }
 .prop-card__time { color: #8294a4; font-size: .7rem; }
 .prop-card__identity { gap: .6rem; }
-.prop-player-mark { width: 40px; height: 40px; border-radius: 5px; background: #173044; font-size: .78rem; }
+.prop-player-mark { position: relative; width: 42px; height: 42px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--prop-team-color, #31546b) 75%, white 25%); border-radius: 6px; background: color-mix(in srgb, var(--prop-team-color, #31546b) 28%, #0b1722); font-size: .78rem; }
+.prop-player-mark img { position: absolute; inset: 5px; width: calc(100% - 10px); height: calc(100% - 10px); object-fit: contain; opacity: .3; }
+.prop-player-mark b { position: relative; z-index: 1; color: #f3f8fb; text-shadow: 0 1px 3px #08111a; }
 .prop-card__identity h3 { font-size: 1rem; }
 .prop-card__identity p { font-size: .73rem; }
 
@@ -6511,6 +6515,60 @@ body {
 .prop-health__title span { color: #9db4c2; font-size: .72rem; }
 .prop-health__rows p { margin: .35rem 0; color: #899ba9; font-size: .74rem; }
 .prop-health__rows small { color: #718595; font-size: .67rem; }
+
+.mlb-game-card__odds {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0;
+    padding: .45rem .55rem;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: .55rem;
+    background: rgba(3, 7, 14, .42);
+}
+
+.mlb-game-card__odds-row {
+    display: grid;
+    grid-template-columns: minmax(76px, .8fr) repeat(2, minmax(0, 1fr));
+    gap: .4rem;
+    align-items: center;
+    min-height: 25px;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+}
+
+.mlb-game-card__odds-row--teams { border-top: 0; min-height: 20px; }
+.mlb-game-card__odds-row span { color: #8294a4; font-size: .64rem; }
+.mlb-game-card__odds-row strong, .mlb-game-card__odds-row b { color: #eaf7ff; font-size: .72rem; }
+.mlb-game-card__odds-row strong, .mlb-game-card__odds-row b { text-align: center; }
+.mlb-game-card__odds-row strong { color: #9fb6c5; font-size: .66rem; }
+.mlb-game-card__odds-row b { min-width: 0; overflow: hidden; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
+.mlb-game-card__odds--empty { display: flex; justify-content: space-between; color: #8193a1; }
+.mlb-game-card__odds--empty span { color: #d8e9f6; font-size: .68rem; font-weight: 850; }
+.mlb-game-card__odds--empty small { font-size: .64rem; }
+
+/* Shared game-date rail: the date is a navigation surface, not secondary metadata. */
+.game-date-calendar-panel { padding: 0.85rem 1rem; }
+.game-date-calendar { display: grid; gap: 0.72rem; }
+.game-date-calendar--empty { color: var(--muted); }
+.game-date-calendar__top,
+.game-date-calendar__picker { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; color: var(--muted); font-size: 0.78rem; }
+.game-date-calendar__top h3 { margin: 0; color: color-mix(in srgb, var(--scoreboard-accent, #8ce6f4) 72%, #ffffff); font-size: 1.12rem; font-weight: 900; letter-spacing: 0.01em; }
+.game-date-calendar__top > span { font-size: 0.76rem; }
+.game-date-calendar__rail { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.55rem; align-items: center; }
+.game-date-calendar__days { display: grid; grid-template-columns: repeat(7, minmax(86px, 1fr)); gap: 0.48rem; overflow-x: auto; }
+.game-date-chip { display: grid; gap: 0.18rem; min-width: 86px; min-height: 74px; padding: 0.68rem 0.62rem; border: 1px solid rgba(150,170,195,0.22); border-radius: 0.7rem; color: #cbd6e3; background: rgba(255,255,255,0.035); text-align: left; cursor: pointer; }
+.game-date-chip:hover,
+.game-date-chip.is-active { border-color: color-mix(in srgb, var(--scoreboard-accent, #8ce6f4) 75%, white); color: #fff; background: color-mix(in srgb, var(--scoreboard-accent, #8ce6f4) 15%, rgba(8,13,23,0.9)); box-shadow: 0 0 18px color-mix(in srgb, var(--scoreboard-accent, #8ce6f4) 14%, transparent); }
+.game-date-chip span { color: color-mix(in srgb, var(--scoreboard-accent, #8ce6f4) 60%, #e6eff7); font-size: 0.86rem; font-weight: 900; letter-spacing: 0.03em; }
+.game-date-chip strong { color: #f7fbff; font-size: 1rem; line-height: 1.15; }
+.game-date-chip small { color: var(--muted); font-size: 0.7rem; }
+.game-date-chip.is-active small { color: #f3d4ff; }
+.game-date-calendar__picker { justify-content: flex-start; }
+.game-date-calendar__picker input { margin-left: 0.3rem; padding: 0.4rem 0.55rem; border: 1px solid rgba(150,170,195,0.22); border-radius: 0.45rem; color: #eaf0f7; background: rgba(255,255,255,0.05); }
+@media (max-width: 700px) {
+    .game-date-calendar__top, .game-date-calendar__picker { align-items: flex-start; flex-direction: column; }
+    .game-date-calendar__days { grid-template-columns: repeat(7, 92px); }
+}
 
 @media (max-width: 980px) {
     .props-filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }

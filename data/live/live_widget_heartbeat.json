@@ -2,7 +2,7 @@
   "metadata": {
     "app": "LineLens Sports",
     "version": "v4.0.0",
-    "generated_at": "2026-07-15T17:36:12Z",
+    "generated_at": "2026-07-15T18:14:02Z",
     "real_data": true,
     "source": "LineLens live widget snapshot",
     "sports": [
@@ -16,9 +16,9 @@
     "data_window": {
       "center_date": "2026-07-15",
       "start_date": "2026-07-14",
-      "end_date": "2026-07-16",
+      "end_date": "2026-07-22",
       "days_back": 1,
-      "days_forward": 1,
+      "days_forward": 7,
       "fresh_start_date": "2026-07-14",
       "cache_lookback_days": 120
     },
@@ -344,8 +344,8 @@
       "game_id": "401857068",
       "espn_event_id": "401857068",
       "game_date": "2026-07-15",
-      "status": "Scheduled",
-      "status_detail": "6:24 - 4th",
+      "status": "Final",
+      "status_detail": "Final",
       "source": "ESPN Scoreboard API",
       "source_status": "espn_live_fresh",
       "data_mode": "prediction_joined",
@@ -355,8 +355,8 @@
       "home_display": "Chicago Sky",
       "away_logo": null,
       "home_logo": null,
-      "away_score": 75,
-      "home_score": 86,
+      "away_score": 90,
+      "home_score": 95,
       "game_time": "2026-07-15T16:00Z",
       "model": {
         "prediction_available": true,
@@ -372,15 +372,15 @@
         "prediction_status": "prediction_joined"
       },
       "plays": [],
-      "latest_play": "Natisha Hiedeman enters the game for Katie Lou Samuelson",
+      "latest_play": null,
       "espn_links": [
-        "https://www.espn.com/wnba/game?gameId=401857068",
+        "https://www.espn.com/wnba/game/_/gameId/401857068/storm-sky",
         "https://www.espn.com/wnba/boxscore/_/gameId/401857068",
         "https://www.espn.com/wnba/video?gameId=401857068",
         "https://www.espn.com/wnba/playbyplay/_/gameId/401857068"
       ],
       "period": 4,
-      "clock": "6:24",
+      "clock": "0.0",
       "competition": "WNBA",
       "live_note": "ESPN scoreboard row; WNBA model joined when available."
     },
@@ -390,7 +390,7 @@
       "espn_event_id": "401857069",
       "game_date": "2026-07-15",
       "status": "Scheduled",
-      "status_detail": "7:04 - 2nd",
+      "status_detail": "7:44 - 3rd",
       "source": "ESPN Scoreboard API",
       "source_status": "espn_live_fresh",
       "data_mode": "prediction_joined",
@@ -400,8 +400,8 @@
       "home_display": "Minnesota Lynx",
       "away_logo": null,
       "home_logo": null,
-      "away_score": 20,
-      "home_score": 23,
+      "away_score": 45,
+      "home_score": 42,
       "game_time": "2026-07-15T17:00Z",
       "model": {
         "prediction_available": true,
@@ -417,15 +417,14 @@
         "prediction_status": "prediction_joined"
       },
       "plays": [],
-      "latest_play": "Ariel Atkins vs. Anastasiia Olairi Kosu (Olivia Miles gains possession)",
+      "latest_play": "Erica Wheeler defensive rebound",
       "espn_links": [
         "https://www.espn.com/wnba/game?gameId=401857069",
         "https://www.espn.com/wnba/boxscore/_/gameId/401857069",
-        "https://www.espn.com/wnba/video?gameId=401857069",
         "https://www.espn.com/wnba/playbyplay/_/gameId/401857069"
       ],
-      "period": 2,
-      "clock": "7:04",
+      "period": 3,
+      "clock": "7:44",
       "competition": "WNBA",
       "live_note": "ESPN scoreboard row; WNBA model joined when available."
     },

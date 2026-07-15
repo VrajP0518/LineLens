@@ -92,6 +92,7 @@ const state = {
         mlb: null,
         wnba: null,
         wnbaDate: null,
+        scoreboardDates: { NBA: null, NHL: null, SOCCER: null },
         teamSport: "MLB",
         teamCode: "TOR",
         reportSport: "MLB",
@@ -111,7 +112,7 @@ const state = {
         picksDisagree: false,
         propsDate: null,
         propsDateManual: false,
-        propsSport: "all",
+        propsSport: "MLB",
         propsMarket: "all",
         propsSide: "all",
         propsConfidence: "all",
@@ -936,6 +937,65 @@ function scoreboardGames(sport) {
         .sort((a, b) => (tickerPriority(b) - tickerPriority(a)) || ((gameTimestamp(a) ?? Number.MAX_SAFE_INTEGER) - (gameTimestamp(b) ?? Number.MAX_SAFE_INTEGER)));
 }
 
+function scoreboardAvailableDates(sport) {
+    return uniqueSortedStrings(scoreboardGames(sport).map(gameIsoDate).filter(Boolean), "asc");
+}
+
+function scoreboardDateValue(sport) {
+    const normalized = normalizedSportCode(sport);
+    if (normalized === "MLB") return state.selected.mlbDate;
+    if (normalized === "WNBA") return state.selected.wnbaDate;
+    return state.selected.scoreboardDates?.[normalized] || null;
+}
+
+function setScoreboardDateValue(sport, value) {
+    const normalized = normalizedSportCode(sport);
+    if (normalized === "MLB") state.selected.mlbDate = value;
+    else if (normalized === "WNBA") state.selected.wnbaDate = value;
+    else {
+        state.selected.scoreboardDates = { ...(state.selected.scoreboardDates || {}), [normalized]: value };
+    }
+    persistSettings();
+}
+
+function ensureScoreboardDate(sport, dates = scoreboardAvailableDates(sport)) {
+    if (!dates.length) return null;
+    const current = scoreboardDateValue(sport);
+    if (current && dates.includes(current)) return current;
+    const today = localDateIso();
+    const selected = dates.includes(today) ? today : dates.find(date => date > today) || dates[dates.length - 1];
+    setScoreboardDateValue(sport, selected);
+    return selected;
+}
+
+function moveScoreboardDate(sport, delta) {
+    const dates = normalizedSportCode(sport) === "MLB" ? mlbBoardDates() : normalizedSportCode(sport) === "WNBA" ? wnbaAvailableDates() : scoreboardAvailableDates(sport);
+    if (!dates.length) return null;
+    const current = ensureScoreboardDate(sport, dates);
+    const index = dates.indexOf(current);
+    const next = dates[Math.max(0, Math.min(dates.length - 1, index + delta))];
+    setScoreboardDateValue(sport, next);
+    return next;
+}
+
+function gameDateDisplay(iso) {
+    if (!iso) return { weekday: "Date", monthDay: "Unavailable" };
+    const date = new Date(`${iso}T12:00:00`);
+    return {
+        weekday: date.toLocaleDateString([], { weekday: "short" }),
+        monthDay: date.toLocaleDateString([], { month: "short", day: "numeric" }),
+    };
+}
+
+function renderGameDateCalendar({ sport, dates, selected, games, label }) {
+    if (!dates.length) return `<div class="game-date-calendar game-date-calendar--empty">No real game dates loaded yet.</div>`;
+    const selectedIndex = Math.max(0, dates.indexOf(selected));
+    const start = Math.max(0, Math.min(Math.max(0, dates.length - 7), selectedIndex - 3));
+    const visible = dates.slice(start, start + 7);
+    const normalized = normalizedSportCode(sport);
+    return `<div class="game-date-calendar" aria-label="${escapeHtml(label || `${normalized} game dates`)}"><div class="game-date-calendar__top"><h3>Game dates</h3><span>${dates.length} dates loaded</span></div><div class="game-date-calendar__rail"><button class="icon-btn" type="button" data-scoreboard-day="-1" data-scoreboard-sport="${normalized}" aria-label="Previous ${normalized} game date">‹</button><div class="game-date-calendar__days">${visible.map(date => { const item = gameDateDisplay(date); const count = games.filter(game => gameIsoDate(game) === date).length; return `<button type="button" class="game-date-chip ${date === selected ? "is-active" : ""}" data-scoreboard-date="${date}" data-scoreboard-sport="${normalized}"><span>${escapeHtml(item.weekday)}</span><strong>${escapeHtml(item.monthDay)}</strong><small>${count} ${count === 1 ? "game" : "games"}</small></button>`; }).join("")}</div><button class="icon-btn" type="button" data-scoreboard-day="1" data-scoreboard-sport="${normalized}" aria-label="Next ${normalized} game date">›</button></div><label class="game-date-calendar__picker">Jump to date<input id="${normalized.toLowerCase()}-date-picker" type="date" value="${escapeHtml(selected || "")}" min="${escapeHtml(dates[0])}" max="${escapeHtml(dates.at(-1))}" data-scoreboard-date-picker="${normalized}" /></label></div>`;
+}
+
 function liveHeartbeatSeconds() {
     const raw = safeNumber(state.selected.liveHeartbeatSeconds, 30);
     if (!raw || raw <= 0) return 0;
@@ -1654,7 +1714,7 @@ function renderMlbOdds(game) {
     const display = oddsDisplayForGame(game);
     const snapshot = display.snapshot;
     if (!snapshot) {
-        return `<div class="mlb-game-card__odds mlb-game-card__odds--empty"><span>Game odds</span><small>Moneyline / run line unavailable</small></div>`;
+        return `<div class="mlb-game-card__odds mlb-game-card__odds--empty"><span>Odds</span><small>—</small></div>`;
     }
     const awayMeta = getTeamMeta("MLB", game.away, game.away_display);
     const homeMeta = getTeamMeta("MLB", game.home, game.home_display);
@@ -1664,13 +1724,10 @@ function renderMlbOdds(game) {
     const homeSpread = marketSpreadLine(snapshot, "home");
     const awaySpreadPrice = safeNumber(snapshot.spread_away_price_current ?? snapshot.spread_away_price);
     const homeSpreadPrice = safeNumber(snapshot.spread_home_price_current ?? snapshot.spread_home_price);
-    const moneyline = awayMoneyline === null && homeMoneyline === null
-        ? "Unavailable"
-        : `${awayMeta.abbreviation} ${americanOdds(awayMoneyline)} · ${homeMeta.abbreviation} ${americanOdds(homeMoneyline)}`;
-    const spread = awaySpread === null && homeSpread === null
-        ? "Unavailable"
-        : `${awayMeta.abbreviation} ${runLine(awaySpread)} ${americanOdds(awaySpreadPrice)} · ${homeMeta.abbreviation} ${runLine(homeSpread)} ${americanOdds(homeSpreadPrice)}`;
-    return `<div class="mlb-game-card__odds"><header><span>${escapeHtml(display.label)}</span><small>${escapeHtml(display.freshness)}</small></header><div><span>Moneyline</span><strong>${escapeHtml(moneyline)}</strong></div><div><span>Run line</span><strong>${escapeHtml(spread)}</strong></div></div>`;
+    const moneylineAvailable = awayMoneyline !== null || homeMoneyline !== null;
+    const runlineAvailable = awaySpread !== null || homeSpread !== null || awaySpreadPrice !== null || homeSpreadPrice !== null;
+    const runlineCell = (line, price) => line === null && price === null ? "—" : [line === null ? null : runLine(line), price === null ? null : americanOdds(price)].filter(Boolean).join(" ");
+    return `<div class="mlb-game-card__odds" aria-label="MLB odds"><div class="mlb-game-card__odds-row mlb-game-card__odds-row--teams"><span></span><strong>${escapeHtml(awayMeta.abbreviation)}</strong><strong>${escapeHtml(homeMeta.abbreviation)}</strong></div><div class="mlb-game-card__odds-row"><span>Moneyline</span><b>${moneylineAvailable ? americanOdds(awayMoneyline) : "—"}</b><b>${moneylineAvailable ? americanOdds(homeMoneyline) : "—"}</b></div><div class="mlb-game-card__odds-row"><span>Runline</span><b>${runlineAvailable ? runlineCell(awaySpread, awaySpreadPrice) : "—"}</b><b>${runlineAvailable ? runlineCell(homeSpread, homeSpreadPrice) : "—"}</b></div></div>`;
 }
 
 function marketImplied(snapshot, side) {
@@ -3559,7 +3616,10 @@ function qualifiedPropRows() {
 
 function renderPlayerMark(row) {
     const initials = String(row.player_name || "Player").split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase();
-    return `<span class="prop-player-mark" aria-hidden="true">${escapeHtml(initials || "P")}</span>`;
+    const sport = String(row.sport || "MLB").toUpperCase();
+    const team = getTeamMeta(sport, row.team, row.team);
+    const logo = team.logo_url || "";
+    return `<span class="prop-player-mark" style="--prop-team-color:${escapeHtml(team.primary || "#31546b")}" aria-label="${escapeHtml(`${row.player_name || "Player"}, ${team.full_name || row.team || "team"}`)}"><img src="${escapeHtml(logo)}" alt="" aria-hidden="true" loading="lazy" onerror="this.hidden=true;" /><b>${escapeHtml(initials || "P")}</b></span>`;
 }
 
 function renderPropCard(row) {
@@ -4435,11 +4495,13 @@ function renderMlbLifecyclePage() {
     const oddsLinked = games.filter(game => lifecycleMarketRead(game).movement.available).length;
     const record = dailyRecord(games);
     const recordText = `${record.wins}-${record.losses}${record.pushes ? `-${record.pushes}` : ""}`;
-    return `<section class="lifecycle-shell mlb-lifecycle-shell">
+    const dateCalendar = renderGameDateCalendar({ sport: "MLB", dates: mlbBoardDates(), selected: selectedDate, games: mlbBoardDateRows(), label: "MLB game dates" });
+    return `<section class="lifecycle-shell mlb-lifecycle-shell" style="--scoreboard-accent:#5cc8ff">
         <section class="panel mlb-page-header">
             <div class="mlb-page-header__top"><div><p class="eyebrow">MLB / Daily board</p><h2>MLB Game Board</h2><div class="mlb-selected-date"><strong>${escapeHtml(dateDisplay.monthDay)}</strong><span>${escapeHtml(dateDisplay.season)}</span></div></div><div class="mlb-page-header__actions"><span class="mlb-freshness">Data ${escapeHtml(freshness.status || "pending")} · ${escapeHtml(freshness.last_success_at ? timestamp(freshness.last_success_at) : "freshness unavailable")}</span></div></div>
-            <div class="mlb-page-header__controls"><div>${renderMlbDateControls("mlb")}</div><div class="mlb-production" title="Technical model: ${escapeHtml(production?.model_name || "not declared")}"><span>Production model:</span><strong>${escapeHtml(productionIdentity.legend || "Not declared")}</strong></div><div class="mlb-filter-wrap">${renderMlbStageFilters(games)}</div></div>
+            <div class="mlb-page-header__controls"><div class="mlb-production" title="Technical model: ${escapeHtml(production?.model_name || "not declared")}"><span>Production model:</span><strong>${escapeHtml(productionIdentity.legend || "Not declared")}</strong></div><div class="mlb-filter-wrap">${renderMlbStageFilters(games)}</div></div>
         </section>
+        <section class="panel game-date-calendar-panel">${dateCalendar}</section>
         <section class="mlb-intelligence-strip" aria-label="MLB board summary"><span><strong>${games.length}</strong> games</span><span><strong>${modelPicks}</strong> model picks</span><span><strong>${liveCount}</strong> live</span><span><strong>${finalCount}</strong> final</span><span><strong>${oddsLinked}</strong> odds linked</span><span><strong>${recordText}</strong> record</span></section>
         <section class="panel mlb-board-panel"><header class="section-header"><div><p class="eyebrow">Daily game board</p><p class="muted">${escapeHtml(dateDisplay.monthDay)} · live and watchlisted games lead; final accountability stays in the same full list.</p></div></header><div class="mlb-game-grid">${filtered.length ? filtered.map(renderMlbLifecycleCard).join("") : emptyState("No games in this lifecycle state", "This filter only shows real rows loaded for the selected date.")}</div></section>
         ${renderLifecycleMatchup(selected)}
@@ -4489,13 +4551,17 @@ function renderScoreboardCard(game, config) {
 function renderScoreboardDesk(sport) {
     const normalized = normalizedSportCode(sport);
     const config = SCOREBOARD_SPORTS[normalized];
-    const games = scoreboardGames(normalized);
+    const allGames = scoreboardGames(normalized);
+    const dates = scoreboardAvailableDates(normalized);
+    const selectedDate = ensureScoreboardDate(normalized, dates);
+    const games = allGames.filter(game => gameIsoDate(game) === selectedDate);
     const metadata = normalizeMeta(state.live.payload);
     const sourceDate = metadata.generated_at ? timestamp(metadata.generated_at) : "bundled export status unavailable";
     const mount = $(`#view-${config.view}`);
     if (!mount) return;
     mount.innerHTML = `<section class="scoreboard-shell" style="--scoreboard-accent:${escapeHtml(config.accent)}">
         <section class="panel scoreboard-header"><div><p class="eyebrow">${escapeHtml(config.eyebrow)}</p><h2>${escapeHtml(config.title)}</h2><p class="muted">${escapeHtml(config.description)}</p></div><div class="scoreboard-header__meta"><strong>${games.length} loaded</strong><span>Feed: ${escapeHtml(sourceDate)}</span></div></section>
+        <section class="panel game-date-calendar-panel">${renderGameDateCalendar({ sport: normalized, dates, selected: selectedDate, games: allGames, label: `${config.navLabel} game dates` })}</section>
         <section class="panel scoreboard-board"><header class="section-header"><div><p class="eyebrow">${escapeHtml(config.navLabel)}</p><h3>Fixtures, live action, and results</h3></div><span class="scoreboard-source-pill">${games.length ? "Real live export" : "No rows bundled"}</span></header>${games.length ? `<div class="scoreboard-grid">${games.map(game => renderScoreboardCard(game, config)).join("")}</div>` : emptyState(config.emptyTitle, config.emptyCopy)}</section>
     </section>`;
 }
@@ -4544,11 +4610,7 @@ function wnbaDateDisplay(iso) {
 function renderWnbaDateCalendar() {
     const dates = wnbaAvailableDates();
     const selected = ensureWnbaBoardDate();
-    if (!dates.length) return `<div class="wnba-calendar wnba-calendar--empty">No real WNBA dates loaded yet.</div>`;
-    const selectedIndex = Math.max(0, dates.indexOf(selected));
-    const start = Math.max(0, Math.min(Math.max(0, dates.length - 7), selectedIndex - 3));
-    const visible = dates.slice(start, start + 7);
-    return `<div class="wnba-calendar" aria-label="WNBA game dates"><div class="wnba-calendar__top"><span class="eyebrow">Game dates</span><span>${dates.length} dates loaded</span></div><div class="wnba-calendar__rail"><button class="icon-btn" type="button" data-wnba-day="-1" aria-label="Previous WNBA date">‹</button><div class="wnba-calendar__days">${visible.map(date => { const label = wnbaDateDisplay(date); return `<button type="button" class="wnba-date-chip ${date === selected ? "is-active" : ""}" data-wnba-date="${date}"><span>${escapeHtml(label.weekday)}</span><strong>${escapeHtml(label.monthDay)}</strong><small>${wnbaBoardGames().filter(game => gameIsoDate(game) === date).length} games</small></button>`; }).join("")}</div><button class="icon-btn" type="button" data-wnba-day="1" aria-label="Next WNBA date">›</button></div><label class="wnba-calendar__picker">Jump to date<input id="wnba-date-picker" type="date" value="${escapeHtml(selected)}" min="${escapeHtml(dates[0])}" max="${escapeHtml(dates.at(-1))}" /></label></div>`;
+    return renderGameDateCalendar({ sport: "WNBA", dates, selected, games: wnbaBoardGames(), label: "WNBA game dates" });
 }
 
 function renderWNBA() {
@@ -6981,6 +7043,22 @@ function bindEvents() {
             return;
         }
 
+        const scoreboardDay = event.target.closest("[data-scoreboard-day]");
+        if (scoreboardDay) {
+            const sport = normalizedSportCode(scoreboardDay.dataset.scoreboardSport);
+            moveScoreboardDate(sport, Number(scoreboardDay.dataset.scoreboardDay));
+            renderView(scoreboardViewForSport(sport));
+            return;
+        }
+
+        const scoreboardDate = event.target.closest("[data-scoreboard-date]");
+        if (scoreboardDate) {
+            const sport = normalizedSportCode(scoreboardDate.dataset.scoreboardSport);
+            setScoreboardDateValue(sport, scoreboardDate.dataset.scoreboardDate);
+            renderView(scoreboardViewForSport(sport));
+            return;
+        }
+
         const wnbaDay = event.target.closest("[data-wnba-day]");
         if (wnbaDay) {
             moveWnbaDate(Number(wnbaDay.dataset.wnbaDay));
@@ -7169,10 +7247,16 @@ function bindEvents() {
             setMlbBoardDate(event.target.value);
             renderMLB();
         }
-        if (event.target.id === "wnba-date-picker") {
+        if (event.target.id === "wnba-date-picker" && !event.target.dataset.scoreboardDatePicker) {
             state.selected.wnbaDate = event.target.value;
             persistSettings();
             renderWNBA();
+        }
+        const scoreboardPicker = event.target.closest("[data-scoreboard-date-picker]");
+        if (scoreboardPicker) {
+            const sport = normalizedSportCode(scoreboardPicker.dataset.scoreboardDatePicker);
+            setScoreboardDateValue(sport, event.target.value);
+            renderView(scoreboardViewForSport(sport));
         }
         if (["picks-date-picker", "picks-status-filter", "picks-confidence-filter", "picks-model-filter", "picks-sort-select"].includes(event.target.id)) {
             const field = event.target.id.replace("picks-", "").replace("-filter", "");
