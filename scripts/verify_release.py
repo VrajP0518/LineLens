@@ -31,7 +31,7 @@ def run(label: str, command: list[str]) -> bool:
 def required_bundle_files() -> bool:
     required = [
         "index.html", "app.js", "styles.css", "widget.html", "widget.js", "widget.css",
-        "assets/sportsdesk-hero.png", "assets/branding/Logo1.png", "assets/branding/Logo2.png", "assets/branding/Logo3.png", "data/app_metadata.json", "data/team_metadata.json",
+        "assets/sportsdesk-hero.png", "images/Logo1.png", "images/Logo2.png", "images/Logo3.png", "data/app_metadata.json", "data/team_metadata.json",
         "data/predictions/mlb_predictions.json", "data/predictions/mlb_backtest_predictions.json",
         "data/predictions/nfl_predictions.json", "data/live/live_scores.json", "data/live/live_heartbeat.json",
         "data/models/model_registry.json", "data/reports/mlb_model_comparison.json",

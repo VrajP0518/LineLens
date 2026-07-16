@@ -1,4 +1,4 @@
-const APP_VERSION = "v4.1.0";
+const APP_VERSION = "v5.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
@@ -163,6 +163,7 @@ const state = {
     charts: {},
     aboutOpen: false,
 };
+window.__LINELENS_STATE__ = state;
 
 const derivedCache = {
     mlbReviewKey: "",
@@ -1009,13 +1010,13 @@ function moveScoreboardDate(sport, delta) {
     return next;
 }
 
-function gameDateDisplay(iso) {
+function calendarDateDisplay(iso) {
     const normalized = toIsoDate(iso);
     if (!normalized) return { weekday: "Date", monthDay: "Unavailable" };
     const date = new Date(`${normalized}T12:00:00`);
     if (Number.isNaN(date.getTime())) return { weekday: "Date", monthDay: normalized };
-    const weekday = date.toLocaleDateString([], { weekday: "short" }) || "Date";
-    const monthDay = date.toLocaleDateString([], { month: "short", day: "numeric" }) || normalized;
+    const weekday = date.toLocaleDateString([], { weekday: "long" }) || "Date";
+    const monthDay = date.toLocaleDateString([], { month: "long", day: "numeric" }) || normalized;
     return {
         weekday,
         monthDay,
@@ -1028,7 +1029,7 @@ function renderGameDateCalendar({ sport, dates, selected, games, label }) {
     const start = Math.max(0, Math.min(Math.max(0, dates.length - 7), selectedIndex - 3));
     const visible = dates.slice(start, start + 7);
     const normalized = normalizedSportCode(sport);
-    return `<div class="game-date-calendar" aria-label="${escapeHtml(label || `${normalized} game dates`)}"><div class="game-date-calendar__top"><h3>Game dates</h3><span>${dates.length} dates loaded</span></div><div class="game-date-calendar__rail"><button class="icon-btn" type="button" data-scoreboard-day="-1" data-scoreboard-sport="${normalized}" aria-label="Previous ${normalized} game date">‹</button><div class="game-date-calendar__days">${visible.map(date => { const item = gameDateDisplay(date); const count = games.filter(game => gameIsoDate(game) === date).length; return `<button type="button" class="game-date-chip ${date === selected ? "is-active" : ""}" data-scoreboard-date="${date}" data-scoreboard-sport="${normalized}"><span>${escapeHtml(item.weekday)}</span><strong>${escapeHtml(item.monthDay)}</strong><small>${count} ${count === 1 ? "game" : "games"}</small></button>`; }).join("")}</div><button class="icon-btn" type="button" data-scoreboard-day="1" data-scoreboard-sport="${normalized}" aria-label="Next ${normalized} game date">›</button></div><label class="game-date-calendar__picker">Jump to date<input id="${normalized.toLowerCase()}-date-picker" type="date" value="${escapeHtml(selected || "")}" min="${escapeHtml(dates[0])}" max="${escapeHtml(dates.at(-1))}" data-scoreboard-date-picker="${normalized}" /></label></div>`;
+    return `<div class="game-date-calendar" aria-label="${escapeHtml(label || `${normalized} game dates`)}"><div class="game-date-calendar__top"><h3>Game dates</h3><span>${dates.length} dates loaded</span></div><div class="game-date-calendar__rail"><button class="icon-btn" type="button" data-scoreboard-day="-1" data-scoreboard-sport="${normalized}" aria-label="Previous ${normalized} game date">‹</button><div class="game-date-calendar__days">${visible.map(date => { const item = calendarDateDisplay(date); const count = games.filter(game => gameIsoDate(game) === date).length; return `<button type="button" class="game-date-chip ${date === selected ? "is-active" : ""}" data-scoreboard-date="${date}" data-scoreboard-sport="${normalized}" aria-label="${escapeHtml(`${item.weekday}, ${item.monthDay}, ${count} ${count === 1 ? "game" : "games"}`)}"><span>${escapeHtml(item.weekday)}</span><strong>${escapeHtml(item.monthDay)}</strong><small>${count} ${count === 1 ? "game" : "games"}</small></button>`; }).join("")}</div><button class="icon-btn" type="button" data-scoreboard-day="1" data-scoreboard-sport="${normalized}" aria-label="Next ${normalized} game date">›</button></div><label class="game-date-calendar__picker">Jump to date<input id="${normalized.toLowerCase()}-date-picker" type="date" value="${escapeHtml(selected || "")}" min="${escapeHtml(dates[0])}" max="${escapeHtml(dates.at(-1))}" data-scoreboard-date-picker="${normalized}" /></label></div>`;
 }
 
 function liveHeartbeatSeconds() {
@@ -2433,6 +2434,7 @@ async function loadAll() {
     state.mlbPropModelHealth = mlbPropModelHealth || state.mlbPropModelHealth;
     state.mlbPropDatasetSummary = mlbPropDatasetSummary || state.mlbPropDatasetSummary;
     teamIndex = buildTeamIndex();
+    if (window.LineLensSprint5) window.LineLensSprint5.initialize(state);
 
     $("#sidebar-version").textContent = state.app.version || APP_VERSION;
     if ($("#app-version-chip")) $("#app-version-chip").textContent = state.app.version || APP_VERSION;
@@ -2812,6 +2814,7 @@ function switchView(view) {
     $$(".nav__item").forEach(btn => btn.classList.toggle("is-active", btn.dataset.view === view));
     const titles = {
         home: ["LineLens Sports", "Today’s model pulse"],
+        foryou: ["For You", "personalized daily overview"],
         picks: ["Picks Hub", "prediction feed"],
         props: ["Player Props", "WNBA projection feed"],
         nfl: ["NFL Spread Predictor", "spread module"],
@@ -2828,6 +2831,7 @@ function switchView(view) {
         teams: ["Team Profiles", "team-level model context"],
         tracking: ["Tracking", "local analysis ledger"],
         settings: ["Settings / Data Status", "exports and preferences"],
+        notifications: ["Notifications", "deduplicated local alerts"],
         about: ["About LineLens", "product information and support"],
     };
     const [title, kicker] = titles[view] || titles.home;
@@ -2840,6 +2844,7 @@ function switchView(view) {
 function renderView(view = state.selected.view || "home") {
     const renderers = {
         home: renderHome,
+        foryou: () => { const root = $("#view-foryou"); if (root && window.LineLensSprint5) root.innerHTML = window.LineLensSprint5.renderForYou(state); },
         picks: renderPicks,
         props: renderProps,
         nfl: renderNFL,
@@ -2848,7 +2853,7 @@ function renderView(view = state.selected.view || "home") {
         nba: renderNBA,
         nhl: renderNHL,
         wnba: renderWNBA,
-        models: renderModels,
+        models: () => { renderModels(); const root = $("#view-models"); if (root && window.LineLensSprint5) root.insertAdjacentHTML("afterbegin", window.LineLensSprint5.renderModelLab(state)); },
         history: renderHistory,
         watchlist: renderWatchlist,
         reports: renderReports,
@@ -2856,6 +2861,7 @@ function renderView(view = state.selected.view || "home") {
         teams: renderTeams,
         tracking: renderTracking,
         settings: renderSettings,
+        notifications: () => { const root = $("#view-notifications"); if (root && window.LineLensSprint5) root.innerHTML = window.LineLensSprint5.renderNotifications(state); },
         about: renderAbout,
     };
     renderers[view]?.();
@@ -4408,7 +4414,7 @@ function renderModelConsensus(game) {
         const predictionReady = getGameProbability(game, "MLB") !== null && getGamePick(game, "MLB") !== "-";
         return `<div class="mlb-game-card__consensus mlb-game-card__consensus--pending"><header><span>Model consensus</span><small>${predictionReady ? "Production export" : "Schedule only"}</small></header><strong>${predictionReady ? escapeHtml(getGamePick(game, "MLB")) : "Prediction pending"}</strong><small>${predictionReady ? "Multi-model vote is not available for this row." : "Waiting for required game inputs, including probable pitchers when available."}</small></div>`;
     }
-    return `<div class="mlb-game-card__consensus"><header><span>Model consensus</span><strong>${escapeHtml(consensus.consensusPick)} ${consensus.consensusCount}–${consensus.total - consensus.consensusCount}</strong></header><div class="mlb-game-card__consensus-grid">${consensus.rows.map(row => `<span><b>${escapeHtml(row.legend)}</b><em>${escapeHtml(row.pick)} ${formatProbability(row.pick === game.home ? row.homeProbability : 1 - row.homeProbability)}</em></span>`).join("")}</div><footer><span>${escapeHtml(modelPickLabel(game))}: <strong>${escapeHtml(consensus.productionPick)}</strong></span><span>${consensus.consensusCount} of ${consensus.total} agree</span></footer></div>`;
+    return `<div class="mlb-game-card__consensus"><header><span>Model consensus</span><strong>${consensus.consensusCount} of ${consensus.total} select ${escapeHtml(consensus.consensusPick)}</strong></header><div class="mlb-game-card__consensus-grid">${consensus.rows.map(row => `<span><b>${escapeHtml(row.legend)}</b><em>${escapeHtml(row.pick)} ${formatProbability(row.pick === game.home ? row.homeProbability : 1 - row.homeProbability)}</em></span>`).join("")}</div><footer><span>${escapeHtml(modelPickLabel(game))}: <strong>${escapeHtml(consensus.productionPick)}</strong></span><span>Multi-model vote</span></footer></div>`;
 }
 
 function lifecycleTimeline(game) {
@@ -4533,15 +4539,15 @@ function renderMlbLifecyclePage() {
     const oddsLinked = games.filter(game => lifecycleMarketRead(game).movement.available).length;
     const record = dailyRecord(games);
     const recordText = `${record.wins}-${record.losses}${record.pushes ? `-${record.pushes}` : ""}`;
-    const dateCalendar = renderGameDateCalendar({ sport: "MLB", dates: mlbBoardDates(), selected: selectedDate, games: mlbBoardDateRows(), label: "MLB game dates" });
+    const dateCalendar = renderGameDateCalendar({ sport: "MLB", dates: mlbBoardDates(), selected: selectedDate, games: mlbCurrentBoardRows(), label: "MLB game dates" });
     return `<section class="lifecycle-shell mlb-lifecycle-shell" style="--scoreboard-accent:#5cc8ff">
         <section class="panel mlb-page-header">
-            <div class="mlb-page-header__top"><div><p class="eyebrow">MLB / Daily board</p><h2>MLB Game Board</h2><div class="mlb-selected-date"><strong>${escapeHtml(dateDisplay.monthDay)}</strong><span>${escapeHtml(dateDisplay.season)}</span></div></div><div class="mlb-page-header__actions"><span class="mlb-freshness">Data ${escapeHtml(freshness.status || "pending")} · ${escapeHtml(freshness.last_success_at ? timestamp(freshness.last_success_at) : "freshness unavailable")}</span></div></div>
+            <div class="mlb-page-header__top"><div><p class="eyebrow">MLB / Daily board</p><h2>${escapeHtml(dateDisplay.monthDay)}</h2><div class="mlb-selected-date"><span>${escapeHtml(dateDisplay.season)}</span></div></div><div class="mlb-page-header__actions"><span class="mlb-freshness">Data updated · ${escapeHtml(freshness.last_success_at ? timestamp(freshness.last_success_at) : "time unavailable")}</span></div></div>
             <div class="mlb-page-header__controls"><div class="mlb-production" title="Technical model: ${escapeHtml(production?.model_name || "not declared")}"><span>Production model:</span><strong>${escapeHtml(productionIdentity.legend || "Not declared")}</strong></div><div class="mlb-filter-wrap">${renderMlbStageFilters(games)}</div></div>
         </section>
         <section class="panel game-date-calendar-panel">${dateCalendar}</section>
-        <section class="mlb-intelligence-strip" aria-label="MLB board summary"><span><strong>${games.length}</strong> games</span><span><strong>${modelPicks}</strong> model picks</span><span><strong>${liveCount}</strong> live</span><span><strong>${finalCount}</strong> final</span><span><strong>${oddsLinked}</strong> odds linked</span><span><strong>${recordText}</strong> record</span></section>
-        <section class="panel mlb-board-panel"><header class="section-header"><div><p class="eyebrow">Daily game board</p><p class="muted">${escapeHtml(dateDisplay.monthDay)} · live and watchlisted games lead; final accountability stays in the same full list.</p></div></header><div class="mlb-game-grid">${filtered.length ? filtered.map(renderMlbLifecycleCard).join("") : emptyState("No games in this lifecycle state", "This filter only shows real rows loaded for the selected date.")}</div></section>
+        <section class="mlb-intelligence-strip" aria-label="MLB board summary"><span class="mlb-summary-item"><strong>${games.length}</strong><small>Games</small></span><span class="mlb-summary-item"><strong>${modelPicks}</strong><small>Model picks</small></span><span class="mlb-summary-item"><strong>${liveCount}</strong><small>Live</small></span><span class="mlb-summary-item"><strong>${finalCount}</strong><small>Final</small></span><span class="mlb-summary-item"><strong>${oddsLinked}</strong><small>Odds linked</small></span><span class="mlb-summary-item"><strong>${recordText}</strong><small>Record</small></span></section>
+        <section class="panel mlb-board-panel"><header class="section-header"><div><p class="eyebrow">Daily game board</p><p class="muted">${escapeHtml(dateDisplay.monthDay)} · live and watchlisted games lead; final accountability stays in the same full list.</p></div></header><div class="mlb-game-grid ${filtered.length === 1 ? "mlb-game-grid--single" : ""}">${filtered.length ? filtered.map(renderMlbLifecycleCard).join("") : emptyState("No games in this lifecycle state", "This filter only shows real rows loaded for the selected date.")}</div></section>
         ${renderLifecycleMatchup(selected)}
     </section>`;
 }
@@ -4821,6 +4827,7 @@ function renderPredictionCard(sport, game, source, index) {
                 ${confidenceTag(confidence)}
                 <small>${escapeHtml(formatConfidencePercent(game, sport))}</small>
             </div>
+            ${window.LineLensSprint5 ? window.LineLensSprint5.renderReaction({ ...game, sport }, sport) : ""}
             <div class="desk-result">
                 ${resultChip(result)}
                 <small>${escapeHtml(finalScoreLabel(game) || "")}</small>
@@ -5474,6 +5481,7 @@ function renderGameCast(game, sport) {
             </header>
             ${renderGameCastScore(game, live)}
             ${renderGameCastProvenance(game, sport)}
+            ${window.LineLensSprint5 ? window.LineLensSprint5.renderReaction({ ...game, sport }, sport) : ""}
             <section class="gamecast-grid">
                 <article class="gamecast-panel gamecast-panel--pick">
                     <span>${isMoltresGame(game) ? "Moltres pick" : "Model pick"}</span>
@@ -5507,6 +5515,7 @@ function renderGameCast(game, sport) {
                 <header><h3>Prediction Timeline</h3></header>
                 ${renderPredictionTimeline(game)}
             </section>
+            ${window.LineLensSprint5?.renderTimeline ? window.LineLensSprint5.renderTimeline({ ...game, sport }, sport) : ""}
             <section class="gamecast-section">
                 <header><h3>Key Plays</h3></header>
                 ${renderKeyPlays(game)}
@@ -6647,6 +6656,7 @@ function renderDataDoctorPanel() {
                     </article>
                 `).join("")}
             </div>
+            ${window.LineLensSprint5?.renderDiagnostics ? window.LineLensSprint5.renderDiagnostics() : ""}
         </section>
     `;
 }
@@ -6704,13 +6714,14 @@ function renderSettings() {
             <span class="chip">${escapeHtml(state.app.version || APP_VERSION)}</span>
         </section>
         ${renderUiPreferencesPanel()}
+        ${window.LineLensSprint5 ? window.LineLensSprint5.renderPreferences(state) : ""}
         ${renderDataDoctorPanel()}
         ${renderLiveWidgetSettings()}
         ${renderRefreshPanel("settings")}
         ${renderCommandConsole("settings")}
         <section class="panel"><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>
         ${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}
-        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v4.1.0.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
+        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v5.0.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
         <section class="panel"><p class="data-status" data-variant="${state.refreshRuntime.available ? "success" : "warning"}">${state.refreshRuntime.available ? "Bundled exports load first. Python refresh commands are available when the packaged app can access the project scripts." : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment."} Tracking data is stored locally in <code>${TRACKER_KEY}</code>. Refresh logs use <code>${REFRESH_LOGS_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
     `;
 }
@@ -6732,7 +6743,7 @@ function renderOnboarding() {
     root.innerHTML = `
         <div class="onboarding-backdrop" data-onboarding-close></div>
         <section class="onboarding-dialog" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
-            <header><span class="brand__mark">LL</span><div><p class="eyebrow">LineLens Sports ${escapeHtml(state.app.version || APP_VERSION)}</p><h2 id="onboarding-title">A clearer way to read the board.</h2></div></header>
+            <header><span class="brand__mark"><img src="images/Logo1.png" alt="LineLens logo" /></span><div><p class="eyebrow">LineLens Sports ${escapeHtml(state.app.version || APP_VERSION)}</p><h2 id="onboarding-title">A clearer way to read the board.</h2></div></header>
             <p class="muted">Start with the real bundled demo, then follow one prediction from signal to accountability.</p>
             <ol class="onboarding-steps"><li><strong>Find today’s strongest model signal</strong><span>Home puts the best available pick, freshness, production model, and recent record in one glance.</span></li><li><strong>Open a matchup or save it</strong><span>Inspect consensus, odds, factors, GameCast, then star the game or team for Watchlist.</span></li><li><strong>Use Model Lab, Record, and History</strong><span>Compare challengers, verify performance, and discover older MLB seasons without hunting through files.</span></li></ol>
             <footer><label class="onboarding-check"><input id="onboarding-dont-show" type="checkbox" /> Do not show again</label><div class="onboarding-actions"><button class="btn" type="button" data-onboarding-skip>Skip</button><button class="btn btn--primary" type="button" data-onboarding-start>Start Demo</button></div></footer>
@@ -6767,10 +6778,10 @@ function renderAbout() {
             </header>
 
             <section class="about-brand-showcase" aria-label="LineLens brand assets">
-                <figure class="about-brand-showcase__wide"><img src="assets/branding/Logo3.png" alt="LineLens Sports wordmark on a dark blue background" loading="lazy" decoding="async" /><figcaption>LineLens Sports wordmark</figcaption></figure>
+                <figure class="about-brand-showcase__wide"><img src="images/Logo3.png" alt="LineLens Sports wordmark on a dark blue background" loading="lazy" decoding="async" /><figcaption>LineLens Sports wordmark</figcaption></figure>
                 <div class="about-brand-showcase__variants">
-                    <figure><img src="assets/branding/Logo1.png" alt="LineLens dark logo" loading="lazy" decoding="async" /><figcaption>Dark application mark</figcaption></figure>
-                    <figure><img src="assets/branding/Logo2.png" alt="LineLens light logo" loading="lazy" decoding="async" /><figcaption>Light presentation mark</figcaption></figure>
+                    <figure><img src="images/Logo1.png" alt="LineLens dark logo" loading="lazy" decoding="async" /><figcaption>Dark application mark</figcaption></figure>
+                    <figure><img src="images/Logo2.png" alt="LineLens light logo" loading="lazy" decoding="async" /><figcaption>Light presentation mark</figcaption></figure>
                 </div>
             </section>
 
@@ -6792,7 +6803,7 @@ function renderAbout() {
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens"><span>View source</span><small>GitHub repository</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/releases"><span>View releases</span><small>Windows builds and release history</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues"><span>Report an issue</span><small>Open a repository issue</small><b aria-hidden="true">↗</b></button>
-                            <a class="about-action" href="RELEASE_NOTES_v4.1.0.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
+                            <a class="about-action" href="RELEASE_NOTES_v5.0.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
                         </div>
                         <div class="about-meta-row"><span>Build</span><strong>${escapeHtml(state.app.desktop_build || "Desktop build metadata unavailable")}</strong><span>Model record</span><strong>${escapeHtml(timestamp(record?.metadata?.generated_at) || "Unavailable")}</strong></div>
                     </section>
@@ -6859,6 +6870,10 @@ function renderAll() {
     renderGlobalTicker();
     renderGameCastRoot();
     renderLiveNotifications();
+    if (window.LineLensSprint5) {
+        const unread = window.LineLensSprint5.getAlerts().filter(alert => !alert.read).length;
+        $$(".sprint5-nav-badge").forEach(node => { node.textContent = String(unread); node.hidden = unread === 0; });
+    }
     renderOnboarding();
     renderAbout();
     switchView(state.selected.view || "home");

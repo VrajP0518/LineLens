@@ -45,6 +45,20 @@
     <script src="data/odds/odds_health.js" defer></script>
     <script src="data/odds/wnba_availability.js" defer></script>
     <script src="data/odds/props_matching_diagnostics.js" defer></script>
+    <script src="data/sprint5/live_reactions.js" defer></script>
+    <script src="data/sprint5/live_reaction_history.js" defer></script>
+    <script src="data/sprint5/personalized_feed.js" defer></script>
+    <script src="data/sprint5/preferences_schema.js" defer></script>
+    <script src="data/sprint5/alerts.js" defer></script>
+    <script src="data/sprint5/notification_status.js" defer></script>
+    <script src="data/sprint5/gamecast_timeline.js" defer></script>
+    <script src="data/sprint5/feed_health.js" defer></script>
+    <script src="data/sprint5/feed_diagnostics.js" defer></script>
+    <script src="data/sprint5/model_sensitivity.js" defer></script>
+    <script src="data/sprint5/model_disagreement.js" defer></script>
+    <script src="data/sprint5/model_lab_scenarios.js" defer></script>
+    <script src="data/sprint5/simulation_results.js" defer></script>
+    <script src="data/sprint5/widget_personalized_state.js" defer></script>
 </head>
 <body>
     <div id="app-loading" class="app-loading is-visible" role="status" aria-live="polite">
@@ -70,7 +84,7 @@
     <div class="app-shell">
         <aside class="sidebar">
             <div class="brand">
-                <span class="brand__mark">LL</span>
+                <span class="brand__mark"><img src="images/Logo1.png" alt="LineLens logo" /></span>
                 <div>
                     <strong>LineLens Sports</strong>
                     <small id="sidebar-version">v4.1.0</small>
@@ -80,6 +94,7 @@
                 <section class="nav__section" aria-label="Workspace">
                     <p class="nav__section-label">Workspace</p>
                     <button class="nav__item nav__item--home is-active" data-view="home"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-home.png" alt="" /></span><span>Home</span></button>
+                    <button class="nav__item nav__item--foryou" data-view="foryou"><span class="nav-sport-mark" aria-hidden="true">✦</span><span>For You</span></button>
                     <button class="nav__item nav__item--picks" data-view="picks"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 5h14M5 12h10M5 19h6" /></svg></span><span>Picks</span></button>
                     <button class="nav__item nav__item--props" data-view="props"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 18V6M5 18h14M9 14l3-3 2 2 5-6" /></svg></span><span>Props</span></button>
                     <button class="nav__item nav__item--models" data-view="models"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-models.png" alt="" /></span><span>Model Lab</span></button>
@@ -90,6 +105,7 @@
                     <button class="nav__item nav__item--teams" data-view="teams"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-teams.png" alt="" /></span><span>Teams</span></button>
                     <button class="nav__item nav__item--tracking" data-view="tracking"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-tracking.png" alt="" /></span><span>Tracking</span></button>
                     <button class="nav__item nav__item--settings" data-view="settings"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-settings.png" alt="" /></span><span>Settings</span></button>
+                    <button class="nav__item nav__item--notifications" data-view="notifications"><span class="nav-sport-mark" aria-hidden="true">◌</span><span>Notifications</span><span class="sprint5-nav-badge" aria-label="Unread notifications">0</span></button>
                 </section>
                 <section class="nav__section nav__section--sports" aria-label="Sports scoreboards">
                     <p class="nav__section-label">Live scoreboards</p>
@@ -135,6 +151,7 @@
 
             <main>
                 <section class="view is-active" id="view-home"></section>
+                <section class="view" id="view-foryou"></section>
                 <section class="view" id="view-picks"></section>
                 <section class="view" id="view-props"></section>
                 <section class="view" id="view-nfl"></section>
@@ -151,6 +168,7 @@
                 <section class="view" id="view-teams"></section>
                 <section class="view" id="view-tracking"></section>
                 <section class="view" id="view-settings"></section>
+                <section class="view" id="view-notifications"></section>
                 <section class="view" id="view-about"></section>
             </main>
             <footer class="global-footer"><span>LineLens Sports · <span id="footer-version">v4.1.0</span></span><button class="link-btn" type="button" data-view-link="about">Created by Vraj Patel</button></footer>
@@ -163,6 +181,7 @@
     <div id="onboarding-root"></div>
     <div id="about-root"></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="sprint5.js" defer></script>
     <script src="app.js" defer></script>
 </body>
 </html>

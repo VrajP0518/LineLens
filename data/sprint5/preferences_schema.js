@@ -1,0 +1,1 @@
+window.__SPRINT5_PREFERENCES_SCHEMA__ = {"fields":["favoriteSports","favoriteTeams","favoritePlayers","preferredModels","minProbability","minConsensus","preferredPropMarkets","showHistorical","liveOnly","alertPreferences"],"local_only":true,"schema":"sprint5.v1","storage":"linelens.preferences.v1"};

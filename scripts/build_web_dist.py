@@ -13,8 +13,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist-web"
 
-REQUIRED_ROOT_FILES = ["index.html", "app.js", "styles.css", "widget.html", "widget.js", "widget.css"]
-ASSET_DIRS = ["assets"]
+REQUIRED_ROOT_FILES = ["index.html", "app.js", "sprint5.js", "styles.css", "widget.html", "widget.js", "widget.css"]
+ASSET_DIRS = ["assets", "images"]
 DATA_FILES = [
     "app_metadata.json",
     "app_metadata.js",
@@ -28,7 +28,7 @@ DATA_FILES = [
     "refresh_status.js",
     "predictions.js",
 ]
-DATA_DIRS = ["predictions", "reports", "tracking", "models", "live", "odds"]
+DATA_DIRS = ["predictions", "reports", "tracking", "models", "live", "odds", "sprint5"]
 
 
 def copy_file(src: Path, dest: Path) -> None:

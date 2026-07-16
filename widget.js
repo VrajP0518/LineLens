@@ -435,6 +435,16 @@ function filteredGames() {
     if (state.mode === "Next" || state.mode === "Upcoming") return games.filter(game => !isFinalGame(game) && gameDate(game) >= (state.selectedDate || today));
     if (state.mode === "Final" || state.mode === "Finals") return scopedGamesForDate().filter(isFinalGame);
     if (state.mode === "Predictions") return scopedGamesForDate().filter(hasPrediction);
+    if (state.mode === "Live watched") {
+        const watched = (() => { try { return new Set((JSON.parse(localStorage.getItem("linelens.favorites.v1") || "{}").games || []).map(String)); } catch (_) { return new Set(); } })();
+        return games.filter(game => watched.has(`${game.sport}:${game.game_id || game.id || `${game.away}-${game.home}`}`) && isLiveGame(game));
+    }
+    if (state.mode === "Next watched") {
+        const watched = (() => { try { return new Set((JSON.parse(localStorage.getItem("linelens.favorites.v1") || "{}").games || []).map(String)); } catch (_) { return new Set(); } })();
+        return games.filter(game => watched.has(`${game.sport}:${game.game_id || game.id || `${game.away}-${game.home}`}`) && !isFinalGame(game)).slice(0, 1);
+    }
+    if (state.mode === "New props") return [];
+    if (state.mode === "Latest alert") return [];
     return scopedGamesForDate();
 }
 
@@ -617,7 +627,7 @@ function renderFilters() {
             ${["All", "MLB", "NFL"].map(value => `<button data-sport="${value}" class="${state.sport === value ? "is-active" : ""}">${value}</button>`).join("")}
         </div>
         <div class="widget-segments widget-segments--modes">
-            ${["Now", "Next", "Final", "Predictions"].map(value => `<button data-mode="${value}" class="${state.mode === value ? "is-active" : ""}">${value}</button>`).join("")}
+            ${["Now", "Next", "Final", "Predictions", "Live watched", "Next watched", "New props", "Latest alert"].map(value => `<button data-mode="${value}" class="${state.mode === value ? "is-active" : ""}">${value}</button>`).join("")}
         </div>
         ${renderDateNav()}
     `;
@@ -652,6 +662,10 @@ function emptyScopeMessage() {
     if (state.mode === "Predictions") return "No model picks for this date.";
     if (state.mode === "Final" || state.mode === "Finals") return "No final games found for this date.";
     if (state.mode === "Now" || state.mode === "Live") return "No live games right now. Showing cached schedule when available.";
+    if (state.mode === "Live watched") return "No watched games are live right now.";
+    if (state.mode === "Next watched") return "No next watched game is available.";
+    if (state.mode === "New props") return "No new qualified props are bundled.";
+    if (state.mode === "Latest alert") return "No latest alert is bundled.";
     return `No ${state.sport === "All" ? "" : `${state.sport} `}games found for ${formatDateLabel(state.selectedDate)}.`;
 }
 

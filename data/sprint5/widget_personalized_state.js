@@ -1,0 +1,1 @@
+window.__SPRINT5_WIDGET_PERSONALIZED_STATE__ = {"fallback":"existing score/prediction view","modes":["live_watched_games","next_watched_game","new_qualified_props","latest_alert"],"schema":"sprint5.v1"};

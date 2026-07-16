@@ -1,8 +1,8 @@
 {
   "metadata": {
     "app": "LineLens Sports",
-    "version": "v3.0.0",
-    "generated_at": "2026-07-15T15:05:36Z",
+    "version": "v5.0",
+    "generated_at": "2026-07-16T12:22:11Z",
     "real_data": true,
     "source": "ESPN Scoreboard API + MLB Stats API + LineLens prediction exports; optional World Cup, NBA, NHL, and WNBA scoreboards",
     "sports": [
@@ -14,739 +14,18 @@
     "source_status": "espn_live_fresh",
     "live_poll_seconds_recommended": 15,
     "data_window": {
-      "center_date": "2026-07-15",
-      "start_date": "2026-03-17",
-      "end_date": "2026-07-22",
+      "center_date": "2026-07-16",
+      "start_date": "2026-03-18",
+      "end_date": "2026-07-23",
       "days_back": 120,
       "days_forward": 7,
-      "fresh_start_date": "2026-07-12",
+      "fresh_start_date": "2026-07-13",
       "cache_lookback_days": 120
     },
-    "row_count": 1082,
+    "row_count": 1083,
     "warnings": []
   },
   "games": [
-    {
-      "sport": "MLB",
-      "game_id": "823358",
-      "espn_event_id": "401816130",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "MIL",
-      "home": "PIT",
-      "away_display": "Milwaukee Brewers",
-      "home_display": "Pittsburgh Pirates",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 5,
-      "home_score": 14,
-      "game_time": "2026-07-12T16:15:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816130/brewers-pirates",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816130",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816130",
-        "https://www.espn.com/mlb/recap?gameId=401816130"
-      ],
-      "inning": 9,
-      "inning_state": "Top",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Robert Gasser",
-        "home": "Paul Skenes"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "824814",
-      "espn_event_id": "401816129",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "KC",
-      "home": "BAL",
-      "away_display": "Kansas City Royals",
-      "home_display": "Baltimore Orioles",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 2,
-      "home_score": 8,
-      "game_time": "2026-07-12T17:35:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816129/royals-orioles",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816129",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816129",
-        "https://www.espn.com/mlb/recap?gameId=401816129"
-      ],
-      "inning": 9,
-      "inning_state": "Top",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Seth Lugo",
-        "home": "Shane Baz"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "822708",
-      "espn_event_id": "401816131",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "NYY",
-      "home": "WSH",
-      "away_display": "New York Yankees",
-      "home_display": "Washington Nationals",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 5,
-      "home_score": 3,
-      "game_time": "2026-07-12T17:35:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816131/yankees-nationals",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816131",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816131",
-        "https://www.espn.com/mlb/recap?gameId=401816131"
-      ],
-      "inning": 9,
-      "inning_state": "Bottom",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Will Warren",
-        "home": "Cade Cavalli"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "823602",
-      "espn_event_id": "401816126",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "BOS",
-      "home": "NYM",
-      "away_display": "Boston Red Sox",
-      "home_display": "New York Mets",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 3,
-      "home_score": 2,
-      "game_time": "2026-07-12T17:40:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816126/red-sox-mets",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816126",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816126",
-        "https://www.espn.com/mlb/recap?gameId=401816126"
-      ],
-      "inning": 10,
-      "inning_state": "Bottom",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Payton Tolle",
-        "home": "Zach Thornton"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "824491",
-      "espn_event_id": "401816127",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "CHC",
-      "home": "CIN",
-      "away_display": "Chicago Cubs",
-      "home_display": "Cincinnati Reds",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 8,
-      "home_score": 4,
-      "game_time": "2026-07-12T17:40:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816127/cubs-reds",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816127",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816127",
-        "https://www.espn.com/mlb/recap?gameId=401816127"
-      ],
-      "inning": 9,
-      "inning_state": "Bottom",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Matthew Boyd",
-        "home": "Andrew Abbott"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "823842",
-      "espn_event_id": "401816128",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "CLE",
-      "home": "MIA",
-      "away_display": "Cleveland Guardians",
-      "home_display": "Miami Marlins",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 5,
-      "home_score": 2,
-      "game_time": "2026-07-12T17:40:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816128/guardians-marlins",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816128",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816128",
-        "https://www.espn.com/mlb/recap?gameId=401816128"
-      ],
-      "inning": 9,
-      "inning_state": "Bottom",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Joey Cantillo",
-        "home": "Tyler Phillips"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "824250",
-      "espn_event_id": "401816132",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "PHI",
-      "home": "DET",
-      "away_display": "Philadelphia Phillies",
-      "home_display": "Detroit Tigers",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 5,
-      "home_score": 0,
-      "game_time": "2026-07-12T17:40:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816132/phillies-tigers",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816132",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816132",
-        "https://www.espn.com/mlb/recap?gameId=401816132"
-      ],
-      "inning": 9,
-      "inning_state": "Bottom",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Zack Wheeler",
-        "home": "Tarik Skubal"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "822951",
-      "espn_event_id": "401816133",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "SEA",
-      "home": "TB",
-      "away_display": "Seattle Mariners",
-      "home_display": "Tampa Bay Rays",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 8,
-      "home_score": 2,
-      "game_time": "2026-07-12T17:40:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816133/mariners-rays",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816133",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816133",
-        "https://www.espn.com/mlb/recap?gameId=401816133"
-      ],
-      "inning": 9,
-      "inning_state": "Bottom",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Emerson Hancock",
-        "home": "Ian Seymour"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "823681",
-      "espn_event_id": "401816134",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "LAA",
-      "home": "MIN",
-      "away_display": "Los Angeles Angels",
-      "home_display": "Minnesota Twins",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 2,
-      "home_score": 4,
-      "game_time": "2026-07-12T18:10:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816134/angels-twins",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816134",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816134",
-        "https://www.espn.com/mlb/recap?gameId=401816134"
-      ],
-      "inning": 9,
-      "inning_state": "Top",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Jos\u00e9 Soriano",
-        "home": "Taj Bradley"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "824574",
-      "espn_event_id": "401816135",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "ATH",
-      "home": "CWS",
-      "away_display": "Athletics",
-      "home_display": "Chicago White Sox",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 1,
-      "home_score": 9,
-      "game_time": "2026-07-12T18:10:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816135/athletics-white-sox",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816135",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816135",
-        "https://www.espn.com/mlb/recap?gameId=401816135"
-      ],
-      "inning": 9,
-      "inning_state": "Top",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "J.T. Ginn",
-        "home": "Noah Schultz"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "823029",
-      "espn_event_id": "401816136",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "ATL",
-      "home": "STL",
-      "away_display": "Atlanta Braves",
-      "home_display": "St. Louis Cardinals",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 4,
-      "home_score": 3,
-      "game_time": "2026-07-12T18:15:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816136/braves-cardinals",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816136",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816136",
-        "https://www.espn.com/mlb/recap?gameId=401816136"
-      ],
-      "inning": 9,
-      "inning_state": "Bottom",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Danny Young",
-        "home": "Dustin May"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "822876",
-      "espn_event_id": "401816137",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "HOU",
-      "home": "TEX",
-      "away_display": "Houston Astros",
-      "home_display": "Texas Rangers",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 5,
-      "home_score": 6,
-      "game_time": "2026-07-12T18:35:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816137/astros-rangers",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816137",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816137",
-        "https://www.espn.com/mlb/recap?gameId=401816137"
-      ],
-      "inning": 9,
-      "inning_state": "Bottom",
-      "balls": null,
-      "strikes": null,
-      "outs": 0,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Cristian Javier",
-        "home": "MacKenzie Gore"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "823199",
-      "espn_event_id": "401816139",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "COL",
-      "home": "SF",
-      "away_display": "Colorado Rockies",
-      "home_display": "San Francisco Giants",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 1,
-      "home_score": 3,
-      "game_time": "2026-07-12T20:05:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816139/rockies-giants",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816139",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816139",
-        "https://www.espn.com/mlb/recap?gameId=401816139"
-      ],
-      "inning": 9,
-      "inning_state": "Top",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Michael Lorenzen",
-        "home": "Trevor McDonald"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "823925",
-      "espn_event_id": "401816138",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "AZ",
-      "home": "LAD",
-      "away_display": "Arizona Diamondbacks",
-      "home_display": "Los Angeles Dodgers",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 5,
-      "home_score": 3,
-      "game_time": "2026-07-12T20:10:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816138/diamondbacks-dodgers",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816138",
-        "https://www.espn.com/mlb/video?gameId=401816138",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816138",
-        "https://www.espn.com/mlb/recap?gameId=401816138"
-      ],
-      "inning": 9,
-      "inning_state": "Bottom",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Mitch Bratt",
-        "home": "Emmet Sheehan"
-      }
-    },
-    {
-      "sport": "MLB",
-      "game_id": "823274",
-      "espn_event_id": "401816140",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "MLB Stats API",
-      "source_status": "live_fresh",
-      "data_mode": "schedule_only",
-      "away": "TOR",
-      "home": "SD",
-      "away_display": "Toronto Blue Jays",
-      "home_display": "San Diego Padres",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 4,
-      "home_score": 5,
-      "game_time": "2026-07-12T20:10:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816140/blue-jays-padres",
-        "https://www.espn.com/mlb/boxscore/_/gameId/401816140",
-        "https://www.espn.com/mlb/playbyplay/_/gameId/401816140",
-        "https://www.espn.com/mlb/recap?gameId=401816140"
-      ],
-      "inning": 9,
-      "inning_state": "Top",
-      "balls": null,
-      "strikes": null,
-      "outs": 3,
-      "bases": {
-        "first": false,
-        "second": false,
-        "third": false
-      },
-      "probable_pitchers": {
-        "away": "Kevin Gausman",
-        "home": "Germ\u00e1n M\u00e1rquez"
-      }
-    },
     {
       "sport": "MLB",
       "game_id": "401817370",
@@ -831,7 +110,8 @@
       "plays": [],
       "latest_play": null,
       "espn_links": [
-        "https://www.espn.com/mlb/game/_/gameId/401816143/mets-phillies"
+        "https://www.espn.com/mlb/game/_/gameId/401816143/mets-phillies",
+        "https://www.espn.com/mlb/preview/_/gameId/401816143"
       ],
       "inning": 1,
       "inning_state": null,
@@ -980,8 +260,8 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
-        "home": null
+        "away": "Jared Jones",
+        "home": "Gavin Williams"
       }
     },
     {
@@ -1070,7 +350,7 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
+        "away": "Anthony Kay",
         "home": "Spencer Miles"
       }
     },
@@ -1116,7 +396,7 @@
       },
       "probable_pitchers": {
         "away": null,
-        "home": null
+        "home": "Chris Sale"
       }
     },
     {
@@ -1206,7 +486,7 @@
       },
       "probable_pitchers": {
         "away": null,
-        "home": null
+        "home": "Colin Rea"
       }
     },
     {
@@ -1295,8 +575,8 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
-        "home": null
+        "away": "Michael King",
+        "home": "Seth Lugo"
       }
     },
     {
@@ -1566,7 +846,7 @@
       },
       "probable_pitchers": {
         "away": null,
-        "home": null
+        "home": "Matthew Boyd"
       }
     },
     {
@@ -1610,7 +890,7 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
+        "away": "Davis Martin",
         "home": "Shane Bieber"
       }
     },
@@ -1701,7 +981,7 @@
       },
       "probable_pitchers": {
         "away": "Sean Manaea",
-        "home": null
+        "home": "Jesús Luzardo"
       }
     },
     {
@@ -1745,8 +1025,8 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
-        "home": null
+        "away": "Braxton Ashcraft",
+        "home": "Joey Cantillo"
       }
     },
     {
@@ -1836,7 +1116,7 @@
       },
       "probable_pitchers": {
         "away": null,
-        "home": null
+        "home": "Owen Murphy"
       }
     },
     {
@@ -1970,7 +1250,7 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
+        "away": "Griffin Canning",
         "home": null
       }
     },
@@ -2240,7 +1520,7 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
+        "away": "Sean Burke",
         "home": "Trey Yesavage"
       }
     },
@@ -2286,7 +1566,7 @@
       },
       "probable_pitchers": {
         "away": "Nolan McLean",
-        "home": null
+        "home": "Alan Rangel"
       }
     },
     {
@@ -2376,7 +1656,7 @@
       },
       "probable_pitchers": {
         "away": null,
-        "home": null
+        "home": "Grant Holmes"
       }
     },
     {
@@ -2420,8 +1700,8 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
-        "home": null
+        "away": "Paul Skenes",
+        "home": "Tanner Bibee"
       }
     },
     {
@@ -2555,8 +1835,8 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
-        "home": null
+        "away": "Germán Márquez",
+        "home": "Noah Cameron"
       }
     },
     {
@@ -2601,7 +1881,7 @@
       },
       "probable_pitchers": {
         "away": null,
-        "home": null
+        "home": "Shota Imanaga"
       }
     },
     {
@@ -3275,7 +2555,7 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
+        "away": "Erick Fedde",
         "home": null
       }
     },
@@ -3950,7 +3230,7 @@
         "third": false
       },
       "probable_pitchers": {
-        "away": null,
+        "away": "Noah Schultz",
         "home": null
       }
     },
@@ -4901,6 +4181,231 @@
     },
     {
       "sport": "MLB",
+      "game_id": "824893",
+      "espn_event_id": "401816233",
+      "game_date": "2026-07-23",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "SD",
+      "home": "ATL",
+      "away_display": "San Diego Padres",
+      "home_display": "Atlanta Braves",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-23T16:15:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816233/padres-braves"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824406",
+      "espn_event_id": "401816232",
+      "game_date": "2026-07-23",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "MIN",
+      "home": "CLE",
+      "away_display": "Minnesota Twins",
+      "home_display": "Cleveland Guardians",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-23T17:10:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816232/twins-guardians"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822785",
+      "espn_event_id": "401816234",
+      "game_date": "2026-07-23",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "TB",
+      "home": "TOR",
+      "away_display": "Tampa Bay Rays",
+      "home_display": "Toronto Blue Jays",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-23T19:07:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816234/rays-blue-jays"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823042",
+      "espn_event_id": "401881162",
+      "game_date": "2026-07-23",
+      "status": "Postponed",
+      "status_detail": "Postponed",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "AZ",
+      "home": "STL",
+      "away_display": "Arizona Diamondbacks",
+      "home_display": "St. Louis Cardinals",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-06-25T23:45:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401881162/diamondbacks-cardinals"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": "Zac Gallen",
+        "home": "Michael McGreevy"
+      }
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824247",
+      "espn_event_id": "401816231",
+      "game_date": "2026-07-23",
+      "status": "Scheduled",
+      "status_detail": "Scheduled",
+      "source": "MLB Stats API",
+      "source_status": "live_fresh",
+      "data_mode": "schedule_only",
+      "away": "KC",
+      "home": "DET",
+      "away_display": "Kansas City Royals",
+      "home_display": "Detroit Tigers",
+      "away_logo": null,
+      "home_logo": null,
+      "away_score": 0,
+      "home_score": 0,
+      "game_time": "2026-07-23T22:40:00Z",
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": [],
+      "latest_play": null,
+      "espn_links": [
+        "https://www.espn.com/mlb/game/_/gameId/401816231/royals-tigers"
+      ],
+      "inning": 1,
+      "inning_state": null,
+      "balls": null,
+      "strikes": null,
+      "outs": null,
+      "bases": {
+        "first": false,
+        "second": false,
+        "third": false
+      },
+      "probable_pitchers": {
+        "away": null,
+        "home": null
+      }
+    },
+    {
+      "sport": "MLB",
       "game_id": "823443",
       "game_date": "2026-07-14",
       "status": "Final",
@@ -4923,7 +4428,7 @@
       "game_time": "2026-07-14",
       "probable_pitchers": {
         "away": "Dylan Cease",
-        "home": "Cristopher S\u00e1nchez"
+        "home": "Cristopher Sánchez"
       },
       "latest_play": null,
       "model": {
@@ -5211,7 +4716,7 @@
       "game_time": "2026-05-01T23:10:00Z",
       "probable_pitchers": {
         "away": "Zack Wheeler",
-        "home": "Eury P\u00e9rez"
+        "home": "Eury Pérez"
       },
       "latest_play": null,
       "model": {
@@ -5351,7 +4856,7 @@
       "game_time": "2026-05-02T01:38:00Z",
       "probable_pitchers": {
         "away": "Christian Scott",
-        "home": "Walbert Ure\u00f1a"
+        "home": "Walbert Ureña"
       },
       "latest_play": null,
       "model": {
@@ -5421,7 +4926,7 @@
       "game_time": "2026-05-02T01:40:00Z",
       "probable_pitchers": {
         "away": "Noah Schultz",
-        "home": "Germ\u00e1n M\u00e1rquez"
+        "home": "Germán Márquez"
       },
       "latest_play": null,
       "model": {
@@ -6225,7 +5730,7 @@
       "bases": null,
       "game_time": "2026-05-03T17:40:00Z",
       "probable_pitchers": {
-        "away": "Jes\u00fas Luzardo",
+        "away": "Jesús Luzardo",
         "home": "Chris Paddack"
       },
       "latest_play": null,
@@ -6540,7 +6045,7 @@
       "bases": null,
       "game_time": "2026-05-04T21:40:00Z",
       "probable_pitchers": {
-        "away": "Huascar Brazob\u00e1n",
+        "away": "Huascar Brazobán",
         "home": "Tomoyuki Sugano"
       },
       "latest_play": null,
@@ -6856,7 +6361,7 @@
       "game_time": "2026-05-05T01:38:00Z",
       "probable_pitchers": {
         "away": "Davis Martin",
-        "home": "Jos\u00e9 Soriano"
+        "home": "José Soriano"
       },
       "latest_play": null,
       "model": {
@@ -6925,7 +6430,7 @@
       "bases": null,
       "game_time": "2026-05-05T01:45:00Z",
       "probable_pitchers": {
-        "away": "Randy V\u00e1squez",
+        "away": "Randy Vásquez",
         "home": "Trevor McDonald"
       },
       "latest_play": null,
@@ -6960,7 +6465,7 @@
       "bases": null,
       "game_time": "2026-05-05T22:40:00Z",
       "probable_pitchers": {
-        "away": "Jovani Mor\u00e1n",
+        "away": "Jovani Morán",
         "home": "Framber Valdez"
       },
       "latest_play": null,
@@ -7031,7 +6536,7 @@
       "game_time": "2026-05-05T22:40:00Z",
       "probable_pitchers": {
         "away": "Luis Severino",
-        "home": "Cristopher S\u00e1nchez"
+        "home": "Cristopher Sánchez"
       },
       "latest_play": null,
       "model": {
@@ -7136,7 +6641,7 @@
       "game_time": "2026-05-05T23:05:00Z",
       "probable_pitchers": {
         "away": "Jacob deGrom",
-        "home": "Elmer Rodr\u00edguez"
+        "home": "Elmer Rodríguez"
       },
       "latest_play": null,
       "model": {
@@ -7626,7 +7131,7 @@
       "game_time": "2026-05-06T20:07:00Z",
       "probable_pitchers": {
         "away": "Noah Schultz",
-        "home": "Walbert Ure\u00f1a"
+        "home": "Walbert Ureña"
       },
       "latest_play": null,
       "model": {
@@ -7660,7 +7165,7 @@
       "bases": null,
       "game_time": "2026-05-06T20:10:00Z",
       "probable_pitchers": {
-        "away": "Mart\u00edn P\u00e9rez",
+        "away": "Martín Pérez",
         "home": "Bryan Woo"
       },
       "latest_play": null,
@@ -7766,7 +7271,7 @@
       "game_time": "2026-05-06T22:40:00Z",
       "probable_pitchers": {
         "away": "Brandon Young",
-        "home": "Eury P\u00e9rez"
+        "home": "Eury Pérez"
       },
       "latest_play": null,
       "model": {
@@ -8361,7 +7866,7 @@
       "game_time": "2026-05-08T22:40:00Z",
       "probable_pitchers": {
         "away": "Chase Dollander",
-        "home": "Jes\u00fas Luzardo"
+        "home": "Jesús Luzardo"
       },
       "latest_play": null,
       "model": {
@@ -9236,7 +8741,7 @@
       "game_time": "2026-05-09T23:15:00Z",
       "probable_pitchers": {
         "away": "Dustin May",
-        "home": "Randy V\u00e1squez"
+        "home": "Randy Vásquez"
       },
       "latest_play": null,
       "model": {
@@ -9446,7 +8951,7 @@
       "game_time": "2026-05-10T17:35:00Z",
       "probable_pitchers": {
         "away": "Tomoyuki Sugano",
-        "home": "Cristopher S\u00e1nchez"
+        "home": "Cristopher Sánchez"
       },
       "latest_play": null,
       "model": {
@@ -9480,7 +8985,7 @@
       "bases": null,
       "game_time": "2026-05-10T17:37:00Z",
       "probable_pitchers": {
-        "away": "Jos\u00e9 Soriano",
+        "away": "José Soriano",
         "home": "Spencer Miles"
       },
       "latest_play": null,
@@ -9620,7 +9125,7 @@
       "bases": null,
       "game_time": "2026-05-10T18:10:00Z",
       "probable_pitchers": {
-        "away": "Carlos Rod\u00f3n",
+        "away": "Carlos Rodón",
         "home": "Logan Henderson"
       },
       "latest_play": null,
@@ -9725,7 +9230,7 @@
       "bases": null,
       "game_time": "2026-05-10T20:10:00Z",
       "probable_pitchers": {
-        "away": "Huascar Brazob\u00e1n",
+        "away": "Huascar Brazobán",
         "home": "Eduardo Rodriguez"
       },
       "latest_play": null,
@@ -10075,7 +9580,7 @@
       "bases": null,
       "game_time": "2026-05-12T22:10:00Z",
       "probable_pitchers": {
-        "away": "Walbert Ure\u00f1a",
+        "away": "Walbert Ureña",
         "home": "Slade Cecconi"
       },
       "latest_play": null,
@@ -10216,7 +9721,7 @@
       "game_time": "2026-05-12T22:45:00Z",
       "probable_pitchers": {
         "away": "Zack Wheeler",
-        "home": "Jovani Mor\u00e1n"
+        "home": "Jovani Morán"
       },
       "latest_play": null,
       "model": {
@@ -10390,7 +9895,7 @@
       "bases": null,
       "game_time": "2026-05-12T23:40:00Z",
       "probable_pitchers": {
-        "away": "Eury P\u00e9rez",
+        "away": "Eury Pérez",
         "home": "Bailey Ober"
       },
       "latest_play": null,
@@ -11370,7 +10875,7 @@
       "bases": null,
       "game_time": "2026-05-14T22:45:00Z",
       "probable_pitchers": {
-        "away": "Jes\u00fas Luzardo",
+        "away": "Jesús Luzardo",
         "home": "Ranger Suarez"
       },
       "latest_play": null,
@@ -11965,7 +11470,7 @@
       "bases": null,
       "game_time": "2026-05-16T01:40:00Z",
       "probable_pitchers": {
-        "away": "Randy V\u00e1squez",
+        "away": "Randy Vásquez",
         "home": "Emerson Hancock"
       },
       "latest_play": null,
@@ -12175,7 +11680,7 @@
       "bases": null,
       "game_time": "2026-05-16T20:05:00Z",
       "probable_pitchers": {
-        "away": "Cristopher S\u00e1nchez",
+        "away": "Cristopher Sánchez",
         "home": "Bubba Chandler"
       },
       "latest_play": null,
@@ -12455,8 +11960,8 @@
       "bases": null,
       "game_time": "2026-05-16T23:15:00Z",
       "probable_pitchers": {
-        "away": "Carlos Rod\u00f3n",
-        "home": "Huascar Brazob\u00e1n"
+        "away": "Carlos Rodón",
+        "home": "Huascar Brazobán"
       },
       "latest_play": null,
       "model": {
@@ -12491,7 +11996,7 @@
       "game_time": "2026-05-17T01:38:00Z",
       "probable_pitchers": {
         "away": "Justin Wrobleski",
-        "home": "Jos\u00e9 Soriano"
+        "home": "José Soriano"
       },
       "latest_play": null,
       "model": {
@@ -12560,7 +12065,7 @@
       "bases": null,
       "game_time": "2026-05-17T16:15:00Z",
       "probable_pitchers": {
-        "away": "Eury P\u00e9rez",
+        "away": "Eury Pérez",
         "home": "Drew Rasmussen"
       },
       "latest_play": null,
@@ -12770,7 +12275,7 @@
       "bases": null,
       "game_time": "2026-05-17T17:40:00Z",
       "probable_pitchers": {
-        "away": "Elmer Rodr\u00edguez",
+        "away": "Elmer Rodríguez",
         "home": "Freddy Peralta"
       },
       "latest_play": null,
@@ -13436,7 +12941,7 @@
       "game_time": "2026-05-19T01:38:00Z",
       "probable_pitchers": {
         "away": "J.T. Ginn",
-        "home": "Walbert Ure\u00f1a"
+        "home": "Walbert Ureña"
       },
       "latest_play": null,
       "model": {
@@ -13575,7 +13080,7 @@
       "bases": null,
       "game_time": "2026-05-19T20:10:00Z",
       "probable_pitchers": {
-        "away": "Mart\u00edn P\u00e9rez",
+        "away": "Martín Pérez",
         "home": "Braxton Garrett"
       },
       "latest_play": null,
@@ -13681,7 +13186,7 @@
       "game_time": "2026-05-19T22:40:00Z",
       "probable_pitchers": {
         "away": "Chase Burns",
-        "home": "Jes\u00fas Luzardo"
+        "home": "Jesús Luzardo"
       },
       "latest_play": null,
       "model": {
@@ -14556,7 +14061,7 @@
       "game_time": "2026-05-21T00:40:00Z",
       "probable_pitchers": {
         "away": "Shohei Ohtani",
-        "home": "Randy V\u00e1squez"
+        "home": "Randy Vásquez"
       },
       "latest_play": null,
       "model": {
@@ -14766,7 +14271,7 @@
       "game_time": "2026-05-21T23:05:00Z",
       "probable_pitchers": {
         "away": "Braydon Fisher",
-        "home": "Carlos Rod\u00f3n"
+        "home": "Carlos Rodón"
       },
       "latest_play": null,
       "model": {
@@ -14801,7 +14306,7 @@
       "game_time": "2026-05-22T01:38:00Z",
       "probable_pitchers": {
         "away": "Luis Severino",
-        "home": "Jos\u00e9 Soriano"
+        "home": "José Soriano"
       },
       "latest_play": null,
       "model": {
@@ -14906,7 +14411,7 @@
       "game_time": "2026-05-22T22:40:00Z",
       "probable_pitchers": {
         "away": "Gavin Williams",
-        "home": "Cristopher S\u00e1nchez"
+        "home": "Cristopher Sánchez"
       },
       "latest_play": null,
       "model": {
@@ -15046,7 +14551,7 @@
       "game_time": "2026-05-22T23:10:00Z",
       "probable_pitchers": {
         "away": "Tobias Myers",
-        "home": "Eury P\u00e9rez"
+        "home": "Eury Pérez"
       },
       "latest_play": null,
       "model": {
@@ -15606,7 +15111,7 @@
       "game_time": "2026-05-23T20:10:00Z",
       "probable_pitchers": {
         "away": "Taj Bradley",
-        "home": "Jovani Mor\u00e1n"
+        "home": "Jovani Morán"
       },
       "latest_play": null,
       "model": {
@@ -15781,7 +15286,7 @@
       "game_time": "2026-05-24T02:05:00Z",
       "probable_pitchers": {
         "away": "Nathan Eovaldi",
-        "home": "Walbert Ure\u00f1a"
+        "home": "Walbert Ureña"
       },
       "latest_play": null,
       "model": {
@@ -16306,7 +15811,7 @@
       "game_time": "2026-05-24T20:10:00Z",
       "probable_pitchers": {
         "away": "Foster Griffin",
-        "home": "Mart\u00edn P\u00e9rez"
+        "home": "Martín Pérez"
       },
       "latest_play": null,
       "model": {
@@ -16655,7 +16160,7 @@
       "bases": null,
       "game_time": "2026-05-25T22:40:00Z",
       "probable_pitchers": {
-        "away": "Jes\u00fas Luzardo",
+        "away": "Jesús Luzardo",
         "home": "Griffin Canning"
       },
       "latest_play": null,
@@ -17251,7 +16756,7 @@
       "game_time": "2026-05-27T01:40:00Z",
       "probable_pitchers": {
         "away": "Aaron Nola",
-        "home": "Randy V\u00e1squez"
+        "home": "Randy Vásquez"
       },
       "latest_play": null,
       "model": {
@@ -17355,7 +16860,7 @@
       "bases": null,
       "game_time": "2026-05-27T17:07:00Z",
       "probable_pitchers": {
-        "away": "Eury P\u00e9rez",
+        "away": "Eury Pérez",
         "home": "Kevin Gausman"
       },
       "latest_play": null,
@@ -17530,7 +17035,7 @@
       "bases": null,
       "game_time": "2026-05-27T20:10:00Z",
       "probable_pitchers": {
-        "away": "Cristopher S\u00e1nchez",
+        "away": "Cristopher Sánchez",
         "home": "Walker Buehler"
       },
       "latest_play": null,
@@ -17600,7 +17105,7 @@
       "bases": null,
       "game_time": "2026-05-27T22:40:00Z",
       "probable_pitchers": {
-        "away": "Jos\u00e9 Soriano",
+        "away": "José Soriano",
         "home": "Casey Mize"
       },
       "latest_play": null,
@@ -17706,7 +17211,7 @@
       "game_time": "2026-05-27T23:10:00Z",
       "probable_pitchers": {
         "away": "Andrew Abbott",
-        "home": "Huascar Brazob\u00e1n"
+        "home": "Huascar Brazobán"
       },
       "latest_play": null,
       "model": {
@@ -18265,7 +17770,7 @@
       "bases": null,
       "game_time": "2026-05-29T23:10:00Z",
       "probable_pitchers": {
-        "away": "Walbert Ure\u00f1a",
+        "away": "Walbert Ureña",
         "home": "Nick Martinez"
       },
       "latest_play": null,
@@ -18510,7 +18015,7 @@
       "bases": null,
       "game_time": "2026-05-30T01:40:00Z",
       "probable_pitchers": {
-        "away": "Carlos Rod\u00f3n",
+        "away": "Carlos Rodón",
         "home": "Luis Severino"
       },
       "latest_play": null,
@@ -18965,7 +18470,7 @@
       "bases": null,
       "game_time": "2026-05-30T23:15:00Z",
       "probable_pitchers": {
-        "away": "Mart\u00edn P\u00e9rez",
+        "away": "Martín Pérez",
         "home": "Brady Singer"
       },
       "latest_play": null,
@@ -19105,7 +18610,7 @@
       "bases": null,
       "game_time": "2026-05-31T02:10:00Z",
       "probable_pitchers": {
-        "away": "Jes\u00fas Luzardo",
+        "away": "Jesús Luzardo",
         "home": "Roki Sasaki"
       },
       "latest_play": null,
@@ -19876,7 +19381,7 @@
       "game_time": "2026-06-02T01:38:00Z",
       "probable_pitchers": {
         "away": "Kyle Freeland",
-        "home": "Jos\u00e9 Soriano"
+        "home": "José Soriano"
       },
       "latest_play": null,
       "model": {
@@ -20015,7 +19520,7 @@
       "bases": null,
       "game_time": "2026-06-02T22:40:00Z",
       "probable_pitchers": {
-        "away": "Randy V\u00e1squez",
+        "away": "Randy Vásquez",
         "home": "Aaron Nola"
       },
       "latest_play": null,
@@ -20470,7 +19975,7 @@
       "bases": null,
       "game_time": "2026-06-03T01:40:00Z",
       "probable_pitchers": {
-        "away": "Huascar Brazob\u00e1n",
+        "away": "Huascar Brazobán",
         "home": "Logan Gilbert"
       },
       "latest_play": null,
@@ -20646,7 +20151,7 @@
       "game_time": "2026-06-03T22:40:00Z",
       "probable_pitchers": {
         "away": "Walker Buehler",
-        "home": "Cristopher S\u00e1nchez"
+        "home": "Cristopher Sánchez"
       },
       "latest_play": null,
       "model": {
@@ -20961,7 +20466,7 @@
       "game_time": "2026-06-04T01:38:00Z",
       "probable_pitchers": {
         "away": "Michael Lorenzen",
-        "home": "Walbert Ure\u00f1a"
+        "home": "Walbert Ureña"
       },
       "latest_play": null,
       "model": {
@@ -21101,7 +20606,7 @@
       "game_time": "2026-06-04T17:35:00Z",
       "probable_pitchers": {
         "away": "Slade Cecconi",
-        "home": "Carlos Rod\u00f3n"
+        "home": "Carlos Rodón"
       },
       "latest_play": null,
       "model": {
@@ -21416,7 +20921,7 @@
       "game_time": "2026-06-05T22:40:00Z",
       "probable_pitchers": {
         "away": "Anthony Kay",
-        "home": "Jes\u00fas Luzardo"
+        "home": "Jesús Luzardo"
       },
       "latest_play": null,
       "model": {
@@ -21556,7 +21061,7 @@
       "game_time": "2026-06-05T23:15:00Z",
       "probable_pitchers": {
         "away": "Mitch Keller",
-        "home": "Mart\u00edn P\u00e9rez"
+        "home": "Martín Pérez"
       },
       "latest_play": null,
       "model": {
@@ -22780,7 +22285,7 @@
       "bases": null,
       "game_time": "2026-06-07T20:10:00Z",
       "probable_pitchers": {
-        "away": "Jos\u00e9 Soriano",
+        "away": "José Soriano",
         "home": "Emmet Sheehan"
       },
       "latest_play": null,
@@ -22815,8 +22320,8 @@
       "bases": null,
       "game_time": "2026-06-07T20:10:00Z",
       "probable_pitchers": {
-        "away": "Huascar Brazob\u00e1n",
-        "home": "Randy V\u00e1squez"
+        "away": "Huascar Brazobán",
+        "home": "Randy Vásquez"
       },
       "latest_play": null,
       "model": {
@@ -22990,7 +22495,7 @@
       "bases": null,
       "game_time": "2026-06-08T23:07:00Z",
       "probable_pitchers": {
-        "away": "Cristopher S\u00e1nchez",
+        "away": "Cristopher Sánchez",
         "home": "Patrick Corbin"
       },
       "latest_play": null,
@@ -23551,7 +23056,7 @@
       "game_time": "2026-06-10T01:38:00Z",
       "probable_pitchers": {
         "away": "Kai-Wei Teng",
-        "home": "Walbert Ure\u00f1a"
+        "home": "Walbert Ureña"
       },
       "latest_play": null,
       "model": {
@@ -23725,7 +23230,7 @@
       "bases": null,
       "game_time": "2026-06-10T17:10:00Z",
       "probable_pitchers": {
-        "away": "Carlos Rod\u00f3n",
+        "away": "Carlos Rodón",
         "home": "Parker Messick"
       },
       "latest_play": null,
@@ -23970,7 +23475,7 @@
       "bases": null,
       "game_time": "2026-06-10T23:07:00Z",
       "probable_pitchers": {
-        "away": "Jes\u00fas Luzardo",
+        "away": "Jesús Luzardo",
         "home": "Max Scherzer"
       },
       "latest_play": null,
@@ -25055,7 +24560,7 @@
       "bases": null,
       "game_time": "2026-06-13T20:05:00Z",
       "probable_pitchers": {
-        "away": "Randy V\u00e1squez",
+        "away": "Randy Vásquez",
         "home": "Trey Gibson"
       },
       "latest_play": null,
@@ -25265,7 +24770,7 @@
       "bases": null,
       "game_time": "2026-06-13T20:10:00Z",
       "probable_pitchers": {
-        "away": "Mart\u00edn P\u00e9rez",
+        "away": "Martín Pérez",
         "home": "Sean Manaea"
       },
       "latest_play": null,
@@ -25476,7 +24981,7 @@
       "game_time": "2026-06-14T02:07:00Z",
       "probable_pitchers": {
         "away": "Griffin Jax",
-        "home": "Jos\u00e9 Soriano"
+        "home": "José Soriano"
       },
       "latest_play": null,
       "model": {
@@ -25825,7 +25330,7 @@
       "bases": null,
       "game_time": "2026-06-14T18:10:00Z",
       "probable_pitchers": {
-        "away": "Cristopher S\u00e1nchez",
+        "away": "Cristopher Sánchez",
         "home": "Kyle Harrison"
       },
       "latest_play": null,
@@ -26245,7 +25750,7 @@
       "bases": null,
       "game_time": "2026-06-16T01:40:00Z",
       "probable_pitchers": {
-        "away": "Walbert Ure\u00f1a",
+        "away": "Walbert Ureña",
         "home": "Ryne Nelson"
       },
       "latest_play": null,
@@ -26351,7 +25856,7 @@
       "game_time": "2026-06-16T22:40:00Z",
       "probable_pitchers": {
         "away": "Tyler Phillips",
-        "home": "Jes\u00fas Luzardo"
+        "home": "Jesús Luzardo"
       },
       "latest_play": null,
       "model": {
@@ -27156,7 +26661,7 @@
       "game_time": "2026-06-17T23:05:00Z",
       "probable_pitchers": {
         "away": "Anthony Kay",
-        "home": "Carlos Rod\u00f3n"
+        "home": "Carlos Rodón"
       },
       "latest_play": null,
       "model": {
@@ -27821,7 +27326,7 @@
       "game_time": "2026-06-19T23:15:00Z",
       "probable_pitchers": {
         "away": "Jacob Misiorowski",
-        "home": "Mart\u00edn P\u00e9rez"
+        "home": "Martín Pérez"
       },
       "latest_play": null,
       "model": {
@@ -27855,7 +27360,7 @@
       "bases": null,
       "game_time": "2026-06-20T00:05:00Z",
       "probable_pitchers": {
-        "away": "Randy V\u00e1squez",
+        "away": "Randy Vásquez",
         "home": "Jacob deGrom"
       },
       "latest_play": null,
@@ -27995,7 +27500,7 @@
       "bases": null,
       "game_time": "2026-06-20T01:40:00Z",
       "probable_pitchers": {
-        "away": "Jos\u00e9 Soriano",
+        "away": "José Soriano",
         "home": "Jeffrey Springs"
       },
       "latest_play": null,
@@ -28416,7 +27921,7 @@
       "game_time": "2026-06-20T23:15:00Z",
       "probable_pitchers": {
         "away": "Freddy Peralta",
-        "home": "Cristopher S\u00e1nchez"
+        "home": "Cristopher Sánchez"
       },
       "latest_play": null,
       "model": {
@@ -28485,7 +27990,7 @@
       "bases": null,
       "game_time": "2026-06-21T02:05:00Z",
       "probable_pitchers": {
-        "away": "Walbert Ure\u00f1a",
+        "away": "Walbert Ureña",
         "home": "J.T. Ginn"
       },
       "latest_play": null,
@@ -28626,7 +28131,7 @@
       "game_time": "2026-06-21T17:35:00Z",
       "probable_pitchers": {
         "away": "Chase Burns",
-        "home": "Elmer Rodr\u00edguez"
+        "home": "Elmer Rodríguez"
       },
       "latest_play": null,
       "model": {
@@ -29710,7 +29215,7 @@
       "bases": null,
       "game_time": "2026-06-23T22:40:00Z",
       "probable_pitchers": {
-        "away": "Carlos Rod\u00f3n",
+        "away": "Carlos Rodón",
         "home": "Casey Mize"
       },
       "latest_play": null,
@@ -29745,7 +29250,7 @@
       "bases": null,
       "game_time": "2026-06-23T22:45:00Z",
       "probable_pitchers": {
-        "away": "Jes\u00fas Luzardo",
+        "away": "Jesús Luzardo",
         "home": "PJ Poulin"
       },
       "latest_play": null,
@@ -30096,7 +29601,7 @@
       "game_time": "2026-06-24T16:10:00Z",
       "probable_pitchers": {
         "away": "Jacob deGrom",
-        "home": "Eury P\u00e9rez"
+        "home": "Eury Pérez"
       },
       "latest_play": null,
       "model": {
@@ -30236,7 +29741,7 @@
       "game_time": "2026-06-24T20:07:00Z",
       "probable_pitchers": {
         "away": "Trey Gibson",
-        "home": "Jos\u00e9 Soriano"
+        "home": "José Soriano"
       },
       "latest_play": null,
       "model": {
@@ -30550,7 +30055,7 @@
       "bases": null,
       "game_time": "2026-06-25T00:40:00Z",
       "probable_pitchers": {
-        "away": "Mart\u00edn P\u00e9rez",
+        "away": "Martín Pérez",
         "home": "JP Sears"
       },
       "latest_play": null,
@@ -30760,7 +30265,7 @@
       "bases": null,
       "game_time": "2026-06-25T22:45:00Z",
       "probable_pitchers": {
-        "away": "Cristopher S\u00e1nchez",
+        "away": "Cristopher Sánchez",
         "home": "Cade Cavalli"
       },
       "latest_play": null,
@@ -31321,7 +30826,7 @@
       "game_time": "2026-06-27T01:38:00Z",
       "probable_pitchers": {
         "away": "J.T. Ginn",
-        "home": "Walbert Ure\u00f1a"
+        "home": "Walbert Ureña"
       },
       "latest_play": null,
       "model": {
@@ -31390,7 +30895,7 @@
       "bases": null,
       "game_time": "2026-06-27T02:15:00Z",
       "probable_pitchers": {
-        "away": "Reynaldo L\u00f3pez",
+        "away": "Reynaldo López",
         "home": "Trevor McDonald"
       },
       "latest_play": null,
@@ -32160,8 +31665,8 @@
       "bases": null,
       "game_time": "2026-06-28T17:40:00Z",
       "probable_pitchers": {
-        "away": "Jes\u00fas Luzardo",
-        "home": "Cionel P\u00e9rez"
+        "away": "Jesús Luzardo",
+        "home": "Cionel Pérez"
       },
       "latest_play": null,
       "model": {
@@ -32440,7 +31945,7 @@
       "bases": null,
       "game_time": "2026-06-28T23:20:00Z",
       "probable_pitchers": {
-        "away": "Carlos Rod\u00f3n",
+        "away": "Carlos Rodón",
         "home": "Sonny Gray"
       },
       "latest_play": null,
@@ -33001,7 +32506,7 @@
       "game_time": "2026-06-30T22:40:00Z",
       "probable_pitchers": {
         "away": "Bubba Chandler",
-        "home": "Cristopher S\u00e1nchez"
+        "home": "Cristopher Sánchez"
       },
       "latest_play": null,
       "model": {
@@ -33141,7 +32646,7 @@
       "game_time": "2026-06-30T23:15:00Z",
       "probable_pitchers": {
         "away": "Matthew Liberatore",
-        "home": "Mart\u00edn P\u00e9rez"
+        "home": "Martín Pérez"
       },
       "latest_play": null,
       "model": {
@@ -33315,7 +32820,7 @@
       "bases": null,
       "game_time": "2026-07-01T00:40:00Z",
       "probable_pitchers": {
-        "away": "Eury P\u00e9rez",
+        "away": "Eury Pérez",
         "home": "Tanner Gordon"
       },
       "latest_play": null,
@@ -33385,7 +32890,7 @@
       "bases": null,
       "game_time": "2026-07-01T01:40:00Z",
       "probable_pitchers": {
-        "away": "Jos\u00e9 Soriano",
+        "away": "José Soriano",
         "home": "Bryan Woo"
       },
       "latest_play": null,
@@ -34260,7 +33765,7 @@
       "bases": null,
       "game_time": "2026-07-05T00:10:00Z",
       "probable_pitchers": {
-        "away": "Jes\u00fas Luzardo",
+        "away": "Jesús Luzardo",
         "home": "Michael Wacha"
       },
       "latest_play": null,
@@ -34436,7 +33941,7 @@
       "game_time": "2026-07-05T16:30:00Z",
       "probable_pitchers": {
         "away": "Nolan McLean",
-        "home": "Mart\u00edn P\u00e9rez"
+        "home": "Martín Pérez"
       },
       "latest_play": null,
       "model": {
@@ -34820,7 +34325,7 @@
       "bases": null,
       "game_time": "2026-07-05T20:30:00Z",
       "probable_pitchers": {
-        "away": "Eury P\u00e9rez",
+        "away": "Eury Pérez",
         "home": "Gage Jump"
       },
       "latest_play": null,
@@ -34960,7 +34465,7 @@
       "bases": null,
       "game_time": "2026-07-06T18:10:00Z",
       "probable_pitchers": {
-        "away": "Cristopher S\u00e1nchez",
+        "away": "Cristopher Sánchez",
         "home": "Noah Cameron"
       },
       "latest_play": null,
@@ -35066,7 +34571,7 @@
       "game_time": "2026-07-06T23:15:00Z",
       "probable_pitchers": {
         "away": "Freddy Peralta",
-        "home": "Reynaldo L\u00f3pez"
+        "home": "Reynaldo López"
       },
       "latest_play": null,
       "model": {
@@ -35486,7 +34991,7 @@
       "game_time": "2026-07-07T23:10:00Z",
       "probable_pitchers": {
         "away": "Seth Lugo",
-        "home": "Cionel P\u00e9rez"
+        "home": "Cionel Pérez"
       },
       "latest_play": null,
       "model": {
@@ -35625,7 +35130,7 @@
       "bases": null,
       "game_time": "2026-07-08T00:05:00Z",
       "probable_pitchers": {
-        "away": "Jos\u00e9 Soriano",
+        "away": "José Soriano",
         "home": "Jacob deGrom"
       },
       "latest_play": null,
@@ -35661,7 +35166,7 @@
       "game_time": "2026-07-08T01:40:00Z",
       "probable_pitchers": {
         "away": "Zac Gallen",
-        "home": "Germ\u00e1n M\u00e1rquez"
+        "home": "Germán Márquez"
       },
       "latest_play": null,
       "model": {
@@ -36185,7 +35690,7 @@
       "bases": null,
       "game_time": "2026-07-09T00:05:00Z",
       "probable_pitchers": {
-        "away": "Walbert Ure\u00f1a",
+        "away": "Walbert Ureña",
         "home": "MacKenzie Gore"
       },
       "latest_play": null,
@@ -36500,7 +36005,7 @@
       "bases": null,
       "game_time": "2026-07-09T22:40:00Z",
       "probable_pitchers": {
-        "away": "Jos\u00e9 Suarez",
+        "away": "José Suarez",
         "home": "Framber Valdez"
       },
       "latest_play": null,
@@ -36570,7 +36075,7 @@
       "bases": null,
       "game_time": "2026-07-09T23:10:00Z",
       "probable_pitchers": {
-        "away": "Jes\u00fas Luzardo",
+        "away": "Jesús Luzardo",
         "home": "Brady Singer"
       },
       "latest_play": null,
@@ -37516,7 +37021,7 @@
       "game_time": "2026-07-11T20:10:00Z",
       "probable_pitchers": {
         "away": "Tanner Bibee",
-        "home": "Eury P\u00e9rez"
+        "home": "Eury Pérez"
       },
       "latest_play": null,
       "model": {
@@ -37550,7 +37055,7 @@
       "bases": null,
       "game_time": "2026-07-11T22:10:00Z",
       "probable_pitchers": {
-        "away": "Cristopher S\u00e1nchez",
+        "away": "Cristopher Sánchez",
         "home": "Casey Mize"
       },
       "latest_play": null,
@@ -37690,7 +37195,7 @@
       "bases": null,
       "game_time": "2026-07-11T23:15:00Z",
       "probable_pitchers": {
-        "away": "Reynaldo L\u00f3pez",
+        "away": "Reynaldo López",
         "home": "Matthew Liberatore"
       },
       "latest_play": null,
@@ -37773,6 +37278,531 @@
       "plays": []
     },
     {
+      "sport": "MLB",
+      "game_id": "823358",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "MIL",
+      "home": "PIT",
+      "away_display": "Milwaukee Brewers",
+      "home_display": "Pittsburgh Pirates",
+      "away_score": 5,
+      "home_score": 14,
+      "inning": 9,
+      "inning_state": "Top",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T16:15:00Z",
+      "probable_pitchers": {
+        "away": "Robert Gasser",
+        "home": "Paul Skenes"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824814",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "KC",
+      "home": "BAL",
+      "away_display": "Kansas City Royals",
+      "home_display": "Baltimore Orioles",
+      "away_score": 2,
+      "home_score": 8,
+      "inning": 9,
+      "inning_state": "Top",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T17:35:00Z",
+      "probable_pitchers": {
+        "away": "Seth Lugo",
+        "home": "Shane Baz"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822708",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "NYY",
+      "home": "WSH",
+      "away_display": "New York Yankees",
+      "home_display": "Washington Nationals",
+      "away_score": 5,
+      "home_score": 3,
+      "inning": 9,
+      "inning_state": "Bottom",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T17:35:00Z",
+      "probable_pitchers": {
+        "away": "Will Warren",
+        "home": "Cade Cavalli"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824491",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "CHC",
+      "home": "CIN",
+      "away_display": "Chicago Cubs",
+      "home_display": "Cincinnati Reds",
+      "away_score": 8,
+      "home_score": 4,
+      "inning": 9,
+      "inning_state": "Bottom",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T17:40:00Z",
+      "probable_pitchers": {
+        "away": "Matthew Boyd",
+        "home": "Andrew Abbott"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823602",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "BOS",
+      "home": "NYM",
+      "away_display": "Boston Red Sox",
+      "home_display": "New York Mets",
+      "away_score": 3,
+      "home_score": 2,
+      "inning": 10,
+      "inning_state": "Bottom",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T17:40:00Z",
+      "probable_pitchers": {
+        "away": "Payton Tolle",
+        "home": "Zach Thornton"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822951",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "SEA",
+      "home": "TB",
+      "away_display": "Seattle Mariners",
+      "home_display": "Tampa Bay Rays",
+      "away_score": 8,
+      "home_score": 2,
+      "inning": 9,
+      "inning_state": "Bottom",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T17:40:00Z",
+      "probable_pitchers": {
+        "away": "Emerson Hancock",
+        "home": "Ian Seymour"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824250",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "PHI",
+      "home": "DET",
+      "away_display": "Philadelphia Phillies",
+      "home_display": "Detroit Tigers",
+      "away_score": 5,
+      "home_score": 0,
+      "inning": 9,
+      "inning_state": "Bottom",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T17:40:00Z",
+      "probable_pitchers": {
+        "away": "Zack Wheeler",
+        "home": "Tarik Skubal"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823842",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "CLE",
+      "home": "MIA",
+      "away_display": "Cleveland Guardians",
+      "home_display": "Miami Marlins",
+      "away_score": 5,
+      "home_score": 2,
+      "inning": 9,
+      "inning_state": "Bottom",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T17:40:00Z",
+      "probable_pitchers": {
+        "away": "Joey Cantillo",
+        "home": "Tyler Phillips"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823681",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "LAA",
+      "home": "MIN",
+      "away_display": "Los Angeles Angels",
+      "home_display": "Minnesota Twins",
+      "away_score": 2,
+      "home_score": 4,
+      "inning": 9,
+      "inning_state": "Top",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T18:10:00Z",
+      "probable_pitchers": {
+        "away": "José Soriano",
+        "home": "Taj Bradley"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "824574",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "ATH",
+      "home": "CWS",
+      "away_display": "Athletics",
+      "home_display": "Chicago White Sox",
+      "away_score": 1,
+      "home_score": 9,
+      "inning": 9,
+      "inning_state": "Top",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T18:10:00Z",
+      "probable_pitchers": {
+        "away": "J.T. Ginn",
+        "home": "Noah Schultz"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823029",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "ATL",
+      "home": "STL",
+      "away_display": "Atlanta Braves",
+      "home_display": "St. Louis Cardinals",
+      "away_score": 4,
+      "home_score": 3,
+      "inning": 9,
+      "inning_state": "Bottom",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T18:15:00Z",
+      "probable_pitchers": {
+        "away": "Danny Young",
+        "home": "Dustin May"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "822876",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "HOU",
+      "home": "TEX",
+      "away_display": "Houston Astros",
+      "home_display": "Texas Rangers",
+      "away_score": 5,
+      "home_score": 6,
+      "inning": 9,
+      "inning_state": "Bottom",
+      "outs": 0,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T18:35:00Z",
+      "probable_pitchers": {
+        "away": "Cristian Javier",
+        "home": "MacKenzie Gore"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823199",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "COL",
+      "home": "SF",
+      "away_display": "Colorado Rockies",
+      "home_display": "San Francisco Giants",
+      "away_score": 1,
+      "home_score": 3,
+      "inning": 9,
+      "inning_state": "Top",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T20:05:00Z",
+      "probable_pitchers": {
+        "away": "Michael Lorenzen",
+        "home": "Trevor McDonald"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823925",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "AZ",
+      "home": "LAD",
+      "away_display": "Arizona Diamondbacks",
+      "home_display": "Los Angeles Dodgers",
+      "away_score": 5,
+      "home_score": 3,
+      "inning": 9,
+      "inning_state": "Bottom",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T20:10:00Z",
+      "probable_pitchers": {
+        "away": "Mitch Bratt",
+        "home": "Emmet Sheehan"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
+      "sport": "MLB",
+      "game_id": "823274",
+      "game_date": "2026-07-12",
+      "status": "Final",
+      "status_detail": "Final",
+      "source": "MLB Stats API",
+      "source_status": "live_cached",
+      "data_mode": "schedule_only",
+      "away": "TOR",
+      "home": "SD",
+      "away_display": "Toronto Blue Jays",
+      "home_display": "San Diego Padres",
+      "away_score": 4,
+      "home_score": 5,
+      "inning": 9,
+      "inning_state": "Top",
+      "outs": 3,
+      "balls": null,
+      "strikes": null,
+      "bases": null,
+      "game_time": "2026-07-12T20:10:00Z",
+      "probable_pitchers": {
+        "away": "Kevin Gausman",
+        "home": "Germán Márquez"
+      },
+      "latest_play": null,
+      "model": {
+        "prediction_available": false,
+        "label": "No model pick",
+        "prediction_status": "no_prediction",
+        "source": "Schedule-only row or no exported model prediction"
+      },
+      "plays": []
+    },
+    {
       "sport": "SOCCER",
       "game_id": "760514",
       "espn_event_id": "760514",
@@ -37816,8 +37846,8 @@
       "game_id": "760515",
       "espn_event_id": "760515",
       "game_date": "2026-07-15",
-      "status": "Scheduled",
-      "status_detail": "Scheduled",
+      "status": "Final",
+      "status_detail": "FT",
       "source": "ESPN Scoreboard API",
       "source_status": "espn_live_fresh",
       "data_mode": "schedule_only",
@@ -37827,8 +37857,8 @@
       "home_display": "England",
       "away_logo": null,
       "home_logo": null,
-      "away_score": 0,
-      "home_score": 0,
+      "away_score": 2,
+      "home_score": 1,
       "game_time": "2026-07-15T19:00Z",
       "model": {
         "prediction_available": false,
@@ -37840,10 +37870,13 @@
       "latest_play": null,
       "espn_links": [
         "https://www.espn.com/soccer/match/_/gameId/760515/argentina-england",
-        "https://www.espn.com/soccer/matchstats/_/gameId/760515"
+        "https://www.espn.com/soccer/video/_/gameId/760515",
+        "https://www.espn.com/soccer/report/_/gameId/760515",
+        "https://www.espn.com/soccer/matchstats/_/gameId/760515",
+        "https://www.espn.com/soccer/bracket/_/season/2026/league/fifa.world"
       ],
-      "period": null,
-      "clock": "0'",
+      "period": 2,
+      "clock": "90'+12'",
       "competition": "FIFA World Cup",
       "live_note": "ESPN scoreboard row; no LineLens prediction model is applied."
     },
@@ -37857,9 +37890,9 @@
       "source": "ESPN Scoreboard API",
       "source_status": "espn_live_fresh",
       "data_mode": "schedule_only",
-      "away": "SF L2",
+      "away": "ENG",
       "home": "FRA",
-      "away_display": "Semifinal 2 Loser",
+      "away_display": "England",
       "home_display": "France",
       "away_logo": null,
       "home_logo": null,
@@ -37875,7 +37908,7 @@
       "plays": [],
       "latest_play": null,
       "espn_links": [
-        "https://www.espn.com/soccer/match/_/gameId/760516/semifinal-2-loser-france",
+        "https://www.espn.com/soccer/match/_/gameId/760516/england-france",
         "https://www.espn.com/soccer/matchstats/_/gameId/760516",
         "https://www.espn.com/soccer/bracket/_/season/2026/league/fifa.world"
       ],
@@ -37894,9 +37927,9 @@
       "source": "ESPN Scoreboard API",
       "source_status": "espn_live_fresh",
       "data_mode": "schedule_only",
-      "away": "SFW2",
+      "away": "ARG",
       "home": "ESP",
-      "away_display": "Semifinal 2 Winner",
+      "away_display": "Argentina",
       "home_display": "Spain",
       "away_logo": null,
       "home_logo": null,
@@ -37912,7 +37945,7 @@
       "plays": [],
       "latest_play": null,
       "espn_links": [
-        "https://www.espn.com/soccer/match/_/gameId/760517/semifinal-2-winner-spain",
+        "https://www.espn.com/soccer/match/_/gameId/760517/argentina-spain",
         "https://www.espn.com/soccer/matchstats/_/gameId/760517",
         "https://www.espn.com/soccer/bracket/_/season/2026/league/fifa.world"
       ],
@@ -37920,158 +37953,6 @@
       "clock": "0'",
       "competition": "FIFA World Cup",
       "live_note": "ESPN scoreboard row; no LineLens prediction model is applied."
-    },
-    {
-      "sport": "WNBA",
-      "game_id": "401857060",
-      "espn_event_id": "401857060",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "ESPN Scoreboard API",
-      "source_status": "espn_live_fresh",
-      "data_mode": "schedule_only",
-      "away": "NY",
-      "home": "TOR",
-      "away_display": "New York Liberty",
-      "home_display": "Toronto Tempo",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 91,
-      "home_score": 93,
-      "game_time": "2026-07-12T19:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/wnba/game/_/gameId/401857060/liberty-tempo",
-        "https://www.espn.com/wnba/boxscore/_/gameId/401857060",
-        "https://www.espn.com/wnba/video?gameId=401857060",
-        "https://www.espn.com/wnba/playbyplay/_/gameId/401857060"
-      ],
-      "period": 4,
-      "clock": "0.0",
-      "competition": "WNBA",
-      "live_note": "ESPN scoreboard row; WNBA model joined when available."
-    },
-    {
-      "sport": "WNBA",
-      "game_id": "401857061",
-      "espn_event_id": "401857061",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "ESPN Scoreboard API",
-      "source_status": "espn_live_fresh",
-      "data_mode": "schedule_only",
-      "away": "SEA",
-      "home": "WSH",
-      "away_display": "Seattle Storm",
-      "home_display": "Washington Mystics",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 79,
-      "home_score": 84,
-      "game_time": "2026-07-12T19:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/wnba/game/_/gameId/401857061/storm-mystics",
-        "https://www.espn.com/wnba/boxscore/_/gameId/401857061",
-        "https://www.espn.com/wnba/video?gameId=401857061",
-        "https://www.espn.com/wnba/playbyplay/_/gameId/401857061"
-      ],
-      "period": 4,
-      "clock": "0.0",
-      "competition": "WNBA",
-      "live_note": "ESPN scoreboard row; WNBA model joined when available."
-    },
-    {
-      "sport": "WNBA",
-      "game_id": "401857062",
-      "espn_event_id": "401857062",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "ESPN Scoreboard API",
-      "source_status": "espn_live_fresh",
-      "data_mode": "schedule_only",
-      "away": "CHI",
-      "home": "DAL",
-      "away_display": "Chicago Sky",
-      "home_display": "Dallas Wings",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 91,
-      "home_score": 96,
-      "game_time": "2026-07-12T23:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/wnba/game/_/gameId/401857062/sky-wings",
-        "https://www.espn.com/wnba/boxscore/_/gameId/401857062",
-        "https://www.espn.com/wnba/video?gameId=401857062",
-        "https://www.espn.com/wnba/playbyplay/_/gameId/401857062"
-      ],
-      "period": 4,
-      "clock": "10:00",
-      "competition": "WNBA",
-      "live_note": "ESPN scoreboard row; WNBA model joined when available."
-    },
-    {
-      "sport": "WNBA",
-      "game_id": "401857063",
-      "espn_event_id": "401857063",
-      "game_date": "2026-07-12",
-      "status": "Final",
-      "status_detail": "Final",
-      "source": "ESPN Scoreboard API",
-      "source_status": "espn_live_fresh",
-      "data_mode": "schedule_only",
-      "away": "IND",
-      "home": "LV",
-      "away_display": "Indiana Fever",
-      "home_display": "Las Vegas Aces",
-      "away_logo": null,
-      "home_logo": null,
-      "away_score": 109,
-      "home_score": 75,
-      "game_time": "2026-07-13T01:00Z",
-      "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
-      },
-      "plays": [],
-      "latest_play": null,
-      "espn_links": [
-        "https://www.espn.com/wnba/game/_/gameId/401857063/fever-aces",
-        "https://www.espn.com/wnba/boxscore/_/gameId/401857063",
-        "https://www.espn.com/wnba/video?gameId=401857063",
-        "https://www.espn.com/wnba/playbyplay/_/gameId/401857063"
-      ],
-      "period": 4,
-      "clock": "10:00",
-      "competition": "WNBA",
-      "live_note": "ESPN scoreboard row; WNBA model joined when available."
     },
     {
       "sport": "WNBA",
@@ -38258,32 +38139,42 @@
       "game_id": "401857068",
       "espn_event_id": "401857068",
       "game_date": "2026-07-15",
-      "status": "Scheduled",
-      "status_detail": "7/15 - 12:00 PM EDT",
+      "status": "Final",
+      "status_detail": "Final",
       "source": "ESPN Scoreboard API",
       "source_status": "espn_live_fresh",
-      "data_mode": "schedule_only",
+      "data_mode": "prediction_joined",
       "away": "SEA",
       "home": "CHI",
       "away_display": "Seattle Storm",
       "home_display": "Chicago Sky",
       "away_logo": null,
       "home_logo": null,
-      "away_score": 0,
-      "home_score": 0,
+      "away_score": 90,
+      "home_score": 95,
       "game_time": "2026-07-15T16:00Z",
       "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
+        "prediction_available": true,
+        "pick": "CHI",
+        "home_win_probability": 0.5427655045656619,
+        "away_win_probability": 0.45723449543433814,
+        "edge": 0.04276550456566186,
+        "confidence": "Low",
+        "confidence_score": 0.5427655045656619,
+        "confidence_label": "Normal",
+        "top_factor": "Pregame Elo and recent team form",
+        "source": "LineLens prediction export",
+        "prediction_status": "prediction_joined"
       },
       "plays": [],
       "latest_play": null,
       "espn_links": [
-        "https://www.espn.com/wnba/game/_/gameId/401857068/storm-sky"
+        "https://www.espn.com/wnba/game/_/gameId/401857068/storm-sky",
+        "https://www.espn.com/wnba/boxscore/_/gameId/401857068",
+        "https://www.espn.com/wnba/video?gameId=401857068",
+        "https://www.espn.com/wnba/playbyplay/_/gameId/401857068"
       ],
-      "period": 0,
+      "period": 4,
       "clock": "0.0",
       "competition": "WNBA",
       "live_note": "ESPN scoreboard row; WNBA model joined when available."
@@ -38293,32 +38184,42 @@
       "game_id": "401857069",
       "espn_event_id": "401857069",
       "game_date": "2026-07-15",
-      "status": "Scheduled",
-      "status_detail": "7/15 - 1:00 PM EDT",
+      "status": "Final",
+      "status_detail": "Final",
       "source": "ESPN Scoreboard API",
       "source_status": "espn_live_fresh",
-      "data_mode": "schedule_only",
+      "data_mode": "prediction_joined",
       "away": "LA",
       "home": "MIN",
       "away_display": "Los Angeles Sparks",
       "home_display": "Minnesota Lynx",
       "away_logo": null,
       "home_logo": null,
-      "away_score": 0,
-      "home_score": 0,
+      "away_score": 87,
+      "home_score": 96,
       "game_time": "2026-07-15T17:00Z",
       "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
+        "prediction_available": true,
+        "pick": "MIN",
+        "home_win_probability": 0.8074495135892186,
+        "away_win_probability": 0.19255048641078143,
+        "edge": 0.30744951358921857,
+        "confidence": "High",
+        "confidence_score": 0.8074495135892186,
+        "confidence_label": "Hot Pick",
+        "top_factor": "Pregame Elo and recent team form",
+        "source": "LineLens prediction export",
+        "prediction_status": "prediction_joined"
       },
       "plays": [],
       "latest_play": null,
       "espn_links": [
-        "https://www.espn.com/wnba/game/_/gameId/401857069/sparks-lynx"
+        "https://www.espn.com/wnba/game/_/gameId/401857069/sparks-lynx",
+        "https://www.espn.com/wnba/boxscore/_/gameId/401857069",
+        "https://www.espn.com/wnba/video?gameId=401857069",
+        "https://www.espn.com/wnba/playbyplay/_/gameId/401857069"
       ],
-      "period": 0,
+      "period": 4,
       "clock": "0.0",
       "competition": "WNBA",
       "live_note": "ESPN scoreboard row; WNBA model joined when available."
@@ -38328,33 +38229,43 @@
       "game_id": "401857070",
       "espn_event_id": "401857070",
       "game_date": "2026-07-15",
-      "status": "Scheduled",
-      "status_detail": "7/15 - 8:00 PM EDT",
+      "status": "Final",
+      "status_detail": "Final",
       "source": "ESPN Scoreboard API",
       "source_status": "espn_live_fresh",
-      "data_mode": "schedule_only",
+      "data_mode": "prediction_joined",
       "away": "GS",
       "home": "IND",
       "away_display": "Golden State Valkyries",
       "home_display": "Indiana Fever",
       "away_logo": null,
       "home_logo": null,
-      "away_score": 0,
-      "home_score": 0,
+      "away_score": 88,
+      "home_score": 75,
       "game_time": "2026-07-16T00:00Z",
       "model": {
-        "prediction_available": false,
-        "label": "No model pick",
-        "prediction_status": "no_prediction",
-        "source": "Schedule-only row or no exported model prediction"
+        "prediction_available": true,
+        "pick": "IND",
+        "home_win_probability": 0.74191308013485,
+        "away_win_probability": 0.25808691986515,
+        "edge": 0.24191308013485002,
+        "confidence": "High",
+        "confidence_score": 0.74191308013485,
+        "confidence_label": "Hot Pick",
+        "top_factor": "Pregame Elo and recent team form",
+        "source": "LineLens prediction export",
+        "prediction_status": "prediction_joined"
       },
       "plays": [],
       "latest_play": null,
       "espn_links": [
-        "https://www.espn.com/wnba/game/_/gameId/401857070/valkyries-fever"
+        "https://www.espn.com/wnba/game/_/gameId/401857070/valkyries-fever",
+        "https://www.espn.com/wnba/boxscore/_/gameId/401857070",
+        "https://www.espn.com/wnba/video?gameId=401857070",
+        "https://www.espn.com/wnba/playbyplay/_/gameId/401857070"
       ],
-      "period": 0,
-      "clock": "0.0",
+      "period": 4,
+      "clock": "10:00",
       "competition": "WNBA",
       "live_note": "ESPN scoreboard row; WNBA model joined when available."
     },
