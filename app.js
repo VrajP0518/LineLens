@@ -1,4 +1,4 @@
-const APP_VERSION = "v5.0";
+const APP_VERSION = "v5.1";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
@@ -2813,17 +2813,17 @@ function switchView(view) {
     });
     $$(".nav__item").forEach(btn => btn.classList.toggle("is-active", btn.dataset.view === view));
     const titles = {
-        home: ["LineLens Sports", "Today’s model pulse"],
-        foryou: ["For You", "personalized daily overview"],
-        picks: ["Picks Hub", "prediction feed"],
+        home: ["LineLens Sports", "Today’s board"],
+        foryou: ["For You", "saved preferences and updates"],
+        picks: ["Picks", "prediction feed"],
         props: ["Player Props", "WNBA projection feed"],
         nfl: ["NFL Spread Predictor", "spread module"],
-        mlb: ["MLB Game Board", "daily broadcast board"],
-        soccer: ["Soccer / World Cup", "live international scoreboard"],
-        nba: ["NBA Scoreboard", "courtside live board"],
-        nhl: ["NHL Scoreboard", "ice-level live board"],
+        mlb: ["MLB Game Board", "today’s games"],
+        soccer: ["Soccer / World Cup", "today’s games"],
+        nba: ["NBA Scoreboard", "today’s games"],
+        nhl: ["NHL Scoreboard", "today’s games"],
         wnba: ["WNBA Game Board", "model + live scoreboard"],
-        models: ["Model Arena", "model comparison"],
+        models: ["Model Lab", "model comparison"],
         history: ["History Explorer", "search the cached prediction ledger"],
         watchlist: ["Watchlist", "your teams, games, and model"],
         reports: ["Model Reports", "calibration and evaluation"],
@@ -2865,6 +2865,48 @@ function renderView(view = state.selected.view || "home") {
         about: renderAbout,
     };
     renderers[view]?.();
+    armScrollReveals(view);
+}
+
+let scrollRevealObserver = null;
+
+function armScrollReveals(view) {
+    const root = $(`#view-${view}`);
+    if (!root) return;
+
+    const targets = Array.from(root.querySelectorAll([
+        ":scope > .panel",
+        ":scope > .home-v2-shell > .home-v2-hero",
+        ":scope > .home-v2-shell > .metric-strip-v2",
+        ":scope > .home-v2-shell > .home-v2-grid",
+        ":scope > .home-v2-shell > .panel",
+        ".mlb-game-card",
+        ".prediction-row-card",
+        ".model-profile",
+    ].join(",")));
+
+    if (!targets.length) return;
+    scrollRevealObserver?.disconnect();
+
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+        targets.forEach((element) => element.classList.add("is-revealed"));
+        return;
+    }
+
+    scrollRevealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("is-revealed");
+            observer.unobserve(entry.target);
+        });
+    }, { threshold: 0.08, rootMargin: "0px 0px -7% 0px" });
+
+    targets.forEach((element, index) => {
+        element.classList.add("ll-scroll-reveal");
+        element.style.setProperty("--reveal-delay", `${Math.min(index * 28, 160)}ms`);
+        scrollRevealObserver.observe(element);
+    });
 }
 
 function card(label, value, note, extraClass = "") {
@@ -3592,8 +3634,9 @@ function propPredictionRows() {
     const candidateIds = new Set(candidates.map(row => row.prediction_id));
     const predictions = [...exported, ...candidates.filter(row => !seen.has(row.prediction_id)), ...modelPicks.filter(row => !seen.has(row.prediction_id) && !candidateIds.has(row.prediction_id))];
     const logged = new Map((state.propLog?.predictions || []).map(row => [row.prediction_id, row]));
+    const historical = [...logged.values()].filter(row => row.prediction_id && !seen.has(row.prediction_id) && String(row.result || "Pending") !== "Pending");
     const currentMarkets = Array.isArray(state.playerProps?.markets) ? state.playerProps.markets : [];
-    return predictions.map(prediction => {
+    return [...predictions, ...historical].map(prediction => {
         const log = logged.get(prediction.prediction_id) || {};
         const market = currentMarkets.find(row => String(row.sport || "").toUpperCase() === String(prediction.sport || "").toUpperCase() && row.provider_event_id === prediction.event_id && row.market_key === prediction.market_key && (row.player_id === prediction.player_id || row.normalized_player_id === prediction.player_id || row.player_name === prediction.player_name));
         return { ...prediction, ...log, current_line: market?.line ?? prediction.current_line ?? prediction.line, current_over_price: market?.over_price ?? prediction.current_over_price ?? prediction.over_price, current_under_price: market?.under_price ?? prediction.current_under_price ?? prediction.under_price, current_odds_snapshot_at: market?.snapshot_at ?? prediction.current_odds_snapshot_at ?? prediction.odds_snapshot_at, availability_status: prediction.availability_status || log.availability_status || market?.availability_status || "unknown", freshness_status: market?.freshness_status || prediction.freshness_status || (state.playerProps?.metadata?.status === "success" ? "Current" : "Bundled snapshot") };
@@ -3770,6 +3813,15 @@ function renderPropHealth() {
     return `<section class="prop-health"><header class="section-header"><div><p class="eyebrow">Model status</p><h2>Prop model health</h2></div><div class="report-actions"><button class="btn btn--small" data-refresh-command="wnba_availability">Refresh availability</button><button class="btn btn--small btn--primary" data-refresh-command="player_props_pipeline">Build props</button></div></header><div class="prop-health__rows">${models.map(([sport, payload]) => { const meta = payload?.metadata || {}; const markets = payload?.markets || []; return `<article><div class="prop-health__title"><strong>${sport}</strong><span>${escapeHtml(meta.status || "Not trained")}</span></div><p>${escapeHtml(meta.reason || (sport === "MLB" ? "MLB player-game inputs and research artifacts are required for model health." : "Health metrics appear after real player rows, chronological evaluation, and scored predictions."))}</p><small>${markets.length ? markets.map(market => `${escapeHtml(market.market || "market")}: ${escapeHtml(market.status || "not evaluated")}`).join(" · ") : "No market-level evaluation exported"}</small></article>`; }).join("")}</div></section>`;
 }
 
+function renderPropRecord(date) {
+    const overall = state.propRecord?.overall || {};
+    const scored = (state.propLog?.predictions || []).filter(row => ["Won", "Lost", "Push", "Void", "DNP"].includes(row.result));
+    const dayRows = scored.filter(row => String(row.game_date || "").slice(0, 10) === String(date || "").slice(0, 10));
+    const wins = Number(overall.wins || 0); const losses = Number(overall.losses || 0); const pushes = Number(overall.pushes || 0);
+    if (!state.propRecord && !state.propLog) return "";
+    return `<section class="props-record panel"><header class="section-header"><div><p class="eyebrow">Prop record</p><h2>Verified results</h2><p class="muted">Settled from real player-game statistics. Unmatched or unavailable stats remain Pending.</p></div><button class="btn btn--small" data-refresh-command="score_props">Score results</button></header><div class="props-record__summary"><div><span>Won</span><strong>${wins}</strong></div><div><span>Lost</span><strong>${losses}</strong></div><div><span>Push</span><strong>${pushes}</strong></div><div><span>Pending</span><strong>${Number(overall.pending || 0)}</strong></div></div>${dayRows.length ? `<div class="props-record__day"><strong>${escapeHtml(formatDate(date))} results</strong><span>${dayRows.map(row => `${escapeHtml(row.player_name || "Player")} · ${escapeHtml(row.market_key || "prop")} · ${escapeHtml(row.result)}`).join(" · ")}</span></div>` : `<p class="muted props-record__empty">No settled prop rows for ${escapeHtml(formatDate(date))}.</p>`}</section>`;
+}
+
 function renderProps() {
     const allRows = propPredictionRows();
     const marketRows = Array.isArray(state.playerProps?.markets) ? state.playerProps.markets : [];
@@ -3791,14 +3843,15 @@ function renderProps() {
     const candidates = sortPropRows(allRows.filter(row => row.candidate_only && !row.model_only).filter(matchesFilters)).slice(0, 10);
     const modelPicks = sortPropRows(allRows.filter(row => row.model_only_pick).filter(matchesFilters)).slice(0, 10);
     const modelOnly = sortPropRows(allRows.filter(row => row.model_only && !row.model_only_pick).filter(matchesFilters)).slice(0, 10);
+    const settledRows = sortPropRows(allRows.filter(row => ["Won", "Lost", "Push", "Void", "DNP"].includes(propStatus(row))).filter(matchesFilters)).slice(0, 10);
     const best = rows.slice(0, 10);
-    const visibleCount = best.length || candidates.length || modelPicks.length || modelOnly.length;
-    const heroTitle = best.length ? "Top qualified props" : candidates.length ? "Model candidates" : modelPicks.length ? "MLB model picks" : modelOnly.length ? "MLB model projections" : "No qualified props";
+    const visibleCount = best.length || candidates.length || modelPicks.length || modelOnly.length || settledRows.length;
+    const heroTitle = best.length ? "Top qualified props" : candidates.length ? "Model candidates" : modelPicks.length ? "MLB model picks" : modelOnly.length ? "MLB model projections" : settledRows.length ? "Previous-day prop results" : "No qualified props";
     const heroText = best.length ? "Published only after real lines, odds, model output, freshness, and player availability pass the quality gate." : candidates.length ? "Real projections and current market prices are shown for review. They are not publishable picks until sport-specific availability or lineup states are verified." : modelPicks.length ? "Real upcoming MLB games and retrained player models are producing internal-threshold picks. They are separate from bookmaker-backed props until a market line is returned." : modelOnly.length ? "Real upcoming MLB games and trained player models are available. Bookmaker lines, odds, probabilities, and availability remain unreturned." : "No real current prop projections are available for the selected date.";
-    const statusText = best.length ? `${best.length === 1 ? "prop" : "props"} met publication criteria` : candidates.length ? "candidates awaiting verification" : modelPicks.length ? "model picks available" : modelOnly.length ? "model-only projections available" : "rows available";
+    const statusText = best.length ? `${best.length === 1 ? "prop" : "props"} met publication criteria` : candidates.length ? "candidates awaiting verification" : modelPicks.length ? "model picks available" : modelOnly.length ? "model-only projections available" : settledRows.length ? "verified results" : "rows available";
     const monitorText = mlbMarketCount ? `${mlbMarketCount} real player-market rows loaded; MLB projections remain research-only until a real player-stat model and lineup/starter inputs are available.` : modelPicks.length ? `No current MLB player markets were returned. Showing ${modelPicks.length} model-backed internal-threshold picks and ${modelOnly.length} supporting projections; bookmaker odds and market edge remain unavailable.` : modelOnly.length ? `No current MLB player markets were returned. Showing ${modelOnly.length} real model-only MLB projections; bookmaker line, odds, probability, and availability remain unavailable.` : "No selected MLB player markets were returned for the current MLB event.";
     const drawer = state.selected.propPlayer ? renderPlayerProfile(state.selected.propPlayer.id, state.selected.propPlayer.sport) : state.selected.propId ? renderPropAnalysis(propPredictionRows().find(row => row.prediction_id === state.selected.propId)) : "";
-    $("#view-props").innerHTML = `<section class="props-shell"><header class="props-header"><div><p class="eyebrow">Player props · ${escapeHtml(formatDate(date))}</p><h2>${heroTitle}</h2><p class="muted">${heroText}</p></div><div class="props-header__status"><strong>${visibleCount}</strong><span>${statusText}</span><small>Data updates stay tied to real exports.</small></div></header><p class="data-status props-monitor" data-variant="${mlbMarketCount ? "info" : modelPicks.length || modelOnly.length ? "warning" : "warning"}"><strong>Market status</strong><span>${monitorText}</span></p>${renderPropFilters(allRows)}${renderPropFunnel(allRows)}<section class="props-feed"><header class="section-header"><div><p class="eyebrow">Review queue</p><h2>${best.length ? "Published props" : candidates.length ? "Candidates awaiting verification" : "No qualified props"}</h2></div><span class="muted">${best.length ? "Quality-gated rows" : "No rows are promoted without the required data"}</span></header>${best.length ? `<div class="props-grid">${best.map(renderPropCard).join("")}</div>` : candidates.length ? `<p class="data-status" data-variant="warning">Real lines and model outputs are available, but availability is not confirmed. These rows remain review-only.</p><div class="props-grid">${candidates.map(renderPropCard).join("")}</div>` : emptyState("No qualified props", "A prop requires a matched current line, real odds, active-player status, sufficient data, a trained model, and a fresh snapshot.")}</section>${modelPicks.length ? `<section class="props-feed props-feed--model-only"><header class="section-header"><div><p class="eyebrow">MLB model lane</p><h2>Internal-threshold picks</h2></div><span class="muted">No bookmaker line</span></header><p class="data-status" data-variant="info">Deterministic model picks against internal baseball thresholds. They are separate from sportsbook props and have no market edge.</p><div class="props-grid">${modelPicks.map(renderPropCard).join("")}</div></section>` : ""}${modelOnly.length ? `<section class="props-feed props-feed--model-only"><header class="section-header"><div><p class="eyebrow">MLB model lane</p><h2>Projection-only rows</h2></div><span class="muted">No bookmaker line</span></header><p class="data-status" data-variant="info">Real schedule and trained player-game models are available while market, lineup, and availability inputs remain pending.</p><div class="props-grid">${modelOnly.map(renderPropCard).join("")}</div></section>` : ""}${renderPropHealth()}${drawer}</section>`;
+    $("#view-props").innerHTML = `<section class="props-shell"><header class="props-header"><div><p class="eyebrow">Player props · ${escapeHtml(formatDate(date))}</p><h2>${heroTitle}</h2><p class="muted">${heroText}</p></div><div class="props-header__status"><strong>${visibleCount}</strong><span>${statusText}</span><small>Data updates stay tied to real exports.</small></div></header><p class="data-status props-monitor" data-variant="${mlbMarketCount ? "info" : modelPicks.length || modelOnly.length ? "warning" : "warning"}"><strong>Market status</strong><span>${monitorText}</span></p>${renderPropFilters(allRows)}${renderPropFunnel(allRows)}<section class="props-feed"><header class="section-header"><div><p class="eyebrow">Review queue</p><h2>${best.length ? "Published props" : candidates.length ? "Candidates awaiting verification" : "No qualified props"}</h2></div><span class="muted">${best.length ? "Quality-gated rows" : "No rows are promoted without the required data"}</span></header>${best.length ? `<div class="props-grid">${best.map(renderPropCard).join("")}</div>` : candidates.length ? `<p class="data-status" data-variant="warning">Real lines and model outputs are available, but availability is not confirmed. These rows remain review-only.</p><div class="props-grid">${candidates.map(renderPropCard).join("")}</div>` : emptyState("No qualified props", "A prop requires a matched current line, real odds, active-player status, sufficient data, a trained model, and a fresh snapshot.")}</section>${settledRows.length ? `<section class="props-feed props-feed--results"><header class="section-header"><div><p class="eyebrow">Verified results</p><h2>Previous-day prop results</h2></div><span class="muted">${settledRows.length} settled</span></header><div class="props-grid">${settledRows.map(renderPropCard).join("")}</div></section>` : ""}${modelPicks.length ? `<section class="props-feed props-feed--model-only"><header class="section-header"><div><p class="eyebrow">MLB model lane</p><h2>Internal-threshold picks</h2></div><span class="muted">No bookmaker line</span></header><p class="data-status" data-variant="info">Deterministic model picks against internal baseball thresholds. They are separate from sportsbook props and have no market edge.</p><div class="props-grid">${modelPicks.map(renderPropCard).join("")}</div></section>` : ""}${modelOnly.length ? `<section class="props-feed props-feed--model-only"><header class="section-header"><div><p class="eyebrow">MLB model lane</p><h2>Projection-only rows</h2></div><span class="muted">No bookmaker line</span></header><p class="data-status" data-variant="info">Real schedule and trained player-game models are available while market, lineup, and availability inputs remain pending.</p><div class="props-grid">${modelOnly.map(renderPropCard).join("")}</div></section>` : ""}${renderPropHealth()}${renderPropRecord(date)}${drawer}</section>`;
 }
 
 function renderPicksFilters(rows) {
@@ -3886,8 +3939,8 @@ function renderHome() {
             <section class="panel home-v2-hero">
                 <div class="home-v2-hero__copy">
                     <p class="eyebrow">LineLens Sports ${escapeHtml(state.app.version || APP_VERSION)}</p>
-                    <h2>Today’s model pulse</h2>
-                <p class="muted">A concise view of the strongest available pick, current game state, and model record across MLB, WNBA, and NFL exports.</p>
+                    <h2>Today’s board</h2>
+                <p class="muted">A short view of the strongest available pick, current game state, and model record across MLB, WNBA, and NFL exports.</p>
                     ${renderQuickActionsV2()}
                     <div class="home-identity-pulse"><span class="lifecycle-status lifecycle-status--live">${lifecycleBoardGames().filter(game => lifecycleStage(game) === "live").length} live</span><span>${lifecycleBoardGames().length} MLB lifecycle rows</span><span>${escapeHtml(selectedModelEntry("MLB")?.model_name || "No production model")}</span></div>
                 </div>
@@ -6721,7 +6774,7 @@ function renderSettings() {
         ${renderCommandConsole("settings")}
         <section class="panel"><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>
         ${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}
-        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v5.0.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
+        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v5.1.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
         <section class="panel"><p class="data-status" data-variant="${state.refreshRuntime.available ? "success" : "warning"}">${state.refreshRuntime.available ? "Bundled exports load first. Python refresh commands are available when the packaged app can access the project scripts." : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment."} Tracking data is stored locally in <code>${TRACKER_KEY}</code>. Refresh logs use <code>${REFRESH_LOGS_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
     `;
 }
@@ -6803,7 +6856,7 @@ function renderAbout() {
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens"><span>View source</span><small>GitHub repository</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/releases"><span>View releases</span><small>Windows builds and release history</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues"><span>Report an issue</span><small>Open a repository issue</small><b aria-hidden="true">↗</b></button>
-                            <a class="about-action" href="RELEASE_NOTES_v5.0.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
+                            <a class="about-action" href="RELEASE_NOTES_v5.1.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
                         </div>
                         <div class="about-meta-row"><span>Build</span><strong>${escapeHtml(state.app.desktop_build || "Desktop build metadata unavailable")}</strong><span>Model record</span><strong>${escapeHtml(timestamp(record?.metadata?.generated_at) || "Unavailable")}</strong></div>
                     </section>

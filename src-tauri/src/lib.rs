@@ -179,6 +179,10 @@ fn command_spec(command_name: &str) -> Result<CommandSpec, String> {
             script: "scripts/refresh_player_props_pipeline.py",
             args: Vec::new(),
         }),
+        "score_props" => Ok(CommandSpec {
+            script: "scripts/score_prop_predictions.py",
+            args: Vec::new(),
+        }),
         _ => Err(format!("Unsupported refresh command: {}", command_name)),
     }
 }

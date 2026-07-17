@@ -46,7 +46,7 @@ jobs:
       - name: Upload Windows bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LineLens-Sports-Windows-v4.1.0
+          name: LineLens-Sports-Windows-v5.1.0
           path: src-tauri/target/release/bundle/**
           if-no-files-found: error
 

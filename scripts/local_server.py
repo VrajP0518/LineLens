@@ -37,6 +37,7 @@ COMMANDS = {
     "wnba_availability": ("scripts/refresh_wnba_availability.py", []),
     "mlb_player_games": ("scripts/refresh_mlb_player_games.py", []),
     "player_props_pipeline": ("scripts/refresh_player_props_pipeline.py", []),
+    "score_props": ("scripts/score_prop_predictions.py", []),
 }
 
 

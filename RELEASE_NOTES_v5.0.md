@@ -10,5 +10,6 @@
 - GameCast now presents a deduplicated lifecycle from Pregame through Final, with technical source metadata collapsed by default.
 - Model Lab now clearly separates official and simulated values, keeps bounded local-only sensitivity controls, supports reset/save/export, and never writes to official records or prediction exports.
 - Data Doctor now reports Sprint 5 export coverage, stale-state rejection, alert counters, deep-link failures, and measured render timings.
+- Props now retain settled prediction logs, real final player statistics, Won/Lost/Push/DNP states, a verified record, and previous-day result cards; the manual props pipeline fetches completed WNBA box scores before scoring.
 
 LineLens remains an educational sports-intelligence and model-evaluation project. It does not provide betting advice.

@@ -6028,6 +6028,326 @@ body .wnba-model-card__visual { min-height: 74px; background: #101d2a; backgroun
 .about-action-list { display: grid; border-top: 1px solid var(--ll-line-soft); }
 .about-action { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .15rem 1rem; align-items: center; padding: .75rem 0; border: 0; border-bottom: 1px solid var(--ll-line-soft); background: transparent; color: #dce7f0; text-align: left; cursor: pointer; text-decoration: none; }
 .about-action span { font-weight: 650; }
+
+/* ==========================================================
+   Pre-deploy polish: editorial sports desk, restrained motion
+   Keeps the existing data surfaces and interaction model intact.
+   ========================================================== */
+:root {
+    --ll-bg: #071019;
+    --ll-surface: #0e1924;
+    --ll-surface-raised: #132332;
+    --ll-surface-muted: #0a141e;
+    --ll-line-strong: #30465a;
+    --ll-line-soft: rgba(166, 188, 211, 0.15);
+    --ll-blue: #8bd3ff;
+    --ll-green: #7bd6a5;
+    --ll-amber: #e3bb6f;
+    --ll-red: #ec8c8c;
+    --ll-neutral: #aebdca;
+    --ll-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body {
+    background: #071019;
+    color: #e6edf5;
+    font-family: "Segoe UI Variable Text", "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.workspace::before,
+.workspace::after {
+    display: none;
+}
+
+.sidebar {
+    gap: 0.8rem;
+    padding: 0.85rem 0.75rem;
+}
+
+.brand {
+    min-height: 46px;
+    gap: 0.6rem;
+}
+
+.brand__mark {
+    width: 42px;
+    height: 42px;
+}
+
+.nav__item {
+    min-height: 44px;
+    font-size: 0.92rem;
+}
+
+.nav-sport-mark {
+    width: 34px;
+    height: 34px;
+    filter: saturate(0.78);
+}
+
+.nav-sport-mark,
+.nav-sport-mark--nfl,
+.nav-sport-mark--mlb,
+.nav-sport-mark--nba,
+.nav-sport-mark--nhl,
+.nav-sport-mark--wnba,
+.nav-sport-mark--soccer {
+    box-shadow: none;
+}
+
+.nav-mlb-word {
+    background: none;
+    color: #e1a0a4;
+}
+
+.ll-sidebar-engine {
+    border-radius: 6px;
+    background: #101d29;
+}
+
+.ll-sidebar-engine i {
+    height: 2px;
+    border-radius: 0;
+    background: #36536b;
+    clip-path: none;
+    animation: none;
+}
+
+.topbar {
+    padding-bottom: 0.8rem;
+}
+
+.topbar h1 {
+    font-weight: 720;
+    letter-spacing: -0.025em;
+}
+
+.panel,
+.summary-card,
+.metric-card-v2,
+.record-day,
+.rail-card,
+.model-profile,
+.models-command > div,
+.lifecycle-lane {
+    border-radius: 7px;
+}
+
+.home-v2-hero {
+    min-height: 248px;
+    border-left: 3px solid var(--ll-blue);
+    border-radius: 7px;
+    background: linear-gradient(115deg, #122333 0%, #0e1924 56%, #101b27 100%) !important;
+}
+
+.home-v2-hero__copy h2 {
+    max-width: 560px;
+    font-size: clamp(2.2rem, 4.1vw, 4.25rem);
+    font-weight: 730;
+    letter-spacing: -0.045em;
+    text-shadow: none;
+}
+
+.home-v2-hero__copy h2 span {
+    background: none;
+    color: var(--ll-blue);
+}
+
+.top-edge-mini {
+    min-height: 180px;
+    border-radius: 7px;
+    border-color: #3b5369;
+    background: #111e2b;
+    box-shadow: none;
+}
+
+.top-edge-mini__pick em,
+.best-pick-v2__hero-pick em {
+    color: var(--ll-amber);
+    text-shadow: none;
+}
+
+.metric-strip-v2 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.metric-card-v2 {
+    min-height: 92px;
+    border-radius: 6px;
+    background: #101d29;
+    box-shadow: none;
+}
+
+.metric-card-v2:hover {
+    transform: translateY(-1px);
+    border-color: #58738b;
+    box-shadow: none;
+}
+
+.metric-card-v2__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    box-shadow: none;
+    background: #172a3a;
+}
+
+.metric-card-v2 strong {
+    font-weight: 700;
+}
+
+.best-pick-v2,
+.daily-board-v2,
+.home-readout-v2 {
+    border-radius: 7px;
+    background: #0e1924 !important;
+    box-shadow: none;
+}
+
+.best-pick-v2 {
+    border-left: 3px solid var(--ll-amber);
+}
+
+.best-pick-v2::before,
+.ll-panel-glow {
+    display: none;
+}
+
+.best-pick-v2__hero-pick {
+    border-radius: 6px;
+    background: #182534;
+    box-shadow: none;
+}
+
+.best-pick-v2__hero-pick strong {
+    color: #f2f6fa;
+    text-shadow: none;
+}
+
+.best-pick-v2__readout > div,
+.readout-grid-v2 > div {
+    border-radius: 6px;
+    background: #101d29;
+}
+
+.sports-ticker-v2 {
+    min-height: 42px;
+    border-radius: 6px;
+    border-color: #30465a;
+    background: #09131d;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    backdrop-filter: none;
+}
+
+.ticker-item-v2 {
+    min-height: 42px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mlb-game-card {
+    transition: transform 0.2s var(--ll-ease-out), border-color 0.15s ease, background 0.15s ease;
+}
+
+.mlb-game-card:hover {
+    transform: translateY(-2px);
+    box-shadow: none;
+}
+
+.view.view--entering > * {
+    animation: llEditorialEnter 0.28s var(--ll-ease-out) both !important;
+}
+
+.view.view--entering > *:nth-child(2) { animation-delay: 35ms !important; }
+.view.view--entering > *:nth-child(3) { animation-delay: 70ms !important; }
+.view.view--entering > *:nth-child(4) { animation-delay: 105ms !important; }
+
+@keyframes llEditorialEnter {
+    from {
+        opacity: 0;
+        transform: translateY(7px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 680px) {
+    .onboarding-dialog,
+    .about-dialog {
+        box-sizing: border-box;
+        width: calc(100vw - 1rem);
+        max-width: calc(100vw - 1rem);
+        max-height: calc(100dvh - 1rem);
+        padding: 1rem;
+    }
+
+    .onboarding-dialog header > div,
+    .onboarding-steps li,
+    .onboarding-steps strong,
+    .onboarding-steps span {
+        min-width: 0;
+    }
+
+    .onboarding-dialog h2 {
+        font-size: clamp(1.35rem, 7vw, 2rem);
+        overflow-wrap: anywhere;
+    }
+
+    .onboarding-dialog footer {
+        align-items: stretch;
+    }
+
+    .onboarding-check {
+        width: 100%;
+    }
+
+    .onboarding-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    .onboarding-actions .btn {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 1300px) {
+    .metric-strip-v2 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .metric-strip-v2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-v2-hero {
+        border-left-width: 0;
+        border-top: 3px solid var(--ll-blue);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto !important;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+
+    .view.view--entering > * {
+        animation: none !important;
+    }
+}
 .about-action small { color: #8fa2b3; font-size: .75rem; }
 .about-action b { grid-row: 1 / span 2; grid-column: 2; color: var(--ll-blue); font-size: 1rem; font-weight: 500; }
 .about-action:hover span { color: var(--ll-blue); }
@@ -7082,6 +7402,13 @@ body {
 .sprint5-diagnostic-grid small { color:var(--muted); }
 .sprint5-timeline details { margin-top:5px; }
 .sprint5-timeline details summary { color:var(--muted); cursor:pointer; font-size:.75rem; }
+.props-record { margin-top: 16px; }
+.props-record__summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+.props-record__summary > div { border:1px solid var(--border,#243244); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:3px; }
+.props-record__summary span, .props-record__day span { color:var(--muted); font-size:.8rem; }
+.props-record__day { margin-top:12px; padding-top:12px; border-top:1px solid var(--border,#243244); display:flex; flex-direction:column; gap:4px; }
+.props-record__empty { margin:12px 0 0; }
+@media (max-width: 760px) { .props-record__summary { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width: 760px) { .sprint5-reaction-grid, .sprint5-diagnostic-grid { grid-template-columns:1fr; } }
 .sidebar .nav::-webkit-scrollbar { width: 10px; }
 .sidebar .nav::-webkit-scrollbar-track { background: #0a141e; }
@@ -7092,4 +7419,690 @@ body {
 @media (max-width: 1100px) {
     .sidebar { position: sticky; top: 0; height: 100vh; max-height: 100vh; }
     .sidebar > .nav, .sidebar .nav { max-height: calc(100vh - 7rem); overflow-y: auto; }
+}
+
+/* Final navigation contract: the sidebar stays viewport-bound and only its board list scrolls. */
+html,
+body {
+    min-height: 100%;
+}
+
+.app-shell {
+    height: 100vh;
+    min-height: 100vh;
+}
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: 100vh;
+    max-height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.sidebar > .nav {
+    display: grid;
+    flex: 1 1 0%;
+    min-height: 0;
+    max-height: none;
+    align-content: start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: auto;
+}
+
+.sidebar > .nav > .nav__section {
+    min-height: min-content;
+}
+
+.sidebar > .nav::-webkit-scrollbar {
+    width: 11px;
+}
+
+.sidebar > .nav::-webkit-scrollbar-track {
+    background: #0a141e;
+}
+
+.sidebar > .nav::-webkit-scrollbar-thumb {
+    min-height: 40px;
+    border: 2px solid #0a141e;
+    border-radius: 999px;
+    background: #5b7b96;
+}
+
+@media (max-width: 1100px) {
+    .app-shell {
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .sidebar {
+        position: sticky;
+        height: 100vh;
+        max-height: 100vh;
+    }
+
+    .sidebar > .nav {
+        display: grid;
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+    }
+}
+
+/* Final scroll contract: document scrolling on the desk, rail scrolling on desktop. */
+html,
+body {
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+body {
+    background: #071019;
+    background-image: linear-gradient(180deg, #0b1722 0%, #071019 42%, #060d15 100%);
+    background-attachment: initial;
+}
+
+.app-shell {
+    height: auto;
+    min-height: 100vh;
+    align-items: start;
+}
+
+.workspace {
+    min-width: 0;
+    min-height: 100vh;
+    overflow: visible;
+}
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    max-height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.sidebar > .nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+}
+
+@media (max-width: 1100px) {
+    .app-shell {
+        display: block;
+        height: auto;
+        min-height: 0;
+    }
+
+    .sidebar {
+        position: relative;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .sidebar > .nav {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .workspace {
+        min-height: 0;
+        overflow: visible;
+    }
+}
+
+/* Fixed rail: the sidebar owns the viewport; the document owns page scroll. */
+@media (min-width: 1101px) {
+    .app-shell {
+        display: block;
+        min-height: 100vh;
+    }
+
+    .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 40;
+        width: var(--sidebar-width);
+        height: 100vh;
+        max-height: 100vh;
+    }
+
+    .workspace {
+        width: auto;
+        min-height: 100vh;
+        margin-left: var(--sidebar-width);
+    }
+}
+
+/* Coke Zero-inspired scroll choreography: short, editorial, and viewport-led. */
+.ll-scroll-reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.55s var(--ll-ease-out), transform 0.55s var(--ll-ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+}
+
+.ll-scroll-reveal.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.home-v2-shell > .home-v2-hero,
+.home-v2-shell > .metric-strip-v2,
+.home-v2-shell > .home-v2-grid {
+    scroll-margin-top: 5rem;
+}
+
+.home-v2-shell > .home-v2-grid > *:hover,
+.mlb-game-card:hover,
+.model-profile:hover {
+    transition: transform 0.22s var(--ll-ease-out), border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.home-v2-shell > .home-v2-grid > *:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 1100px) {
+    .home-v2-shell > .home-v2-grid > *:hover {
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ll-scroll-reveal,
+    .ll-scroll-reveal.is-revealed {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* Sidebar v2: explicit rows prevent the menu from painting over itself. */
+@media (min-width: 1101px) {
+    .sidebar {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+        align-content: stretch;
+        gap: 0.65rem;
+        padding: 0.85rem 0.7rem;
+    }
+
+    .sidebar > .nav {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-auto-rows: max-content;
+        align-content: start;
+        align-self: stretch;
+        min-height: 0;
+        height: auto;
+        max-height: none;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+        scrollbar-width: auto;
+        scrollbar-color: #6d91ad #0a141e;
+    }
+
+    .sidebar > .nav > .nav__section {
+        min-height: max-content;
+        height: max-content;
+        overflow: visible;
+    }
+
+    .sidebar > .nav > .nav__section + .nav__section {
+        margin-top: 0.55rem;
+    }
+
+    .sidebar > .nav .nav__section-label {
+        min-height: 31px;
+        padding: 0.48rem 0.65rem;
+        font-size: 0.66rem;
+    }
+
+    .sidebar > .nav .nav__item {
+        grid-template-columns: 50px minmax(0, 1fr) auto;
+        min-height: 58px;
+        gap: 0.7rem;
+        padding: 0.45rem 0.7rem;
+        font-size: 1rem;
+        line-height: 1.1;
+    }
+
+    .sidebar > .nav .nav-sport-mark {
+        width: 42px;
+        height: 42px;
+    }
+
+    .sidebar > .nav .nav__section--sports .nav__item {
+        grid-template-columns: 58px minmax(0, 1fr) auto;
+        min-height: 72px;
+        padding-block: 0.55rem;
+    }
+
+    .sidebar > .nav .nav__section--sports .nav-sport-mark {
+        width: 52px;
+        height: 52px;
+    }
+
+    .sidebar > .nav::-webkit-scrollbar {
+        width: 13px;
+    }
+
+    .sidebar > .nav::-webkit-scrollbar-track {
+        background: #0a141e;
+    }
+
+    .sidebar > .nav::-webkit-scrollbar-thumb {
+        min-height: 52px;
+        border: 3px solid #0a141e;
+        border-radius: 999px;
+        background: #6d91ad;
+    }
+
+    .sidebar__product,
+    .sidebar__note,
+    .ll-sidebar-engine {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 1100px) {
+    .sidebar {
+        display: flex;
+        gap: 0.65rem;
+    }
+
+    .sidebar > .nav {
+        display: grid;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .sidebar > .nav .nav__item {
+        min-height: 52px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Product surface v6: a quieter editorial system over the existing feature set. */
+:root {
+    --ll-canvas: #071019;
+    --ll-surface: #0d1823;
+    --ll-surface-raised: #12202d;
+    --ll-surface-soft: #09141e;
+    --ll-line: #223442;
+    --ll-line-strong: #365267;
+    --ll-ink: #f4f7fb;
+    --ll-ink-soft: #c1cfdb;
+    --ll-ink-muted: #8fa4b6;
+    --ll-accent: #8bd3ff;
+    --ll-accent-warm: #efc775;
+    --ll-positive: #75d4a5;
+    --ll-negative: #f1848c;
+    --ll-space-1: 4px;
+    --ll-space-2: 8px;
+    --ll-space-3: 12px;
+    --ll-space-4: 16px;
+    --ll-space-5: 20px;
+    --ll-space-6: 24px;
+    --ll-space-7: 32px;
+    --ll-space-8: 40px;
+    --ll-radius-sm: 5px;
+    --ll-radius-md: 8px;
+    --ll-radius-lg: 12px;
+    --ll-shadow-1: 0 8px 24px rgba(0, 0, 0, 0.2);
+    --ll-duration-fast: 160ms;
+    --ll-duration-mid: 190ms;
+    --ll-ease-out: cubic-bezier(0.2, 0.75, 0.25, 1);
+    font-family: "Segoe UI Variable Text", "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: var(--ll-canvas);
+    color: var(--ll-ink);
+    font-family: inherit;
+    line-height: 1.45;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+    font-synthesis: none;
+}
+
+.workspace {
+    background: var(--ll-canvas);
+}
+
+.workspace::before,
+.workspace::after {
+    display: none;
+}
+
+.sidebar {
+    background: var(--ll-surface-soft);
+    border-right: 1px solid var(--ll-line);
+    box-shadow: none;
+}
+
+.brand {
+    border-bottom-color: var(--ll-line);
+}
+
+.brand strong,
+.topbar h1,
+.panel h2,
+.section-header h2,
+.home-v2-hero h2,
+.models-hero h2 {
+    color: var(--ll-ink);
+    letter-spacing: -0.025em;
+}
+
+.eyebrow,
+.nav__section-label {
+    color: var(--ll-ink-muted);
+    letter-spacing: 0.08em;
+}
+
+.muted,
+.panel small,
+.panel code,
+.topbar__meta,
+.global-footer {
+    color: var(--ll-ink-muted);
+}
+
+.nav__section,
+.sidebar__product .nav__section {
+    border-color: var(--ll-line);
+    border-radius: var(--ll-radius-md);
+    background: var(--ll-surface);
+}
+
+.nav__item {
+    color: var(--ll-ink-soft);
+    transition: color var(--ll-duration-fast) ease, background-color var(--ll-duration-fast) ease, border-color var(--ll-duration-fast) ease;
+}
+
+.nav__item:hover {
+    border-color: var(--ll-line-strong);
+    background: var(--ll-surface-raised);
+}
+
+.nav__item.is-active {
+    border-color: var(--ll-line-strong);
+    background: rgba(139, 211, 255, 0.1);
+    box-shadow: inset 3px 0 0 var(--ll-accent);
+    color: var(--ll-ink);
+}
+
+.nav__section--sports .nav__item::before {
+    opacity: 0.55;
+}
+
+.nav-sport-mark,
+.nav-sport-mark--nfl,
+.nav-sport-mark--mlb,
+.nav-sport-mark--nba,
+.nav-sport-mark--nhl,
+.nav-sport-mark--wnba,
+.nav-sport-mark--soccer {
+    box-shadow: none;
+}
+
+.sidebar__note,
+.ll-sidebar-engine {
+    color: var(--ll-ink-muted);
+}
+
+.panel,
+.summary-card,
+.metric-card-v2,
+.prediction-row-card,
+.record-day,
+.rail-card,
+.signal-row,
+.lifecycle-lane,
+.lifecycle-game,
+.watch-game-row,
+.watch-alert-list article,
+.model-health-card,
+.model-ops-card,
+.arena-model-card,
+.model-profile,
+.models-command > div,
+.props-record__summary > div {
+    border-color: var(--ll-line);
+    border-radius: var(--ll-radius-md);
+    background: var(--ll-surface);
+    box-shadow: none;
+}
+
+.panel {
+    padding: clamp(1rem, 1.5vw, 1.35rem);
+}
+
+.panel--nested,
+.lifecycle-lane,
+.models-command > div {
+    background: var(--ll-surface-soft);
+}
+
+.data-status,
+.home-source-strip,
+.props-monitor {
+    border-color: var(--ll-line);
+    border-radius: var(--ll-radius-sm);
+    background: var(--ll-surface-soft);
+}
+
+.btn,
+.link-btn,
+.nav__item,
+button,
+a,
+input,
+select,
+textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn {
+    border-radius: var(--ll-radius-sm);
+    box-shadow: none;
+    transition: color var(--ll-duration-fast) ease, background-color var(--ll-duration-fast) ease, border-color var(--ll-duration-fast) ease, transform var(--ll-duration-fast) var(--ll-ease-out);
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.btn--primary {
+    background: var(--ll-accent);
+    color: #071019;
+}
+
+.chip,
+.tag,
+.sport-pill,
+.moltres-badge,
+.model-ops-card__status,
+.model-gallery-card__badge {
+    border-radius: var(--ll-radius-sm);
+}
+
+.home-v2-hero,
+.models-hero,
+.lifecycle-hero,
+.props-header,
+.mlb-page-header {
+    border-color: var(--ll-line-strong);
+    border-radius: var(--ll-radius-lg);
+    background: var(--ll-surface);
+    box-shadow: var(--ll-shadow-1);
+}
+
+.home-v2-hero::before,
+.home-v2-hero::after,
+.models-hero::before,
+.models-hero::after,
+.lifecycle-hero::before,
+.lifecycle-hero::after,
+.hero-holo::after,
+.models-hero__orb,
+.ll-panel-glow,
+.ll-stadium-lights {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.metric-card-v2,
+.summary-card {
+    min-height: 92px;
+}
+
+.metric-card-v2 strong,
+.summary-card strong {
+    color: var(--ll-ink);
+}
+
+.metric-card-v2__icon {
+    color: var(--ll-accent);
+    background: transparent;
+}
+
+.data-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.data-table th {
+    color: var(--ll-ink-muted);
+    background: var(--ll-surface-soft);
+}
+
+.data-table td,
+.data-table th {
+    border-color: var(--ll-line);
+}
+
+.data-table tbody tr:hover {
+    background: rgba(139, 211, 255, 0.05);
+}
+
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--ll-accent);
+    outline-offset: 3px;
+}
+
+:where(button, a, input, select, textarea) {
+    min-height: 36px;
+}
+
+.global-ticker-slot,
+.global-ticker {
+    border-top-color: var(--ll-line);
+    background: var(--ll-surface-soft);
+}
+
+.global-ticker__track {
+    animation-duration: 140s;
+}
+
+/* Ambient motion is not information. Keep motion for navigation and state changes. */
+.workspace,
+.workspace::before,
+.workspace::after,
+.ll-sidebar-engine i,
+.best-pick-v2::before,
+.models-hero__orb span,
+.models-hero__orb i,
+.models-hero__orb b,
+.mlb-game-card--live {
+    animation: none !important;
+}
+
+@media (max-width: 1100px) {
+    .workspace {
+        padding-inline: clamp(0.8rem, 3vw, 1.25rem);
+    }
+
+    .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: color-mix(in srgb, var(--ll-canvas) 94%, transparent);
+        backdrop-filter: blur(8px);
+    }
+}
+
+@media (max-width: 760px) {
+    .topbar,
+    .section-header,
+    .home-v2-hero,
+    .models-hero,
+    .props-header,
+    .mlb-page-header__top,
+    .mlb-page-header__controls {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .topbar__meta,
+    .topbar__meta .btn,
+    .report-actions,
+    .report-actions .btn {
+        width: 100%;
+    }
+
+    .topbar__meta,
+    .report-actions {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .home-v2-hero,
+    .models-hero,
+    .props-header,
+    .mlb-page-header {
+        border-radius: var(--ll-radius-md);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
 }

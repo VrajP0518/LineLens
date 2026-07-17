@@ -1,4 +1,4 @@
-# LineLens Sports v5.0
+# LineLens Sports
 
 LineLens Sports is a desktop sports-intelligence and model-evaluation app built around real bundled exports.
 
@@ -7,8 +7,9 @@ LineLens Sports is a desktop sports-intelligence and model-evaluation app built 
 </p>
 
 <p align="center">
-  <img src="image.png" alt="LineLens Sports visual system and sports intelligence workspace" width="100%" />
+  <img src="image-2.png" alt="LineLens Sports home dashboard with MLB, NFL, reports, tracking, model health, and live ticker" width="100%" />
 </p>
+
 
 ## Download (RECOMMENDED)
 
@@ -59,22 +60,34 @@ npm run refresh:props:pipeline
 
 The props pipeline is optional and should only be run when the required real player data and model artifacts are available. MLB player-game data is stored locally as Parquet by the pybaseball collector.
 
-## Pages
+## Features
 
-- Home: daily model pulse
+- Home dashboard for quick access
 - Picks: MLB and WNBA prediction feed
 - Props: qualified and research-only player projections
-- MLB / WNBA: sport-specific boards, date navigation, live scores, and model context
+- NFL / MLB / WNBA: sport-specific boards, date navigation, live scores, and model context
 - GameCast: matchup detail, odds, timeline, and postgame review
 - Models, Reports, Record: evaluation, health, and accountability
+- Tracking ledger
+- Personalized notifications
+- Automatic Model Refreshing makes sure the model always trys to get better
 
 ## Data policy
 
-LineLens shows real available data. Missing, stale, schedule-only, pending, and unavailable states are labelled. Predictions and market information are for educational analysis only and are not betting advice.
+LineLens shows real available data. Missing, stale, schedule-only, pending, and unavailable states are labelled. Predictions and market information are for educational analysis only and NOT BETTING ADVICE.
 
-## Technology
+## Tech Stack
 
-Vanilla HTML/CSS/JavaScript, Python data and modeling pipelines, scikit-learn, optional Tauri packaging, and GitHub Actions Windows builds.
+- Python
+- JavaScript
+- HTML
+- CSS
+- ML: scikit-learn, NumPy, pandas, joblib
+- Data processing: Polars, PyArrow, pybaseball, nfl-data-py
+- Desktop app: Tauri 2 with Rust
+- Rust libraries: serde and tauri-plugin-opener
+- Packaging/CI: Node.js/npm, GitHub Actions, Windows .msi/.exe builds
+- Storage: bundled JSON/JavaScript exports, local Parquet files, and browser localStorage
 
 ## Project links
 

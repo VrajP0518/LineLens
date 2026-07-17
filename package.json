@@ -1,6 +1,6 @@
 {
   "name": "linelens-sports",
-  "version": "5.0.0",
+  "version": "5.1.0",
   "private": true,
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
@@ -8,6 +8,7 @@
     "app": "python scripts/local_server.py --port 4173",
     "app:dist": "npm run build:web && npx http-server dist-web -p 4174",
     "check:js": "node --check app.js && node --check widget.js && node --check sprint5.js",
+    "check:design": "python scripts/check_design.py",
     "check:python": "python -m compileall src scripts",
     "demo:check": "python scripts/demo_check.py",
     "generate:icons": "python scripts/generate_app_icons.py",
@@ -49,6 +50,7 @@
     "build:sprint5": "python scripts/build_sprint5_exports.py",
     "check:sprint5": "python scripts/check_sprint5.py",
     "test:sprint5:alerts": "python scripts/test_sprint5_alerts.py",
+    "qa:sprint5": "python scripts/test_sprint5_alerts.py",
     "check:props": "python scripts/check_props.py",
     "check:integrity": "python scripts/check_data_integrity.py",
     "verify:release": "python scripts/verify_release.py",

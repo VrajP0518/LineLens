@@ -2,15 +2,15 @@
   "metadata": {
     "app": "LineLens Sports",
     "version": "v5.0",
-    "generated_at": "2026-07-16T12:28:33Z",
+    "generated_at": "2026-07-17T17:29:22Z",
     "real_data": true,
-    "new_real_data": true,
+    "new_real_data": false,
     "provider": "the_odds_api",
     "source": "The Odds API",
-    "source_status": "success",
+    "source_status": "failed_or_empty",
     "snapshot_count": 528,
-    "new_snapshot_count": 43,
-    "mlb_predictions_joined": 7,
+    "new_snapshot_count": 0,
+    "mlb_predictions_joined": 0,
     "sports_requested": [
       "MLB",
       "WNBA",
@@ -25,43 +25,50 @@
       "preferred_bookmakers": ""
     },
     "quota": {
-      "requests_remaining": "281",
-      "requests_used": "219",
-      "cost_last_request": "3"
+      "requests_remaining": null,
+      "requests_used": null,
+      "cost_last_request": null
     },
     "sharp_key_present": true,
     "note": "Odds are optional. Missing odds never fabricate lines, movement, or CLV."
   },
   "sports": {
     "MLB": {
-      "status": "success",
-      "message": "Fetched 5 odds rows from The Odds API.",
+      "status": "provider_unavailable",
+      "message": "Odds provider could not be reached; cached snapshots were preserved.",
       "enabled": true,
       "provider": "the_odds_api",
-      "events": 5,
-      "requests_remaining": "281",
-      "requests_used": "219",
-      "cost_last_request": "3"
+      "events": 0,
+      "requests_remaining": null,
+      "requests_used": null,
+      "cost_last_request": null,
+      "sharp_fallback": {
+        "status": "provider_unavailable",
+        "provider": "SharpAPI",
+        "events": 0,
+        "rows": 0,
+        "requests_remaining": null
+      }
     },
     "WNBA": {
-      "status": "success",
-      "message": "Fetched 6 odds rows from The Odds API.",
+      "status": "provider_unavailable",
+      "message": "Odds provider could not be reached; cached snapshots were preserved.",
       "enabled": true,
       "provider": "the_odds_api",
-      "events": 6,
-      "requests_remaining": "278",
-      "requests_used": "222",
-      "cost_last_request": "3"
+      "events": 0,
+      "requests_remaining": null,
+      "requests_used": null,
+      "cost_last_request": null
     },
     "NFL": {
-      "status": "success",
-      "message": "Fetched 75 odds rows from The Odds API.",
+      "status": "provider_unavailable",
+      "message": "Odds provider could not be reached; cached snapshots were preserved.",
       "enabled": true,
       "provider": "the_odds_api",
-      "events": 75,
-      "requests_remaining": "275",
-      "requests_used": "225",
-      "cost_last_request": "3"
+      "events": 0,
+      "requests_remaining": null,
+      "requests_used": null,
+      "cost_last_request": null
     }
   },
   "snapshots": [

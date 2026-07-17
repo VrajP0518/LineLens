@@ -30,6 +30,10 @@ def main() -> int:
     parser.add_argument("--skip-mlb-training", action="store_true")
     args = parser.parse_args()
     python = sys.executable
+    # Fetch completed WNBA player box scores before exporting/scoring props.
+    # This keeps result settlement grounded in real player statistics instead
+    # of relying on the scoreboard, which does not include player lines.
+    run([python, "scripts/refresh_wnba_player_boxscores.py"])
     run([python, "scripts/refresh_wnba_availability.py"])
     if not args.skip_mlb_download:
         run([python, "scripts/refresh_mlb_player_games.py", "--start-date", args.mlb_start_date, "--end-date", args.mlb_end_date])

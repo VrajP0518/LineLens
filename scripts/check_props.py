@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.score_prop_predictions import result_for
 
 
 def load(relative: str) -> dict:
@@ -74,6 +79,9 @@ def main() -> int:
         check(bool(model_only), "model-only status includes visible MLB candidates")
         check(bool(mlb_model_picks), "model-only status includes visible MLB model picks")
     check(all(row.get("result", "Pending") in {"Won", "Lost", "Push", "Void", "DNP", "Pending", "Data unresolved"} for row in log_rows), "prop results use documented states")
+    check(result_for({"sport": "WNBA", "line": 20.5, "side": "Over"}, 21, {"sport": "WNBA"}) == "Won", "WNBA over settlement uses final stat")
+    check(result_for({"sport": "MLB", "line": 5.5, "side": "Under"}, 7, {"sport": "MLB"}) == "Lost", "MLB under settlement uses final stat")
+    check(result_for({"sport": "WNBA", "line": 20.5, "side": "Over"}, 20.5, {"sport": "WNBA"}) == "Push", "equal stat settles as push")
     check(all("future" not in str(row).lower() for row in rows), "published props do not expose future feature markers")
     check(registry.get("metadata", {}).get("production_ready") is False or registry.get("models"), "prop registry does not claim production without artifacts")
     check(health.get("metadata", {}).get("key_present") is False or "quota" in health.get("metadata", {}), "odds key/quota state is explicit without exposing the key")
@@ -84,6 +92,9 @@ def main() -> int:
     check(all(row.get("availability_status") in {"out", "questionable", "probable", "doubtful", "confirmed_active"} for row in availability.get("players", [])), "WNBA availability statuses use the normalized contract")
     check((ROOT / "src/wnba/props_dataset.py").exists(), "leakage-safe prop dataset builder is bundled")
     check("rolling values exclude the game" in (ROOT / "src/wnba/props_dataset.py").read_text(encoding="utf-8"), "rolling feature leakage policy is documented")
+    app_text = (ROOT / "app.js").read_text(encoding="utf-8")
+    check("Previous-day prop results" in app_text and "renderPropRecord" in app_text, "Props view exposes historical settled results")
+    check("score_props" in (ROOT / "scripts/local_server.py").read_text(encoding="utf-8") and "score_props" in (ROOT / "src-tauri/src/lib.rs").read_text(encoding="utf-8"), "result scoring is available in browser and desktop command boundaries")
     print("Player props contract PASS")
     return 0
 

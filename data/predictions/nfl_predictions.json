@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at": "2026-07-16T12:28:00Z",
+    "generated_at": "2026-07-17T17:27:28Z",
     "features_file": "data\\processed\\nfl\\spread_dataset.parquet",
     "model_file": "models\\nfl_spread_model.joblib",
     "row_count": 1777
@@ -81798,7 +81798,7 @@
     "version": "v5.0",
     "real_data": true,
     "prediction_mode": "historical_backtest",
-    "generated_at": "2026-07-16T12:28:00Z",
+    "generated_at": "2026-07-17T17:27:29Z",
     "model_type": "existing_project_pipeline",
     "source": "nfl-data-py / existing project pipeline",
     "season_min": 2018,

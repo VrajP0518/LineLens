@@ -1,1 +1,1 @@
-window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v5.0","release":"Sprint 5 live intelligence and personalization","generated_at":"2026-07-15T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};
+window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v5.1","release":"Sprint 5 live intelligence and personalization","generated_at":"2026-07-15T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};
