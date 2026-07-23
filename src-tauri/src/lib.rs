@@ -61,7 +61,9 @@ fn project_root() -> Result<PathBuf, String> {
         if let Some(parent) = executable.parent() {
             candidates.push(parent.to_path_buf());
             candidates.push(parent.join("resources"));
+            candidates.push(parent.join("resources").join("resources"));
             candidates.push(parent.join("resources").join("runtime"));
+            candidates.push(parent.join("runtime"));
         }
     }
     if let Ok(current_dir) = std::env::current_dir() {
@@ -79,15 +81,21 @@ fn project_root() -> Result<PathBuf, String> {
 
 fn bundled_source_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     if let Ok(resource_dir) = app.path().resource_dir() {
-        if resource_dir
-            .join("scripts")
-            .join("refresh_data.py")
-            .exists()
-        {
-            return Ok(resource_dir);
+        let candidates = [
+            resource_dir.clone(),
+            resource_dir.join("runtime"),
+            resource_dir.join("resources"),
+            resource_dir.join("resources").join("runtime"),
+        ];
+        for candidate in candidates {
+            if candidate.join("scripts").join("refresh_data.py").exists() {
+                return Ok(candidate);
+            }
         }
     }
-    project_root()
+    project_root().map_err(|_| {
+        "Bundled LineLens runtime files are missing. Install a current Windows build with the runtime resources included.".to_string()
+    })
 }
 
 fn copy_directory(source: &Path, destination: &Path) -> Result<(), String> {
@@ -143,7 +151,8 @@ fn runtime_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     let marker = runtime.join(RUNTIME_VERSION_FILE);
     let needs_bundle_seed = fs::read_to_string(&marker)
         .map(|value| value.trim() != version)
-        .unwrap_or(true);
+        .unwrap_or(true)
+        || !runtime.join("scripts").join("refresh_data.py").exists();
 
     if needs_bundle_seed {
         copy_directory(&source.join("scripts"), &runtime.join("scripts"))?;

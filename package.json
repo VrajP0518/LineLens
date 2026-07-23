@@ -53,6 +53,7 @@
     "qa:sprint5": "python scripts/test_sprint5_alerts.py",
     "check:props": "python scripts/check_props.py",
     "check:integrity": "python scripts/check_data_integrity.py",
+    "check:tauri:resources": "python scripts/verify_tauri_resources.py",
     "verify:release": "python scripts/verify_release.py",
     "refresh:live": "python scripts/live_scores.py",
     "refresh:live:fast": "python scripts/live_scores.py --days-back 1 --days-forward 7 --output-stem live_heartbeat",

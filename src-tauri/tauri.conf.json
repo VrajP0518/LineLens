@@ -28,13 +28,13 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "resources": [
-      "../scripts",
-      "../src",
-      "../data",
-      "../models",
-      "../requirements.txt"
-    ],
+    "resources": {
+      "../scripts": "runtime/scripts",
+      "../src": "runtime/src",
+      "../data": "runtime/data",
+      "../models": "runtime/models",
+      "../requirements.txt": "runtime/requirements.txt"
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
