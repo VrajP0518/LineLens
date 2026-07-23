@@ -1,10 +1,9 @@
-const APP_VERSION = "v5.1";
+const APP_VERSION = "v5.4.0";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
 const FAVORITES_KEY = "linelens.favorites.v1";
 const LIVE_ALERTS_KEY = "linelens.liveAlerts.v1";
-const RELOAD_AFTER_REFRESH_KEY = "linelens.refreshReload.v1";
 
 const DATA_SOURCES = {
     app: ["data/app_metadata.json"],
@@ -81,7 +80,18 @@ const state = {
     mlbPropModelCards: window.__MLB_PROP_MODEL_CARDS__ || null,
     mlbPropModelHealth: window.__MLB_PROP_MODEL_HEALTH__ || null,
     mlbPropDatasetSummary: window.__MLB_PROP_DATASET_SUMMARY__ || null,
-    refreshRuntime: { available: false, active: false, message: "Checking refresh availability..." },
+    refreshRuntime: {
+        available: false,
+        active: false,
+        command: null,
+        phase: "idle",
+        startedAt: null,
+        lastSuccessAt: null,
+        lastFailureAt: null,
+        lastResult: null,
+        message: "Checking refresh availability...",
+    },
+    diagnostics: { checked: false, available: false, status: "Checking", message: "Runtime diagnostics have not run yet.", checks: [] },
     apiKeys: { checked: false, available: false, odds_api_key: false, sharp_odds_api_key: false, propline_api_key: false, message: "Checking local key storage..." },
     nfl: { payload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null, games: [], error: null },
     mlb: { payload: window.__MLB_PREDICTIONS__ || null, games: [], error: null },
@@ -542,6 +552,7 @@ function setStatus(message, variant = "info") {
 }
 
 let appLoadingStartedAt = performance.now();
+let refreshInFlight = null;
 
 function setAppLoading(message, detail = "", progress = 24) {
     const root = $("#app-loading");
@@ -1201,7 +1212,7 @@ async function refreshLiveHeartbeat(options = {}) {
         renderLiveNotifications();
         return;
     }
-    if (state.refreshRuntime.active && state.refreshRuntime.command !== "startup_auto" && !options.force) return;
+    if (state.refreshRuntime.active && !options.force) return;
     const before = liveGames();
     state.liveRefresh.refreshing = true;
     state.liveRefresh.lastStatus = "refreshing";
@@ -1219,7 +1230,7 @@ async function refreshLiveHeartbeat(options = {}) {
         } else if (!result) {
             state.liveRefresh.lastStatus = "cached";
         }
-        await loadAllAfterRefresh();
+        if (result?.success) await loadAllAfterRefresh();
         const after = liveGames();
         detectLiveAlerts(before, after);
         state.liveRefresh.lastMessage = result?.success
@@ -2448,8 +2459,6 @@ async function loadAll() {
 
     const modes = [`NFL ${dataMode(state.nfl.payload, state.nfl.games)}`, `MLB ${dataMode(state.mlb.payload, state.mlb.games)}`, `WNBA ${dataMode(state.wnba.payload, state.wnba.games)}`];
     setStatus(allGames().length ? "" : `No prediction exports loaded. ${modes.join(" / ")}.`, allGames().length ? "success" : "warning");
-    const resumedAfterFileRefresh = sessionStorage.getItem(RELOAD_AFTER_REFRESH_KEY) === "1";
-    if (resumedAfterFileRefresh) sessionStorage.removeItem(RELOAD_AFTER_REFRESH_KEY);
     if (!state.refreshRuntime.checked) {
         state.refreshRuntime.checked = true;
         state.refreshRuntime.available = isTauriRefreshAvailable() || browserRefreshAvailable();
@@ -2459,11 +2468,14 @@ async function loadAll() {
                 : "Local refresh bridge detected; background refresh is enabled."
             : "Showing bundled exports. Start npm run app to enable local command refresh.";
         renderAll();
-        if (state.refreshRuntime.available && !resumedAfterFileRefresh) {
+        if (state.refreshRuntime.available) {
             runStartupAutomation({ background: true });
         }
     }
     startLiveHeartbeat();
+    loadRuntimeDiagnostics().then(() => {
+        if (state.selected.view === "settings") renderSettings();
+    });
 }
 
 function isTauriRefreshAvailable() {
@@ -2516,7 +2528,40 @@ async function openLiveWidget() {
     }
 }
 
-async function runRefreshCommand(commandName = "startup", options = {}) {
+function refreshAlreadyRunning() {
+    if (!state.refreshRuntime.active) return false;
+    showToast(`Refresh already running: ${refreshCommandLabel(state.refreshRuntime.command)}`);
+    return true;
+}
+
+function setRefreshCompletionStatus(label) {
+    if (state.refreshRuntime.phase === "ready") {
+        setStatus(`${label} fresh exports applied.`, "success");
+    } else if (state.refreshRuntime.phase === "failed") {
+        setStatus(`${label} failed. Cached data remains visible.`, "warning");
+    }
+}
+
+function runRefreshTask(task) {
+    if (refreshInFlight) {
+        refreshAlreadyRunning();
+        return refreshInFlight;
+    }
+    refreshInFlight = Promise.resolve().then(task).finally(() => {
+        refreshInFlight = null;
+    });
+    return refreshInFlight;
+}
+
+function runRefreshCommand(commandName = "startup", options = {}) {
+    if (refreshInFlight || state.refreshRuntime.active) {
+        refreshAlreadyRunning();
+        return refreshInFlight || Promise.resolve(null);
+    }
+    return runRefreshTask(() => executeRefreshCommand(commandName, options));
+}
+
+async function executeRefreshCommand(commandName = "startup", options = {}) {
     const config = REFRESH_COMMANDS[commandName] || REFRESH_COMMANDS.startup;
     if (!isTauriRefreshAvailable()) {
         return runBrowserRefreshCommand(commandName, options);
@@ -2524,29 +2569,34 @@ async function runRefreshCommand(commandName = "startup", options = {}) {
     state.refreshRuntime.available = true;
     state.refreshRuntime.active = true;
     state.refreshRuntime.command = commandName;
+    state.refreshRuntime.phase = "running";
+    state.refreshRuntime.startedAt = new Date().toISOString();
     state.refreshRuntime.message = `Running ${config.label}: ${config.manual}`;
-    if (!options.background) {
-        startAppLoading(`Refreshing ${config.label}...`, "Daily data refresh", 28);
-        showToast(`Running ${config.label}...`);
-    }
+    setStatus(`Refreshing ${config.label} in the background. Cached data remains available.`, "info");
+    if (!options.background) showToast(`Running ${config.label} in the background...`);
     renderAll();
     try {
         const result = await tauriInvoke("run_refresh_command", { commandName });
         appendRefreshLog(result);
+        state.refreshRuntime.lastResult = result;
         state.refreshRuntime.message = result.success
             ? `${config.label} completed.`
             : `${config.label} failed with exit code ${result.exit_code ?? "unknown"}.`;
-        showToast(result.success ? `${config.label} complete` : `${config.label} failed`);
-        if (result.success && window.location.protocol === "file:" && options.reloadAfterRefresh !== false) {
-            sessionStorage.setItem(RELOAD_AFTER_REFRESH_KEY, "1");
-            window.location.reload();
-            return;
+        if (result.success) {
+            state.refreshRuntime.phase = "applying";
+            setStatus(`${config.label} finished. Applying fresh exports...`, "info");
+            if (!options.background) showToast(`${config.label} complete; applying fresh exports...`);
+        } else if (!options.background) {
+            setStatus(`${config.label} failed. Cached data remains visible.`, "warning");
+            showToast(`${config.label} failed; cached data remains visible`);
         }
-        if (options.loadAfterRefresh !== false) {
-            setAppLoading("Loading refreshed exports...", "New data / Model signals", 72);
+        if (result.success && options.loadAfterRefresh !== false) {
             await loadAllAfterRefresh();
         }
+        if (result.success) state.refreshRuntime.lastSuccessAt = result.finished_at || new Date().toISOString();
+        return result;
     } catch (error) {
+        state.refreshRuntime.phase = "failed";
         state.refreshRuntime.message = String(error?.message || error || "Refresh failed; showing cached data.");
         appendRefreshLog({
             command_name: commandName,
@@ -2559,13 +2609,15 @@ async function runRefreshCommand(commandName = "startup", options = {}) {
             finished_at: new Date().toISOString(),
             duration_ms: 0,
         });
-        showToast("Refresh failed; showing cached data");
+        state.refreshRuntime.lastFailureAt = new Date().toISOString();
+        state.refreshRuntime.lastResult = { success: false, stderr: state.refreshRuntime.message };
+        if (!options.background) showToast("Refresh failed; showing cached data");
+        return null;
     } finally {
         state.refreshRuntime.active = false;
-        if (!options.background) {
-            setAppLoading("Refresh complete.", "Board synchronized", 96);
-            finishAppLoading();
-        }
+        state.refreshRuntime.phase = state.refreshRuntime.lastResult ? (state.refreshRuntime.lastResult.success ? "ready" : "failed") : "idle";
+        setRefreshCompletionStatus(config.label);
+        state.refreshRuntime.command = null;
         renderAll();
     }
 }
@@ -2575,41 +2627,52 @@ async function runBrowserRefreshCommand(commandName = "startup", options = {}) {
     state.refreshRuntime.available = browserRefreshAvailable();
     state.refreshRuntime.active = true;
     state.refreshRuntime.command = commandName;
+    state.refreshRuntime.phase = "running";
+    state.refreshRuntime.startedAt = new Date().toISOString();
     state.refreshRuntime.message = `Refreshing through the local bridge: ${config.manual}`;
-    if (!options.background) {
-        startAppLoading(`Refreshing ${config.label}...`, "Local data refresh", 28);
-        showToast(`Running ${config.label}...`);
-    }
+    setStatus(`Refreshing ${config.label} in the background. Cached data remains available.`, "info");
+    if (!options.background) showToast(`Running ${config.label} in the background...`);
     renderAll();
     try {
         const result = await requestLocalRefresh(commandName);
         if (!result) {
             state.refreshRuntime.available = false;
             state.refreshRuntime.message = browserRefreshMessage(commandName);
+            state.refreshRuntime.phase = "failed";
+            state.refreshRuntime.lastResult = { success: false, stderr: state.refreshRuntime.message };
+            state.refreshRuntime.lastFailureAt = new Date().toISOString();
             if (!options.background) showToast(state.refreshRuntime.message);
             return null;
         }
         appendRefreshLog(result);
+        state.refreshRuntime.lastResult = result;
         state.refreshRuntime.message = result.success
             ? `${config.label} completed.`
             : `${config.label} failed with exit code ${result.exit_code ?? "unknown"}.`;
         if (result.success) {
-            showToast(`${config.label} complete`);
+            state.refreshRuntime.phase = "applying";
+            setStatus(`${config.label} finished. Applying fresh exports...`, "info");
+            if (!options.background) showToast(`${config.label} complete; applying fresh exports...`);
             if (options.loadAfterRefresh !== false) await loadAllAfterRefresh();
+            state.refreshRuntime.lastSuccessAt = result.finished_at || new Date().toISOString();
         } else {
-            showToast(`${config.label} failed; cached data remains visible`);
+            state.refreshRuntime.phase = "failed";
+            setStatus(`${config.label} failed. Cached data remains visible.`, "warning");
+            if (!options.background) showToast(`${config.label} failed; cached data remains visible`);
         }
         return result;
     } catch (error) {
+        state.refreshRuntime.phase = "failed";
         state.refreshRuntime.message = String(error?.message || error || "Local refresh failed; showing cached data.");
+        state.refreshRuntime.lastFailureAt = new Date().toISOString();
+        state.refreshRuntime.lastResult = { success: false, stderr: state.refreshRuntime.message };
         if (!options.background) showToast("Refresh failed; cached data remains visible");
         return null;
     } finally {
         state.refreshRuntime.active = false;
-        if (!options.background) {
-            setAppLoading("Refresh complete.", "Board synchronized", 96);
-            finishAppLoading();
-        }
+        state.refreshRuntime.phase = state.refreshRuntime.lastResult ? (state.refreshRuntime.lastResult.success ? "ready" : "failed") : "idle";
+        setRefreshCompletionStatus(config.label);
+        state.refreshRuntime.command = null;
         renderAll();
     }
 }
@@ -2623,34 +2686,50 @@ async function runStartupRefresh(options = {}) {
     return runRefreshCommand("startup", options);
 }
 
-async function runStartupAutomation(options = {}) {
+function runStartupAutomation(options = {}) {
+    if (refreshInFlight || state.refreshRuntime.active) {
+        refreshAlreadyRunning();
+        return refreshInFlight || Promise.resolve(null);
+    }
+    return runRefreshTask(() => executeStartupAutomation(options));
+}
+
+async function executeStartupAutomation(options = {}) {
     if (!isTauriRefreshAvailable()) {
-        return runRefreshCommand("startup_auto", options);
+        return runBrowserRefreshCommand("startup_auto", options);
     }
     const config = REFRESH_COMMANDS.startup_auto;
     state.refreshRuntime.available = true;
     state.refreshRuntime.active = true;
     state.refreshRuntime.command = "startup_auto";
+    state.refreshRuntime.phase = "running";
+    state.refreshRuntime.startedAt = new Date().toISOString();
     state.refreshRuntime.message = "Running startup automation: bootstrap Python, refresh MLB/NFL/live data, score records, and check data status.";
-    if (!options.background) {
-        startAppLoading("Running startup automation...", "Daily data refresh", 22);
-        showToast("Running startup automation...");
-    }
+    setStatus("Startup automation is running in the background. Cached data remains available.", "info");
+    if (!options.background) showToast("Running startup automation in the background...");
     renderAll();
     try {
         const result = await tauriInvoke("run_startup_automation", {});
         appendRefreshLog(result);
+        state.refreshRuntime.lastResult = result;
         state.refreshRuntime.message = result.success ? "Startup automation finished." : "Startup automation failed; see command console.";
-        showToast(result.success ? "Startup automation finished" : "Startup automation failed");
-        if (result.success && window.location.protocol === "file:") {
-            sessionStorage.setItem(RELOAD_AFTER_REFRESH_KEY, "1");
-            window.location.reload();
-            return;
+        if (result.success) {
+            state.refreshRuntime.phase = "applying";
+            setStatus("Startup automation finished. Applying fresh exports...", "info");
+            await loadAllAfterRefresh();
+            state.refreshRuntime.lastSuccessAt = result.finished_at || new Date().toISOString();
+            if (!options.background) showToast("Startup automation finished; fresh exports applied");
+        } else {
+            state.refreshRuntime.phase = "failed";
+            setStatus("Startup automation failed. Cached data remains visible.", "warning");
+            if (!options.background) showToast("Startup automation failed; cached data remains visible");
         }
-        setAppLoading("Loading refreshed exports...", "New data / Model signals", 72);
-        await loadAllAfterRefresh();
+        return result;
     } catch (error) {
+        state.refreshRuntime.phase = "failed";
         state.refreshRuntime.message = String(error?.message || error || "Startup automation failed.");
+        state.refreshRuntime.lastFailureAt = new Date().toISOString();
+        state.refreshRuntime.lastResult = { success: false, stderr: state.refreshRuntime.message };
         appendRefreshLog({
             command_name: "startup_auto",
             command: config.manual,
@@ -2662,13 +2741,13 @@ async function runStartupAutomation(options = {}) {
             finished_at: new Date().toISOString(),
             duration_ms: 0,
         });
-        showToast("Startup automation failed");
+        if (!options.background) showToast("Startup automation failed; cached data remains visible");
+        return null;
     } finally {
         state.refreshRuntime.active = false;
-        if (!options.background) {
-            setAppLoading("Refresh complete.", "Board synchronized", 96);
-            finishAppLoading();
-        }
+        state.refreshRuntime.phase = state.refreshRuntime.lastResult ? (state.refreshRuntime.lastResult.success ? "ready" : "failed") : "idle";
+        setRefreshCompletionStatus(config.label);
+        state.refreshRuntime.command = null;
         renderAll();
     }
 }
@@ -2881,6 +2960,65 @@ async function loadApiKeyStatus() {
         state.apiKeys = { checked: true, ...result };
     } catch (_error) {
         state.apiKeys = { checked: true, available: false, odds_api_key: false, sharp_odds_api_key: false, propline_api_key: false, message: "Local key storage is unavailable." };
+    }
+}
+
+async function loadRuntimeDiagnostics() {
+    if (!isTauriRefreshAvailable()) {
+        state.diagnostics = {
+            checked: true,
+            available: browserRefreshAvailable(),
+            status: browserRefreshAvailable() ? "available" : "attention",
+            message: browserRefreshAvailable()
+                ? "The local refresh bridge is available; packaged-runtime checks require the desktop app."
+                : "Browser mode is showing bundled exports; packaged-runtime checks require the desktop app.",
+            checks: [
+                { id: "browser_bridge", label: "Local refresh bridge", status: browserRefreshAvailable() ? "ready" : "attention", detail: browserRefreshAvailable() ? "local command bridge detected" : "start npm run app to enable refreshes" },
+                { id: "cached_exports", label: "Cached exports", status: "ready", detail: "bundled exports remain available" },
+            ],
+        };
+        return state.diagnostics;
+    }
+    try {
+        const result = await tauriInvoke("get_runtime_diagnostics", {});
+        state.diagnostics = { checked: true, ...result };
+    } catch (_error) {
+        state.diagnostics = {
+            checked: true,
+            available: false,
+            status: "attention",
+            message: "Runtime diagnostics are unavailable; cached exports remain usable.",
+            checks: [{ id: "runtime", label: "Runtime diagnostics", status: "attention", detail: "Run the check again from the installed desktop app." }],
+        };
+    }
+    return state.diagnostics;
+}
+
+function supportReportText() {
+    const diagnostics = state.diagnostics || {};
+    const checks = (diagnostics.checks || []).map(check => `- ${check.label}: ${check.status} (${check.detail})`);
+    return [
+        "LineLens Sports support report",
+        `App version: ${state.app.version || APP_VERSION}`,
+        `Runtime status: ${diagnostics.status || "not checked"}`,
+        `Refresh bridge: ${state.refreshRuntime.available ? "available" : "unavailable"}`,
+        `Last refresh: ${timestamp(state.refreshStatus?.generated_at)}`,
+        `Live export: ${state.live.stale ? "stale" : state.live.games.length ? "available" : "missing"}`,
+        `API keys configured: Odds ${state.apiKeys?.odds_api_key ? "yes" : "no"}, Sharp Odds ${state.apiKeys?.sharp_odds_api_key ? "yes" : "no"}, PropLine ${state.apiKeys?.propline_api_key ? "yes" : "no"}`,
+        "Runtime checks:",
+        ...(checks.length ? checks : ["- Not run"]),
+        "",
+        "This report intentionally excludes API keys, local paths, raw command output, and environment details.",
+    ].join("\n");
+}
+
+async function copySupportReport() {
+    const report = supportReportText();
+    try {
+        await navigator.clipboard.writeText(report);
+        showToast("Support report copied without secrets");
+    } catch (_error) {
+        showToast("Clipboard unavailable; run diagnostics again or copy the visible status");
     }
 }
 
@@ -4041,7 +4179,7 @@ function renderStartupAutomationCard() {
     const refresh = state.refreshStatus?.sports || {};
     const running = state.refreshRuntime.active && state.refreshRuntime.command === "startup_auto";
     const bootstrapCopy = bootstrap.python_version
-        ? `${bootstrap.python_version} at ${bootstrap.python_path || "unknown path"}`
+        ? `Python ${bootstrap.python_version} detected`
         : "Python environment has not been checked yet.";
     const mlbStatus = refresh.MLB?.status || (startup.mlb_ready ? "model_generated" : "pending");
     const nflStatus = refresh.NFL?.status || (startup.nfl_ready ? "real_cached" : "pending");
@@ -4173,7 +4311,10 @@ function renderRefreshPanel(context = "home") {
     const nfl = refreshSportStatus("NFL");
     const mlb = refreshSportStatus("MLB");
     const wnba = refreshSportStatus("WNBA");
-    const disabled = state.refreshRuntime.available ? "" : "";
+    const disabled = state.refreshRuntime.active ? "disabled" : "";
+    const refreshState = state.refreshRuntime.active
+        ? `${refreshCommandLabel(state.refreshRuntime.command)} is running in the background. Cached data remains available.`
+        : state.refreshRuntime.message;
     const commandButtons = context === "settings"
         ? [
             ["startup_auto", "Run Startup Automation Again", "btn--primary"],
@@ -4201,19 +4342,20 @@ function renderRefreshPanel(context = "home") {
             ["check_data", "Check Data Status", ""],
         ];
     return `
-        <section class="panel refresh-panel">
+        <section class="panel refresh-panel" aria-busy="${state.refreshRuntime.active ? "true" : "false"}">
             <header class="section-header">
                 <div>
                     <p class="eyebrow">Runtime data refresh</p>
                     <h2>${context === "settings" ? "Data refresh controls" : "Cached first, refresh in background"}</h2>
-                    <p class="muted">${escapeHtml(state.refreshRuntime.message || "Loading cached predictions first.")}</p>
+                    <p class="muted">${escapeHtml(refreshState || "Loading cached predictions first.")}</p>
                 </div>
                 <div class="report-actions">
                     ${commandButtons.map(([command, label, cls]) => `<button class="btn ${cls}" data-refresh-command="${command}" ${disabled}>${escapeHtml(label)}</button>`).join("")}
                 </div>
             </header>
             <div class="summary-grid summary-grid--compact">
-                ${card("Last refresh", timestamp(state.refreshStatus?.generated_at), state.refreshRuntime.active ? "refreshing" : "runtime status")}
+                ${card("Last refresh", timestamp(state.refreshStatus?.generated_at), state.refreshRuntime.active ? `running · ${state.refreshRuntime.phase}` : "runtime status")}
+                ${card("Last completed", timestamp(state.refreshRuntime.lastSuccessAt), state.refreshRuntime.lastSuccessAt ? "fresh exports applied" : "no completed run in this session")}
                 ${card("NFL refresh", nfl.status, nfl.used_cache ? "using cache" : "fresh export")}
                 ${card("MLB refresh", mlb.status, mlb.used_cache ? "using cache" : "fresh schedule")}
                 ${card("WNBA refresh", wnba.status, wnba.used_cache ? "using cache" : "scoreboard/model")}
@@ -6743,13 +6885,42 @@ function renderDataDoctorPanel() {
         doctorStatus("Reports", Boolean(state.report && state.modelComparison), "npm run refresh:mlb:all", state.report ? "report found" : "missing"),
         doctorStatus("NFL export", Boolean(state.nfl.games.length), "npm run refresh:nfl:real", `${state.nfl.games.length} rows`),
     ];
+    const runtimeRows = (state.diagnostics?.checks || []).map(check => ({
+        kind: check.label,
+        ready: check.status === "ready",
+        command: "desktop runtime",
+        note: check.detail,
+    }));
+    runtimeRows.push(
+        doctorStatus(
+            "Live data freshness",
+            Boolean(state.live.games.length) && !state.live.stale,
+            "background heartbeat",
+            state.live.games.length ? (state.live.stale ? "older than the live-data threshold" : "current live export available") : "no live export loaded",
+        ),
+        doctorStatus(
+            "Last successful refresh",
+            Boolean(state.refreshRuntime.lastSuccessAt || state.refreshStatus?.generated_at),
+            "refresh history",
+            timestamp(state.refreshRuntime.lastSuccessAt || state.refreshStatus?.generated_at),
+        ),
+    );
     return `
         <section class="panel data-doctor-panel">
             <header class="section-header">
-                <div><p class="eyebrow">Data Doctor</p><h2>Demo readiness checklist</h2></div>
-                <button class="btn" data-refresh-command="check_data">Check Data</button>
+                <div><p class="eyebrow">Release readiness</p><h2>Runtime and data checks</h2><p class="muted">Sanitized checks for the installed app. Cached exports stay usable if a live dependency is unavailable.</p></div>
+                <div class="report-actions"><button class="btn btn--primary" data-run-diagnostics>Run diagnostics</button><button class="btn" data-copy-support-report>Copy support report</button><button class="btn" data-refresh-command="check_data">Check data</button></div>
             </header>
+            <p class="data-status" data-variant="${state.diagnostics?.status === "ready" ? "success" : state.diagnostics?.checked ? "warning" : "info"}">${escapeHtml(state.diagnostics?.message || "Runtime diagnostics have not run yet.")}</p>
             <div class="doctor-list">
+                ${runtimeRows.map(row => `
+                    <article class="doctor-row" data-variant="${row.ready ? "success" : "warning"}">
+                        <span>${row.ready ? "Ready" : "Attention"}</span>
+                        <strong>${escapeHtml(row.kind)}</strong>
+                        <small>${escapeHtml(row.note || "")}</small>
+                        <code>${escapeHtml(row.command)}</code>
+                    </article>
+                `).join("")}
                 ${rows.map(row => `
                     <article class="doctor-row" data-variant="${row.ready ? "success" : "warning"}">
                         <span>${row.ready ? "Ready" : "Needs refresh"}</span>
@@ -6825,7 +6996,7 @@ function renderSettings() {
         ${renderCommandConsole("settings")}
         <section class="panel"><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>
         ${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}
-        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v5.1.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
+        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v5.4.0.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
         <section class="panel"><p class="data-status" data-variant="${state.refreshRuntime.available ? "success" : "warning"}">${state.refreshRuntime.available ? "Bundled exports load first. Python refresh commands are available when the packaged app can access the project scripts." : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment."} Tracking data is stored locally in <code>${TRACKER_KEY}</code>. Refresh logs use <code>${REFRESH_LOGS_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
     `;
 }
@@ -6947,7 +7118,7 @@ function renderAbout() {
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens"><span>View source</span><small>GitHub repository</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/releases"><span>View releases</span><small>Windows builds and release history</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues"><span>Report an issue</span><small>Open a repository issue</small><b aria-hidden="true">↗</b></button>
-                            <a class="about-action" href="RELEASE_NOTES_v5.1.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
+                            <a class="about-action" href="RELEASE_NOTES_v5.4.0.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
                         </div>
                         <div class="about-meta-row"><span>Build</span><strong>${escapeHtml(state.app.desktop_build || "Desktop build metadata unavailable")}</strong><span>Model record</span><strong>${escapeHtml(timestamp(record?.metadata?.generated_at) || "Unavailable")}</strong></div>
                     </section>
@@ -7032,6 +7203,18 @@ function bindEvents() {
         const externalLink = event.target.closest("[data-external-link]");
         if (externalLink) {
             openExternalLink(externalLink.dataset.externalLink);
+            return;
+        }
+        if (event.target.closest("[data-run-diagnostics]")) {
+            showToast("Running release readiness checks...");
+            loadRuntimeDiagnostics().then(() => {
+                showToast(state.diagnostics.status === "ready" ? "Runtime diagnostics passed" : "Diagnostics need attention");
+                if (state.selected.view === "settings") renderSettings();
+            });
+            return;
+        }
+        if (event.target.closest("[data-copy-support-report]")) {
+            copySupportReport();
             return;
         }
         if (event.target.closest("[data-onboarding-start]")) {

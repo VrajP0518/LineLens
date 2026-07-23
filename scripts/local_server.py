@@ -12,6 +12,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -20,6 +21,7 @@ from urllib.parse import urlparse
 
 
 ROOT = Path(__file__).resolve().parents[1]
+REFRESH_LOCK = threading.Lock()
 COMMANDS = {
     "startup_auto": ("scripts/startup_orchestrator.py", []),
     "bootstrap_env": ("scripts/bootstrap_env.py", []),
@@ -55,6 +57,31 @@ def python_candidates() -> list[tuple[str, list[str]]]:
 
 
 def run_refresh(command_name: str) -> dict[str, object]:
+    if not REFRESH_LOCK.acquire(blocking=False):
+        now = timestamp()
+        return {
+            "command_name": command_name,
+            "command": command_name,
+            "success": False,
+            "exit_code": None,
+            "stdout": "",
+            "stderr": "Another refresh is already running; cached exports remain available.",
+            "started_at": now,
+            "finished_at": now,
+            "duration_ms": 0,
+            "repo_detected": True,
+            "python_detected": False,
+            "venv_detected": (ROOT / ".venv" / "Scripts" / "python.exe").exists(),
+            "scripts_detected": True,
+            "busy": True,
+        }
+    try:
+        return _run_refresh(command_name)
+    finally:
+        REFRESH_LOCK.release()
+
+
+def _run_refresh(command_name: str) -> dict[str, object]:
     started_at = timestamp()
     started = time.perf_counter()
     spec = COMMANDS.get(command_name)

@@ -29,7 +29,7 @@ npm install
 npm run app
 ```
 
-The app uses bundled exports first, so the core pages can open without a live feed. Startup refreshes run in the background when the local refresh bridge is available.
+The app uses bundled exports first, so the core pages can open without a live feed. Startup and manual refreshes run in the background when the local refresh bridge is available; fresh exports are applied without replacing the whole window.
 
 The Windows release keeps a writable runtime copy in the user’s local app-data folder. On launch it refreshes live scores, schedules, available odds, and current model exports there, so daily data updates do not require a new GitHub release. A new release is only needed for application or model-code changes.
 
@@ -74,7 +74,8 @@ The props pipeline is optional and should only be run when the required real pla
 - Models, Reports, Record: evaluation, health, and accountability
 - Tracking ledger
 - Personalized notifications
-- Automatic Model Refreshing makes sure the model always trys to get better
+- Background refresh with cached-data fallback
+- Settings release-readiness diagnostics and secret-safe support report
 
 ## Data policy
 

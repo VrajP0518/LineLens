@@ -35,5 +35,8 @@ jobs:
       - name: Check Python syntax
         run: python -m compileall src scripts
 
+      - name: Check refresh contract
+        run: npm run check:refresh
+
       - name: Build static web bundle
         run: npm run build:web

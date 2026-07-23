@@ -5,12 +5,11 @@ from __future__ import annotations
 import subprocess
 import sys
 import os
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 NPM = "npm.cmd" if os.name == "nt" else "npm"
-
-import sys
 
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -31,6 +30,7 @@ def run(label: str, command: list[str]) -> bool:
 def required_bundle_files() -> bool:
     required = [
         "index.html", "app.js", "styles.css", "widget.html", "widget.js", "widget.css",
+        "assets/vendor/chart.umd.min.js",
         "assets/sportsdesk-hero.png", "images/Logo1.png", "images/Logo2.png", "images/Logo3.png", "data/app_metadata.json", "data/team_metadata.json",
         "data/predictions/mlb_predictions.json", "data/predictions/mlb_backtest_predictions.json",
         "data/predictions/nfl_predictions.json", "data/live/live_scores.json", "data/live/live_heartbeat.json",
@@ -52,6 +52,24 @@ def required_bundle_files() -> bool:
         return False
     optional_odds = ROOT / "data/odds/odds_snapshots.json"
     print(f"PASS: required bundled files present; odds snapshots {'included' if optional_odds.exists() else 'not bundled'}")
+    return True
+
+
+def version_contract() -> bool:
+    expected = APP_VERSION.removeprefix("v")
+    checks = [
+        (ROOT / "package.json", json.loads((ROOT / "package.json").read_text(encoding="utf-8")).get("version")),
+        (ROOT / "src-tauri" / "tauri.conf.json", json.loads((ROOT / "src-tauri" / "tauri.conf.json").read_text(encoding="utf-8")).get("version")),
+        (ROOT / "src-tauri" / "Cargo.toml", (ROOT / "src-tauri" / "Cargo.toml").read_text(encoding="utf-8")),
+    ]
+    if checks[0][1] != expected or checks[1][1] != expected or f'version = "{expected}"' not in checks[2][1]:
+        print(f"FAIL: package, Tauri, and Cargo metadata must all be {expected}")
+        return False
+    app_metadata = json.loads((ROOT / "data" / "app_metadata.json").read_text(encoding="utf-8"))
+    if app_metadata.get("version") != APP_VERSION:
+        print(f"FAIL: data/app_metadata.json must report {APP_VERSION}")
+        return False
+    print(f"PASS: release version contract is {APP_VERSION}")
     return True
 
 
@@ -95,7 +113,9 @@ def main() -> int:
         run("Python compile", [python, "-m", "compileall", "src", "scripts"]),
         run("Data status", [NPM, "run", "check:data"]),
         run("Player props contracts", [NPM, "run", "check:props"]),
+        run("Refresh contract", [NPM, "run", "check:refresh"]),
         run("Integrity contract", [python, "scripts/check_data_integrity.py"]),
+        version_contract(),
         required_bundle_files(),
         run("Web bundle", [NPM, "run", "build:web"]),
         git_safety(),

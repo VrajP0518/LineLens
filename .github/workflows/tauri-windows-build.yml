@@ -52,11 +52,31 @@ jobs:
       - name: Verify packaged Tauri runtime resources
         run: npm run check:tauri:resources
 
+      - name: Capture packaged runtime verification
+        shell: pwsh
+        run: |
+          python scripts/verify_tauri_resources.py | Tee-Object tauri-resource-verification.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Generate installer checksums
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem src-tauri/target/release/bundle -Recurse -File | Where-Object { $_.Extension -in '.exe', '.msi' }
+          if (-not $files) { throw 'No Windows installers were generated.' }
+          $lines = foreach ($file in $files) {
+            $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $file.FullName).Hash
+            "$hash  $($file.Name)"
+          }
+          $lines | Set-Content -Encoding utf8 release-checksums.txt
+
       - name: Upload Windows bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LineLens-Sports-Windows-v5.1.0
-          path: src-tauri/target/release/bundle/**
+          name: LineLens-Sports-Windows-v5.4.0
+          path: |
+            src-tauri/target/release/bundle/**
+            tauri-resource-verification.txt
+            release-checksums.txt
           if-no-files-found: error
 
       - name: Publish GitHub Release for version tag
@@ -69,3 +89,4 @@ jobs:
           files: |
             src-tauri/target/release/bundle/msi/*.msi
             src-tauri/target/release/bundle/nsis/*.exe
+            release-checksums.txt

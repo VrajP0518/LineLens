@@ -7,12 +7,14 @@ model fails the build before an installer is published.
 
 from __future__ import annotations
 
-import sys
+import json
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE_DIR = ROOT / "src-tauri" / "target" / "release"
+EXPECTED_VERSION = "5.4.0"
+EXPECTED_APP_VERSION = f"v{EXPECTED_VERSION}"
 
 REQUIRED_FILES = [
     "scripts/bootstrap_env.py",
@@ -61,13 +63,31 @@ def main() -> int:
             print(f" - {path}")
         return 1
 
-    if (runtime / ".env").exists():
+    env_files = [path for path in runtime.rglob(".env") if path.is_file()]
+    if env_files:
         print("FAIL: Tauri runtime must not bundle a .env file or API key.")
         return 1
+
+    version_file = runtime / "src" / "shared" / "version.py"
+    version_text = version_file.read_text(encoding="utf-8")
+    if f'APP_VERSION = "{EXPECTED_APP_VERSION}"' not in version_text:
+        print(f"FAIL: bundled Python version metadata is not {EXPECTED_APP_VERSION}.")
+        return 1
+
+    for config_path in (ROOT / "package.json", ROOT / "src-tauri" / "tauri.conf.json"):
+        try:
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            print(f"FAIL: unable to read {config_path.relative_to(ROOT)}: {error}")
+            return 1
+        if str(config.get("version", "")) != EXPECTED_VERSION:
+            print(f"FAIL: {config_path.relative_to(ROOT)} is not version {EXPECTED_VERSION}.")
+            return 1
 
     print(f"PASS: Tauri runtime resources verified at {runtime}")
     print(f"PASS: {len(REQUIRED_FILES)} refresh, model, data, and dependency files are bundled")
     print("PASS: no .env file is bundled")
+    print(f"PASS: packaged runtime version is {EXPECTED_APP_VERSION}")
     return 0
 
 

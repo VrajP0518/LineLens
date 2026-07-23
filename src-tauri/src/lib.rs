@@ -48,8 +48,26 @@ struct ApiKeyStatus {
     message: String,
 }
 
+#[derive(Serialize)]
+struct DiagnosticCheck {
+    id: String,
+    label: String,
+    status: String,
+    detail: String,
+}
+
+#[derive(Serialize)]
+struct RuntimeDiagnostics {
+    available: bool,
+    status: String,
+    message: String,
+    checks: Vec<DiagnosticCheck>,
+    api_keys: ApiKeyStatus,
+}
+
 const RUNTIME_VERSION_FILE: &str = ".linelens-runtime-version";
 static RUNTIME_SEED_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+static REFRESH_PROCESS_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
 fn project_root() -> Result<PathBuf, String> {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -312,6 +330,156 @@ fn save_api_keys(app: tauri::AppHandle, input: ApiKeysInput) -> Result<ApiKeySta
     write_api_keys(&root, input)
 }
 
+fn diagnostic_check(
+    id: &str,
+    label: &str,
+    ready: bool,
+    detail: impl Into<String>,
+) -> DiagnosticCheck {
+    DiagnosticCheck {
+        id: id.to_string(),
+        label: label.to_string(),
+        status: if ready { "ready" } else { "attention" }.to_string(),
+        detail: detail.into(),
+    }
+}
+
+fn collect_runtime_diagnostics(app: &tauri::AppHandle) -> Result<RuntimeDiagnostics, String> {
+    let source = bundled_source_root(app).ok();
+    let root = runtime_root(app)?;
+    let source_ready = source.is_some();
+    let runtime_ready = root.join(RUNTIME_VERSION_FILE).exists();
+    let scripts_ready = scripts_detected(&root);
+    let runtime_writable = fs::metadata(&root)
+        .map(|metadata| !metadata.permissions().readonly())
+        .unwrap_or(false);
+    let python_ready = python_candidates(&root)
+        .iter()
+        .any(|(program, args)| python_allowed(program, args, &root).is_ok());
+    let required_exports = [
+        "data/app_metadata.json",
+        "data/refresh_status.json",
+        "data/live/live_heartbeat.json",
+        "data/predictions/mlb_predictions.json",
+        "data/predictions/wnba_predictions.json",
+    ];
+    let export_count = required_exports
+        .iter()
+        .filter(|path| root.join(path).exists())
+        .count();
+    let exports_ready = export_count == required_exports.len();
+    let env_bundled = source
+        .map(|path| path.join(".env").exists())
+        .unwrap_or(false);
+    let api_keys = api_key_status(&root);
+    let configured_keys = [
+        api_keys.odds_api_key,
+        api_keys.sharp_odds_api_key,
+        api_keys.propline_api_key,
+    ]
+    .into_iter()
+    .filter(|configured| *configured)
+    .count();
+    let checks = vec![
+        diagnostic_check(
+            "bundled_runtime",
+            "Bundled runtime",
+            source_ready,
+            if source_ready {
+                "resource payload found"
+            } else {
+                "resource payload missing"
+            },
+        ),
+        diagnostic_check(
+            "runtime_initialized",
+            "Runtime initialized",
+            runtime_ready,
+            if runtime_ready {
+                "per-user runtime is initialized"
+            } else {
+                "runtime marker is missing"
+            },
+        ),
+        diagnostic_check(
+            "refresh_scripts",
+            "Refresh scripts",
+            scripts_ready,
+            if scripts_ready {
+                "required refresh scripts are available"
+            } else {
+                "one or more refresh scripts are missing"
+            },
+        ),
+        diagnostic_check(
+            "python",
+            "Python runtime",
+            python_ready,
+            if python_ready {
+                "supported Python interpreter detected"
+            } else {
+                "Python 3.10-3.12 was not detected"
+            },
+        ),
+        diagnostic_check(
+            "runtime_writable",
+            "Writable local runtime",
+            runtime_writable,
+            if runtime_writable {
+                "refresh output can be written locally"
+            } else {
+                "local runtime is not writable"
+            },
+        ),
+        diagnostic_check(
+            "exports",
+            "Bundled exports",
+            exports_ready,
+            format!(
+                "{} of {} core exports are present",
+                export_count,
+                required_exports.len()
+            ),
+        ),
+        diagnostic_check(
+            "secret_bundle",
+            "Release secret check",
+            !env_bundled,
+            if env_bundled {
+                "a .env file was found in the bundled resource"
+            } else {
+                "no .env file is bundled"
+            },
+        ),
+        diagnostic_check(
+            "api_keys",
+            "API-key status",
+            true,
+            format!("{} of 3 optional provider keys configured", configured_keys),
+        ),
+    ];
+    let healthy = checks.iter().all(|check| check.status == "ready");
+    Ok(RuntimeDiagnostics {
+        available: true,
+        status: if healthy { "ready" } else { "attention" }.to_string(),
+        message: if healthy {
+            "The packaged runtime is ready for local refreshes.".to_string()
+        } else {
+            "One or more runtime checks need attention; cached exports remain available."
+                .to_string()
+        },
+        checks,
+        api_keys,
+    })
+}
+
+#[tauri::command]
+async fn get_runtime_diagnostics(app: tauri::AppHandle) -> Result<RuntimeDiagnostics, String> {
+    tauri::async_runtime::spawn_blocking(move || collect_runtime_diagnostics(&app))
+        .await
+        .map_err(|error| format!("Runtime diagnostics failed: {}", error))?
+}
+
 fn python_candidates(root: &PathBuf) -> Vec<(String, Vec<String>)> {
     let venv_python = root.join(".venv").join("Scripts").join("python.exe");
     let mut candidates: Vec<(String, Vec<String>)> = Vec::new();
@@ -505,6 +673,10 @@ fn execute_refresh_command(
     app: &tauri::AppHandle,
     command_name: &str,
 ) -> Result<CommandResult, String> {
+    let refresh_lock = REFRESH_PROCESS_LOCK.get_or_init(|| Mutex::new(()));
+    let _refresh_guard = refresh_lock.try_lock().map_err(|_| {
+        "Another LineLens refresh is already running; cached exports remain available.".to_string()
+    })?;
     let root = runtime_root(app)?;
     let scripts_ok = scripts_detected(&root);
     if !scripts_ok {
@@ -701,6 +873,7 @@ pub fn run() {
             read_data_export,
             get_api_key_status,
             save_api_keys,
+            get_runtime_diagnostics,
             open_live_widget,
             close_live_widget,
             focus_main_window
