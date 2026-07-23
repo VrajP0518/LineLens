@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist-web"
 
-REQUIRED_ROOT_FILES = ["index.html", "app.js", "sprint5.js", "styles.css", "widget.html", "widget.js", "widget.css", "RELEASE_NOTES_v5.4.0.md"]
+REQUIRED_ROOT_FILES = ["index.html", "app.js", "sprint5.js", "styles.css", "widget.html", "widget.js", "widget.css", "RELEASE_NOTES_v5.6.0.md"]
 ASSET_DIRS = ["assets", "images"]
 DATA_FILES = [
     "app_metadata.json",

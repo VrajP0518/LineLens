@@ -114,6 +114,7 @@ def main() -> int:
         run("Data status", [NPM, "run", "check:data"]),
         run("Player props contracts", [NPM, "run", "check:props"]),
         run("Refresh contract", [NPM, "run", "check:refresh"]),
+        run("Team logo contract", [NPM, "run", "check:logos"]),
         run("Integrity contract", [python, "scripts/check_data_integrity.py"]),
         version_contract(),
         required_bundle_files(),

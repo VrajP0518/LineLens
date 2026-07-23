@@ -1,7 +1,7 @@
 {
   "app": "LineLens Sports",
-  "version": "v5.4.0",
-  "release": "Release hardening and non-blocking refresh",
+  "version": "v5.6.0",
+  "release": "Logo recovery and release diagnostics",
   "generated_at": "2026-07-08T00:00:00+00:00",
   "desktop_build": "GitHub Actions",
   "local_native_build_required": false

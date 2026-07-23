@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE_DIR = ROOT / "src-tauri" / "target" / "release"
-EXPECTED_VERSION = "5.4.0"
+EXPECTED_VERSION = "5.6.0"
 EXPECTED_APP_VERSION = f"v{EXPECTED_VERSION}"
 
 REQUIRED_FILES = [
