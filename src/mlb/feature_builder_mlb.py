@@ -952,6 +952,10 @@ def build_current(
     start_season: int = typer.Option(2021, help="First cached history season to use for rolling context."),
     end_season: int = typer.Option(2025, help="Last cached history season to use for rolling context."),
     schedule_file: Path = typer.Option(..., help="Cached current MLB schedule JSON."),
+    context_file: Optional[Path] = typer.Option(
+        None,
+        help="Portable historical feature context Parquet used when raw season caches are not bundled.",
+    ),
     output_file: Path = typer.Option(
         MLB_PROCESSED_DIR / "mlb_current_features.csv",
         help="Output current-schedule feature table.",
@@ -960,6 +964,10 @@ def build_current(
     """Build current MLB matchup features using historical games for prior-team context."""
 
     ensure_project_dirs()
+    current_path = resolve_project_path(schedule_file)
+    if not current_path.exists():
+        raise typer.BadParameter(f"Missing current MLB schedule file: {current_path}")
+
     files: list[tuple[Path, int]] = []
     missing: list[Path] = []
     for context_season in range(start_season, end_season + 1):
@@ -968,18 +976,59 @@ def build_current(
             files.append((path, context_season))
         else:
             missing.append(path)
-    current_path = resolve_project_path(schedule_file)
-    if not current_path.exists():
-        missing.append(current_path)
-    if missing:
-        raise typer.BadParameter(f"Missing MLB files for current feature build: {[str(path) for path in missing]}")
 
-    files.append((current_path, season))
-    dataset = build_dataset_from_games(_load_schedule_frames(files))
+    if not missing:
+        files.append((current_path, season))
+        dataset = build_dataset_from_games(_load_schedule_frames(files))
+        context_mode = "raw season caches"
+    else:
+        portable_context = resolve_project_path(context_file) if context_file else None
+        if portable_context is None or not portable_context.exists():
+            raise typer.BadParameter(
+                f"Missing MLB files for current feature build: {[str(path) for path in missing]}. "
+                "Provide --context-file with the bundled historical feature Parquet."
+            )
+        context = pd.read_parquet(portable_context)
+        raw_context_columns = [
+            "season",
+            "game_date",
+            "game_datetime",
+            "game_id",
+            "home_team",
+            "away_team",
+            "home_display",
+            "away_display",
+            "home_score",
+            "away_score",
+            "home_win",
+            "status",
+            "home_probable_pitcher",
+            "away_probable_pitcher",
+            "venue",
+            "home_league",
+            "away_league",
+            "home_division",
+            "away_division",
+            "home_team_lat",
+            "home_team_lon",
+            "away_team_lat",
+            "away_team_lon",
+            "doubleheader_game_number",
+        ]
+        context = context[[column for column in raw_context_columns if column in context.columns]].copy()
+        context["game_date"] = pd.to_datetime(context["game_date"], errors="coerce")
+        context["game_datetime"] = pd.to_datetime(context["game_datetime"], errors="coerce", utc=True)
+        current = _load_schedule_frames([(current_path, season)])
+        dataset = build_dataset_from_games(pd.concat([context, current], ignore_index=True, sort=False))
+        context_mode = "portable historical feature context"
+
     current = dataset[dataset["season"].astype(int) == int(season)].copy()
     _write_dataset(current, output_file)
     write_feature_summary(dataset, output_file)
-    console.print(f"[green]Saved[/green] {len(current):,} current MLB feature rows -> {resolve_project_path(output_file)}")
+    console.print(
+        f"[green]Saved[/green] {len(current):,} current MLB feature rows using {context_mode} "
+        f"-> {resolve_project_path(output_file)}"
+    )
 
 
 if __name__ == "__main__":

@@ -44,7 +44,7 @@ def required_bundle_files() -> bool:
         "data/reports/wnba_prop_model_cards.json", "data/reports/wnba_prop_model_health.json",
         "data/reports/mlb_prop_model_registry.json", "data/reports/mlb_prop_model_cards.json",
         "data/reports/mlb_prop_model_health.json", "data/reports/mlb_prop_dataset_summary.json",
-        f"RELEASE_NOTES_{APP_VERSION}.md",
+        f"RELEASE_NOTES_{APP_VERSION}.md", "data/processed/mlb/moneyline_dataset.parquet",
     ]
     missing = [path for path in required if not (ROOT / path).exists()]
     if missing:
@@ -61,8 +61,14 @@ def git_safety() -> bool:
     untracked = subprocess.run(["git", "ls-files", "--others", "--exclude-standard", "-z"], cwd=ROOT, capture_output=True, check=True).stdout.decode().split("\0")
     paths = sorted({path.replace("\\", "/") for path in tracked + staged + untracked if path})
     forbidden = (".env", ".venv/", "node_modules/", "dist-web/", "data/raw/", "data/processed/", ".pytest_cache/", "__pycache__/")
+    approved_runtime_context = {"data/processed/mlb/moneyline_dataset.parquet"}
     approved_env_templates = {".env.example", ".env.template"}
-    bad = [path for path in paths if (path == ".env" or path.endswith(".env") or (path.startswith(".env.") and path not in approved_env_templates)) or any(path.startswith(prefix) for prefix in forbidden[1:])]
+    bad = [
+        path
+        for path in paths
+        if (path == ".env" or path.endswith(".env") or (path.startswith(".env.") and path not in approved_env_templates))
+        or any(path.startswith(prefix) and path not in approved_runtime_context for prefix in forbidden[1:])
+    ]
     temp_markers = (".tmp", "training_output", "checkpoint", ".log")
     bad.extend(path for path in paths if any(marker in path.lower() for marker in temp_markers))
     approved_locks = {"package-lock.json", "src-tauri/Cargo.lock"}

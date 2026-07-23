@@ -31,6 +31,8 @@ npm run app
 
 The app uses bundled exports first, so the core pages can open without a live feed. Startup refreshes run in the background when the local refresh bridge is available.
 
+The Windows release keeps a writable runtime copy in the user’s local app-data folder. On launch it refreshes live scores, schedules, available odds, and current model exports there, so daily data updates do not require a new GitHub release. A new release is only needed for application or model-code changes.
+
 ## Optional odds
 
 Copy `.env.example` to `.env` and add the provider key you use:
@@ -48,6 +50,8 @@ npm run refresh:odds
 ```
 
 Missing odds remain unavailable; they are never inferred or fabricated.
+
+For the installed app, use Settings → API keys. The values are saved to the user’s local runtime `.env` and are never shown in the interface or included in a release. Manual fallback: place a user-owned `.env` containing the provider key in the app’s local-data `runtime` folder.
 
 ## Main commands
 

@@ -1,8 +1,10 @@
-use std::path::PathBuf;
+use std::fs;
+use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::{Mutex, OnceLock};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::Manager;
 
 #[derive(Serialize)]
@@ -26,6 +28,28 @@ struct CommandSpec {
     script: &'static str,
     args: Vec<&'static str>,
 }
+
+#[derive(Deserialize)]
+struct ApiKeysInput {
+    #[serde(default)]
+    odds_api_key: Option<String>,
+    #[serde(default)]
+    sharp_odds_api_key: Option<String>,
+    #[serde(default)]
+    propline_api_key: Option<String>,
+}
+
+#[derive(Serialize)]
+struct ApiKeyStatus {
+    available: bool,
+    odds_api_key: bool,
+    sharp_odds_api_key: bool,
+    propline_api_key: bool,
+    message: String,
+}
+
+const RUNTIME_VERSION_FILE: &str = ".linelens-runtime-version";
+static RUNTIME_SEED_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
 fn project_root() -> Result<PathBuf, String> {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -51,6 +75,179 @@ fn project_root() -> Result<PathBuf, String> {
         }
     }
     Err("Unable to resolve a LineLens project root containing scripts/refresh_data.py.".to_string())
+}
+
+fn bundled_source_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        if resource_dir
+            .join("scripts")
+            .join("refresh_data.py")
+            .exists()
+        {
+            return Ok(resource_dir);
+        }
+    }
+    project_root()
+}
+
+fn copy_directory(source: &Path, destination: &Path) -> Result<(), String> {
+    if !source.exists() {
+        return Ok(());
+    }
+    fs::create_dir_all(destination).map_err(|error| error.to_string())?;
+    for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let source_path = entry.path();
+        let destination_path = destination.join(entry.file_name());
+        if source_path.is_dir() {
+            copy_directory(&source_path, &destination_path)?;
+        } else {
+            fs::copy(&source_path, &destination_path).map_err(|error| error.to_string())?;
+        }
+    }
+    Ok(())
+}
+
+fn copy_missing_directory(source: &Path, destination: &Path) -> Result<(), String> {
+    if !source.exists() {
+        return Ok(());
+    }
+    fs::create_dir_all(destination).map_err(|error| error.to_string())?;
+    for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let source_path = entry.path();
+        let destination_path = destination.join(entry.file_name());
+        if source_path.is_dir() {
+            copy_missing_directory(&source_path, &destination_path)?;
+        } else if !destination_path.exists() {
+            fs::copy(&source_path, &destination_path).map_err(|error| error.to_string())?;
+        }
+    }
+    Ok(())
+}
+
+fn runtime_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    let seed_lock = RUNTIME_SEED_LOCK.get_or_init(|| Mutex::new(()));
+    let _seed_guard = seed_lock
+        .lock()
+        .map_err(|_| "LineLens runtime initialization lock was poisoned.".to_string())?;
+    let source = bundled_source_root(app)?;
+    let local_data = app
+        .path()
+        .app_local_data_dir()
+        .map_err(|error| format!("Unable to resolve LineLens local data directory: {}", error))?;
+    let runtime = local_data.join("runtime");
+    fs::create_dir_all(&runtime).map_err(|error| error.to_string())?;
+
+    let version = env!("CARGO_PKG_VERSION");
+    let marker = runtime.join(RUNTIME_VERSION_FILE);
+    let needs_bundle_seed = fs::read_to_string(&marker)
+        .map(|value| value.trim() != version)
+        .unwrap_or(true);
+
+    if needs_bundle_seed {
+        copy_directory(&source.join("scripts"), &runtime.join("scripts"))?;
+        copy_directory(&source.join("src"), &runtime.join("src"))?;
+        copy_directory(&source.join("models"), &runtime.join("models"))?;
+        let requirements = source.join("requirements.txt");
+        if requirements.exists() {
+            fs::copy(&requirements, runtime.join("requirements.txt"))
+                .map_err(|error| error.to_string())?;
+        }
+        let source_env = source.join(".env");
+        let runtime_env = runtime.join(".env");
+        if source_env.exists() && !runtime_env.exists() {
+            fs::copy(source_env, runtime_env).map_err(|error| error.to_string())?;
+        }
+        copy_missing_directory(&source.join("data"), &runtime.join("data"))?;
+        fs::write(&marker, version).map_err(|error| error.to_string())?;
+    }
+
+    if !runtime.join("scripts").join("refresh_data.py").exists() {
+        return Err("LineLens runtime files could not be initialized.".to_string());
+    }
+    Ok(runtime)
+}
+
+fn env_key_configured(path: &Path, key: &str) -> bool {
+    let contents = match fs::read_to_string(path) {
+        Ok(contents) => contents,
+        Err(_) => return false,
+    };
+    contents.lines().any(|line| {
+        let trimmed = line.trim_start();
+        if trimmed.starts_with('#') {
+            return false;
+        }
+        let Some((name, value)) = trimmed.split_once('=') else {
+            return false;
+        };
+        name.trim() == key
+            && !value
+                .trim()
+                .trim_matches(|character| character == '"' || character == '\'')
+                .is_empty()
+    })
+}
+
+fn api_key_status(root: &Path) -> ApiKeyStatus {
+    let env_path = root.join(".env");
+    ApiKeyStatus {
+        available: true,
+        odds_api_key: env_key_configured(&env_path, "ODDS_API_KEY"),
+        sharp_odds_api_key: env_key_configured(&env_path, "SHARP_ODDS_API_KEY"),
+        propline_api_key: env_key_configured(&env_path, "PROPLINE_API_KEY"),
+        message: "Keys are stored locally and are never included in exports.".to_string(),
+    }
+}
+
+fn trimmed_key(value: Option<String>) -> Option<String> {
+    value
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+}
+
+fn write_api_keys(root: &Path, input: ApiKeysInput) -> Result<ApiKeyStatus, String> {
+    let env_path = root.join(".env");
+    let existing = fs::read_to_string(&env_path).unwrap_or_default();
+    let updates = vec![
+        ("ODDS_API_KEY", trimmed_key(input.odds_api_key)),
+        ("SHARP_ODDS_API_KEY", trimmed_key(input.sharp_odds_api_key)),
+        ("PROPLINE_API_KEY", trimmed_key(input.propline_api_key)),
+    ];
+    let mut seen = std::collections::HashSet::new();
+    let mut lines = Vec::new();
+
+    for line in existing.lines() {
+        let trimmed = line.trim_start();
+        let name = trimmed
+            .split_once('=')
+            .map(|(name, _)| name.trim())
+            .unwrap_or_default();
+        if let Some((managed_name, value)) = updates.iter().find(|(key, _)| *key == name) {
+            if value.is_none() {
+                lines.push(line.to_string());
+            } else if seen.insert(*managed_name) {
+                if let Some(value) = value {
+                    lines.push(format!("{}={}", managed_name, value));
+                }
+            }
+        } else {
+            lines.push(line.to_string());
+        }
+    }
+
+    for (name, value) in &updates {
+        if let Some(value) = value {
+            if seen.insert(*name) {
+                lines.push(format!("{}={}", name, value));
+            }
+        }
+    }
+
+    fs::write(&env_path, format!("{}\n", lines.join("\n")))
+        .map_err(|error| format!("Unable to save local API keys: {}", error))?;
+    Ok(api_key_status(root))
 }
 
 fn scripts_detected(root: &PathBuf) -> bool {
@@ -81,7 +278,7 @@ fn scripts_detected(root: &PathBuf) -> bool {
 }
 
 #[tauri::command]
-fn read_data_export(path: String) -> Result<String, String> {
+fn read_data_export(app: tauri::AppHandle, path: String) -> Result<String, String> {
     let normalized = path.replace('\\', "/");
     if !normalized.starts_with("data/")
         || normalized.contains("..")
@@ -90,8 +287,20 @@ fn read_data_export(path: String) -> Result<String, String> {
     {
         return Err("Only bundled data JSON exports can be read.".to_string());
     }
-    let root = project_root()?;
-    std::fs::read_to_string(root.join(normalized)).map_err(|error| error.to_string())
+    let root = runtime_root(&app)?;
+    fs::read_to_string(root.join(normalized)).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn get_api_key_status(app: tauri::AppHandle) -> Result<ApiKeyStatus, String> {
+    let root = runtime_root(&app)?;
+    Ok(api_key_status(&root))
+}
+
+#[tauri::command]
+fn save_api_keys(app: tauri::AppHandle, input: ApiKeysInput) -> Result<ApiKeyStatus, String> {
+    let root = runtime_root(&app)?;
+    write_api_keys(&root, input)
 }
 
 fn python_candidates(root: &PathBuf) -> Vec<(String, Vec<String>)> {
@@ -283,8 +492,11 @@ fn base_result(
     }
 }
 
-fn execute_refresh_command(command_name: &str) -> Result<CommandResult, String> {
-    let root = project_root()?;
+fn execute_refresh_command(
+    app: &tauri::AppHandle,
+    command_name: &str,
+) -> Result<CommandResult, String> {
+    let root = runtime_root(app)?;
     let scripts_ok = scripts_detected(&root);
     if !scripts_ok {
         return Err("Automatic refresh requires scripts/bootstrap_env.py, scripts/startup_orchestrator.py, scripts/refresh_data.py, scripts/score_model_predictions.py, scripts/live_scores.py, and scripts/odds_snapshots.py.".to_string());
@@ -357,8 +569,8 @@ fn execute_refresh_command(command_name: &str) -> Result<CommandResult, String> 
     Ok(result)
 }
 
-fn run_refresh_text(command_name: &str) -> Result<String, String> {
-    let result = execute_refresh_command(command_name)?;
+fn run_refresh_text(app: &tauri::AppHandle, command_name: &str) -> Result<String, String> {
+    let result = execute_refresh_command(app, command_name)?;
     if result.success {
         Ok(if result.stdout.is_empty() {
             format!("{} refresh completed.", command_name)
@@ -381,21 +593,24 @@ fn run_refresh_text(command_name: &str) -> Result<String, String> {
 }
 
 #[tauri::command]
-async fn run_refresh_command(command_name: String) -> Result<CommandResult, String> {
-    tauri::async_runtime::spawn_blocking(move || execute_refresh_command(&command_name))
+async fn run_refresh_command(
+    app: tauri::AppHandle,
+    command_name: String,
+) -> Result<CommandResult, String> {
+    tauri::async_runtime::spawn_blocking(move || execute_refresh_command(&app, &command_name))
         .await
         .map_err(|error| format!("Refresh task failed: {}", error))?
 }
 
 #[tauri::command]
-async fn run_startup_automation() -> Result<CommandResult, String> {
-    tauri::async_runtime::spawn_blocking(move || execute_refresh_command("startup_auto"))
+async fn run_startup_automation(app: tauri::AppHandle) -> Result<CommandResult, String> {
+    tauri::async_runtime::spawn_blocking(move || execute_refresh_command(&app, "startup_auto"))
         .await
         .map_err(|error| format!("Startup automation task failed: {}", error))?
 }
 
 #[tauri::command]
-async fn refresh_sports_data(sport: String) -> Result<String, String> {
+async fn refresh_sports_data(app: tauri::AppHandle, sport: String) -> Result<String, String> {
     let normalized = sport.to_lowercase();
     if !["all", "nfl", "mlb"].contains(&normalized.as_str()) {
         return Err("Unsupported sport refresh request.".to_string());
@@ -408,14 +623,14 @@ async fn refresh_sports_data(sport: String) -> Result<String, String> {
     }
     .to_string();
 
-    tauri::async_runtime::spawn_blocking(move || run_refresh_text(&command_name))
+    tauri::async_runtime::spawn_blocking(move || run_refresh_text(&app, &command_name))
         .await
         .map_err(|error| format!("Refresh task failed: {}", error))?
 }
 
 #[tauri::command]
-async fn run_startup_refresh() -> Result<String, String> {
-    tauri::async_runtime::spawn_blocking(move || run_refresh_text("startup_auto"))
+async fn run_startup_refresh(app: tauri::AppHandle) -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || run_refresh_text(&app, "startup_auto"))
         .await
         .map_err(|error| format!("Startup refresh task failed: {}", error))?
 }
@@ -475,6 +690,8 @@ pub fn run() {
             refresh_sports_data,
             run_startup_refresh,
             read_data_export,
+            get_api_key_status,
+            save_api_keys,
             open_live_widget,
             close_live_widget,
             focus_main_window

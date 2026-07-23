@@ -82,6 +82,7 @@ const state = {
     mlbPropModelHealth: window.__MLB_PROP_MODEL_HEALTH__ || null,
     mlbPropDatasetSummary: window.__MLB_PROP_DATASET_SUMMARY__ || null,
     refreshRuntime: { available: false, active: false, message: "Checking refresh availability..." },
+    apiKeys: { checked: false, available: false, odds_api_key: false, sharp_odds_api_key: false, propline_api_key: false, message: "Checking local key storage..." },
     nfl: { payload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null, games: [], error: null },
     mlb: { payload: window.__MLB_PREDICTIONS__ || null, games: [], error: null },
     mlbBacktest: { payload: window.__MLB_BACKTEST_PREDICTIONS__ || null, games: [], error: null },
@@ -2380,6 +2381,8 @@ async function loadAll() {
         loadOptional("wnbaAvailability", ["__WNBA_AVAILABILITY__"]),
     ]);
 
+    await loadApiKeyStatus();
+
     setAppLoading("Building the board...", "Model registry / Live board", 66);
 
     state.app = app || state.app;
@@ -2866,6 +2869,53 @@ function renderView(view = state.selected.view || "home") {
     };
     renderers[view]?.();
     armScrollReveals(view);
+}
+
+async function loadApiKeyStatus() {
+    if (!isTauriRefreshAvailable()) {
+        state.apiKeys = { checked: true, available: false, odds_api_key: false, sharp_odds_api_key: false, propline_api_key: false, message: "API key entry is available in the installed desktop app." };
+        return;
+    }
+    try {
+        const result = await tauriInvoke("get_api_key_status", {});
+        state.apiKeys = { checked: true, ...result };
+    } catch (_error) {
+        state.apiKeys = { checked: true, available: false, odds_api_key: false, sharp_odds_api_key: false, propline_api_key: false, message: "Local key storage is unavailable." };
+    }
+}
+
+function apiKeyStatusLabel(configured) {
+    if (!state.apiKeys.checked) return "Checking";
+    return configured ? "Configured" : "Not configured";
+}
+
+async function saveApiKeys() {
+    if (!isTauriRefreshAvailable()) {
+        showToast("API keys can be saved from the installed desktop app.");
+        return;
+    }
+    const fields = [
+        ["api-key-odds", "odds_api_key"],
+        ["api-key-sharp", "sharp_odds_api_key"],
+        ["api-key-propline", "propline_api_key"],
+    ];
+    const input = {};
+    fields.forEach(([id, key]) => {
+        const value = String(document.getElementById(id)?.value || "").trim();
+        if (value) input[key] = value;
+    });
+    if (!Object.keys(input).length) {
+        showToast("Paste at least one API key first.");
+        return;
+    }
+    try {
+        const result = await tauriInvoke("save_api_keys", { input });
+        state.apiKeys = { checked: true, ...result };
+        showToast("API keys saved locally. Refresh odds to use them.");
+        renderSettings();
+    } catch (error) {
+        showToast(String(error?.message || error || "API keys could not be saved."));
+    }
 }
 
 let scrollRevealObserver = null;
@@ -6768,6 +6818,7 @@ function renderSettings() {
         </section>
         ${renderUiPreferencesPanel()}
         ${window.LineLensSprint5 ? window.LineLensSprint5.renderPreferences(state) : ""}
+        ${renderApiKeysPanel()}
         ${renderDataDoctorPanel()}
         ${renderLiveWidgetSettings()}
         ${renderRefreshPanel("settings")}
@@ -6776,6 +6827,46 @@ function renderSettings() {
         ${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}
         <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v5.1.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
         <section class="panel"><p class="data-status" data-variant="${state.refreshRuntime.available ? "success" : "warning"}">${state.refreshRuntime.available ? "Bundled exports load first. Python refresh commands are available when the packaged app can access the project scripts." : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment."} Tracking data is stored locally in <code>${TRACKER_KEY}</code>. Refresh logs use <code>${REFRESH_LOGS_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
+    `;
+}
+
+function renderApiKeysPanel() {
+    const keys = state.apiKeys || {};
+    return `
+        <section class="panel api-keys-panel" aria-labelledby="api-keys-title">
+            <header class="section-header">
+                <div>
+                    <p class="eyebrow">Connections</p>
+                    <h2 id="api-keys-title">API keys</h2>
+                    <p class="muted">Paste provider keys here to enable the matching odds and props refreshes. Values are stored locally in the desktop runtime and are never shown back.</p>
+                </div>
+                <span class="chip">${keys.available ? "Desktop storage" : "Desktop app only"}</span>
+            </header>
+            <div class="api-key-grid">
+                <label class="api-key-field" for="api-key-odds">
+                    <span>The Odds API</span>
+                    <input id="api-key-odds" type="password" autocomplete="off" spellcheck="false" placeholder="Paste key" aria-describedby="api-key-help">
+                    <small>${apiKeyStatusLabel(keys.odds_api_key)}</small>
+                </label>
+                <label class="api-key-field" for="api-key-sharp">
+                    <span>Sharp Odds API</span>
+                    <input id="api-key-sharp" type="password" autocomplete="off" spellcheck="false" placeholder="Paste key" aria-describedby="api-key-help">
+                    <small>${apiKeyStatusLabel(keys.sharp_odds_api_key)}</small>
+                </label>
+                <label class="api-key-field" for="api-key-propline">
+                    <span>PropLine API</span>
+                    <input id="api-key-propline" type="password" autocomplete="off" spellcheck="false" placeholder="Paste key" aria-describedby="api-key-help">
+                    <small>${apiKeyStatusLabel(keys.propline_api_key)}</small>
+                </label>
+            </div>
+            <p id="api-key-help" class="api-key-help">Leave a field blank to keep its existing key. Keys are not stored in browser localStorage or bundled exports.</p>
+            <div class="report-actions">
+                <button class="btn btn--primary" type="button" data-save-api-keys ${keys.available ? "" : "disabled"}>Save keys locally</button>
+                <button class="btn" type="button" data-refresh-command="odds_snapshots">Refresh odds now</button>
+                <button class="btn" type="button" data-refresh-command="player_props_pipeline">Refresh props</button>
+            </div>
+            <p class="data-status" data-variant="${keys.available ? "success" : "warning"}">${escapeHtml(keys.message || "Checking local key storage...")}</p>
+        </section>
     `;
 }
 
@@ -6957,6 +7048,10 @@ function bindEvents() {
             state.selected.onboardingNever = false;
             persistSettings();
             renderOnboarding();
+            return;
+        }
+        if (event.target.closest("[data-save-api-keys]")) {
+            saveApiKeys();
             return;
         }
         const viewLink = event.target.closest("[data-view-link]");

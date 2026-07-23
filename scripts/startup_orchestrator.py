@@ -28,6 +28,7 @@ BOOTSTRAP_JSON = DATA_DIR / "bootstrap_status.json"
 REFRESH_JSON = DATA_DIR / "refresh_status.json"
 MLB_MODEL = ROOT / "models" / "mlb_moneyline_model.joblib"
 MLB_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_features_2021_2025.csv"
+MLB_CONTEXT = DATA_DIR / "processed" / "mlb" / "moneyline_dataset.parquet"
 MLB_PREDICTIONS = DATA_DIR / "predictions" / "mlb_predictions.json"
 NFL_PREDICTIONS = DATA_DIR / "predictions" / "nfl_predictions.json"
 WNBA_MODEL = ROOT / "models" / "wnba_moneyline_model.joblib"
@@ -199,8 +200,8 @@ def orchestrate() -> dict[str, Any]:
     # several minutes.
     steps.append(run_step("Refresh live widget scores (early)", [python_path, "scripts/live_scores.py", "--days-back", "1", "--days-forward", "7", "--output-stem", "live_heartbeat"], timeout=300))
 
-    if not MLB_MODEL.exists() or not MLB_FEATURES.exists() or model_needs_daily_retrain():
-        steps.append(run_step("Daily MLB retrain and current predictions", [python_path, "scripts/refresh_data.py", "--sport", "mlb", "--mode", "all"], timeout=1800))
+    if not MLB_MODEL.exists() or (not MLB_FEATURES.exists() and not MLB_CONTEXT.exists()):
+        steps.append(run_step("Build MLB model and current predictions", [python_path, "scripts/refresh_data.py", "--sport", "mlb", "--mode", "all"], timeout=1800))
     else:
         steps.append(run_step("Refresh MLB current predictions", [python_path, "scripts/refresh_data.py", "--sport", "mlb", "--mode", "predict"], timeout=900))
     status["mlb_ready"] = has_mlb_model_predictions()
@@ -211,7 +212,7 @@ def orchestrate() -> dict[str, Any]:
         return status
 
     steps.append(run_step("Refresh NFL real/cached predictions", [python_path, "scripts/refresh_data.py", "--sport", "nfl", "--mode", "real"], timeout=1800))
-    steps.append(run_step("Refresh WNBA model and current board", [python_path, "scripts/refresh_data.py", "--sport", "wnba", "--mode", "all"], timeout=1800))
+    steps.append(run_step("Refresh WNBA current board", [python_path, "scripts/refresh_data.py", "--sport", "wnba", "--mode", "predict"], timeout=900))
     steps.append(run_step("Refresh live widget scores (final)", [python_path, "scripts/live_scores.py", "--days-back", "1", "--days-forward", "7", "--output-stem", "live_heartbeat"], timeout=300))
     steps.append(run_step("Refresh optional odds snapshots", [python_path, "scripts/odds_snapshots.py"], timeout=300))
     steps.append(run_step("Score logged model predictions", [python_path, "scripts/score_model_predictions.py"], timeout=300))

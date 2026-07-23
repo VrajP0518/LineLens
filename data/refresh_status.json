@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-17T17:27:46Z",
-  "mode": "all",
+  "generated_at": "2026-07-22T16:42:19Z",
+  "mode": "predict",
   "sports": {
     "NFL": {
       "status": "real_fresh",
@@ -11,9 +11,9 @@
     },
     "MLB": {
       "status": "model_generated",
-      "message": "MLB model predictions generated from cached schedule after live fetch failed.",
-      "last_success_at": "2026-07-17T17:27:20Z",
-      "used_cache": true,
+      "message": "MLB model predictions generated from current schedule.",
+      "last_success_at": "2026-07-22T16:42:17Z",
+      "used_cache": false,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     },
     "WNBA": {
@@ -44,10 +44,10 @@
   },
   "model_record": {
     "status": "real_fresh",
-    "message": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v5.0\",\n  \"generated_at\": \"2026-07-17T17:27:46Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 353,\n  \"predictions_scored_this_run\": 85,\n  \"pending_predictions\": 42,\n  \"last_scoring_run\": \"2026-07-17T17:27:46Z\"\n}",
-    "last_run_at": "2026-07-17T17:27:46Z"
+    "message": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v5.1\",\n  \"generated_at\": \"2026-07-22T16:42:18Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 375,\n  \"predictions_scored_this_run\": 85,\n  \"pending_predictions\": 62,\n  \"last_scoring_run\": \"2026-07-22T16:42:18Z\"\n}",
+    "last_run_at": "2026-07-22T16:42:19Z"
   },
-  "version": "v5.0",
+  "version": "v5.1",
   "training": {
     "MLB": {
       "policy": "all_cached_completed_seasons_with_latest_season_holdout_then_full_production_refit",

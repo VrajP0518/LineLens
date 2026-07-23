@@ -1,8 +1,8 @@
 {
   "metadata": {
     "app": "LineLens Sports",
-    "version": "v4.0.0",
-    "generated_at": "2026-07-15T17:30:30Z",
+    "version": "v5.1",
+    "generated_at": "2026-07-22T16:36:45Z",
     "provider": "the_odds_api",
     "key_present": true,
     "sharp_key_present": true,
@@ -26,42 +26,31 @@
   "sports": {
     "WNBA": {
       "status": "success",
-      "events_received": 5,
-      "events_matched": 5,
+      "events_received": 6,
+      "events_matched": 6,
       "events_unmatched": 0,
       "event_discovery_status": "success",
-      "markets_received": 410,
-      "markets_normalized": 224,
+      "markets_received": 1080,
+      "markets_normalized": 646,
       "markets_rejected": 0,
-      "players_received": 40,
+      "players_received": 63,
       "players_matched": 0,
       "players_unmatched": 0,
       "unmatched_events": []
     },
     "MLB": {
       "status": "success",
-      "events_received": 1,
-      "events_matched": 1,
+      "events_received": 17,
+      "events_matched": 17,
       "events_unmatched": 0,
       "event_discovery_status": "success",
-      "markets_received": 2733,
-      "markets_normalized": 1338,
-      "markets_rejected": 91,
-      "players_received": 287,
+      "markets_received": 3947,
+      "markets_normalized": 2203,
+      "markets_rejected": 0,
+      "players_received": 323,
       "players_matched": 0,
       "players_unmatched": 0,
-      "unmatched_events": [],
-      "sharp_fallback_provider": "SharpAPI",
-      "sharp_fallback_status": "success",
-      "sharp_rows_received": 0,
-      "sharp_events_matched": 0,
-      "sharp_events_unmatched": 0,
-      "sharp_markets_received": 0,
-      "sharp_markets_rejected": 0,
-      "fallback_provider": "PropLine",
-      "fallback_event_discovery_status": "success",
-      "fallback_events_received": 37,
-      "fallback_events_matched": 29
+      "unmatched_events": []
     }
   }
 }

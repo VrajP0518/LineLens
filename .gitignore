@@ -9,6 +9,11 @@ data/imports/
 data/env_state.json
 data/predictions/data/
 *.parquet
+!data/processed/
+data/processed/*
+!data/processed/mlb/
+data/processed/mlb/*
+!data/processed/mlb/moneyline_dataset.parquet
 *.pkl
 !data/predictions/
 !data/predictions/*.json

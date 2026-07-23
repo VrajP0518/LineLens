@@ -35,6 +35,7 @@ STATUS_JSON = DATA_DIR / "refresh_status.json"
 STATUS_JS = DATA_DIR / "refresh_status.js"
 MLB_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_features_2021_2025.csv"
 MLB_CURRENT_FEATURES = DATA_DIR / "processed" / "mlb" / "mlb_current_features.csv"
+MLB_CONTEXT = DATA_DIR / "processed" / "mlb" / "moneyline_dataset.parquet"
 MLB_MODEL = ROOT / "models" / "mlb_moneyline_model.joblib"
 WNBA_FEATURES = DATA_DIR / "processed" / "wnba" / "wnba_features_all.csv"
 WNBA_CURRENT_FEATURES = DATA_DIR / "processed" / "wnba" / "wnba_current_features.csv"
@@ -561,7 +562,7 @@ def refresh_mlb_predict(status: dict[str, Any], target_date: str | None, date_ra
         schedule, raw_path = cached_schedule
         used_cached_schedule = True
 
-    if not MLB_MODEL.exists() or not MLB_FEATURES.exists():
+    if not MLB_MODEL.exists() or (not MLB_FEATURES.exists() and not MLB_CONTEXT.exists()):
         payload = mlb_schedule_payload(schedule, raw_path)
         payload["metadata"]["reason"] = "Schedule only - train model to generate predictions."
         write_json_and_js(payload, PREDICTIONS_DIR / "mlb_predictions.json", PREDICTIONS_DIR / "mlb_predictions.js", "__MLB_PREDICTIONS__")
@@ -569,21 +570,24 @@ def refresh_mlb_predict(status: dict[str, Any], target_date: str | None, date_ra
         return
 
     history_start, history_end = mlb_history_bounds()
-    result = run_module(
-        [
-            "src.mlb.feature_builder_mlb",
-            "build-current",
-            "--season",
-            str(date.today().year),
-            "--start-season",
-            str(history_start),
-            "--end-season",
-            str(history_end),
-            "--schedule-file",
-            str(raw_path.relative_to(ROOT)),
-        ],
-        timeout=180,
+    builder_args = [
+        "src.mlb.feature_builder_mlb",
+        "build-current",
+        "--season",
+        str(date.today().year),
+        "--start-season",
+        str(history_start),
+        "--end-season",
+        str(history_end),
+        "--schedule-file",
+        str(raw_path.relative_to(ROOT)),
+    ]
+    used_portable_context = MLB_CONTEXT.exists() and not all(
+        (RAW_MLB_DIR / f"history_{year}.json").exists() for year in range(history_start, history_end + 1)
     )
+    if used_portable_context:
+        builder_args.extend(["--context-file", "data/processed/mlb/moneyline_dataset.parquet"])
+    result = run_module(builder_args, timeout=300)
     if result.returncode != 0:
         update_sport_status(status, "MLB", "failed", (result.stderr or result.stdout or "MLB current feature build failed.").strip(), used_cache=True)
         return
@@ -610,7 +614,8 @@ def refresh_mlb_predict(status: dict[str, Any], target_date: str | None, date_ra
         "MLB",
         "model_generated",
         "MLB model predictions generated"
-        + (" from cached schedule after live fetch failed." if used_cached_schedule else " from current schedule."),
+        + (" from cached schedule after live fetch failed." if used_cached_schedule else " from current schedule.")
+        + (" Portable historical feature context was used because raw season caches are not installed." if used_portable_context else ""),
         used_cache=used_cached_schedule,
     )
 
@@ -967,7 +972,12 @@ def refresh_startup(status: dict[str, Any]) -> None:
     else:
         refresh_nfl(status, require_real=True)
     mlb_history_end = mlb_history_bounds()[1]
-    if model_needs_refresh(MLB_MODEL, MLB_FEATURES, RAW_MLB_DIR, "history_", mlb_history_end):
+    should_train_mlb = (
+        not MLB_MODEL.exists()
+        or (not MLB_FEATURES.exists() and not MLB_CONTEXT.exists())
+        or (MLB_FEATURES.exists() and model_needs_refresh(MLB_MODEL, MLB_FEATURES, RAW_MLB_DIR, "history_", mlb_history_end))
+    )
+    if should_train_mlb:
         if not refresh_mlb_train(status):
             return
     refresh_mlb_predict(status, None, None)
