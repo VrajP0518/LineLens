@@ -43,11 +43,23 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-def _payload(games: list[dict], model_type: str, target: str, *, real_data: bool, reason: str | None = None, metadata: dict | None = None) -> dict:
+def _payload(
+    games: list[dict],
+    model_type: str,
+    target: str,
+    *,
+    real_data: bool,
+    reason: str | None = None,
+    metadata: dict | None = None,
+    model_version: str | None = None,
+) -> dict:
     meta = {
         "sport": "MLB",
         "app": APP_NAME,
-        "version": APP_VERSION,
+        # Keep the application release version separate from the trained
+        # model artifact version. A prediction export must remain traceable
+        # to the registry entry that produced it across app releases.
+        "version": model_version or APP_VERSION,
         "generated_at": utc_now(),
         "model_type": model_type,
         "target": target,
@@ -362,6 +374,7 @@ def _append_prediction_log(games: list[dict], artifact: dict, generated_at: str)
     by_game = {_prediction_log_game_key(row): row for row in rows}
     model_id = artifact.get("metadata", {}).get("model_id") or f"mlb_moneyline_{APP_VERSION}"
     model_name = artifact.get("metadata", {}).get("model_name") or artifact.get("model_name")
+    model_version = artifact.get("metadata", {}).get("version") or APP_VERSION
     appended = 0
     updated = 0
     for game in games:
@@ -372,7 +385,7 @@ def _append_prediction_log(games: list[dict], artifact: dict, generated_at: str)
         row = {
             "prediction_id": _stable_prediction_id(game),
             "sport": "MLB",
-            "model_version": APP_VERSION,
+            "model_version": model_version,
             "model_id": model_id,
             "model_name": model_name,
             "generated_at": generated_at,
@@ -473,6 +486,7 @@ def export(
 
     games, artifact = _score_games(df, model_path, limit)
     artifact_meta = artifact.get("metadata", {})
+    model_version = artifact_meta.get("version") or APP_VERSION
     generated_at = utc_now()
     payload = _payload(
         games,
@@ -481,6 +495,7 @@ def export(
         real_data=True,
         metadata={
             "generated_at": generated_at,
+            "version": model_version,
             "prediction_mode": "model",
             "model_name": artifact_meta.get("model_name") or artifact.get("model_name"),
             "model_id": artifact_meta.get("model_id"),
@@ -518,12 +533,14 @@ def backtest(
     df = df[(df["season"] == season) & df["home_win"].notna()].copy()
     games, artifact = _score_games(df, model_path, limit)
     artifact_meta = artifact.get("metadata", {})
+    model_version = artifact_meta.get("version") or APP_VERSION
     payload = _payload(
         games,
         f"{artifact_meta.get('model_name') or artifact.get('model_name') or 'trained_model'}_backtest",
         "home_win",
         real_data=True,
         metadata={
+            "version": model_version,
             "prediction_mode": "historical_backtest",
             "test_season": season,
             "model_name": artifact_meta.get("model_name") or artifact.get("model_name"),
