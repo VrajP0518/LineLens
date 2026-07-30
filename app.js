@@ -4730,7 +4730,13 @@ function renderMlbLifecycleCard(game) {
     const dateLabel = stage === "pregame" ? `${gameIsoDate(game) === localDateIso() ? "TODAY" : formatDateOnly(gameIsoDate(game), { month: "short", day: "numeric" }).toUpperCase()} · ${getGameTimeLabel(game)}` : stage === "stale" ? "PAST · VERIFY SOURCE" : gameStatusLine(game, live);
     const marketRead = !market.movement.available ? "" : `<div class="mlb-game-card__market"><span>Market ${market.marketProbability === null ? "Linked" : formatProbability(market.marketProbability)}</span>${market.edge === null ? "" : `<strong>Edge ${formatEdge(market.edge)}</strong>`}</div>`;
     const latestPlay = stage === "live" && live?.latest_play ? `<small class="mlb-game-card__play">${escapeHtml(live.latest_play)}</small>` : "";
-    return `<article class="mlb-game-card mlb-game-card--${stage} ${modelWon ? "is-model-won" : ""} ${modelLost ? "is-model-lost" : ""} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
+    const edgeCopy = market.edge === null ? "No joined edge" : `${formatEdge(market.edge)} model edge`;
+    const marketCopy = market.movement.available
+        ? `Current market is linked${market.marketProbability === null ? "" : ` at ${formatProbability(market.marketProbability)}`}.`
+        : "Market movement is not available for this matchup.";
+    return `<article class="mlb-game-card mlb-card-flip mlb-game-card--${stage} ${modelWon ? "is-model-won" : ""} ${modelLost ? "is-model-lost" : ""} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
+        <div class="mlb-card-flip__inner">
+            <div class="mlb-card-flip__face mlb-card-flip__front">
         <header class="mlb-game-card__header"><span class="mlb-game-card__status">${statusLabel}</span><span class="mlb-game-card__time">${escapeHtml(dateLabel)}</span>${renderWatchButton(game, "Watch matchup")}</header>
         <div class="mlb-game-card__matchup">
             <div class="mlb-game-card__team">${renderTeamLogo("MLB", awayMeta.abbreviation, "lg", awayMeta.full_name)}<strong>${escapeHtml(awayMeta.abbreviation)}</strong></div>
@@ -4741,7 +4747,23 @@ function renderMlbLifecycleCard(game) {
         ${renderMlbOdds(game)}
         ${renderModelConsensus(game)}
         ${marketRead}${latestPlay}
-        <footer class="mlb-game-card__footer"><span>${resultChip(cardResult)}</span><button class="btn btn--micro" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">${stage === "live" ? "Open GameCast" : "View Matchup"}</button></footer>
+        <footer class="mlb-game-card__footer"><span>${resultChip(cardResult)}</span><span class="mlb-card-flip__footer-actions"><button class="btn btn--micro mlb-card-flip__toggle" type="button" data-flip-card aria-pressed="false" aria-label="Show matchup details">Details</button><button class="btn btn--micro" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">${stage === "live" ? "Open GameCast" : "View Matchup"}</button></span></footer>
+            </div>
+            <div class="mlb-card-flip__face mlb-card-flip__back" aria-label="${escapeHtml(`${awayMeta.abbreviation} at ${homeMeta.abbreviation} matchup details`)}">
+                <div class="mlb-card-flip__back-content">
+                    <div class="mlb-card-flip__back-kicker"><span>Matchup notes</span><span>${escapeHtml(statusLabel)}</span></div>
+                    <div class="mlb-card-flip__back-title"><strong>${escapeHtml(awayMeta.abbreviation)} <span>@</span> ${escapeHtml(homeMeta.abbreviation)}</strong><small>${escapeHtml(dateLabel)}</small></div>
+                    <div class="mlb-card-flip__back-grid">
+                        <div><span>Model view</span><strong>${escapeHtml(predictionReady ? pick : "Pending")}</strong></div>
+                        <div><span>Picked probability</span><strong>${predictionReady ? formatProbability(market.pickProbability) : "—"}</strong></div>
+                        <div><span>Market edge</span><strong>${escapeHtml(edgeCopy)}</strong></div>
+                        <div><span>Board state</span><strong>${escapeHtml(cardResult)}</strong></div>
+                    </div>
+                    <p class="mlb-card-flip__back-copy">${escapeHtml(marketCopy)} The summary stays on the front; this side keeps the decision context readable at a glance.</p>
+                    <footer class="mlb-card-flip__back-footer"><span>LineLens MLB board</span><span class="mlb-card-flip__footer-actions"><button class="btn btn--micro" type="button" data-flip-card aria-pressed="true" aria-label="Show matchup summary">Summary</button><button class="btn btn--micro" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">Open Matchup</button></span></footer>
+                </div>
+            </div>
+        </div>
     </article>`;
 }
 
@@ -7317,6 +7339,21 @@ function bindEvents() {
         if (nav) switchView(nav.dataset.view);
 
         if (event.target.closest("[data-open-live-widget]")) openLiveWidget();
+
+        const flipCardButton = event.target.closest("[data-flip-card]");
+        if (flipCardButton) {
+            const card = flipCardButton.closest(".mlb-card-flip");
+            if (card) {
+                const flipped = card.classList.toggle("is-flipped");
+                card.querySelectorAll("[data-flip-card]").forEach(button => {
+                    button.setAttribute("aria-pressed", String(flipped));
+                    button.setAttribute("aria-label", flipped ? "Show matchup summary" : "Show matchup details");
+                });
+                const nextFocus = card.querySelector(flipped ? ".mlb-card-flip__back [data-flip-card]" : ".mlb-card-flip__front [data-flip-card]");
+                if (nextFocus) nextFocus.focus({ preventScroll: true });
+            }
+            return;
+        }
 
         if (event.target.id === "presentation-toggle") {
             state.selected.presentationMode = !state.selected.presentationMode;
