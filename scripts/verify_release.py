@@ -56,20 +56,22 @@ def required_bundle_files() -> bool:
 
 
 def version_contract() -> bool:
-    expected = APP_VERSION.removeprefix("v")
+    display_version = APP_VERSION.removeprefix("v")
+    semver_parts = display_version.split(".")
+    expected = display_version if len(semver_parts) == 3 else f"{display_version}.0"
     checks = [
         (ROOT / "package.json", json.loads((ROOT / "package.json").read_text(encoding="utf-8")).get("version")),
         (ROOT / "src-tauri" / "tauri.conf.json", json.loads((ROOT / "src-tauri" / "tauri.conf.json").read_text(encoding="utf-8")).get("version")),
         (ROOT / "src-tauri" / "Cargo.toml", (ROOT / "src-tauri" / "Cargo.toml").read_text(encoding="utf-8")),
     ]
     if checks[0][1] != expected or checks[1][1] != expected or f'version = "{expected}"' not in checks[2][1]:
-        print(f"FAIL: package, Tauri, and Cargo metadata must all be {expected}")
+        print(f"FAIL: package, Tauri, and Cargo metadata must all be semver {expected}")
         return False
     app_metadata = json.loads((ROOT / "data" / "app_metadata.json").read_text(encoding="utf-8"))
     if app_metadata.get("version") != APP_VERSION:
         print(f"FAIL: data/app_metadata.json must report {APP_VERSION}")
         return False
-    print(f"PASS: release version contract is {APP_VERSION}")
+    print(f"PASS: release version contract is {APP_VERSION} (semver {expected})")
     return True
 
 

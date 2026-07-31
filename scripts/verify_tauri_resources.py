@@ -13,8 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE_DIR = ROOT / "src-tauri" / "target" / "release"
-EXPECTED_VERSION = "5.8"
-EXPECTED_APP_VERSION = f"v{EXPECTED_VERSION}"
+EXPECTED_VERSION = "5.8.0"
+EXPECTED_APP_VERSION = "v5.8"
 
 REQUIRED_FILES = [
     "scripts/bootstrap_env.py",
