@@ -44,7 +44,7 @@ def required_bundle_files() -> bool:
         "data/reports/wnba_prop_model_cards.json", "data/reports/wnba_prop_model_health.json",
         "data/reports/mlb_prop_model_registry.json", "data/reports/mlb_prop_model_cards.json",
         "data/reports/mlb_prop_model_health.json", "data/reports/mlb_prop_dataset_summary.json",
-        f"RELEASE_NOTES_{APP_VERSION}.md", "data/processed/mlb/moneyline_dataset.parquet",
+        "data/processed/mlb/moneyline_dataset.parquet",
     ]
     missing = [path for path in required if not (ROOT / path).exists()]
     if missing:

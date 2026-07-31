@@ -1,6 +1,6 @@
 {
   "name": "linelens-sports",
-  "version": "5.8.0",
+  "version": "5.8",
   "private": true,
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
