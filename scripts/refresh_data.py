@@ -997,6 +997,26 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def refresh_mlb_economics(status: dict[str, Any]) -> None:
+    """Rebuild the small offline economics join after an MLB export changes."""
+    try:
+        result = subprocess.run(
+            [pipeline_python(), "scripts/build_mlb_economics.py"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            timeout=120,
+            check=False,
+        )
+        status["mlb_economics"] = {
+            "status": "real_fresh" if result.returncode == 0 else "failed",
+            "message": (result.stdout or result.stderr or "Economics export completed.").strip()[-1000:],
+            "generated_at": utc_now(),
+        }
+    except Exception as exc:  # noqa: BLE001 - status must remain visible to the UI.
+        status["mlb_economics"] = {"status": "failed", "message": f"{type(exc).__name__}: {exc}", "generated_at": utc_now()}
+
+
 def main() -> None:
     args = parse_args()
     status = load_status()
@@ -1020,6 +1040,8 @@ def main() -> None:
         run_model_scoring(status)
     if args.sport in {"all", "mlb"} and args.mode == "export":
         refresh_mlb_export(status)
+    if args.sport in {"all", "mlb"} and args.mode in {"current", "predict", "all", "real", "export"}:
+        refresh_mlb_economics(status)
     if args.sport in {"all", "nfl"} and args.mode in {"current", "export", "real", "all"}:
         refresh_nfl(status, require_real=args.mode in {"real", "all"})
     if args.sport in {"all", "wnba"} and args.mode == "history":

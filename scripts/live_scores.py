@@ -993,6 +993,16 @@ def _start_times_are_same_game(first: Any, second: Any) -> bool:
         return str(first)[:16] == str(second)[:16]
 
 
+def _has_game_clock(value: Any) -> bool:
+    if value in (None, ""):
+        return False
+    text = str(value).strip()
+    return bool(
+        re.match(r"^\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AP]M)?(?:\s*[A-Z]{2,4})?$", text, re.I)
+        or re.search(r"(?:T|\s)\d{1,2}:\d{2}(?::\d{2})?", text, re.I)
+    )
+
+
 def dedupe_games(games: list[dict[str, Any]]) -> list[dict[str, Any]]:
     deduped: list[dict[str, Any]] = []
     for game in games:
@@ -1015,6 +1025,10 @@ def dedupe_games(games: list[dict[str, Any]]) -> list[dict[str, Any]]:
         merged = dict(primary)
         for key, value in game.items():
             if value not in (None, "", [], {}):
+                if key in {"game_time", "start_time", "commence_time", "kickoff", "first_pitch", "game_datetime", "scheduled_date"}:
+                    if _has_game_clock(value) or not _has_game_clock(merged.get(key)):
+                        merged[key] = value
+                    continue
                 merged[key] = value
         if (primary.get("model") or {}).get("prediction_available") and not (game.get("model") or {}).get("prediction_available"):
             merged["model"] = primary["model"]

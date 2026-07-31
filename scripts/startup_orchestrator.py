@@ -95,6 +95,7 @@ def ensure_data_dirs() -> None:
         DATA_DIR / "imports" / "nfl",
         DATA_DIR / "predictions",
         DATA_DIR / "reports",
+        DATA_DIR / "mlb_economics",
     ]:
         folder.mkdir(parents=True, exist_ok=True)
 
@@ -210,6 +211,8 @@ def orchestrate() -> dict[str, Any]:
         status["error"] = "MLB model refresh finished without model probabilities. Check data/refresh_status.json."
         write_json_and_js(status, STATUS_JSON, STATUS_JS, "__STARTUP_STATUS__")
         return status
+
+    steps.append(run_step("Build MLB economics export", [python_path, "scripts/build_mlb_economics.py"], timeout=120))
 
     steps.append(run_step("Refresh NFL real/cached predictions", [python_path, "scripts/refresh_data.py", "--sport", "nfl", "--mode", "real"], timeout=1800))
     steps.append(run_step("Refresh WNBA current board", [python_path, "scripts/refresh_data.py", "--sport", "wnba", "--mode", "predict"], timeout=900))

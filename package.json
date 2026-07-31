@@ -1,6 +1,6 @@
 {
   "name": "linelens-sports",
-  "version": "5.6.0",
+  "version": "5.8.0",
   "private": true,
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
@@ -23,6 +23,7 @@
     "refresh:mlb:predict": "python scripts/refresh_data.py --sport mlb --mode predict",
     "refresh:mlb:all": "python scripts/refresh_data.py --sport mlb --mode all",
     "refresh:mlb:export": "python scripts/refresh_data.py --sport mlb --mode export",
+    "build:mlb:economics": "python scripts/build_mlb_economics.py",
     "refresh:wnba": "python scripts/refresh_data.py --sport wnba --mode predict",
     "refresh:wnba:history": "python scripts/refresh_data.py --sport wnba --mode history",
     "refresh:wnba:train": "python scripts/refresh_data.py --sport wnba --mode train",

@@ -1,4 +1,4 @@
-const APP_VERSION = "v5.6.0";
+const APP_VERSION = "v5.8";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
@@ -30,6 +30,7 @@ const DATA_SOURCES = {
     nfl: ["data/predictions/nfl_predictions.json", "data/predictions.json"],
     mlb: ["data/predictions/mlb_predictions.json"],
     mlbBacktest: ["data/predictions/mlb_backtest_predictions.json"],
+    mlbEconomics: ["data/mlb_economics/mlb_economics.json"],
     wnba: ["data/predictions/wnba_predictions.json"],
     wnbaBacktest: ["data/predictions/wnba_backtest_predictions.json"],
     wnbaPropPredictions: ["data/predictions/wnba_prop_predictions.json"],
@@ -96,6 +97,7 @@ const state = {
     nfl: { payload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null, games: [], error: null },
     mlb: { payload: window.__MLB_PREDICTIONS__ || null, games: [], error: null },
     mlbBacktest: { payload: window.__MLB_BACKTEST_PREDICTIONS__ || null, games: [], error: null },
+    mlbEconomics: window.__MLB_ECONOMICS__ || null,
     wnba: { payload: window.__WNBA_PREDICTIONS__ || null, games: [], error: null },
     wnbaBacktest: { payload: window.__WNBA_BACKTEST_PREDICTIONS__ || null, games: [], error: null },
     selected: {
@@ -148,6 +150,15 @@ const state = {
         modelName: null,
         pinnedModel: null,
         mlbLifecycleFilter: "all",
+        economicsSeason: "latest",
+        economicsSeasonFrom: "",
+        economicsSeasonTo: "",
+        economicsTeam: "all",
+        economicsLeague: "all",
+        economicsDivision: "all",
+        economicsWinMode: "actual",
+        economicsPayrollMode: "nominal",
+        economicsSort: "efficiency",
         historySport: "all",
         historySeason: "all",
         historyResult: "all",
@@ -367,6 +378,27 @@ function firstPresent(...values) {
     return values.find(value => value !== null && value !== undefined && value !== "");
 }
 
+function hasGameClock(value) {
+    if (value === null || value === undefined || value === "") return false;
+    const raw = String(value).trim();
+    return /^\d{1,2}:\d{2}(?::\d{2})?(?:\s*[AP]M)?(?:\s*[A-Z]{2,4})?$/i.test(raw)
+        || /(?:T|\s)\d{1,2}:\d{2}(?::\d{2})?/i.test(raw);
+}
+
+function gameTimeSource(game) {
+    return [
+        game?.game_time,
+        game?.start_time,
+        game?.commence_time,
+        game?.kickoff,
+        game?.first_pitch,
+        game?.game_datetime,
+        game?.scheduled_date,
+        game?.date,
+        game?.game_date,
+    ].find(hasGameClock) || null;
+}
+
 function gameDateRaw(game) {
     return firstPresent(
         game?.game_date,
@@ -411,10 +443,11 @@ function gameTimestamp(game) {
     const raw = gameDateRaw(game);
     if (!raw) return null;
     const iso = toIsoDate(raw);
-    const time = firstPresent(game?.game_time, game?.start_time, game?.commence_time, game?.kickoff, game?.first_pitch);
-    const candidate = iso && time && !String(time).startsWith(iso) && /^\d{1,2}:\d{2}/.test(String(time))
-        ? `${iso}T${time}`
-        : String(raw).length <= 10 && iso ? `${iso}T12:00:00` : raw;
+    const time = gameTimeSource(game);
+    const clockOnly = time && /^\d{1,2}:\d{2}/.test(String(time).trim());
+    const candidate = iso && clockOnly
+        ? `${iso} ${String(time).trim()}`
+        : time || (String(raw).length <= 10 && iso ? `${iso}T12:00:00` : raw);
     const date = new Date(candidate);
     return Number.isNaN(date.getTime()) ? null : date.getTime();
 }
@@ -458,6 +491,12 @@ function normalizeMeta(payload) {
 
 function normalizeGames(payload) {
     return Array.isArray(payload?.games) ? payload.games : [];
+}
+
+function resolveNflPayload(payload) {
+    const bundled = window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null;
+    if (normalizeGames(payload).length || !normalizeGames(bundled).length) return payload;
+    return bundled;
 }
 
 async function fetchJson(url) {
@@ -1573,10 +1612,10 @@ function teamIdentityKey(sport, code, display) {
 }
 
 function gameTimeKey(game) {
-    const raw = firstPresent(game?.game_time, game?.start_time, game?.commence_time, game?.kickoff, game?.first_pitch);
+    const raw = gameTimeSource(game);
     if (!raw) return "";
     const value = String(raw);
-    const time = value.match(/T(\d{2}:\d{2})|^(\d{1,2}:\d{2})/);
+    const time = value.match(/(?:T|\s)(\d{1,2}:\d{2})|^(\d{1,2}:\d{2})/);
     return time ? (time[1] || time[2]) : "";
 }
 
@@ -1641,7 +1680,11 @@ function mergeCanonicalGameRows(rows) {
         const merged = { ...ordered[0] };
         ordered.slice(1).forEach(row => {
             Object.entries(row).forEach(([key, value]) => {
-                if (value !== null && value !== undefined && value !== "" && (merged[key] === null || merged[key] === undefined || merged[key] === "")) merged[key] = value;
+                if (value === null || value === undefined || value === "") return;
+                const isTimeField = ["game_time", "start_time", "commence_time", "kickoff", "first_pitch", "game_datetime", "scheduled_date"].includes(key);
+                const shouldFill = merged[key] === null || merged[key] === undefined || merged[key] === "";
+                const shouldUpgradeTime = isTimeField && hasGameClock(value) && !hasGameClock(merged[key]);
+                if (shouldFill || shouldUpgradeTime) merged[key] = value;
             });
             if (row.model && (row.model.prediction_available || !merged.model?.prediction_available)) merged.model = { ...(merged.model || {}), ...row.model };
         });
@@ -2330,6 +2373,7 @@ async function loadAll() {
         nfl,
         mlb,
         mlbBacktest,
+        mlbEconomics,
         wnbaModelComparison,
         wnbaFeatureSummary,
         wnbaCard,
@@ -2369,6 +2413,7 @@ async function loadAll() {
         loadOptional("nfl", ["__NFL_PREDICTIONS__", "__PREDICTIONS__"]),
         loadOptional("mlb", ["__MLB_PREDICTIONS__"]),
         loadOptional("mlbBacktest", ["__MLB_BACKTEST_PREDICTIONS__"]),
+        loadOptional("mlbEconomics", ["__MLB_ECONOMICS__"]),
         loadOptional("wnbaModelComparison", ["__WNBA_MODEL_COMPARISON__"]),
         loadOptional("wnbaFeatureSummary", ["__WNBA_FEATURE_SUMMARY__"]),
         loadOptional("wnbaCard", ["__WNBA_MODEL_CARD__"]),
@@ -2418,14 +2463,15 @@ async function loadAll() {
         ? (state.live.stale ? "Live export is older than three minutes; waiting for background refresh." : null)
         : "No live widget export found. Run npm run refresh:live.";
     state.odds = odds || state.odds;
-    state.nfl.payload = nfl;
-    state.nfl.games = normalizeGames(nfl);
-    state.nfl.error = nfl ? null : "No NFL predictions found. Run the NFL export command.";
+    state.nfl.payload = resolveNflPayload(nfl);
+    state.nfl.games = normalizeGames(state.nfl.payload);
+    state.nfl.error = state.nfl.payload ? null : "No NFL predictions found. Run the NFL export command.";
     state.mlb.payload = mlb;
     state.mlb.games = normalizeGames(mlb);
     state.mlb.error = mlb ? null : "No MLB predictions found. Run the MLB export command.";
     state.mlbBacktest.payload = mlbBacktest;
     state.mlbBacktest.games = normalizeGames(mlbBacktest);
+    state.mlbEconomics = mlbEconomics || state.mlbEconomics;
     state.wnba.payload = wnba;
     state.wnba.games = normalizeGames(wnba);
     state.wnba.error = wnba ? null : "No WNBA model export found. Run npm run refresh:wnba:all.";
@@ -2901,6 +2947,7 @@ function switchView(view) {
         props: ["Player Props", "WNBA projection feed"],
         nfl: ["NFL Spread Predictor", "spread module"],
         mlb: ["MLB Game Board", "today’s games"],
+        "mlb-economics": ["MLB Economics", "payroll, wins, and efficiency"],
         soccer: ["Soccer / World Cup", "today’s games"],
         nba: ["NBA Scoreboard", "today’s games"],
         nhl: ["NHL Scoreboard", "today’s games"],
@@ -2931,6 +2978,7 @@ function renderView(view = state.selected.view || "home") {
         props: renderProps,
         nfl: renderNFL,
         mlb: renderMLB,
+        "mlb-economics": renderMlbEconomics,
         soccer: renderSoccer,
         nba: renderNBA,
         nhl: renderNHL,
@@ -3102,13 +3150,13 @@ function card(label, value, note, extraClass = "") {
 }
 
 function getGameTimeLabel(game) {
-    const raw = firstPresent(game?.game_time, game?.start_time, game?.commence_time, game?.kickoff, game?.first_pitch, gameDateRaw(game));
-    if (!raw) return "TBD";
+    const raw = gameTimeSource(game);
+    if (!raw) return gameDateRaw(game) ? "Time TBD" : "TBD";
     const iso = gameIsoDate(game);
-    const candidate = iso && /^\d{1,2}:\d{2}/.test(String(raw)) ? `${iso}T${raw}` : raw;
+    const clockOnly = /^\d{1,2}:\d{2}/.test(String(raw).trim());
+    const candidate = iso && clockOnly ? `${iso} ${String(raw).trim()}` : raw;
     const date = new Date(candidate);
     if (Number.isNaN(date.getTime())) return String(raw);
-    if (String(raw).length <= 10) return formatDate(raw);
     return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
@@ -4527,8 +4575,10 @@ function filterMlbGames(games) {
 
 function lifecycleStage(game) {
     const live = liveGameFor(game);
+    const source = live || game;
     const statuses = [live?.status_detail, live?.status, game?.status_detail, game?.status].filter(Boolean).map(value => String(value).toLowerCase());
     if (statuses.some(status => status.includes("final") || status.includes("completed"))) return "final";
+    if (safeNumber(source?.away_score) !== null && safeNumber(source?.home_score) !== null && safeNumber(source?.inning) >= 9 && safeNumber(source?.outs) >= 3) return "final";
     if (statuses.some(status => status.includes("progress") || status.includes("live") || status.includes("in progress"))) return "live";
     const date = gameIsoDate(live || game);
     const awayScore = safeNumber((live || game)?.away_score);
@@ -4821,6 +4871,256 @@ function renderMlbLifecyclePage() {
 
 function renderMLB() {
     $("#view-mlb").innerHTML = renderMlbLifecyclePage();
+}
+
+function mlbEconomicsPayload() {
+    return state.mlbEconomics || { metadata: { setup_state: "payroll_required", season_coverage: [] }, rows: [] };
+}
+
+function mlbEconomicsSeasons() {
+    return (mlbEconomicsPayload().metadata?.season_coverage || []).map(Number).filter(Number.isFinite).sort((a, b) => b - a);
+}
+
+function mlbEconomicsPayroll(row) {
+    if (state.selected.economicsPayrollMode === "adjusted" && safeNumber(row?.payroll_adjusted) !== null) return safeNumber(row.payroll_adjusted);
+    return safeNumber(row?.payroll);
+}
+
+function mlbEconomicsTarget(row) {
+    if (state.selected.economicsWinMode === "projected" && safeNumber(row?.projected_wins) !== null) return safeNumber(row.projected_wins);
+    return safeNumber(row?.wins);
+}
+
+function mlbEconomicsFilteredRows() {
+    const payload = mlbEconomicsPayload();
+    const seasons = mlbEconomicsSeasons();
+    const selectedSeason = state.selected.economicsSeason || "latest";
+    const from = safeNumber(state.selected.economicsSeasonFrom);
+    const to = safeNumber(state.selected.economicsSeasonTo);
+    return (payload.rows || []).filter(row => {
+        const season = safeNumber(row.season);
+        const seasonMatch = selectedSeason === "all"
+            ? (!from || season >= from) && (!to || season <= to)
+            : selectedSeason === "range"
+                ? (!from || season >= from) && (!to || season <= to)
+                : season === (selectedSeason === "latest" ? seasons[0] : safeNumber(selectedSeason));
+        return seasonMatch
+            && (state.selected.economicsTeam === "all" || row.team_id === state.selected.economicsTeam)
+            && (state.selected.economicsLeague === "all" || row.league === state.selected.economicsLeague)
+            && (state.selected.economicsDivision === "all" || row.division === state.selected.economicsDivision);
+    });
+}
+
+function mlbEconomicsRegression(rows) {
+    const points = rows.map(row => ({ row, x: mlbEconomicsPayroll(row), y: mlbEconomicsTarget(row) })).filter(point => point.x !== null && point.y !== null);
+    if (points.length < 2) return { points, count: points.length, slope: null, intercept: null, r2: null, meanX: null, meanY: null };
+    const meanX = points.reduce((sum, point) => sum + point.x, 0) / points.length;
+    const meanY = points.reduce((sum, point) => sum + point.y, 0) / points.length;
+    const denominator = points.reduce((sum, point) => sum + ((point.x - meanX) ** 2), 0);
+    const slope = denominator ? points.reduce((sum, point) => sum + ((point.x - meanX) * (point.y - meanY)), 0) / denominator : 0;
+    const intercept = meanY - slope * meanX;
+    const total = points.reduce((sum, point) => sum + ((point.y - meanY) ** 2), 0);
+    const residual = points.reduce((sum, point) => sum + ((point.y - (intercept + slope * point.x)) ** 2), 0);
+    return { points, count: points.length, slope, intercept, r2: total ? Math.max(0, 1 - residual / total) : 0, meanX, meanY };
+}
+
+function mlbEconomicsRankedRows(rows, model) {
+    const points = model.points || [];
+    const byKey = new Map(points.map(point => [`${point.row.season}:${point.row.team_id}`, point]));
+    const withExpectation = rows.map(row => {
+        const point = byKey.get(`${row.season}:${row.team_id}`);
+        if (!point) return { ...row, payroll_rank: null, wins_rank: null, expected_wins: null, wins_above_expectation: null, efficiency_index: null, efficiency_percentile: null, cost_per_win: null, projected_cost_per_win: null };
+        const expected = model.intercept === null ? null : model.intercept + model.slope * point.x;
+        const winsAbove = expected === null ? null : point.y - expected;
+        return {
+            ...row,
+            _target: point.y,
+            _payroll: point.x,
+            expected_wins: expected,
+            wins_above_expectation: winsAbove,
+            cost_per_win: row.wins ? point.x / row.wins : null,
+            projected_cost_per_win: row.projected_wins ? point.x / row.projected_wins : null,
+        };
+    });
+    const payrollOrder = [...withExpectation].filter(row => row._payroll !== undefined).sort((a, b) => b._payroll - a._payroll);
+    const winsOrder = [...withExpectation].filter(row => row._target !== undefined).sort((a, b) => b._target - a._target);
+    const efficiencyValues = withExpectation.map(row => row.wins_above_expectation).filter(value => value !== null && Number.isFinite(value));
+    const min = efficiencyValues.length ? Math.min(...efficiencyValues) : null;
+    const max = efficiencyValues.length ? Math.max(...efficiencyValues) : null;
+    return withExpectation.map(row => {
+        const efficiency = row.wins_above_expectation;
+        const index = efficiency === null || min === null ? null : max === min ? 50 : ((efficiency - min) / (max - min)) * 100;
+        const percentile = efficiency === null ? null : efficiencyValues.filter(value => value <= efficiency).length / efficiencyValues.length * 100;
+        return {
+            ...row,
+            payroll_rank: row._payroll === undefined ? null : payrollOrder.findIndex(item => item.team_id === row.team_id && item.season === row.season) + 1,
+            wins_rank: row._target === undefined ? null : winsOrder.findIndex(item => item.team_id === row.team_id && item.season === row.season) + 1,
+            efficiency_index: index,
+            efficiency_percentile: percentile,
+        };
+    });
+}
+
+function economicsMoney(value) {
+    return value === null || value === undefined || !Number.isFinite(Number(value)) ? "—" : `$${Math.round(Number(value)).toLocaleString()}`;
+}
+
+function economicsMillions(value) {
+    return value === null || value === undefined || !Number.isFinite(Number(value)) ? "—" : `$${(Number(value) / 1000000).toFixed(1)}M`;
+}
+
+function economicsPercent(value, digits = 1) {
+    return value === null || value === undefined || !Number.isFinite(Number(value)) ? "—" : `${(Number(value) * 100).toFixed(digits)}%`;
+}
+
+function renderMlbEconomicsFilters(seasons, rows) {
+    const teams = [...new Map(rows.map(row => [row.team_id, row.team_name])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
+    const leagues = [...new Set(rows.map(row => row.league).filter(Boolean))].sort();
+    const divisions = [...new Set(rows.map(row => row.division).filter(Boolean))].sort();
+    const selectedSeason = state.selected.economicsSeason || "latest";
+    const select = (id, label, options, value) => `<label class="econ-filter"><span>${label}</span><select id="${id}">${options.map(([option, text]) => `<option value="${escapeHtml(option)}" ${String(option) === String(value) ? "selected" : ""}>${escapeHtml(text)}</option>`).join("")}</select></label>`;
+    return `<div class="mlb-economics-filters">
+        ${select("economics-season", "Season", [["latest", seasons[0] ? `${seasons[0]} · latest` : "Latest"], ["all", "All available seasons"], ["range", "Custom range"], ...seasons.map(season => [String(season), String(season)])], selectedSeason)}
+        <label class="econ-filter"><span>From</span><select id="economics-season-from"><option value="">—</option>${seasons.slice().sort((a, b) => a - b).map(season => `<option value="${season}" ${String(season) === String(state.selected.economicsSeasonFrom) ? "selected" : ""}>${season}</option>`).join("")}</select></label>
+        <label class="econ-filter"><span>To</span><select id="economics-season-to"><option value="">—</option>${seasons.slice().sort((a, b) => a - b).map(season => `<option value="${season}" ${String(season) === String(state.selected.economicsSeasonTo) ? "selected" : ""}>${season}</option>`).join("")}</select></label>
+        ${select("economics-team", "Team", [["all", "All teams"], ...teams.map(([code, name]) => [code, name])], state.selected.economicsTeam)}
+        ${select("economics-league", "League", [["all", "AL + NL"], ...leagues.map(value => [value, value])], state.selected.economicsLeague)}
+        ${select("economics-division", "Division", [["all", "All divisions"], ...divisions.map(value => [value, value])], state.selected.economicsDivision)}
+        ${select("economics-win-mode", "Wins shown", [["actual", "Actual wins"], ["projected", "Projected wins"]], state.selected.economicsWinMode)}
+        ${select("economics-payroll-mode", "Payroll", [["nominal", "Nominal dollars"], ["adjusted", "Inflation-adjusted when available"]], state.selected.economicsPayrollMode)}
+        <button class="btn btn--small econ-reset" type="button" data-economics-reset>Reset filters</button>
+    </div>`;
+}
+
+function renderMlbEconomicsScatter(rows, model) {
+    const points = model.points || [];
+    if (points.length < 2) return `<div class="econ-chart-empty"><strong>Scatterplot waiting for joined payroll and result rows</strong><span>Supply real payroll and completed team-season results to calculate a regression.</span></div>`;
+    const width = 820;
+    const height = 390;
+    const plot = { left: 64, top: 38, right: 790, bottom: 318 };
+    const minX = Math.min(...points.map(point => point.x));
+    const maxX = Math.max(...points.map(point => point.x));
+    const minY = Math.min(...points.map(point => point.y));
+    const maxY = Math.max(...points.map(point => point.y));
+    const xPad = Math.max((maxX - minX) * 0.08, 1);
+    const yPad = Math.max((maxY - minY) * 0.12, 1);
+    const x0 = minX - xPad;
+    const x1 = maxX + xPad;
+    const y0 = minY - yPad;
+    const y1 = maxY + yPad;
+    const sx = value => plot.left + ((value - x0) / (x1 - x0 || 1)) * (plot.right - plot.left);
+    const sy = value => plot.bottom - ((value - y0) / (y1 - y0 || 1)) * (plot.bottom - plot.top);
+    const xMid = sx(model.meanX);
+    const yMid = sy(model.meanY);
+    const selected = state.selected.economicsTeam;
+    const line = model.slope === null ? "" : `<line class="econ-regression" x1="${sx(x0)}" y1="${sy(model.intercept + model.slope * x0)}" x2="${sx(x1)}" y2="${sy(model.intercept + model.slope * x1)}" />`;
+    return `<div class="econ-scatter-wrap"><svg class="econ-scatter" viewBox="0 0 ${width} ${height}" role="img" aria-label="Payroll versus wins scatterplot">
+        <rect class="econ-quadrant econ-quadrant--a" x="${plot.left}" y="${plot.top}" width="${Math.max(0, xMid - plot.left)}" height="${Math.max(0, yMid - plot.top)}" />
+        <rect class="econ-quadrant econ-quadrant--b" x="${xMid}" y="${plot.top}" width="${Math.max(0, plot.right - xMid)}" height="${Math.max(0, yMid - plot.top)}" />
+        <rect class="econ-quadrant econ-quadrant--c" x="${plot.left}" y="${yMid}" width="${Math.max(0, xMid - plot.left)}" height="${Math.max(0, plot.bottom - yMid)}" />
+        <rect class="econ-quadrant econ-quadrant--d" x="${xMid}" y="${yMid}" width="${Math.max(0, plot.right - xMid)}" height="${Math.max(0, plot.bottom - yMid)}" />
+        <line class="econ-axis econ-axis--reference" x1="${xMid}" y1="${plot.top}" x2="${xMid}" y2="${plot.bottom}" /><line class="econ-axis econ-axis--reference" x1="${plot.left}" y1="${yMid}" x2="${plot.right}" y2="${yMid}" />
+        ${line}
+        <text class="econ-quadrant-label" x="${plot.left + 12}" y="${plot.top + 22}">LOW PAYROLL / HIGH WINS</text><text class="econ-quadrant-label" x="${xMid + 12}" y="${plot.top + 22}">HIGH PAYROLL / HIGH WINS</text><text class="econ-quadrant-label" x="${plot.left + 12}" y="${plot.bottom - 14}">LOW PAYROLL / LOW WINS</text><text class="econ-quadrant-label" x="${xMid + 12}" y="${plot.bottom - 14}">HIGH PAYROLL / LOW WINS</text>
+        ${points.map(point => `<circle class="econ-point ${point.row.team_id === selected ? "is-selected" : ""}" cx="${sx(point.x)}" cy="${sy(point.y)}" r="${point.row.team_id === selected ? 8 : 6}" data-economics-team="${escapeHtml(point.row.team_id)}" tabindex="0" role="button"><title>${escapeHtml(point.row.team_name)} · ${economicsMillions(point.x)} payroll · ${point.y.toFixed(1)} wins</title></circle>`).join("")}
+        <text class="econ-axis-label" x="${(plot.left + plot.right) / 2}" y="${height - 12}" text-anchor="middle">${state.selected.economicsPayrollMode === "adjusted" ? "Payroll · inflation-adjusted where available" : "Payroll · nominal dollars"}</text><text class="econ-axis-label" transform="translate(16 ${(plot.top + plot.bottom) / 2}) rotate(-90)" text-anchor="middle">${state.selected.economicsWinMode === "projected" ? "Projected wins" : "Wins"}</text>
+        <text class="econ-tick" x="${plot.left}" y="${plot.bottom + 19}">${economicsMillions(minX)}</text><text class="econ-tick" x="${plot.right}" y="${plot.bottom + 19}" text-anchor="end">${economicsMillions(maxX)}</text><text class="econ-tick" x="${plot.left - 10}" y="${plot.bottom}" text-anchor="end">${Math.round(minY)}</text><text class="econ-tick" x="${plot.left - 10}" y="${plot.top + 5}" text-anchor="end">${Math.round(maxY)}</text>
+    </svg><p class="econ-chart-caption">Payroll explains <strong>${model.r2 === null ? "—" : `${(model.r2 * 100).toFixed(1)}%`}</strong> of the variation in ${state.selected.economicsWinMode === "projected" ? "projected wins" : "wins"} for the selected period. Correlation does not prove causation.</p></div>`;
+}
+
+function renderMlbEconomicsKpis(rows, ranked, model) {
+    const complete = rows.filter(row => row.wins !== null && mlbEconomicsPayroll(row) !== null);
+    const totalPayroll = complete.reduce((sum, row) => sum + mlbEconomicsPayroll(row), 0);
+    const wins = complete.reduce((sum, row) => sum + Number(row.wins || 0), 0);
+    const mostEfficient = [...ranked].sort((a, b) => (b.wins_above_expectation ?? -Infinity) - (a.wins_above_expectation ?? -Infinity))[0];
+    const leastEfficient = [...ranked].sort((a, b) => (a.wins_above_expectation ?? Infinity) - (b.wins_above_expectation ?? Infinity))[0];
+    const highestPayroll = [...complete].sort((a, b) => mlbEconomicsPayroll(b) - mlbEconomicsPayroll(a))[0];
+    const current = complete.filter(row => row.is_current_season);
+    const currentWins = current.reduce((sum, row) => sum + Number(row.wins || 0), 0);
+    const currentProjected = current.reduce((sum, row) => sum + Number(row.projected_wins || row.wins || 0), 0);
+    const cards = [
+        ["Total league payroll", economicsMillions(totalPayroll), "selected rows"],
+        ["Average team payroll", economicsMillions(complete.length ? totalPayroll / complete.length : null), "nominal unless adjusted data exists"],
+        ["Average payroll per win", economicsMoney(wins ? totalPayroll / wins : null), "completed wins only"],
+        ["Payroll-to-wins R²", model.r2 === null ? "—" : `${(model.r2 * 100).toFixed(1)}%`, `${model.count} joined teams`],
+        ["Most efficient team", mostEfficient?.team_name || "—", mostEfficient ? `${mostEfficient.wins_above_expectation.toFixed(1)} wins above expectation` : "needs joined data"],
+        ["Least efficient team", leastEfficient?.team_name || "—", leastEfficient ? `${leastEfficient.wins_above_expectation.toFixed(1)} wins versus expectation` : "needs joined data"],
+        ["Highest payroll", highestPayroll?.team_name || "—", highestPayroll ? economicsMillions(mlbEconomicsPayroll(highestPayroll)) : "needs payroll input"],
+        ["Largest underperformance", leastEfficient?.team_name || "—", leastEfficient ? `${Math.abs(leastEfficient.wins_above_expectation).toFixed(1)} expected-wins gap` : "needs joined data"],
+    ];
+    if (current.length) cards.push(["Games completed", current.reduce((sum, row) => sum + Number(row.games_played || 0), 0) / current.length, "average per team"] , ["Projected wins", currentProjected.toFixed(1), "current win rate × 162"], ["Current cost per win", economicsMoney(currentWins ? current.reduce((sum, row) => sum + mlbEconomicsPayroll(row), 0) / currentWins : null), "actual wins"], ["Projected final cost per win", economicsMoney(currentProjected ? current.reduce((sum, row) => sum + mlbEconomicsPayroll(row), 0) / currentProjected : null), "projection, not a final result"]);
+    return `<div class="econ-kpi-grid">${cards.map(([label, value, note]) => `<article class="econ-kpi"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong><small>${escapeHtml(String(note))}</small></article>`).join("")}</div>`;
+}
+
+function renderMlbEconomicsTable(ranked) {
+    const sort = state.selected.economicsSort || "efficiency";
+    const sorted = [...ranked].sort((a, b) => {
+        if (sort === "payroll") return (b.payroll ?? 0) - (a.payroll ?? 0);
+        if (sort === "wins") return (b.wins ?? 0) - (a.wins ?? 0);
+        if (sort === "cost") return (a.cost_per_win ?? Infinity) - (b.cost_per_win ?? Infinity);
+        return (b.wins_above_expectation ?? -Infinity) - (a.wins_above_expectation ?? -Infinity);
+    });
+    return `<section class="panel econ-table-panel"><header class="section-header"><div><p class="eyebrow">Efficiency ranking</p><h2>Payroll versus results</h2><p class="muted">Expected wins come from the selected-period payroll regression.</p></div><label class="econ-sort"><span>Sort</span><select id="economics-sort"><option value="efficiency" ${sort === "efficiency" ? "selected" : ""}>Efficiency</option><option value="payroll" ${sort === "payroll" ? "selected" : ""}>Payroll</option><option value="wins" ${sort === "wins" ? "selected" : ""}>Wins</option><option value="cost" ${sort === "cost" ? "selected" : ""}>Cost per win</option></select></label></header><div class="table-wrapper"><table class="data-table econ-table"><thead><tr><th>Team</th><th>Payroll</th><th>Wins</th><th>Win %</th><th>Payroll rank</th><th>Wins rank</th><th>Cost / win</th><th>Expected wins</th><th>Above expectation</th><th>Efficiency</th><th>Postseason</th></tr></thead><tbody>${sorted.length ? sorted.map(row => `<tr class="${row.team_id === state.selected.economicsTeam ? "is-selected" : ""}"><td><button type="button" class="econ-team-link" data-economics-team="${escapeHtml(row.team_id)}">${escapeHtml(row.team_name)}</button><small>${escapeHtml(row.team_id)} · ${escapeHtml(row.division || row.league || "MLB")}</small></td><td>${economicsMillions(mlbEconomicsPayroll(row))}</td><td>${row.wins ?? "—"}</td><td>${economicsPercent(row.win_pct)}</td><td>${row.payroll_rank ?? "—"}</td><td>${row.wins_rank ?? "—"}</td><td>${economicsMoney(row.cost_per_win)}</td><td>${row.expected_wins === null ? "—" : row.expected_wins.toFixed(1)}</td><td class="${row.wins_above_expectation >= 0 ? "is-positive" : "is-negative"}">${row.wins_above_expectation === null ? "—" : `${row.wins_above_expectation >= 0 ? "+" : ""}${row.wins_above_expectation.toFixed(1)}`}</td><td>${row.efficiency_index === null ? "—" : `${row.efficiency_index.toFixed(0)}/100`}</td><td>${escapeHtml(row.postseason_result || "Not available")}</td></tr>`).join("") : `<tr><td colspan="11">No joined payroll and results rows match these filters.</td></tr>`}</tbody></table></div></section>`;
+}
+
+function renderMlbEconomicsDetail(row, allRows = []) {
+    if (!row) return `<aside class="panel econ-detail econ-detail--empty"><p class="eyebrow">Team detail</p><h2>Select a team</h2><p class="muted">Choose a point or row to synchronize the team readout.</p></aside>`;
+    const summary = `${row.team_name} ranks ${row.payroll_rank || "—"}th in payroll and ${row.wins_rank || "—"}th in wins${row.wins_above_expectation === null ? "." : `, producing ${row.wins_above_expectation.toFixed(1)} wins ${row.wins_above_expectation >= 0 ? "above" : "below"} the payroll-based expectation.`}`;
+    const history = allRows.filter(item => item.team_id === row.team_id).sort((a, b) => Number(a.season) - Number(b.season)).slice(-5);
+    const trend = history.length ? history.map(item => `${item.season}: ${item.wins ?? "—"} wins · ${economicsMillions(mlbEconomicsPayroll(item))}`).join(" · ") : "No additional seasons in the export";
+    const postseason = history.filter(item => item.postseason_result).map(item => `${item.season}: ${item.postseason_result}`).join(" · ");
+    return `<aside class="panel econ-detail"><header><p class="eyebrow">Team detail</p><h2>${escapeHtml(row.team_name)}</h2><span>${escapeHtml(row.season)} · ${escapeHtml(row.division || row.league || "MLB")}</span></header><p class="econ-detail-summary">${escapeHtml(summary)}</p><dl class="econ-detail-grid"><div><dt>Payroll</dt><dd>${economicsMillions(mlbEconomicsPayroll(row))}</dd></div><div><dt>Wins</dt><dd>${row.wins ?? "—"}</dd></div><div><dt>Projected wins</dt><dd>${row.projected_wins ?? "—"}</dd></div><div><dt>Payroll rank</dt><dd>${row.payroll_rank ?? "—"}</dd></div><div><dt>Wins rank</dt><dd>${row.wins_rank ?? "—"}</dd></div><div><dt>Cost per win</dt><dd>${economicsMoney(row.cost_per_win)}</dd></div><div><dt>Expected wins</dt><dd>${row.expected_wins === null ? "—" : row.expected_wins.toFixed(1)}</dd></div><div><dt>Efficiency percentile</dt><dd>${row.efficiency_percentile === null ? "—" : `${row.efficiency_percentile.toFixed(0)}th`}</dd></div></dl><div class="econ-detail-trend"><span>Recent seasonal trends</span><strong>${escapeHtml(trend)}</strong><small>Postseason history: ${escapeHtml(postseason || row.postseason_result || "not available in the source")}</small></div></aside>`;
+}
+
+function renderMlbEconomicsInsights(ranked, model) {
+    if (!ranked.length) return `<section class="panel econ-insights"><header><p class="eyebrow">What the data says</p><h2>Waiting for joined data</h2></header><p class="muted">No observations are displayed until payroll is supplied and joined to real MLB results.</p></section>`;
+    const best = [...ranked].sort((a, b) => (b.wins_above_expectation ?? -Infinity) - (a.wins_above_expectation ?? -Infinity))[0];
+    const worst = [...ranked].sort((a, b) => (a.wins_above_expectation ?? Infinity) - (b.wins_above_expectation ?? Infinity))[0];
+    const avgCost = ranked.filter(row => row.cost_per_win !== null).reduce((sum, row) => sum + row.cost_per_win, 0) / Math.max(1, ranked.filter(row => row.cost_per_win !== null).length);
+    return `<section class="panel econ-insights"><header><p class="eyebrow">What the data says</p><h2>Selected-period observations</h2></header><div class="econ-insight-list"><p>Payroll explains <strong>${model.r2 === null ? "—" : `${(model.r2 * 100).toFixed(1)}%`}</strong> of observed wins variation in this selection.</p><p><strong>${escapeHtml(best?.team_name || "—")}</strong> is the strongest positive efficiency outlier${best?.wins_above_expectation === null ? "." : ` at ${best.wins_above_expectation.toFixed(1)} wins above expectation`}.</p><p><strong>${escapeHtml(worst?.team_name || "—")}</strong> is the largest payroll underperformer${worst?.wins_above_expectation === null ? "." : ` at ${worst.wins_above_expectation.toFixed(1)} wins versus expectation`}.</p><p>Average cost per completed win is <strong>${economicsMoney(avgCost)}</strong> across rows with actual wins.</p></div></section>`;
+}
+
+function renderMlbEconomicsHistorical(allRows) {
+    const seasons = [...new Set(allRows.map(row => row.season))].sort((a, b) => a - b);
+    if (seasons.length < 2) return `<section class="panel econ-history"><header><p class="eyebrow">Historical analysis</p><h2>More seasons appear when the source covers them</h2></header><p class="muted">The export currently contains fewer than two seasons with joined observations.</p></section>`;
+    const efficiencyHistory = [];
+    const summaries = seasons.map(season => {
+        const rows = allRows.filter(row => row.season === season);
+        const model = mlbEconomicsRegression(rows);
+        const costRows = rows.filter(row => row.cost_per_win !== null);
+        mlbEconomicsRankedRows(rows, model).forEach(row => {
+            if (row.wins_above_expectation !== null) efficiencyHistory.push(row);
+        });
+        return { season, r2: model.r2, avgCost: costRows.length ? costRows.reduce((sum, row) => sum + row.cost_per_win, 0) / costRows.length : null };
+    });
+    const repeated = [...new Map(efficiencyHistory.reduce((groups, row) => {
+        const existing = groups.get(row.team_id) || { name: row.team_name, values: [] };
+        existing.values.push(row.wins_above_expectation);
+        groups.set(row.team_id, existing);
+        return groups;
+    }, new Map())).entries()].map(([code, group]) => ({ code, ...group, average: group.values.reduce((sum, value) => sum + value, 0) / group.values.length, seasons: group.values.length })).filter(row => row.seasons > 1);
+    const over = [...repeated].sort((a, b) => b.average - a.average).slice(0, 3);
+    const under = [...repeated].sort((a, b) => a.average - b.average).slice(0, 3);
+    return `<section class="panel econ-history"><header><p class="eyebrow">Historical analysis</p><h2>Payroll-to-wins relationship over time</h2><p class="muted">Each row is calculated from the selected local source; no missing payroll is filled.</p></header><div class="econ-history-grid">${summaries.map(item => `<div><span>${item.season}</span><strong>${item.r2 === null ? "—" : `${(item.r2 * 100).toFixed(1)}%`}</strong><small>R² · ${economicsMoney(item.avgCost)} avg cost / win</small></div>`).join("")}</div><div class="econ-history-split"><div><span>Repeated overperformers</span>${over.length ? over.map(row => `<strong>${escapeHtml(row.name)} <small>${row.average >= 0 ? "+" : ""}${row.average.toFixed(1)} avg wins above · ${row.seasons} seasons</small></strong>`).join("") : `<small>Not enough repeated team-seasons.</small>`}</div><div><span>Repeated underperformers</span>${under.length ? under.map(row => `<strong>${escapeHtml(row.name)} <small>${row.average.toFixed(1)} avg wins above · ${row.seasons} seasons</small></strong>`).join("") : `<small>Not enough repeated team-seasons.</small>`}</div></div></section>`;
+}
+
+function renderMlbEconomics() {
+    const root = $("#view-mlb-economics");
+    if (!root) return;
+    const payload = mlbEconomicsPayload();
+    const allRows = payload.rows || [];
+    const seasons = mlbEconomicsSeasons();
+    const filtered = mlbEconomicsFilteredRows();
+    const model = mlbEconomicsRegression(filtered);
+    const ranked = mlbEconomicsRankedRows(filtered, model);
+    const selected = state.selected.economicsTeam === "all" ? null : ranked.find(row => row.team_id === state.selected.economicsTeam) || null;
+    const metadata = payload.metadata || {};
+    const setup = metadata.setup_state !== "ready";
+    root.innerHTML = `<section class="mlb-economics-shell">
+        <section class="econ-hero"><div><p class="eyebrow">MLB / Business of baseball</p><h2>MLB Economics</h2><p>Payroll, wins, and front-office efficiency</p><small>Does spending translate into more wins? This report keeps the question tied to the available source data.</small></div><div class="econ-hero-meta"><span>Payroll snapshot</span><strong>${escapeHtml(metadata.payroll_snapshot_date || "Not loaded")}</strong><small>${escapeHtml(metadata.data_available ? "Joined export ready" : "Setup required · no payroll values shown")}</small></div></section>
+        <section class="panel econ-controls"><header class="section-header"><div><p class="eyebrow">Report controls</p><h2>Filter the comparison</h2></div><span class="econ-source-status ${setup ? "is-warning" : "is-ready"}">${setup ? "Payroll input required" : `${ranked.length} joined teams`}</span></header>${renderMlbEconomicsFilters(seasons, allRows)}</section>
+        ${setup ? `<section class="panel econ-setup"><div><p class="eyebrow">Data setup</p><h2>Payroll is not bundled yet</h2><p>LineLens has real MLB results available, but this workspace has no payroll observations. Add a licensed or locally sourced CSV using the exact schema below; the page will remain explicit instead of estimating missing values.</p><code>season,team_id,team_name,payroll,payroll_source,payroll_as_of,payroll_basis,inflation_adjusted_payroll</code><p class="muted">Rebuild with <code>python scripts/build_mlb_economics.py</code>. Supported alternative: local Lahman-compatible <code>Salaries.csv</code> with optional <code>Teams.csv</code>.</p></div><div class="econ-setup-mark"><strong>—</strong><span>${escapeHtml(metadata.results_status === "available" ? "Results source detected" : "Results source required")}</span></div></section>` : `${renderMlbEconomicsKpis(filtered, ranked, model)}<section class="panel econ-chart-panel"><header class="section-header"><div><p class="eyebrow">Primary visual</p><h2>Payroll versus wins</h2><p class="muted">Click a team point to synchronize the ranking and detail panel.</p></div><span class="econ-r2">R² ${model.r2 === null ? "—" : (model.r2 * 100).toFixed(1) + "%"}</span></header>${renderMlbEconomicsScatter(filtered, model)}</section><div class="econ-lower-grid">${renderMlbEconomicsDetail(selected, allRows)}${renderMlbEconomicsInsights(ranked, model)}</div>${renderMlbEconomicsTable(ranked)}${renderMlbEconomicsHistorical(allRows)}<details class="panel econ-methodology"><summary>Methodology and limitations</summary><div><p><strong>Sources:</strong> ${escapeHtml(metadata.payroll_source || "local payroll input")} and ${escapeHtml(metadata.results_source?.custom || metadata.results_source?.lahman || metadata.results_source?.line_lens || "LineLens MLB results")}.</p><p><strong>Regression:</strong> ordinary least-squares payroll-to-wins relationship; R² is the share of variance explained in the selected rows. Expected wins are the regression prediction, wins above expectation is actual or selected target minus expected wins, and the efficiency index is normalized within the selection.</p><p><strong>Current season:</strong> projected wins equal current win percentage × 162 and are labeled as projections. Inflation adjustment is used only when an adjusted payroll field exists; otherwise values remain nominal dollars.</p><p><strong>Limitations:</strong> correlation does not prove causation. Roster construction, injuries, development, schedule strength, accounting definitions, and payroll timing are not fully captured.</p></div></details>`}
+    </section>`;
 }
 
 function scoreboardStatus(game) {
@@ -5500,9 +5800,22 @@ function gamecastGame() {
 
 function gameStatusLine(game, live) {
     const source = live || game;
-    const parts = [source?.status_detail || source?.status || getGameTimeLabel(game)].filter(Boolean);
+    const status = String(source?.status_detail || source?.status || "").trim();
+    const normalizedStatus = status.toLowerCase();
+    const inning = safeNumber(source?.inning);
+    const outs = safeNumber(source?.outs);
+    const hasScore = safeNumber(source?.away_score) !== null && safeNumber(source?.home_score) !== null;
+    const terminalInning = hasScore && inning !== null && inning >= 9 && outs !== null && outs >= 3;
+    const isTerminal = normalizedStatus.includes("final")
+        || normalizedStatus.includes("completed")
+        || normalizedStatus.includes("game over")
+        || terminalInning;
+    if (isTerminal) return normalizedStatus.includes("final") || normalizedStatus.includes("completed") || normalizedStatus.includes("game over")
+        ? status
+        : "Final";
+    const parts = [status || getGameTimeLabel(game)].filter(Boolean);
     if (source?.inning) parts.push(`${source.inning_state || ""} ${source.inning}`.trim());
-    if (safeNumber(source?.outs) !== null) parts.push(`${source.outs} out${safeNumber(source.outs) === 1 ? "" : "s"}`);
+    if (outs !== null) parts.push(`${outs} out${outs === 1 ? "" : "s"}`);
     if (safeNumber(source?.balls) !== null && safeNumber(source?.strikes) !== null) parts.push(`${source.balls}-${source.strikes} count`);
     return parts.join(" · ") || "Status pending";
 }
@@ -7018,7 +7331,7 @@ function renderSettings() {
         ${renderCommandConsole("settings")}
         <section class="panel"><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>
         ${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}
-        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><a class="btn" href="RELEASE_NOTES_v5.6.0.md" target="_blank" rel="noopener noreferrer">View release notes</a><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
+        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><span class="muted">Release notes ship with published builds.</span><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
         <section class="panel"><p class="data-status" data-variant="${state.refreshRuntime.available ? "success" : "warning"}">${state.refreshRuntime.available ? "Bundled exports load first. Python refresh commands are available when the packaged app can access the project scripts." : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment."} Tracking data is stored locally in <code>${TRACKER_KEY}</code>. Refresh logs use <code>${REFRESH_LOGS_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
     `;
 }
@@ -7140,7 +7453,7 @@ function renderAbout() {
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens"><span>View source</span><small>GitHub repository</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/releases"><span>View releases</span><small>Windows builds and release history</small><b aria-hidden="true">↗</b></button>
                             <button class="about-action" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues"><span>Report an issue</span><small>Open a repository issue</small><b aria-hidden="true">↗</b></button>
-                            <a class="about-action" href="RELEASE_NOTES_v5.6.0.md" target="_blank" rel="noopener noreferrer"><span>View release notes</span><small>${escapeHtml(version)} release notes</small><b aria-hidden="true">↗</b></a>
+                            <div class="about-action"><span>Release notes</span><small>Published with the current app build</small><b aria-hidden="true">•</b></div>
                         </div>
                         <div class="about-meta-row"><span>Build</span><strong>${escapeHtml(state.app.desktop_build || "Desktop build metadata unavailable")}</strong><span>Model record</span><strong>${escapeHtml(timestamp(record?.metadata?.generated_at) || "Unavailable")}</strong></div>
                     </section>
@@ -7518,6 +7831,29 @@ function bindEvents() {
             return;
         }
 
+        const economicsTeam = event.target.closest("[data-economics-team]");
+        if (economicsTeam) {
+            state.selected.economicsTeam = economicsTeam.dataset.economicsTeam;
+            persistSettings();
+            renderMlbEconomics();
+            return;
+        }
+
+        if (event.target.closest("[data-economics-reset]")) {
+            state.selected.economicsSeason = "latest";
+            state.selected.economicsSeasonFrom = "";
+            state.selected.economicsSeasonTo = "";
+            state.selected.economicsTeam = "all";
+            state.selected.economicsLeague = "all";
+            state.selected.economicsDivision = "all";
+            state.selected.economicsWinMode = "actual";
+            state.selected.economicsPayrollMode = "nominal";
+            state.selected.economicsSort = "efficiency";
+            persistSettings();
+            renderMlbEconomics();
+            return;
+        }
+
         const modelOpen = event.target.closest("[data-model-open]");
         if (modelOpen) {
             state.selected.modelName = modelOpen.dataset.modelOpen;
@@ -7675,6 +8011,23 @@ function bindEvents() {
         if (event.target.id === "mlb-mlb-date") {
             setMlbBoardDate(event.target.value);
             renderMLB();
+        }
+        if (["economics-season", "economics-season-from", "economics-season-to", "economics-team", "economics-league", "economics-division", "economics-win-mode", "economics-payroll-mode", "economics-sort"].includes(event.target.id)) {
+            const mapping = {
+                "economics-season": "economicsSeason",
+                "economics-season-from": "economicsSeasonFrom",
+                "economics-season-to": "economicsSeasonTo",
+                "economics-team": "economicsTeam",
+                "economics-league": "economicsLeague",
+                "economics-division": "economicsDivision",
+                "economics-win-mode": "economicsWinMode",
+                "economics-payroll-mode": "economicsPayrollMode",
+                "economics-sort": "economicsSort",
+            };
+            state.selected[mapping[event.target.id]] = event.target.value;
+            if (event.target.id === "economics-team") state.selected.economicsTeam = event.target.value;
+            persistSettings();
+            renderMlbEconomics();
         }
         if (event.target.id === "wnba-date-picker" && !event.target.dataset.scoreboardDatePicker) {
             state.selected.wnbaDate = event.target.value;

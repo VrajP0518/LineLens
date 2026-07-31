@@ -8275,8 +8275,8 @@ body {
     min-height: 500px;
     padding: 1.05rem;
     background:
-        radial-gradient(circle at 0% 38%, color-mix(in srgb, var(--away-color) 18%, transparent), transparent 48%),
-        radial-gradient(circle at 100% 38%, color-mix(in srgb, var(--home-color) 18%, transparent), transparent 48%),
+        radial-gradient(circle at 0% 38%, color-mix(in srgb, var(--away-color) 31%, transparent), transparent 50%),
+        radial-gradient(circle at 100% 38%, color-mix(in srgb, var(--home-color) 31%, transparent), transparent 50%),
         linear-gradient(145deg, #20394a 0%, #182f40 54%, #172837 100%);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 12px 28px rgba(4, 13, 21, 0.18);
 }
@@ -8286,7 +8286,12 @@ body {
     inset: 0;
     content: "";
     pointer-events: none;
-    background: linear-gradient(115deg, rgba(255, 255, 255, 0.06), transparent 28%, transparent 72%, rgba(220, 184, 122, 0.07));
+    background: linear-gradient(90deg,
+        color-mix(in srgb, var(--away-color) 20%, transparent),
+        transparent 35%,
+        transparent 65%,
+        color-mix(in srgb, var(--home-color) 20%, transparent));
+    opacity: 0.82;
 }
 
 .mlb-card-flip__front > * {
@@ -8463,6 +8468,51 @@ body {
     }
 }
 
+/* Keep the matchup readable in the normal two-column desktop window. The
+   card should shrink its crests before either side starts crowding VS. */
+.mlb-card-flip__front .mlb-game-card__matchup {
+    grid-template-columns: minmax(0, 1fr) clamp(52px, 5vw, 72px) minmax(0, 1fr);
+}
+
+.mlb-card-flip__front .mlb-game-card__team {
+    min-width: 0;
+}
+
+.mlb-card-flip__front .mlb-game-card__team .team-logo--lg {
+    width: clamp(68px, 5.8vw, 90px);
+    height: clamp(68px, 5.8vw, 90px);
+}
+
+@media (max-width: 1100px) {
+    .mlb-card-flip__front .mlb-game-card__matchup {
+        grid-template-columns: minmax(0, 1fr) 54px minmax(0, 1fr);
+        gap: 0.35rem;
+    }
+
+    .mlb-card-flip__front .mlb-game-card__team .team-logo--lg {
+        width: 74px;
+        height: 74px;
+    }
+}
+
+@media (max-width: 720px) {
+    .mlb-card-flip__front .mlb-game-card__matchup {
+        grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr);
+    }
+
+    .mlb-card-flip__front .mlb-game-card__team .team-logo--lg {
+        width: 66px;
+        height: 66px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mlb-card-flip__front .mlb-game-card__team .team-logo--lg {
+        width: 60px;
+        height: 60px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .mlb-card-flip__inner {
         transition: none;
@@ -8471,4 +8521,631 @@ body {
     .mlb-card-flip__back::before {
         animation: none;
     }
+}
+
+/* MLB Economics: an analytical report surface, intentionally distinct from
+   the daily game board. */
+.nav__item--mlb-economics .nav-sport-mark {
+    color: #d9bd82;
+    border-color: rgba(220, 184, 122, 0.44);
+    background: rgba(220, 184, 122, 0.1);
+}
+
+.mlb-economics-shell {
+    display: grid;
+    gap: 1rem;
+    padding-bottom: 2rem;
+}
+
+.econ-hero {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 2rem;
+    min-height: 210px;
+    padding: clamp(1.3rem, 3vw, 2.4rem);
+    border: 1px solid #3c596b;
+    border-radius: 12px;
+    background:
+        linear-gradient(112deg, rgba(27, 58, 75, 0.98), rgba(21, 43, 58, 0.98) 63%, rgba(70, 57, 39, 0.72)),
+        radial-gradient(circle at 90% 0%, rgba(220, 184, 122, 0.18), transparent 22rem);
+    box-shadow: 0 18px 36px rgba(5, 15, 23, 0.16);
+}
+
+.econ-hero h2 {
+    margin: 0.2rem 0 0.3rem;
+    color: #f5f7f6;
+    font-size: clamp(2rem, 4.2vw, 3.6rem);
+    letter-spacing: -0.055em;
+}
+
+.econ-hero p:not(.eyebrow) {
+    margin: 0;
+    color: #e3c993;
+    font-size: clamp(1rem, 2vw, 1.35rem);
+    font-weight: 650;
+}
+
+.econ-hero small {
+    display: block;
+    max-width: 580px;
+    margin-top: 0.85rem;
+    color: #b6c9cf;
+    line-height: 1.55;
+}
+
+.econ-hero-meta {
+    display: grid;
+    flex: 0 0 190px;
+    gap: 0.28rem;
+    padding-left: 1.2rem;
+    border-left: 1px solid rgba(220, 184, 122, 0.3);
+}
+
+.econ-hero-meta span,
+.econ-hero-meta small {
+    margin: 0;
+    color: #9fb5bc;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.econ-hero-meta strong {
+    color: #f3db9f;
+    font-size: 1.1rem;
+}
+
+.econ-controls,
+.econ-chart-panel,
+.econ-table-panel,
+.econ-history,
+.econ-insights,
+.econ-detail,
+.econ-methodology,
+.econ-setup {
+    border-color: #2f4c5f;
+    background: rgba(21, 41, 56, 0.95);
+}
+
+.econ-controls .section-header {
+    align-items: center;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid #2b4658;
+}
+
+.econ-source-status,
+.econ-r2 {
+    color: #a9d3d5;
+    font-size: 0.78rem;
+    font-weight: 750;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.econ-source-status.is-warning {
+    color: #e2bf7d;
+}
+
+.mlb-economics-filters {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.7rem;
+    align-items: end;
+    padding-top: 0.9rem;
+}
+
+.econ-filter,
+.econ-sort {
+    display: grid;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.econ-filter span,
+.econ-sort span {
+    color: #9db2bb;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.econ-filter select,
+.econ-sort select {
+    width: 100%;
+    min-height: 38px;
+    padding: 0 0.65rem;
+    border: 1px solid #365467;
+    border-radius: 5px;
+    background: #1a3345;
+    color: #e4eef0;
+    font: inherit;
+}
+
+.econ-reset {
+    justify-self: start;
+    min-height: 38px;
+    border-color: #496478;
+    color: #c9d9dc;
+}
+
+.econ-setup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: clamp(1.2rem, 3vw, 2rem);
+}
+
+.econ-setup h2 {
+    margin: 0.2rem 0 0.5rem;
+}
+
+.econ-setup p {
+    max-width: 780px;
+    color: #c0d0d4;
+    line-height: 1.6;
+}
+
+.econ-setup code {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 0.8rem 0;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid #3b596a;
+    border-radius: 5px;
+    background: #102432;
+    color: #e2c994;
+    font-size: 0.8rem;
+}
+
+.econ-setup-mark {
+    display: grid;
+    flex: 0 0 150px;
+    place-items: center;
+    gap: 0.2rem;
+    color: #d8ba7c;
+    text-align: center;
+}
+
+.econ-setup-mark strong {
+    color: #e5c889;
+    font-size: 3.2rem;
+    font-weight: 400;
+}
+
+.econ-setup-mark span {
+    color: #98adb4;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.econ-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.econ-kpi {
+    display: grid;
+    min-height: 108px;
+    align-content: space-between;
+    gap: 0.42rem;
+    padding: 0.85rem 0.9rem;
+    border: 1px solid #2f4c5f;
+    border-radius: 7px;
+    background: #1a3345;
+}
+
+.econ-kpi span,
+.econ-kpi small {
+    color: #9db3bb;
+    font-size: 0.7rem;
+}
+
+.econ-kpi span {
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.econ-kpi strong {
+    overflow: hidden;
+    color: #f2f5f3;
+    font-size: clamp(1.1rem, 2vw, 1.65rem);
+    letter-spacing: -0.035em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.econ-kpi small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.econ-chart-panel {
+    padding-bottom: 1.2rem;
+}
+
+.econ-chart-panel .section-header {
+    align-items: center;
+    padding: 0.1rem 0 0.75rem;
+    border-bottom: 1px solid #2b4658;
+}
+
+.econ-scatter-wrap {
+    padding-top: 0.8rem;
+}
+
+.econ-scatter {
+    display: block;
+    width: 100%;
+    min-height: 350px;
+    overflow: visible;
+}
+
+.econ-quadrant {
+    fill: rgba(104, 165, 169, 0.055);
+}
+
+.econ-quadrant--b,
+.econ-quadrant--d {
+    fill: rgba(220, 184, 122, 0.045);
+}
+
+.econ-axis {
+    stroke: #456375;
+    stroke-width: 1;
+}
+
+.econ-axis--reference {
+    stroke-dasharray: 3 5;
+    opacity: 0.8;
+}
+
+.econ-regression {
+    stroke: #d8b674;
+    stroke-width: 2.2;
+    stroke-dasharray: 7 5;
+}
+
+.econ-point {
+    cursor: pointer;
+    fill: #9ed5d5;
+    stroke: #d9f0eb;
+    stroke-width: 1.4;
+    transition: r 160ms ease, fill 160ms ease, stroke-width 160ms ease;
+}
+
+.econ-point:hover,
+.econ-point:focus-visible,
+.econ-point.is-selected {
+    fill: #e3bd79;
+    stroke: #fff0c3;
+    stroke-width: 2.4;
+}
+
+.econ-axis-label,
+.econ-quadrant-label,
+.econ-tick {
+    fill: #92abb4;
+    font-family: inherit;
+}
+
+.econ-axis-label {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.econ-quadrant-label {
+    fill: #6f8b95;
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+}
+
+.econ-tick {
+    font-size: 10px;
+}
+
+.econ-chart-caption {
+    margin: 0.15rem 0 0;
+    color: #a9bdc3;
+    font-size: 0.82rem;
+}
+
+.econ-chart-caption strong {
+    color: #e2bd7a;
+}
+
+.econ-chart-empty {
+    display: grid;
+    min-height: 270px;
+    place-items: center;
+    align-content: center;
+    gap: 0.45rem;
+    color: #9db3bb;
+    text-align: center;
+}
+
+.econ-chart-empty strong {
+    color: #e3edf0;
+}
+
+.econ-lower-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.econ-detail,
+.econ-insights {
+    min-width: 0;
+    padding: 1.1rem;
+}
+
+.econ-detail header {
+    display: grid;
+    gap: 0.25rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid #2b4658;
+}
+
+.econ-detail header h2 {
+    margin: 0;
+}
+
+.econ-detail header > span {
+    color: #9bb2b9;
+    font-size: 0.78rem;
+}
+
+.econ-detail-summary {
+    min-height: 49px;
+    color: #d2e0e1;
+    line-height: 1.55;
+}
+
+.econ-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin: 0;
+}
+
+.econ-detail-grid div {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.6rem;
+    border: 1px solid #2d4a5b;
+    border-radius: 5px;
+    background: #193346;
+}
+
+.econ-detail-grid dt,
+.econ-detail-grid dd {
+    margin: 0;
+}
+
+.econ-detail-grid dt {
+    color: #8faab2;
+    font-size: 0.67rem;
+    text-transform: uppercase;
+}
+
+.econ-detail-grid dd {
+    color: #f1f5f2;
+    font-size: 0.92rem;
+    font-weight: 750;
+}
+
+.econ-detail-trend {
+    display: grid;
+    gap: 0.25rem;
+    margin-top: 0.85rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid #2b4658;
+}
+
+.econ-detail-trend span,
+.econ-detail-trend small {
+    color: #98b0b7;
+    font-size: 0.74rem;
+}
+
+.econ-detail-trend strong {
+    color: #d8e5e5;
+}
+
+.econ-insight-list {
+    display: grid;
+    gap: 0.7rem;
+    margin-top: 1rem;
+}
+
+.econ-insight-list p {
+    margin: 0;
+    padding-left: 0.85rem;
+    border-left: 2px solid #d5b272;
+    color: #c5d5d8;
+    line-height: 1.5;
+}
+
+.econ-insight-list strong {
+    color: #f0d49c;
+}
+
+.econ-sort {
+    min-width: 170px;
+}
+
+.econ-table-panel {
+    overflow: hidden;
+}
+
+.econ-table {
+    min-width: 1050px;
+}
+
+.econ-table th {
+    white-space: nowrap;
+}
+
+.econ-table td {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.econ-table td:first-child {
+    white-space: normal;
+}
+
+.econ-table tbody tr.is-selected {
+    background: rgba(220, 184, 122, 0.1);
+}
+
+.econ-table td small {
+    display: block;
+    margin-top: 0.2rem;
+    color: #839da7;
+    font-size: 0.68rem;
+}
+
+.econ-team-link {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #d7e9e9;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 750;
+    text-align: left;
+}
+
+.econ-team-link:hover {
+    color: #e3bf7b;
+    text-decoration: underline;
+}
+
+.econ-table .is-positive {
+    color: #9bd4b0;
+}
+
+.econ-table .is-negative {
+    color: #dfa19a;
+}
+
+.econ-history {
+    padding: 1.1rem;
+}
+
+.econ-history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.6rem;
+    margin-top: 0.9rem;
+}
+
+.econ-history-grid > div {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0.7rem;
+    border-top: 2px solid #729da2;
+    background: #193346;
+}
+
+.econ-history-grid span,
+.econ-history-grid small {
+    color: #9cb3b9;
+    font-size: 0.72rem;
+}
+
+.econ-history-grid strong {
+    color: #f1d39a;
+    font-size: 1.3rem;
+}
+
+.econ-history-split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.econ-history-split > div {
+    display: grid;
+    gap: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #2d4a5b;
+}
+
+.econ-history-split > div > span {
+    color: #9db4ba;
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.econ-history-split strong {
+    color: #d9e8e7;
+    font-size: 0.86rem;
+}
+
+.econ-history-split small {
+    display: block;
+    margin-top: 0.18rem;
+    color: #91aab2;
+    font-size: 0.72rem;
+    font-weight: 500;
+}
+
+.econ-methodology {
+    padding: 1rem 1.1rem;
+}
+
+.econ-methodology summary {
+    color: #e0c48b;
+    cursor: pointer;
+    font-weight: 750;
+}
+
+.econ-methodology > div {
+    max-width: 950px;
+    padding-top: 0.8rem;
+    color: #b9ccd1;
+    line-height: 1.6;
+}
+
+.econ-methodology p {
+    margin: 0.55rem 0;
+}
+
+@media (max-width: 1000px) {
+    .mlb-economics-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .econ-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .econ-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+    .econ-hero,
+    .econ-setup { align-items: flex-start; flex-direction: column; }
+    .econ-hero-meta { flex-basis: auto; width: 100%; padding: 0.8rem 0 0; border-top: 1px solid rgba(220, 184, 122, 0.3); border-left: 0; }
+    .mlb-economics-filters,
+    .econ-kpi-grid,
+    .econ-lower-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .econ-chart-panel { overflow-x: auto; }
+    .econ-scatter { min-width: 700px; }
+    .econ-history-split { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    .mlb-economics-filters,
+    .econ-kpi-grid,
+    .econ-lower-grid { grid-template-columns: 1fr; }
+    .econ-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .econ-hero h2 { font-size: 2.3rem; }
 }
