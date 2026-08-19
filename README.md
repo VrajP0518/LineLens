@@ -59,17 +59,6 @@ Missing odds remain unavailable; they are never inferred or fabricated.
 
 The installed app also keeps Settings → Optional developer API keys as a local override. Values are saved to the user’s local runtime `.env`, are never shown back, and are never included in a release.
 
-## Main commands
-
-```powershell
-npm run refresh:live:fast
-npm run refresh:mlb
-npm run refresh:wnba
-npm run refresh:props:pipeline
-```
-
-The props pipeline is optional and should only be run when the required real player data and model artifacts are available. MLB player-game data is stored locally as Parquet by the pybaseball collector.
-
 ## Features
 
 - Home dashboard for quick access
@@ -84,31 +73,6 @@ The props pipeline is optional and should only be run when the required real pla
 - Background refresh with cached-data fallback
 - Settings release-readiness diagnostics and secret-safe support report
 - MLB Economics: payroll-versus-wins regression, efficiency ranking, and team detail
-
-## MLB Economics
-
-MLB Economics is an analytical report for testing whether payroll is associated
-with wins. It reads the real MLB results already bundled with LineLens and a
-local payroll input; it does not estimate missing payrolls.
-
-The preferred input is `data/mlb_economics/payroll.csv` with this schema:
-
-```text
-season,team_id,team_name,payroll,payroll_source,payroll_as_of,payroll_basis,inflation_adjusted_payroll
-```
-
-Local Lahman-compatible `Salaries.csv` and optional `Teams.csv` files are also
-supported. Rebuild the compact browser/offline exports with:
-
-```powershell
-python scripts/build_mlb_economics.py
-```
-
-The page labels projections, nominal dollars, missing payroll, and source
-freshness. Inflation adjustment is used only when a reliable adjusted field is
-provided. Regression describes association, not causation; injuries, roster
-construction, player development, schedule strength, accounting definitions,
-and payroll timing are not fully captured.
 
 ## Data policy
 
