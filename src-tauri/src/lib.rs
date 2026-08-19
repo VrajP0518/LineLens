@@ -1,10 +1,14 @@
 use std::fs;
+use std::io::{Cursor, Read, Write};
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Mutex, OnceLock};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use tauri::Manager;
 
 #[derive(Serialize)]
@@ -66,8 +70,54 @@ struct RuntimeDiagnostics {
 }
 
 const RUNTIME_VERSION_FILE: &str = ".linelens-runtime-version";
+const SHARED_DATA_MANIFEST_URL: &str = "https://github.com/VrajP0518/LineLens/releases/download/data-channel-v6/shared-data-manifest.json";
+const SHARED_DATA_CHANNEL_PREFIX: &str =
+    "https://github.com/VrajP0518/LineLens/releases/download/data-channel-v6/";
+const SHARED_DATA_MAX_BYTES: usize = 100 * 1024 * 1024;
 static RUNTIME_SEED_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 static REFRESH_PROCESS_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+#[derive(Deserialize)]
+struct SharedDataBundle {
+    url: String,
+    sha256: String,
+    size: u64,
+}
+
+#[derive(Deserialize)]
+struct SharedDataFile {
+    path: String,
+    sha256: String,
+    size: u64,
+}
+
+#[derive(Deserialize)]
+struct SharedDataManifest {
+    schema_version: u8,
+    channel: String,
+    app_major: u8,
+    data_version: String,
+    generated_at: String,
+    commit_sha: String,
+    bundle: SharedDataBundle,
+    files: Vec<SharedDataFile>,
+}
+
+#[derive(Serialize)]
+struct SharedDataResult {
+    success: bool,
+    updated: bool,
+    data_version: String,
+    generated_at: String,
+    message: String,
+}
+
+fn background_command(program: &str) -> Command {
+    let mut command = Command::new(program);
+    #[cfg(windows)]
+    command.creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+    command
+}
 
 fn project_root() -> Result<PathBuf, String> {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -170,7 +220,8 @@ fn runtime_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     let needs_bundle_seed = fs::read_to_string(&marker)
         .map(|value| value.trim() != version)
         .unwrap_or(true)
-        || !runtime.join("scripts").join("refresh_data.py").exists();
+        || !runtime.join("scripts").join("refresh_data.py").exists()
+        || !runtime.join("scripts").join("update_models.py").exists();
 
     if needs_bundle_seed {
         copy_directory(&source.join("scripts"), &runtime.join("scripts"))?;
@@ -302,6 +353,253 @@ fn scripts_detected(root: &PathBuf) -> bool {
             .join("scripts")
             .join("refresh_player_props_pipeline.py")
             .exists()
+        && root.join("scripts").join("update_models.py").exists()
+}
+
+fn shared_data_allowed_path(path: &str) -> bool {
+    matches!(
+        path,
+        "data/refresh_status.json"
+            | "data/live/live_heartbeat.json"
+            | "data/live/live_scores.json"
+            | "data/live/live_widget.json"
+            | "data/odds/odds_snapshots.json"
+            | "data/odds/player_props.json"
+            | "data/odds/odds_health.json"
+            | "data/odds/props_matching_diagnostics.json"
+            | "data/odds/wnba_availability.json"
+            | "data/predictions/mlb_predictions.json"
+            | "data/predictions/wnba_predictions.json"
+            | "data/predictions/nfl_predictions.json"
+            | "data/tracking/model_predictions_log.json"
+            | "data/tracking/model_record.json"
+            | "data/tracking/prop_prediction_log.json"
+            | "data/tracking/prop_record.json"
+    )
+}
+
+fn sha256_bytes(value: &[u8]) -> String {
+    let mut digest = Sha256::new();
+    digest.update(value);
+    format!("{:x}", digest.finalize())
+}
+
+fn sha256_file(path: &Path) -> Result<String, String> {
+    let mut file = fs::File::open(path).map_err(|error| error.to_string())?;
+    let mut digest = Sha256::new();
+    let mut buffer = [0_u8; 1024 * 1024];
+    loop {
+        let count = file.read(&mut buffer).map_err(|error| error.to_string())?;
+        if count == 0 {
+            break;
+        }
+        digest.update(&buffer[..count]);
+    }
+    Ok(format!("{:x}", digest.finalize()))
+}
+
+fn download_shared_bytes(url: &str, maximum: usize) -> Result<Vec<u8>, String> {
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(60))
+        .user_agent("LineLens-v6-shared-data-client")
+        .build()
+        .map_err(|error| error.to_string())?;
+    let response = client
+        .get(url)
+        .send()
+        .and_then(|response| response.error_for_status())
+        .map_err(|error| format!("Shared data download failed: {error}"))?;
+    if response.content_length().unwrap_or_default() > maximum as u64 {
+        return Err("Shared data download exceeded the size limit.".to_string());
+    }
+    let mut bytes = Vec::new();
+    response
+        .take(maximum as u64 + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|error| error.to_string())?;
+    if bytes.len() > maximum {
+        return Err("Shared data download exceeded the size limit.".to_string());
+    }
+    Ok(bytes)
+}
+
+fn shared_data_status_path(root: &Path) -> PathBuf {
+    root.join("data").join("shared_data_status.json")
+}
+
+fn write_shared_data_status(
+    root: &Path,
+    status: &str,
+    result: &SharedDataResult,
+    commit_sha: Option<&str>,
+) -> Result<(), String> {
+    let path = shared_data_status_path(root);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+    let payload = serde_json::json!({
+        "status": status,
+        "success": result.success,
+        "updated": result.updated,
+        "data_version": result.data_version,
+        "generated_at": result.generated_at,
+        "checked_at": timestamp(),
+        "commit_sha": commit_sha,
+        "channel": "data-v6",
+        "message": result.message,
+        "contains_api_keys": false,
+    });
+    fs::write(
+        path,
+        serde_json::to_string_pretty(&payload).map_err(|error| error.to_string())?,
+    )
+    .map_err(|error| error.to_string())
+}
+
+fn installed_shared_data_version(root: &Path) -> Option<String> {
+    let contents = fs::read_to_string(shared_data_status_path(root)).ok()?;
+    let payload: serde_json::Value = serde_json::from_str(&contents).ok()?;
+    payload
+        .get("data_version")
+        .and_then(|value| value.as_str())
+        .map(str::to_string)
+}
+
+fn sync_shared_data_inner(app: &tauri::AppHandle) -> Result<SharedDataResult, String> {
+    let root = runtime_root(app)?;
+    let manifest_bytes = download_shared_bytes(SHARED_DATA_MANIFEST_URL, 2 * 1024 * 1024)?;
+    let manifest: SharedDataManifest =
+        serde_json::from_slice(&manifest_bytes).map_err(|error| error.to_string())?;
+    if manifest.schema_version != 1 || manifest.channel != "data-v6" || manifest.app_major != 6 {
+        return Err("Shared data manifest is not an approved LineLens v6 channel.".to_string());
+    }
+    if !manifest.bundle.url.starts_with(SHARED_DATA_CHANNEL_PREFIX)
+        || manifest.bundle.sha256.len() != 64
+        || manifest.bundle.size as usize > SHARED_DATA_MAX_BYTES
+        || manifest.files.is_empty()
+    {
+        return Err("Shared data manifest failed channel validation.".to_string());
+    }
+    let mut expected = std::collections::BTreeMap::new();
+    for entry in &manifest.files {
+        if !shared_data_allowed_path(&entry.path)
+            || entry.sha256.len() != 64
+            || expected.insert(entry.path.clone(), entry).is_some()
+        {
+            return Err(format!("Disallowed shared data artifact: {}", entry.path));
+        }
+    }
+
+    if installed_shared_data_version(&root).as_deref() == Some(manifest.data_version.as_str()) {
+        let result = SharedDataResult {
+            success: true,
+            updated: false,
+            data_version: manifest.data_version,
+            generated_at: manifest.generated_at,
+            message: "Shared sports data is already current.".to_string(),
+        };
+        write_shared_data_status(&root, "current", &result, Some(&manifest.commit_sha))?;
+        return Ok(result);
+    }
+
+    let bundle_bytes = download_shared_bytes(&manifest.bundle.url, SHARED_DATA_MAX_BYTES)?;
+    if bundle_bytes.len() as u64 != manifest.bundle.size
+        || sha256_bytes(&bundle_bytes) != manifest.bundle.sha256
+    {
+        return Err("Shared data bundle hash or size did not match the manifest.".to_string());
+    }
+
+    let staging = root.join(".shared-data-staging");
+    if staging.exists() {
+        fs::remove_dir_all(&staging).map_err(|error| error.to_string())?;
+    }
+    fs::create_dir_all(&staging).map_err(|error| error.to_string())?;
+    let mut archive =
+        zip::ZipArchive::new(Cursor::new(bundle_bytes)).map_err(|error| error.to_string())?;
+    let mut archive_names = std::collections::BTreeSet::new();
+    for index in 0..archive.len() {
+        let mut file = archive.by_index(index).map_err(|error| error.to_string())?;
+        if file.is_dir() {
+            continue;
+        }
+        let name = file.name().replace('\\', "/");
+        let entry = expected
+            .get(&name)
+            .ok_or_else(|| format!("Unexpected file in shared data bundle: {name}"))?;
+        if !archive_names.insert(name.clone()) {
+            return Err(format!("Duplicate file in shared data bundle: {name}"));
+        }
+        let destination = staging.join(&name);
+        if let Some(parent) = destination.parent() {
+            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+        }
+        let mut output = fs::File::create(&destination).map_err(|error| error.to_string())?;
+        std::io::copy(&mut file, &mut output).map_err(|error| error.to_string())?;
+        output.flush().map_err(|error| error.to_string())?;
+        let size = fs::metadata(&destination)
+            .map_err(|error| error.to_string())?
+            .len();
+        if size != entry.size || sha256_file(&destination)? != entry.sha256 {
+            return Err(format!("Shared data artifact verification failed: {name}"));
+        }
+    }
+    if archive_names.len() != expected.len()
+        || archive_names
+            .iter()
+            .any(|name| !expected.contains_key(name))
+    {
+        return Err("Shared data bundle contents did not exactly match the manifest.".to_string());
+    }
+
+    let backup_id = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|value| value.as_secs().to_string())
+        .unwrap_or_else(|_| "unknown".to_string());
+    let backup_root = root
+        .join("data")
+        .join("shared_data_backups")
+        .join(backup_id);
+    for entry in &manifest.files {
+        let destination = root.join(&entry.path);
+        if destination.exists() {
+            let backup = backup_root.join(&entry.path);
+            if let Some(parent) = backup.parent() {
+                fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+            }
+            fs::copy(&destination, backup).map_err(|error| error.to_string())?;
+        }
+    }
+    for entry in &manifest.files {
+        let staged = staging.join(&entry.path);
+        let destination = root.join(&entry.path);
+        if let Some(parent) = destination.parent() {
+            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+        }
+        let pending = destination.with_extension("json.shared-new");
+        fs::copy(&staged, &pending).map_err(|error| error.to_string())?;
+        if destination.exists() {
+            fs::remove_file(&destination).map_err(|error| error.to_string())?;
+        }
+        fs::rename(&pending, &destination).map_err(|error| error.to_string())?;
+    }
+    fs::remove_dir_all(&staging).map_err(|error| error.to_string())?;
+
+    let result = SharedDataResult {
+        success: true,
+        updated: true,
+        data_version: manifest.data_version,
+        generated_at: manifest.generated_at,
+        message: "Verified shared scores, odds, props, and predictions were installed.".to_string(),
+    };
+    write_shared_data_status(&root, "installed", &result, Some(&manifest.commit_sha))?;
+    Ok(result)
+}
+
+#[tauri::command]
+async fn sync_shared_data(app: tauri::AppHandle) -> Result<SharedDataResult, String> {
+    tauri::async_runtime::spawn_blocking(move || sync_shared_data_inner(&app))
+        .await
+        .map_err(|error| format!("Shared data task failed: {error}"))?
 }
 
 #[tauri::command]
@@ -569,6 +867,10 @@ fn command_spec(command_name: &str) -> Result<CommandSpec, String> {
             script: "scripts/score_prop_predictions.py",
             args: Vec::new(),
         }),
+        "model_update" => Ok(CommandSpec {
+            script: "scripts/update_models.py",
+            args: Vec::new(),
+        }),
         _ => Err(format!("Unsupported refresh command: {}", command_name)),
     }
 }
@@ -606,7 +908,7 @@ fn python_probe(
         "import sys; print(f'{sys.version_info[0]}.{sys.version_info[1]}|{sys.executable}')"
             .to_string(),
     ]);
-    let output = Command::new(program)
+    let output = background_command(program)
         .args(args)
         .current_dir(root)
         .output()
@@ -704,7 +1006,7 @@ fn execute_refresh_command(
         args.push(spec.script.to_string());
         args.extend(spec.args.iter().map(|arg| arg.to_string()));
         let command_string = shell_command(&program, &args);
-        let output = Command::new(&program)
+        let output = background_command(&program)
             .args(args)
             .current_dir(&root)
             .output();
@@ -866,6 +1168,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
+            sync_shared_data,
             run_refresh_command,
             run_startup_automation,
             refresh_sports_data,

@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.shared.mlb_teams import mlb_team_abbreviation, normalize_mlb_abbrev
+from src.shared.timezones import safe_zone
 from src.shared.version import APP_VERSION
 
 TRACKING_DIR = ROOT / "data" / "tracking"
@@ -30,6 +31,8 @@ WNBA_PREDICTIONS = PREDICTIONS_DIR / "wnba_predictions.json"
 WNBA_BACKTEST = PREDICTIONS_DIR / "wnba_backtest_predictions.json"
 NFL_PREDICTIONS = PREDICTIONS_DIR / "nfl_predictions.json"
 MLB_COMPARISON = REPORTS_DIR / "mlb_model_comparison.json"
+LIVE_SCORE_FILES = [ROOT / "data" / "live" / "live_heartbeat.json", ROOT / "data" / "live" / "live_scores.json"]
+LOCAL_TZ = safe_zone("America/Toronto")
 SCORED_RESULTS = {"win", "loss", "push"}
 NON_DECISIVE_STATUS_MARKERS = ("postponed", "canceled", "cancelled", "suspended", "delayed", "delay")
 
@@ -135,9 +138,11 @@ def mlb_result_map() -> dict[str, dict[str, Any]]:
                 label = status_label(game)
                 if "Final" not in label and "Completed" not in label:
                     continue
+                if int(home_score) == int(away_score):
+                    continue
                 home_code = team_abbrev(home)
                 away_code = team_abbrev(away)
-                results[str(game.get("gamePk"))] = {
+                result = {
                     "home": home_code,
                     "away": away_code,
                     "home_score": int(home_score),
@@ -146,6 +151,33 @@ def mlb_result_map() -> dict[str, dict[str, Any]]:
                     "status": label,
                     "game_date": game.get("officialDate") or str(game.get("gameDate", ""))[:10],
                 }
+                results[str(game.get("gamePk"))] = result
+                results[f"fallback:{result['game_date']}:{away_code}:{home_code}"] = result
+    for path in LIVE_SCORE_FILES:
+        payload = load_json(path)
+        for game in payload.get("games", []):
+            if str(game.get("sport") or "").upper() != "MLB":
+                continue
+            status = str(game.get("status_detail") or game.get("status") or "").lower()
+            home_score = safe_float(game.get("home_score"))
+            away_score = safe_float(game.get("away_score"))
+            if not any(marker in status for marker in ("final", "completed")) or home_score is None or away_score is None or home_score == away_score:
+                continue
+            home_code = normalize_mlb_abbrev(game.get("home"))
+            away_code = normalize_mlb_abbrev(game.get("away"))
+            result = {
+                "home": home_code,
+                "away": away_code,
+                "home_score": int(home_score),
+                "away_score": int(away_score),
+                "actual_winner": home_code if home_score > away_score else away_code,
+                "status": game.get("status_detail") or game.get("status") or "Final",
+                "game_date": str(game.get("game_date") or game.get("game_time") or "")[:10],
+            }
+            for game_id in (game.get("game_id"), game.get("espn_event_id"), game.get("id")):
+                if game_id:
+                    results[str(game_id)] = result
+            results[f"fallback:{result['game_date']}:{away_code}:{home_code}"] = result
     return results
 
 
@@ -227,7 +259,7 @@ def recent_rows(rows: list[dict[str, Any]], days: int) -> list[dict[str, Any]]:
 
 
 def date_rows(rows: list[dict[str, Any]], days_offset: int) -> list[dict[str, Any]]:
-    target = (datetime.now(timezone.utc).date() + timedelta(days=days_offset)).isoformat()
+    target = (datetime.now(LOCAL_TZ).date() + timedelta(days=days_offset)).isoformat()
     return [row for row in rows if str(row.get("game_date") or row.get("generated_at", ""))[:10] == target]
 
 
@@ -270,7 +302,9 @@ def score_mlb_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
             row["exclusion_reason"] = "Non-decisive schedule status; excluded from model accountability."
             continue
         existing_result = normalize_result(row.get("model_result"))
-        result = results.get(str(row.get("game_id")))
+        result = results.get(str(row.get("game_id"))) or results.get(
+            f"fallback:{str(row.get('game_date') or '')[:10]}:{normalize_mlb_abbrev(row.get('away'))}:{normalize_mlb_abbrev(row.get('home'))}"
+        )
         if not result:
             # Preserve previously scored real records. Missing local cache should
             # never erase a win/loss/push that was already established.
@@ -305,7 +339,7 @@ def wnba_result_map() -> dict[str, dict[str, Any]]:
             continue
         home = str(game.get("home") or "")
         away = str(game.get("away") or "")
-        results[str(game.get("game_id") or game.get("id"))] = {
+        result = {
             "home": home,
             "away": away,
             "home_score": home_score,
@@ -313,6 +347,25 @@ def wnba_result_map() -> dict[str, dict[str, Any]]:
             "actual_winner": home if home_score > away_score else away,
             "status": game.get("status") or "Final",
         }
+        results[str(game.get("game_id") or game.get("id"))] = result
+        results[f"fallback:{str(game.get('game_date') or '')[:10]}:{away.upper()}:{home.upper()}"] = result
+    for path in LIVE_SCORE_FILES:
+        payload = load_json(path)
+        for game in payload.get("games", []):
+            if str(game.get("sport") or "").upper() != "WNBA":
+                continue
+            status = str(game.get("status_detail") or game.get("status") or "").lower()
+            home_score = safe_float(game.get("home_score"))
+            away_score = safe_float(game.get("away_score"))
+            if not any(marker in status for marker in ("final", "completed")) or home_score is None or away_score is None or home_score == away_score:
+                continue
+            home = str(game.get("home") or "").upper()
+            away = str(game.get("away") or "").upper()
+            result = {"home": home, "away": away, "home_score": home_score, "away_score": away_score, "actual_winner": home if home_score > away_score else away, "status": game.get("status_detail") or game.get("status") or "Final"}
+            for game_id in (game.get("game_id"), game.get("espn_event_id"), game.get("id")):
+                if game_id:
+                    results[str(game_id)] = result
+            results[f"fallback:{str(game.get('game_date') or game.get('game_time') or '')[:10]}:{away}:{home}"] = result
     return results
 
 
@@ -323,7 +376,9 @@ def score_wnba_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
     for row in rows:
         if row.get("sport") != "WNBA":
             continue
-        result = results.get(str(row.get("game_id")))
+        result = results.get(str(row.get("game_id"))) or results.get(
+            f"fallback:{str(row.get('game_date') or '')[:10]}:{str(row.get('away') or '').upper()}:{str(row.get('home') or '').upper()}"
+        )
         if not result:
             if normalize_result(row.get("model_result")) in SCORED_RESULTS:
                 continue

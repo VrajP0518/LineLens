@@ -1,0 +1,33 @@
+name: Windows DPI Visual Audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "index.html"
+      - "app.js"
+      - "styles.css"
+      - "scripts/windows_dpi_audit.ps1"
+
+jobs:
+  dpi:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: npm ci
+      - run: npm run build:web
+      - name: Render at 125 and 150 percent
+        shell: pwsh
+        run: ./scripts/windows_dpi_audit.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-dpi-screenshots
+          path: artifacts/dpi/*.png
+          if-no-files-found: error

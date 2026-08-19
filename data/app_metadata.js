@@ -1,1 +1,1 @@
-window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v5.8","release":"Logo recovery and release diagnostics","generated_at":"2026-07-15T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};
+window.__APP_METADATA__ = {"app":"LineLens Sports","version":"v6","release":"Prediction board, box scores, and managed retraining","generated_at":"2026-07-15T00:00:00+00:00","desktop_build":"GitHub Actions","local_native_build_required":false};

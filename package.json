@@ -1,6 +1,6 @@
 {
   "name": "linelens-sports",
-  "version": "5.8.0",
+  "version": "6.0.0",
   "private": true,
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
@@ -45,6 +45,11 @@
     "refresh:nfl:real": "python scripts/refresh_data.py --sport nfl --mode real",
     "refresh:odds": "python scripts/odds_snapshots.py",
     "score:models": "python scripts/score_model_predictions.py",
+    "update:models": "python scripts/update_models.py",
+    "build:model-bundle": "python scripts/build_model_bundle.py",
+    "build:shared-data": "python scripts/build_shared_data_bundle.py",
+    "check:model-drift": "python scripts/model_drift_report.py --baseline data/models/model_registry.json",
+    "audit:dpi": "powershell -ExecutionPolicy Bypass -File scripts/windows_dpi_audit.ps1",
     "record:models": "python scripts/score_model_predictions.py",
     "check:data": "python scripts/check_data_status.py",
     "check:sprint4": "python scripts/check_sprint4.py",
@@ -55,6 +60,7 @@
     "check:props": "python scripts/check_props.py",
     "check:integrity": "python scripts/check_data_integrity.py",
     "check:refresh": "python scripts/check_refresh_contract.py",
+    "check:v6": "python scripts/check_v6_contract.py",
     "check:logos": "python scripts/check_logo_contract.py",
     "check:tauri:resources": "python scripts/verify_tauri_resources.py",
     "verify:release": "python scripts/verify_release.py",

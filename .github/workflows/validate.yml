@@ -38,5 +38,8 @@ jobs:
       - name: Check refresh contract
         run: npm run check:refresh
 
+      - name: Check v6 product contract
+        run: npm run check:v6
+
       - name: Build static web bundle
         run: npm run build:web

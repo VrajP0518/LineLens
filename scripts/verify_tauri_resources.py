@@ -13,8 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE_DIR = ROOT / "src-tauri" / "target" / "release"
-EXPECTED_VERSION = "5.8.0"
-EXPECTED_APP_VERSION = "v5.8"
+EXPECTED_VERSION = "6.0.0"
+EXPECTED_APP_VERSION = "v6"
 
 REQUIRED_FILES = [
     "scripts/bootstrap_env.py",
@@ -27,6 +27,10 @@ REQUIRED_FILES = [
     "scripts/refresh_wnba_availability.py",
     "scripts/refresh_player_props_pipeline.py",
     "scripts/score_prop_predictions.py",
+    "scripts/update_models.py",
+    "scripts/build_model_bundle.py",
+    "scripts/build_shared_data_bundle.py",
+    "scripts/model_drift_report.py",
     "src/shared/version.py",
     "src/mlb/feature_builder_mlb.py",
     "src/wnba/feature_builder_wnba.py",

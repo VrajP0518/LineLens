@@ -38,6 +38,7 @@ WIDGET_JSON = LIVE_DIR / "live_widget.json"
 WIDGET_JS = LIVE_DIR / "live_widget.js"
 PREDICTIONS_DIR = ROOT / "data" / "predictions"
 RAW_MLB_DIR = ROOT / "data" / "raw" / "mlb"
+RAW_SUMMARY_DIR = ROOT / "data" / "raw" / "live_summaries"
 MLB_PREDICTIONS = PREDICTIONS_DIR / "mlb_predictions.json"
 MLB_BACKTEST = PREDICTIONS_DIR / "mlb_backtest_predictions.json"
 NFL_PREDICTIONS = PREDICTIONS_DIR / "nfl_predictions.json"
@@ -407,6 +408,82 @@ def espn_competitor_score(competitor: dict[str, Any] | None) -> int | None:
         return None
 
 
+def score_value(value: Any) -> int | float | None:
+    number = safe_float(value)
+    if number is None:
+        return None
+    return int(number) if number.is_integer() else number
+
+
+def espn_box_score(
+    sport: str,
+    away_competitor: dict[str, Any],
+    home_competitor: dict[str, Any],
+) -> dict[str, Any]:
+    away_lines = away_competitor.get("linescores") or []
+    home_lines = home_competitor.get("linescores") or []
+    period_count = max(len(away_lines), len(home_lines))
+    prefix = {"NFL": "Q", "NBA": "Q", "WNBA": "Q", "NHL": "P"}.get(sport, "")
+    periods = []
+    for index in range(period_count):
+        away_line = away_lines[index] if index < len(away_lines) else {}
+        home_line = home_lines[index] if index < len(home_lines) else {}
+        label = away_line.get("displayValue") if isinstance(away_line, dict) else None
+        label = None if label and str(label).replace(".", "", 1).isdigit() else label
+        periods.append(
+            {
+                "label": label or f"{prefix}{index + 1}",
+                "away": score_value(away_line.get("value") if isinstance(away_line, dict) else away_line),
+                "home": score_value(home_line.get("value") if isinstance(home_line, dict) else home_line),
+            }
+        )
+    return clean(
+        {
+            "period_label": "Inning" if sport == "MLB" else "Period",
+            "periods": periods,
+            "totals": {
+                "away": {"score": espn_competitor_score(away_competitor)},
+                "home": {"score": espn_competitor_score(home_competitor)},
+            },
+            "source": "ESPN scoreboard linescore",
+        }
+    )
+
+
+def mlb_box_score(linescore: dict[str, Any], away_score: Any, home_score: Any) -> dict[str, Any]:
+    periods = []
+    for index, inning in enumerate(linescore.get("innings") or []):
+        periods.append(
+            {
+                "label": str(inning.get("num") or index + 1),
+                "away": score_value((inning.get("away") or {}).get("runs")),
+                "home": score_value((inning.get("home") or {}).get("runs")),
+            }
+        )
+    teams = linescore.get("teams") or {}
+    away_totals = teams.get("away") or {}
+    home_totals = teams.get("home") or {}
+    return clean(
+        {
+            "period_label": "Inning",
+            "periods": periods,
+            "totals": {
+                "away": {
+                    "score": score_value(away_totals.get("runs")) if away_totals else score_value(away_score),
+                    "hits": score_value(away_totals.get("hits")),
+                    "errors": score_value(away_totals.get("errors")),
+                },
+                "home": {
+                    "score": score_value(home_totals.get("runs")) if home_totals else score_value(home_score),
+                    "hits": score_value(home_totals.get("hits")),
+                    "errors": score_value(home_totals.get("errors")),
+                },
+            },
+            "source": "MLB Stats API linescore",
+        }
+    )
+
+
 def espn_probable_pitcher(competitor: dict[str, Any] | None) -> str | None:
     if not competitor:
         return None
@@ -479,19 +556,104 @@ def espn_play_row(play: dict[str, Any], sport: str) -> dict[str, Any]:
     )
 
 
-def espn_summary_bits(sport: str, event_id: str) -> dict[str, Any]:
+def espn_player_box_score(payload: dict[str, Any]) -> dict[str, Any]:
+    teams: list[dict[str, Any]] = []
+    for team_entry in (payload.get("boxscore") or {}).get("players") or []:
+        team = team_entry.get("team") or {}
+        groups = []
+        for section in team_entry.get("statistics") or []:
+            labels = [str(label) for label in section.get("labels") or []]
+            players = []
+            for entry in section.get("athletes") or []:
+                athlete = entry.get("athlete") or {}
+                raw_stats = entry.get("stats") or []
+                stats = {
+                    label: raw_stats[index] if index < len(raw_stats) else "—"
+                    for index, label in enumerate(labels)
+                }
+                players.append(
+                    clean(
+                        {
+                            "id": athlete.get("id"),
+                            "name": athlete.get("displayName") or athlete.get("fullName") or athlete.get("shortName"),
+                            "short_name": athlete.get("shortName"),
+                            "position": (athlete.get("position") or {}).get("abbreviation"),
+                            "starter": entry.get("starter"),
+                            "headshot": (athlete.get("headshot") or {}).get("href"),
+                            "stats": stats,
+                        }
+                    )
+                )
+            if players:
+                groups.append(
+                    {
+                        "name": section.get("name"),
+                        "label": section.get("displayName") or section.get("name") or "Player statistics",
+                        "labels": labels,
+                        "players": players,
+                    }
+                )
+        if groups:
+            teams.append(
+                clean(
+                    {
+                        "team": team.get("abbreviation") or team.get("shortDisplayName"),
+                        "team_display": team.get("displayName") or team.get("name"),
+                        "groups": groups,
+                    }
+                )
+            )
+    return {"teams": teams, "source": "ESPN summary box score"}
+
+
+def espn_leaders(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    normalized: list[dict[str, Any]] = []
+    for team_entry in payload.get("leaders") or []:
+        team = team_entry.get("team") or {}
+        for category in team_entry.get("leaders") or []:
+            entries = category.get("leaders") or []
+            if not entries:
+                continue
+            leader = entries[0]
+            athlete = leader.get("athlete") or {}
+            normalized.append(
+                clean(
+                    {
+                        "team": team.get("abbreviation") or team.get("shortDisplayName"),
+                        "category": category.get("displayName") or category.get("name"),
+                        "name": athlete.get("displayName") or athlete.get("fullName") or athlete.get("shortName"),
+                        "value": leader.get("displayValue") or leader.get("value"),
+                        "headshot": (athlete.get("headshot") or {}).get("href"),
+                    }
+                )
+            )
+    return normalized
+
+
+def espn_summary_bits(sport: str, event_id: str, use_cache: bool = False) -> dict[str, Any]:
+    cache_path = RAW_SUMMARY_DIR / f"{sport.lower()}_{event_id}.json"
     try:
-        payload = espn_summary(sport, event_id)
+        if use_cache and cache_path.exists():
+            payload = load_json(cache_path)
+        else:
+            payload = espn_summary(sport, event_id)
+            if use_cache:
+                cache_path.parent.mkdir(parents=True, exist_ok=True)
+                cache_path.write_text(json.dumps(payload, allow_nan=False), encoding="utf-8")
     except Exception as error:  # noqa: BLE001 - live summaries are best effort.
         return {"plays": [], "espn_summary_error": str(error)}
     plays = payload.get("plays") or []
     normalized = [espn_play_row(play, sport) for play in plays[-20:]][::-1]
     latest = next((play.get("description") for play in normalized if play.get("description")), None)
+    player_box_score = espn_player_box_score(payload)
+    leaders = espn_leaders(payload)
     return clean(
         {
             "latest_play": latest,
             "plays": normalized,
-            "espn_summary_available": bool(normalized),
+            "player_box_score": player_box_score,
+            "leaders": leaders,
+            "espn_summary_available": bool(normalized or player_box_score.get("teams")),
         }
     )
 
@@ -524,7 +686,10 @@ def game_from_espn_event(
         or event.get("status", {}).get("type", {}).get("description")
         or "Scheduled"
     )
-    status = status_bucket(str(status_detail))
+    status_state = str(status_type.get("state") or "").lower()
+    status = "Scheduled" if status_state == "pre" else status_bucket(str(status_detail))
+    if status_state == "pre":
+        status_detail = "Scheduled"
     if status_type.get("completed") is True:
         status = "Final"
 
@@ -560,6 +725,7 @@ def game_from_espn_event(
         "away_score": espn_competitor_score(away_competitor),
         "home_score": espn_competitor_score(home_competitor),
         "game_time": event.get("date") or competition.get("date"),
+        "box_score": espn_box_score(sport, away_competitor, home_competitor),
         "model": model,
         "plays": [],
         "latest_play": situation.get("last_play"),
@@ -569,7 +735,7 @@ def game_from_espn_event(
     if sport == "MLB":
         row.update(
             {
-                "inning": (competition.get("status") or {}).get("period"),
+                "inning": (competition.get("status") or {}).get("period") if status in {"In Progress", "Final"} else None,
                 "inning_state": status_detail.split(" ", 1)[0] if status == "In Progress" else None,
                 "balls": situation.get("balls"),
                 "strikes": situation.get("strikes"),
@@ -602,8 +768,9 @@ def game_from_espn_event(
             }
         )
 
-    if status == "In Progress" and sport in {"MLB", "NFL"}:
-        row.update(espn_summary_bits(sport, event_id))
+    recent_summary_date = datetime.now(LOCAL_TZ).date() - timedelta(days=1)
+    if status in {"In Progress", "Final"} and parse_iso_date(game_date) >= recent_summary_date:
+        row.update(espn_summary_bits(sport, event_id, use_cache=status == "Final"))
     return clean(row)
 
 
@@ -671,6 +838,62 @@ def play_from_mlb(play: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def mlb_player_box_score(boxscore: dict[str, Any]) -> dict[str, Any]:
+    teams = []
+    leaders = []
+    stat_fields = {
+        "Batting": ["atBats", "runs", "hits", "rbi", "baseOnBalls", "strikeOuts", "homeRuns", "avg", "ops"],
+        "Pitching": ["inningsPitched", "hits", "runs", "earnedRuns", "baseOnBalls", "strikeOuts", "homeRuns", "era"],
+    }
+    for side in ("away", "home"):
+        team_entry = (boxscore.get("teams") or {}).get(side) or {}
+        team = team_entry.get("team") or {}
+        player_map = team_entry.get("players") or {}
+        groups = []
+        for label, stat_names in stat_fields.items():
+            stat_key = label.lower()
+            players = []
+            for entry in player_map.values():
+                stats = (entry.get("stats") or {}).get(stat_key) or {}
+                if not stats:
+                    continue
+                person = entry.get("person") or {}
+                position = entry.get("position") or {}
+                players.append(
+                    clean(
+                        {
+                            "id": person.get("id"),
+                            "name": person.get("fullName") or person.get("nameFirstLast"),
+                            "position": position.get("abbreviation"),
+                            "starter": bool(entry.get("battingOrder")) if label == "Batting" else None,
+                            "stats": {name: stats.get(name) for name in stat_names},
+                        }
+                    )
+                )
+            if players:
+                groups.append({"name": stat_key, "label": label, "labels": stat_names, "players": players})
+                ranked_field = "hits" if label == "Batting" else "strikeOuts"
+                ranked = sorted(players, key=lambda player: safe_float((player.get("stats") or {}).get(ranked_field)) or 0, reverse=True)
+                if ranked and (safe_float((ranked[0].get("stats") or {}).get(ranked_field)) or 0) > 0:
+                    leaders.append(
+                        {
+                            "team": team.get("abbreviation"),
+                            "category": "Hits" if label == "Batting" else "Strikeouts",
+                            "name": ranked[0].get("name"),
+                            "value": (ranked[0].get("stats") or {}).get(ranked_field),
+                        }
+                    )
+        if groups:
+            teams.append(
+                {
+                    "team": team.get("abbreviation") or side.upper(),
+                    "team_display": team.get("name"),
+                    "groups": groups,
+                }
+            )
+    return {"teams": teams, "source": "MLB Stats API live box score", "leaders": leaders}
+
+
 def extract_live_bits(game_pk: str) -> dict[str, Any]:
     if requests is None:
         return {"plays": [], "latest_play": None, "live_error": "requests package missing"}
@@ -682,6 +905,7 @@ def extract_live_bits(game_pk: str) -> dict[str, Any]:
     all_plays = plays.get("allPlays", [])
     current = plays.get("currentPlay") or (all_plays[-1] if all_plays else {})
     linescore = live.get("linescore", {})
+    player_box_score = mlb_player_box_score(live.get("boxscore") or {})
     offense = linescore.get("offense", {})
     return clean(
         {
@@ -697,6 +921,9 @@ def extract_live_bits(game_pk: str) -> dict[str, Any]:
             },
             "latest_play": (current.get("result") or {}).get("description"),
             "plays": [play_from_mlb(play) for play in all_plays[-20:]][::-1],
+            "box_score": mlb_box_score(linescore, None, None),
+            "player_box_score": player_box_score,
+            "leaders": player_box_score.get("leaders") or [],
         }
     )
 
@@ -743,6 +970,7 @@ def mlb_game_from_schedule(
         "strikes": None,
         "bases": None,
         "game_time": game.get("gameDate"),
+        "box_score": mlb_box_score(linescore, away_entry.get("score"), home_entry.get("score")),
         "probable_pitchers": {
             "away": pitcher_name(away_entry),
             "home": pitcher_name(home_entry),

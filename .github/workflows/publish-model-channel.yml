@@ -1,0 +1,46 @@
+name: Publish Approved Model Channel
+
+on:
+  workflow_dispatch:
+    inputs:
+      approval:
+        description: Type APPROVE after the retraining PR is reviewed and merged
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: linelens-model-channel-v6
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main' && inputs.approval == 'APPROVE'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build hash-locked bundle
+        run: python scripts/build_model_bundle.py --output-dir dist-models --model-version "v6-${{ github.run_number }}"
+      - name: Sign published artifacts
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            dist-models/linelens-models-v6.zip
+            dist-models/model-manifest.json
+      - name: Publish stable approved channel assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: model-channel-v6
+          name: LineLens v6 approved model channel
+          prerelease: true
+          make_latest: false
+          files: |
+            dist-models/linelens-models-v6.zip
+            dist-models/model-manifest.json

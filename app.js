@@ -1,4 +1,4 @@
-const APP_VERSION = "v5.8";
+const APP_VERSION = "v6";
 const TRACKER_KEY = "linelens.tracker.v1";
 const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
@@ -16,11 +16,13 @@ const DATA_SOURCES = {
     wnbaFeatureSummary: ["data/reports/wnba_feature_summary.json"],
     wnbaCard: ["data/reports/wnba_model_card.json"],
     modelRegistry: ["data/models/model_registry.json"],
+    modelUpdateStatus: ["data/models/model_update_status.json"],
     modelRecord: ["data/tracking/model_record.json"],
     predictionLog: ["data/tracking/model_predictions_log.json"],
     bootstrap: ["data/bootstrap_status.json"],
     startup: ["data/startup_status.json"],
     refresh: ["data/refresh_status.json"],
+    sharedDataStatus: ["data/shared_data_status.json"],
     live: ["data/live/live_heartbeat.json", "data/live/live_scores.json"],
     odds: ["data/odds/odds_snapshots.json"],
     playerProps: ["data/odds/player_props.json"],
@@ -58,11 +60,13 @@ const state = {
     wnbaFeatureSummary: window.__WNBA_FEATURE_SUMMARY__ || null,
     wnbaCard: window.__WNBA_MODEL_CARD__ || null,
     modelRegistry: window.__MODEL_REGISTRY__ || null,
+    modelUpdateStatus: window.__MODEL_UPDATE_STATUS__ || null,
     modelRecord: window.__MODEL_RECORD__ || null,
     predictionLog: window.__MODEL_PREDICTIONS_LOG__ || null,
     bootstrapStatus: window.__BOOTSTRAP_STATUS__ || null,
     startupStatus: window.__STARTUP_STATUS__ || null,
     refreshStatus: window.__REFRESH_STATUS__ || null,
+    sharedDataStatus: window.__SHARED_DATA_STATUS__ || null,
     live: { payload: window.__LIVE_SCORES__ || null, games: [], error: null, stale: false },
     odds: window.__ODDS_SNAPSHOTS__ || null,
     playerProps: window.__PLAYER_PROPS__ || null,
@@ -91,6 +95,12 @@ const state = {
         lastFailureAt: null,
         lastResult: null,
         message: "Checking refresh availability...",
+    },
+    sharedDataRuntime: {
+        active: false,
+        lastCheckedAt: null,
+        lastResult: null,
+        message: "The approved shared data channel has not been checked in this session.",
     },
     diagnostics: { checked: false, available: false, status: "Checking", message: "Runtime diagnostics have not run yet.", checks: [] },
     apiKeys: { checked: false, available: false, odds_api_key: false, sharp_odds_api_key: false, propline_api_key: false, message: "Checking local key storage..." },
@@ -123,6 +133,8 @@ const state = {
         picksSort: "confidence",
         picksWatchlist: false,
         picksDisagree: false,
+        underdogSport: "all",
+        underdogResult: "all",
         propsDate: null,
         propsDateManual: false,
         propsSport: "MLB",
@@ -294,6 +306,11 @@ const REFRESH_COMMANDS = {
         label: "Player Props Pipeline",
         manual: "npm run refresh:props:pipeline",
         description: "Refresh WNBA availability, build MLB player data, train research props models, export candidates, and score real finals.",
+    },
+    model_update: {
+        label: "Approved Model Update",
+        manual: "npm run update:models",
+        description: "Download, verify, and install the latest approved v6 model bundle without replacing the app.",
     },
 };
 
@@ -518,7 +535,7 @@ function livePayloadAgeSeconds(payload) {
     return Math.max(0, (Date.now() - timestampValue) / 1000);
 }
 
-function livePayloadIsFresh(payload, maxAgeSeconds = 180) {
+function livePayloadIsFresh(payload, maxAgeSeconds = state.sharedDataStatus ? 7 * 60 * 60 : 180) {
     return livePayloadAgeSeconds(payload) <= maxAgeSeconds;
 }
 
@@ -1258,6 +1275,20 @@ async function refreshLiveHeartbeat(options = {}) {
     state.liveRefresh.lastMessage = "Refreshing live scores...";
 
     try {
+        if (isTauriRefreshAvailable()) {
+            const result = await syncSharedData({
+                background: true,
+                force: Boolean(options.force),
+                minimumIntervalMs: 15 * 60 * 1000,
+            });
+            const after = liveGames();
+            detectLiveAlerts(before, after);
+            state.liveRefresh.lastStatus = result?.success ? "fresh" : "cached";
+            state.liveRefresh.lastMessage = result?.success
+                ? `Approved shared data checked; ${after.length} games loaded.`
+                : `Shared channel unavailable; retained ${after.length} cached rows.`;
+            return;
+        }
         const result = await runRefreshCommand("live_scores_fast", {
             background: true,
             loadAfterRefresh: false,
@@ -1300,13 +1331,16 @@ function startLiveHeartbeat() {
     const seconds = liveHeartbeatSeconds();
     if (!seconds) return;
     const refreshAvailable = isTauriRefreshAvailable() || browserRefreshAvailable();
+    const effectiveSeconds = isTauriRefreshAvailable() ? Math.max(seconds, 15 * 60) : seconds;
     state.liveRefresh.lastStatus = refreshAvailable ? "waiting" : "cached";
     state.liveRefresh.lastMessage = refreshAvailable
-        ? `Live heartbeat ready every ${seconds}s; live_scores refresh runs in the background.`
+        ? isTauriRefreshAvailable()
+            ? `Approved shared data is checked every ${Math.round(effectiveSeconds / 60)} minutes in the background.`
+            : `Live heartbeat ready every ${seconds}s; live_scores refresh runs in the background.`
         : `Static mode can only show bundled live data. Start npm run app to enable live refresh.`;
     state.liveRefresh.intervalId = window.setInterval(() => {
         refreshLiveHeartbeat({ source: "interval" });
-    }, seconds * 1000);
+    }, effectiveSeconds * 1000);
     window.setTimeout(() => refreshLiveHeartbeat({ source: "startup" }), isTauriRefreshAvailable() ? 6000 : 15000);
 }
 
@@ -2363,11 +2397,13 @@ async function loadAll() {
         moltresCard,
         featureSummary,
         modelRegistry,
+        modelUpdateStatus,
         modelRecord,
         predictionLog,
         bootstrap,
         startup,
         refresh,
+        sharedDataStatus,
         live,
         odds,
         nfl,
@@ -2403,11 +2439,13 @@ async function loadAll() {
         loadOptional("moltresCard", ["__MLB_MOLTRES_MODEL_CARD__"]),
         loadOptional("featureSummary", ["__MLB_FEATURE_SUMMARY__"]),
         loadOptional("modelRegistry", ["__MODEL_REGISTRY__"]),
+        loadOptional("modelUpdateStatus", ["__MODEL_UPDATE_STATUS__"]),
         loadOptional("modelRecord", ["__MODEL_RECORD__"]),
         loadOptional("predictionLog", ["__MODEL_PREDICTIONS_LOG__"]),
         loadOptional("bootstrap", ["__BOOTSTRAP_STATUS__"]),
         loadOptional("startup", ["__STARTUP_STATUS__"]),
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
+        loadOptional("sharedDataStatus", ["__SHARED_DATA_STATUS__"]),
         loadOptional("live", ["__LIVE_HEARTBEAT__", "__LIVE_SCORES__"]),
         loadOptional("odds", ["__ODDS_SNAPSHOTS__"]),
         loadOptional("nfl", ["__NFL_PREDICTIONS__", "__PREDICTIONS__"]),
@@ -2451,11 +2489,13 @@ async function loadAll() {
     state.wnbaFeatureSummary = wnbaFeatureSummary || state.wnbaFeatureSummary;
     state.wnbaCard = wnbaCard || state.wnbaCard;
     state.modelRegistry = modelRegistry || state.modelRegistry;
+    state.modelUpdateStatus = modelUpdateStatus || state.modelUpdateStatus;
     state.modelRecord = modelRecord || state.modelRecord;
     state.predictionLog = predictionLog || state.predictionLog;
     state.bootstrapStatus = bootstrap || state.bootstrapStatus;
     state.startupStatus = startup || state.startupStatus;
     state.refreshStatus = refresh || state.refreshStatus;
+    state.sharedDataStatus = sharedDataStatus || state.sharedDataStatus;
     state.live.payload = live;
     state.live.games = normalizeGames(live);
     state.live.stale = !livePayloadIsFresh(live);
@@ -2515,7 +2555,13 @@ async function loadAll() {
             : "Showing bundled exports. Start npm run app to enable local command refresh.";
         renderAll();
         if (state.refreshRuntime.available) {
-            runStartupAutomation({ background: true });
+            if (isTauriRefreshAvailable()) {
+                syncSharedData({ background: true, force: true }).then(result => {
+                    if (!result?.success) runStartupAutomation({ background: true });
+                });
+            } else {
+                runStartupAutomation({ background: true });
+            }
         }
     }
     startLiveHeartbeat();
@@ -2578,6 +2624,41 @@ function refreshAlreadyRunning() {
     if (!state.refreshRuntime.active) return false;
     showToast(`Refresh already running: ${refreshCommandLabel(state.refreshRuntime.command)}`);
     return true;
+}
+
+async function syncSharedData(options = {}) {
+    if (!isTauriRefreshAvailable() || state.sharedDataRuntime.active) return null;
+    const minimumIntervalMs = safeNumber(options.minimumIntervalMs, 0);
+    const lastCheck = Date.parse(String(state.sharedDataRuntime.lastCheckedAt || ""));
+    if (!options.force && minimumIntervalMs > 0 && Number.isFinite(lastCheck) && Date.now() - lastCheck < minimumIntervalMs) {
+        return state.sharedDataRuntime.lastResult || { success: true, updated: false, skipped: true };
+    }
+    state.sharedDataRuntime.active = true;
+    state.sharedDataRuntime.lastCheckedAt = new Date().toISOString();
+    state.sharedDataRuntime.message = "Checking the approved v6 shared data channel...";
+    if (!options.background) showToast("Checking for approved sports data...");
+    if (state.selected.view === "settings") renderSettings();
+    try {
+        const result = await tauriInvoke("sync_shared_data", {});
+        state.sharedDataRuntime.lastResult = result;
+        state.sharedDataRuntime.message = result.message || "Approved shared data check completed.";
+        if (result.success) {
+            await loadAllAfterRefresh();
+            state.refreshRuntime.lastSuccessAt = result.generated_at || new Date().toISOString();
+            if (!options.background) showToast(result.updated ? "Approved sports data installed" : "Shared sports data is current");
+        }
+        return result;
+    } catch (error) {
+        const message = String(error?.message || error || "Shared data channel is unavailable.");
+        const result = { success: false, updated: false, message };
+        state.sharedDataRuntime.lastResult = result;
+        state.sharedDataRuntime.message = `${message} Bundled data remains available.`;
+        if (!options.background) showToast("Shared data check failed; bundled data remains available");
+        return result;
+    } finally {
+        state.sharedDataRuntime.active = false;
+        renderAll();
+    }
 }
 
 function setRefreshCompletionStatus(label) {
@@ -2799,10 +2880,11 @@ async function executeStartupAutomation(options = {}) {
 }
 
 async function loadAllAfterRefresh() {
-    const [bootstrap, startup, refresh, live, odds, report, modelComparison, moltresCard, featureSummary, modelRegistry, modelRecord, predictionLog, nfl, mlb, mlbBacktest, wnbaModelComparison, wnbaCard, wnbaFeatureSummary, wnba, wnbaBacktest, playerProps, oddsHealth, wnbaPropPredictions, propLog, propRecord, wnbaPropModelRegistry, wnbaPropModelCards, wnbaPropModelHealth, wnbaPropDatasetSummary, propsDiagnostics, mlbPropPredictions, mlbPropModelRegistry, mlbPropModelCards, mlbPropModelHealth, mlbPropDatasetSummary, wnbaAvailability] = await Promise.all([
+    const [bootstrap, startup, refresh, sharedDataStatus, live, odds, report, modelComparison, moltresCard, featureSummary, modelRegistry, modelUpdateStatus, modelRecord, predictionLog, nfl, mlb, mlbBacktest, wnbaModelComparison, wnbaCard, wnbaFeatureSummary, wnba, wnbaBacktest, playerProps, oddsHealth, wnbaPropPredictions, propLog, propRecord, wnbaPropModelRegistry, wnbaPropModelCards, wnbaPropModelHealth, wnbaPropDatasetSummary, propsDiagnostics, mlbPropPredictions, mlbPropModelRegistry, mlbPropModelCards, mlbPropModelHealth, mlbPropDatasetSummary, wnbaAvailability] = await Promise.all([
         loadOptional("bootstrap", [], { force: true }),
         loadOptional("startup", [], { force: true }),
         loadOptional("refresh", ["__REFRESH_STATUS__"], { force: true }),
+        loadOptional("sharedDataStatus", ["__SHARED_DATA_STATUS__"], { force: true }),
         loadOptional("live", ["__LIVE_HEARTBEAT__", "__LIVE_SCORES__"], { force: true }),
         loadOptional("odds", ["__ODDS_SNAPSHOTS__"], { force: true }),
         loadOptional("reports", [], { force: true }),
@@ -2810,6 +2892,7 @@ async function loadAllAfterRefresh() {
         loadOptional("moltresCard", [], { force: true }),
         loadOptional("featureSummary", [], { force: true }),
         loadOptional("modelRegistry", [], { force: true }),
+        loadOptional("modelUpdateStatus", [], { force: true }),
         loadOptional("modelRecord", [], { force: true }),
         loadOptional("predictionLog", [], { force: true }),
         loadOptional("nfl", [], { force: true }),
@@ -2883,6 +2966,14 @@ async function loadAllAfterRefresh() {
         state.modelRegistry = modelRegistry;
         window.__MODEL_REGISTRY__ = modelRegistry;
     }
+    if (sharedDataStatus) {
+        state.sharedDataStatus = sharedDataStatus;
+        window.__SHARED_DATA_STATUS__ = sharedDataStatus;
+    }
+    if (modelUpdateStatus) {
+        state.modelUpdateStatus = modelUpdateStatus;
+        window.__MODEL_UPDATE_STATUS__ = modelUpdateStatus;
+    }
     if (modelRecord) {
         state.modelRecord = modelRecord;
         window.__MODEL_RECORD__ = modelRecord;
@@ -2944,6 +3035,7 @@ function switchView(view) {
         home: ["LineLens Sports", "Today’s board"],
         foryou: ["For You", "saved preferences and updates"],
         picks: ["Picks", "prediction feed"],
+        underdogs: ["Underdogs", "model picks against the market"],
         props: ["Player Props", "WNBA projection feed"],
         nfl: ["NFL Spread Predictor", "spread module"],
         mlb: ["MLB Game Board", "today’s games"],
@@ -2975,6 +3067,7 @@ function renderView(view = state.selected.view || "home") {
         home: renderHome,
         foryou: () => { const root = $("#view-foryou"); if (root && window.LineLensSprint5) root.innerHTML = window.LineLensSprint5.renderForYou(state); },
         picks: renderPicks,
+        underdogs: renderUnderdogs,
         props: renderProps,
         nfl: renderNFL,
         mlb: renderMLB,
@@ -3186,7 +3279,7 @@ function renderHomeTeamBadge(game, side) {
 
 function homeMetricCard(icon, label, value, note, tone = "blue") {
     return `
-        <article class="metric-card-v2 metric-card-v2--${tone}">
+        <article class="metric-card-v2 metric-card-v2--${tone}" data-metric="${escapeHtml(String(icon).toLowerCase())}">
             <div class="metric-card-v2__icon" aria-hidden="true">${escapeHtml(icon)}</div>
             <div>
                 <span>${escapeHtml(label)}</span>
@@ -4278,7 +4371,7 @@ function oddsStatusMessage() {
     const odds = state.refreshStatus?.odds;
     if (!odds) return "refresh status pending";
     if (odds.enabled) return `${odds.provider} / ${odds.markets}`;
-    return "add ODDS_API_KEY for lines";
+    return "sync shared data or add ODDS_API_KEY for direct refresh";
 }
 
 function refreshSportStatus(sport) {
@@ -4579,6 +4672,9 @@ function lifecycleStage(game) {
     const statuses = [live?.status_detail, live?.status, game?.status_detail, game?.status].filter(Boolean).map(value => String(value).toLowerCase());
     if (statuses.some(status => status.includes("final") || status.includes("completed"))) return "final";
     if (safeNumber(source?.away_score) !== null && safeNumber(source?.home_score) !== null && safeNumber(source?.inning) >= 9 && safeNumber(source?.outs) >= 3) return "final";
+    const scheduledAt = gameTimestamp(source);
+    const hasStartedScore = safeNumber(source?.away_score, 0) !== 0 || safeNumber(source?.home_score, 0) !== 0;
+    if (scheduledAt !== null && scheduledAt > Date.now() + 60_000 && !hasStartedScore) return "pregame";
     if (statuses.some(status => status.includes("progress") || status.includes("live") || status.includes("in progress"))) return "live";
     const date = gameIsoDate(live || game);
     const awayScore = safeNumber((live || game)?.away_score);
@@ -4620,11 +4716,9 @@ function sortMlbLifecycleGames(games) {
     })).sort((a, b) => {
         const priority = a.priority - b.priority;
         if (priority !== 0) return priority;
-        if (a.stage === "pregame") {
-            const edge = b.edge - a.edge;
-            if (edge !== 0) return edge;
-        }
-        return a.timestamp - b.timestamp;
+        const time = a.timestamp - b.timestamp;
+        if (time !== 0) return time;
+        return a.stage === "pregame" ? b.edge - a.edge : 0;
     }).map(entry => entry.game);
 }
 
@@ -4784,7 +4878,7 @@ function renderMlbLifecycleCard(game) {
     const marketCopy = market.movement.available
         ? `Current market is linked${market.marketProbability === null ? "" : ` at ${formatProbability(market.marketProbability)}`}.`
         : "Market movement is not available for this matchup.";
-    return `<article class="mlb-game-card mlb-card-flip mlb-game-card--${stage} ${modelWon ? "is-model-won" : ""} ${modelLost ? "is-model-lost" : ""} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
+    return `<article class="mlb-game-card mlb-card-flip mlb-game-card--${stage} ${predictionReady ? "has-prediction" : ""} ${modelWon ? "is-model-won" : ""} ${modelLost ? "is-model-lost" : ""} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
         <div class="mlb-card-flip__inner">
             <div class="mlb-card-flip__face mlb-card-flip__front">
         <header class="mlb-game-card__header"><span class="mlb-game-card__status">${statusLabel}</span><span class="mlb-game-card__time">${escapeHtml(dateLabel)}</span>${renderWatchButton(game, "Watch matchup")}</header>
@@ -4802,7 +4896,7 @@ function renderMlbLifecycleCard(game) {
             <div class="mlb-card-flip__face mlb-card-flip__back" aria-label="${escapeHtml(`${awayMeta.abbreviation} at ${homeMeta.abbreviation} matchup details`)}">
                 <div class="mlb-card-flip__back-content">
                     <div class="mlb-card-flip__back-kicker"><span>Matchup notes</span><span>${escapeHtml(statusLabel)}</span></div>
-                    <div class="mlb-card-flip__back-title"><strong>${escapeHtml(awayMeta.abbreviation)} <span>@</span> ${escapeHtml(homeMeta.abbreviation)}</strong><small>${escapeHtml(dateLabel)}</small></div>
+                    <div class="mlb-card-flip__back-title"><strong><span class="team-code team-code--away">${escapeHtml(awayMeta.abbreviation)}</span> <span>@</span> <span class="team-code team-code--home">${escapeHtml(homeMeta.abbreviation)}</span></strong><small>${escapeHtml(dateLabel)}</small></div>
                     <div class="mlb-card-flip__back-grid">
                         <div><span>Model view</span><strong>${escapeHtml(predictionReady ? pick : "Pending")}</strong></div>
                         <div><span>Picked probability</span><strong>${predictionReady ? formatProbability(market.pickProbability) : "—"}</strong></div>
@@ -4815,6 +4909,79 @@ function renderMlbLifecycleCard(game) {
             </div>
         </div>
     </article>`;
+}
+
+function underdogCandidateRows() {
+    const sources = [
+        ...currentGames(),
+        ...liveGames(),
+        ...historyRows(),
+    ].filter(game => ["MLB", "WNBA", "NFL"].includes(game.sport || "MLB"));
+    return mergeCanonicalGameRows(sources).map(game => {
+        const sport = game.sport || "MLB";
+        const pick = getGamePick(game, sport);
+        if (!pick || pick === "-") return null;
+        const context = oddsContextForGame(game);
+        const snapshot = context.opening || context.current;
+        if (!snapshot) return null;
+        const side = marketSideForPick(game, sport);
+        const opponent = side === "home" ? "away" : "home";
+        const line = marketLine(snapshot, side, sport);
+        const opponentLine = marketLine(snapshot, opponent, sport);
+        const implied = marketImplied(snapshot, side);
+        const opponentImplied = marketImplied(snapshot, opponent);
+        const hasRealMarket = String(snapshot.data_mode || "").includes("real")
+            || Boolean(snapshot.source && (line !== null || implied !== null));
+        const isUnderdog = line !== null && opponentLine !== null
+            ? line > opponentLine
+            : implied !== null && opponentImplied !== null && implied < opponentImplied;
+        if (!hasRealMarket || !isUnderdog) return null;
+        return {
+            ...game,
+            sport,
+            underdog_pick: pick,
+            underdog_side: side,
+            underdog_line: line,
+            underdog_implied: implied,
+            underdog_model_probability: modelProbabilityForSide(game, side, sport),
+            underdog_snapshot_at: snapshot.snapshot_at,
+            underdog_source: snapshot.source || "Real odds snapshot",
+            underdog_result: modelResultLabel(game),
+        };
+    }).filter(Boolean).sort((a, b) => String(gameIsoDate(b) || "").localeCompare(String(gameIsoDate(a) || "")));
+}
+
+function renderUnderdogRow(game) {
+    const result = game.underdog_result || "Pending";
+    const score = finalScoreLabel(liveGameFor(game) || game);
+    const price = game.underdog_line === null ? "Odds unavailable" : game.sport === "NFL" ? `${runLine(game.underdog_line)} spread` : americanOdds(game.underdog_line);
+    return `<article class="underdog-card">
+        <header><span class="sport-pill sport-pill--${game.sport.toLowerCase()}">${escapeHtml(game.sport)}</span>${resultChip(result)}<time>${escapeHtml(formatDate(gameIsoDate(game)))}</time></header>
+        <div class="underdog-card__matchup"><div>${renderTeamLogo(game.sport, game.underdog_pick, "md")}<span>Model underdog</span><strong>${escapeHtml(game.underdog_pick)}</strong></div><b>${escapeHtml(price)}</b></div>
+        <div class="underdog-card__metrics"><span><small>Market implied</small><strong>${formatProbability(game.underdog_implied)}</strong></span><span><small>Model confidence</small><strong>${formatProbability(game.underdog_model_probability)}</strong></span><span><small>Final score</small><strong>${escapeHtml(score || "Pending")}</strong></span></div>
+        <footer><small>Pregame snapshot · ${escapeHtml(timestamp(game.underdog_snapshot_at) || "time unavailable")}</small><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport)}" data-game-id="${escapeHtml(gameKey(game))}">Open matchup</button></footer>
+    </article>`;
+}
+
+function renderUnderdogs() {
+    const all = underdogCandidateRows();
+    const filtered = all.filter(row => (state.selected.underdogSport === "all" || row.sport === state.selected.underdogSport)
+        && (state.selected.underdogResult === "all" || row.underdog_result.toLowerCase() === state.selected.underdogResult));
+    const settled = all.filter(row => ["Won", "Lost", "Push"].includes(row.underdog_result));
+    const wins = settled.filter(row => row.underdog_result === "Won").length;
+    const losses = settled.filter(row => row.underdog_result === "Lost").length;
+    const pushes = settled.filter(row => row.underdog_result === "Push").length;
+    const winRate = wins + losses ? wins / (wins + losses) : null;
+    const averagePriceRows = all.map(row => row.underdog_line).filter(value => value !== null);
+    const averagePrice = averagePriceRows.length ? averagePriceRows.reduce((sum, value) => sum + value, 0) / averagePriceRows.length : null;
+    const root = $("#view-underdogs");
+    if (!root) return;
+    root.innerHTML = `<section class="underdogs-shell">
+        <section class="panel underdogs-hero"><div><p class="eyebrow">Real market accountability</p><h2>When the model goes against the favourite</h2><p class="muted">Only picks joined to a real pregame odds snapshot are counted. Missing or unmatched odds are excluded instead of being estimated.</p></div><span class="chip chip--soft">${all.length} qualified picks</span></section>
+        <section class="summary-grid underdogs-summary">${card("Underdog record", `${wins}-${losses}${pushes ? `-${pushes}` : ""}`, `${settled.length} decided`)}${card("Win rate", formatProbability(winRate), "pushes excluded")}${card("Average price", averagePrice === null ? "Unavailable" : americanOdds(averagePrice), "real snapshots")}${card("Pending", String(all.length - settled.length), "awaiting finals")}</section>
+        <section class="panel underdogs-filters"><label>Sport<select id="underdog-sport"><option value="all">All sports</option>${["MLB", "WNBA", "NFL"].map(sport => `<option value="${sport}" ${state.selected.underdogSport === sport ? "selected" : ""}>${sport}</option>`).join("")}</select></label><label>Outcome<select id="underdog-result"><option value="all">All outcomes</option>${["won", "lost", "push", "pending"].map(result => `<option value="${result}" ${state.selected.underdogResult === result ? "selected" : ""}>${result.replace(/^./, value => value.toUpperCase())}</option>`).join("")}</select></label><p class="muted">Favourite/underdog status comes from the earliest available real odds snapshot for the matchup.</p></section>
+        <section class="underdogs-results"><header class="section-header"><div><p class="eyebrow">Qualified model picks</p><h2>${filtered.length} underdogs in view</h2></div><span class="muted">No synthetic prices</span></header><div class="underdogs-grid">${filtered.length ? filtered.map(renderUnderdogRow).join("") : emptyState("No qualified underdogs", "Try another filter, or refresh real odds and prediction results.")}</div></section>
+    </section>`;
 }
 
 function renderLifecycleMatchup(game) {
@@ -5350,7 +5517,7 @@ function teamBoardBlock(sport, game, side) {
     const meta = getTeamMeta(sport, code, game?.[`${side}_display`]);
     const pitcher = sport === "MLB" ? game?.[`${side}_probable_pitcher`] : null;
     return `
-        <div class="desk-team">
+        <div class="desk-team desk-team--${side}" style="--team-color:${escapeHtml(teamGradientColor(meta))}">
             ${renderFavoriteButton(sport, meta.abbreviation, `Favorite ${meta.full_name}`)}
             ${renderTeamLogo(sport, meta.abbreviation, "md", meta.full_name)}
             <div>
@@ -5371,8 +5538,11 @@ function renderPredictionCard(sport, game, source, index) {
     const confidence = getGameConfidence(game, sport);
     const result = modelResultLabel({ ...game, sport });
     const selected = gameKey(game) === gameKey(state.selected[sport.toLowerCase()]);
+    const awayMeta = getTeamMeta(sport, game.away, game.away_display);
+    const homeMeta = getTeamMeta(sport, game.home, game.home_display);
+    const pickMeta = getTeamMeta(sport, pick, pick);
     return `
-        <article class="prediction-row-card ${selected ? "is-selected" : ""}" data-select-game="${source}" data-game-index="${index}" data-game-id="${escapeHtml(gameKey({ ...game, sport }))}">
+        <article class="prediction-row-card prediction-row-card--team-aware ${pick !== "-" ? "has-prediction" : ""} ${selected ? "is-selected" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-select-game="${source}" data-game-index="${index}" data-game-id="${escapeHtml(gameKey({ ...game, sport }))}">
             <div class="desk-time">
                 <span>${escapeHtml(getGameTimeLabel(game))}</span>
                 <small>${escapeHtml(game.status_detail || game.status || gameWeekLabel(game))}</small>
@@ -5813,6 +5983,11 @@ function gameStatusLine(game, live) {
     if (isTerminal) return normalizedStatus.includes("final") || normalizedStatus.includes("completed") || normalizedStatus.includes("game over")
         ? status
         : "Final";
+    const scheduledAt = gameTimestamp(source);
+    const hasStartedScore = safeNumber(source?.away_score, 0) !== 0 || safeNumber(source?.home_score, 0) !== 0;
+    if (scheduledAt !== null && scheduledAt > Date.now() + 60_000 && !hasStartedScore) {
+        return `First pitch ${getGameTimeLabel(source)}`;
+    }
     const parts = [status || getGameTimeLabel(game)].filter(Boolean);
     if (source?.inning) parts.push(`${source.inning_state || ""} ${source.inning}`.trim());
     if (outs !== null) parts.push(`${outs} out${outs === 1 ? "" : "s"}`);
@@ -5844,6 +6019,48 @@ function renderGameCastScore(game, live) {
         </section>
         <p class="gamecast-status">${escapeHtml(gameStatusLine(game, live))}</p>
     `;
+}
+
+function boxScoreValue(value) {
+    const number = safeNumber(value);
+    return number === null ? "—" : String(number);
+}
+
+function renderGameCastBoxScore(game, live) {
+    const source = live?.box_score ? live : game;
+    const box = source?.box_score;
+    const periods = Array.isArray(box?.periods) ? box.periods : [];
+    if (!periods.length) {
+        return `<section class="gamecast-section gamecast-box-score"><header><h3>Box Score</h3></header>${emptyState("Box score not available yet", "LineLens will show the real inning or period breakdown when the live source provides it.")}</section>`;
+    }
+    const sport = game?.sport || "MLB";
+    const away = getTeamMeta(sport, game.away, game.away_display);
+    const home = getTeamMeta(sport, game.home, game.home_display);
+    const awayTotals = box.totals?.away || {};
+    const homeTotals = box.totals?.home || {};
+    const showBaseballTotals = sport === "MLB" && [awayTotals.hits, homeTotals.hits, awayTotals.errors, homeTotals.errors].some(value => safeNumber(value) !== null);
+    const totalHeaders = showBaseballTotals ? "<th>R</th><th>H</th><th>E</th>" : "<th>Total</th>";
+    const totalCells = totals => showBaseballTotals
+        ? `<td>${boxScoreValue(totals.score)}</td><td>${boxScoreValue(totals.hits)}</td><td>${boxScoreValue(totals.errors)}</td>`
+        : `<td>${boxScoreValue(totals.score)}</td>`;
+    const periodCells = side => periods.map(period => `<td>${boxScoreValue(period?.[side])}</td>`).join("");
+    return `<section class="gamecast-section gamecast-box-score"><header class="section-header"><div><h3>Box Score</h3><p class="muted">${escapeHtml(box.period_label || "Period")}-by-${escapeHtml(String(box.period_label || "period").toLowerCase())} scoring from the live source.</p></div><span class="chip chip--soft">${escapeHtml(box.source || source.source || "Live score feed")}</span></header><div class="gamecast-box-score__scroll"><table><thead><tr><th>Team</th>${periods.map(period => `<th>${escapeHtml(period.label || "-")}</th>`).join("")}${totalHeaders}</tr></thead><tbody><tr><th>${escapeHtml(away.abbreviation)}</th>${periodCells("away")}${totalCells(awayTotals)}</tr><tr><th>${escapeHtml(home.abbreviation)}</th>${periodCells("home")}${totalCells(homeTotals)}</tr></tbody></table></div></section>`;
+}
+
+function renderGameCastPlayerStats(game, live) {
+    const source = live?.player_box_score?.teams?.length ? live : game;
+    const playerBox = source?.player_box_score;
+    const teams = Array.isArray(playerBox?.teams) ? playerBox.teams : [];
+    const leaders = Array.isArray(source?.leaders) ? source.leaders : Array.isArray(playerBox?.leaders) ? playerBox.leaders : [];
+    if (!teams.length) {
+        return `<section class="gamecast-section gamecast-player-stats"><header><h3>Player Box Score</h3></header>${emptyState("Player statistics not available yet", "Live and recently completed games show official player rows when the source publishes them.")}</section>`;
+    }
+    const leadersMarkup = leaders.length ? `<div class="gamecast-leaders">${leaders.slice(0, 8).map(leader => `<article><span>${escapeHtml(leader.team || "Team")} · ${escapeHtml(leader.category || "Leader")}</span><strong>${escapeHtml(leader.name || "—")}</strong><b>${escapeHtml(leader.value ?? "—")}</b></article>`).join("")}</div>` : "";
+    const teamSections = teams.map(team => `<section class="gamecast-player-team"><h4>${escapeHtml(team.team_display || team.team || "Team")}</h4>${(team.groups || []).map(group => {
+        const labels = Array.isArray(group.labels) ? group.labels : [];
+        return `<div class="gamecast-player-group"><h5>${escapeHtml(group.label || group.name || "Players")}</h5><div class="gamecast-player-table"><table><thead><tr><th>Player</th><th>Pos</th>${labels.map(label => `<th>${escapeHtml(label)}</th>`).join("")}</tr></thead><tbody>${(group.players || []).map(player => `<tr><th>${escapeHtml(player.name || player.short_name || "Unknown")}</th><td>${escapeHtml(player.position || "—")}</td>${labels.map(label => `<td>${escapeHtml(player.stats?.[label] ?? "—")}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>`;
+    }).join("")}</section>`).join("");
+    return `<section class="gamecast-section gamecast-player-stats"><header class="section-header"><div><h3>Player Box Score &amp; Leaders</h3><p class="muted">Official player-level statistics from the live game source.</p></div><span class="chip chip--soft">${escapeHtml(playerBox.source || source.source || "Live score feed")}</span></header>${leadersMarkup}<div class="gamecast-player-teams">${teamSections}</div></section>`;
 }
 
 function renderModelReaction(game) {
@@ -5919,7 +6136,7 @@ function renderGameCastMarket(game) {
     const movement = lineMovementSummary(game, sport);
     const display = oddsDisplayForGame(game);
     const odds = display.snapshot || movement.current;
-    if (!odds) return emptyState("No market snapshot", "Run npm run refresh:odds when an ODDS_API_KEY is configured.");
+    if (!odds) return emptyState("No market snapshot", "Sync the approved shared data channel, or run npm run refresh:odds with a local developer key.");
     const side = marketSideForPick(game, sport);
     const modelProbability = modelProbabilityForSide(game, side, sport);
     const implied = marketImplied(odds, side);
@@ -6061,6 +6278,8 @@ function renderGameCast(game, sport) {
             </header>
             ${renderGameCastScore(game, live)}
             ${renderGameCastProvenance(game, sport)}
+            ${renderGameCastBoxScore(game, live)}
+            ${renderGameCastPlayerStats(game, live)}
             ${window.LineLensSprint5 ? window.LineLensSprint5.renderReaction({ ...game, sport }, sport) : ""}
             <section class="gamecast-grid">
                 <article class="gamecast-panel gamecast-panel--pick">
@@ -6122,7 +6341,7 @@ function renderOddsMovementBoard() {
     if (!snapshots.length) {
         return `
             <header><p class="eyebrow">Market Center</p><h2>Line movement + CLV</h2></header>
-            ${emptyState("Odds disabled or missing", "Add ODDS_API_KEY locally, then run npm run refresh:odds. No lines are fabricated.")}
+            ${emptyState("Odds disabled or missing", "Sync the approved shared data channel, or add a local developer key and run npm run refresh:odds. No lines are fabricated.")}
         `;
     }
     return `
@@ -7314,6 +7533,7 @@ function renderSettings() {
         ["Bootstrap status", state.bootstrapStatus?.status || "missing", state.bootstrapStatus?.python_version ? `Python ${state.bootstrapStatus.python_version}` : "data/bootstrap_status.json"],
         ["Startup automation", state.startupStatus?.status || "missing", state.startupStatus?.error || "data/startup_status.json"],
         ["Desktop build", "GitHub Actions", ".github/workflows/tauri-windows-build.yml"],
+        ["Shared data channel", state.sharedDataStatus?.status || "Bundled data", state.sharedDataStatus?.data_version || "No standalone data update installed"],
         ["Refresh runtime", state.refreshRuntime.available ? "Available in desktop app" : "Not available in browser/static mode", state.refreshRuntime.message],
     ];
     $("#view-settings").innerHTML = `
@@ -7324,7 +7544,9 @@ function renderSettings() {
         </section>
         ${renderUiPreferencesPanel()}
         ${window.LineLensSprint5 ? window.LineLensSprint5.renderPreferences(state) : ""}
+        ${renderSharedDataPanel()}
         ${renderApiKeysPanel()}
+        ${renderModelUpdatePanel()}
         ${renderDataDoctorPanel()}
         ${renderLiveWidgetSettings()}
         ${renderRefreshPanel("settings")}
@@ -7336,6 +7558,40 @@ function renderSettings() {
     `;
 }
 
+function renderModelUpdatePanel() {
+    const update = state.modelUpdateStatus || {};
+    const status = update.status || "not checked";
+    const tone = status === "installed" ? "success" : status === "failed" ? "warning" : "info";
+    return `<section class="panel model-update-panel"><header class="section-header"><div><p class="eyebrow">Approved model channel</p><h2>Update models without reinstalling LineLens</h2><p class="muted">The desktop client accepts only the v6 release channel, verifies the bundle SHA-256 and every approved file, rejects unexpected paths, and keeps a local backup before installation.</p></div><span class="chip chip--soft">${escapeHtml(status)}</span></header><div class="settings-grid"><div class="setting-row"><strong>Installed model channel</strong><span>${escapeHtml(update.model_version || "Bundled with app")}</span><code>${escapeHtml(update.commit_sha || "No standalone update installed")}</code></div><div class="setting-row"><strong>Last check</strong><span>${escapeHtml(timestamp(update.checked_at) || "Never")}</span><code>${escapeHtml(update.provenance?.provider || "GitHub signed provenance required for published bundles")}</code></div></div><div class="report-actions"><button class="btn btn--primary" type="button" data-refresh-command="model_update">Check for approved model update</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/attestations">Verify provenance</button></div><p class="data-status" data-variant="${tone}">${escapeHtml(update.message || "No separate model-channel update has been installed on this client.")}</p></section>`;
+}
+
+function renderSharedDataPanel() {
+    const status = state.sharedDataStatus || {};
+    const result = state.sharedDataRuntime.lastResult;
+    const active = state.sharedDataRuntime.active;
+    const ready = status.success || result?.success;
+    const tone = ready ? "success" : result && !result.success ? "warning" : "info";
+    return `
+        <section class="panel shared-data-panel" aria-labelledby="shared-data-title" aria-busy="${active ? "true" : "false"}">
+            <header class="section-header">
+                <div>
+                    <p class="eyebrow">Automatic data delivery</p>
+                    <h2 id="shared-data-title">Scores, odds, props, and predictions just work</h2>
+                    <p class="muted">GitHub Actions uses the repository secrets to create a sanitized v6 data bundle. Installed clients verify its channel, size, SHA-256 hashes, and exact file list before replacing local data.</p>
+                </div>
+                <span class="chip chip--soft">${active ? "Checking" : ready ? "Connected" : "Bundled fallback"}</span>
+            </header>
+            <div class="settings-grid">
+                <div class="setting-row"><strong>Installed data</strong><span>${escapeHtml(status.data_version || "Bundled with app")}</span><code>${escapeHtml(status.channel || "data-v6")}</code></div>
+                <div class="setting-row"><strong>Published</strong><span>${escapeHtml(timestamp(status.generated_at) || "Bundled release data")}</span><code>${escapeHtml(status.commit_sha || "No standalone update installed")}</code></div>
+                <div class="setting-row"><strong>Last channel check</strong><span>${escapeHtml(timestamp(status.checked_at || state.sharedDataRuntime.lastCheckedAt) || "Not checked yet")}</span><code>Provider keys are never downloaded</code></div>
+            </div>
+            <div class="report-actions"><button class="btn btn--primary" type="button" data-sync-shared-data ${active || !isTauriRefreshAvailable() ? "disabled" : ""}>${active ? "Checking..." : "Check for fresh data"}</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/releases/tag/data-channel-v6">Open data channel</button></div>
+            <p class="data-status" data-variant="${tone}">${escapeHtml(state.sharedDataRuntime.message || status.message || "Bundled exports remain available if the shared channel cannot be reached.")}</p>
+        </section>
+    `;
+}
+
 function renderApiKeysPanel() {
     const keys = state.apiKeys || {};
     return `
@@ -7343,8 +7599,8 @@ function renderApiKeysPanel() {
             <header class="section-header">
                 <div>
                     <p class="eyebrow">Connections</p>
-                    <h2 id="api-keys-title">API keys</h2>
-                    <p class="muted">Paste provider keys here to enable the matching odds and props refreshes. Values are stored locally in the desktop runtime and are never shown back.</p>
+                    <h2 id="api-keys-title">Optional developer API keys</h2>
+                    <p class="muted">Normal users do not need keys: the approved shared data channel syncs automatically. These local overrides are only for developers who need direct provider refreshes between published snapshots.</p>
                 </div>
                 <span class="chip">${keys.available ? "Desktop storage" : "Desktop app only"}</span>
             </header>
@@ -7365,7 +7621,7 @@ function renderApiKeysPanel() {
                     <small>${apiKeyStatusLabel(keys.propline_api_key)}</small>
                 </label>
             </div>
-            <p id="api-key-help" class="api-key-help">Leave a field blank to keep its existing key. Keys are not stored in browser localStorage or bundled exports.</p>
+            <p id="api-key-help" class="api-key-help">Leave a field blank to keep its existing key. Local keys are not stored in browser localStorage, GitHub releases, or bundled exports.</p>
             <div class="report-actions">
                 <button class="btn btn--primary" type="button" data-save-api-keys ${keys.available ? "" : "disabled"}>Save keys locally</button>
                 <button class="btn" type="button" data-refresh-command="odds_snapshots">Refresh odds now</button>
@@ -7386,7 +7642,8 @@ function finishOnboarding() {
 function renderOnboarding() {
     const root = $("#onboarding-root");
     if (!root) return;
-    if (state.selected.onboardingSeen || state.selected.onboardingNever) {
+    const visualAudit = new URLSearchParams(window.location.search).get("dpi-audit") === "1";
+    if (visualAudit || state.selected.onboardingSeen || state.selected.onboardingNever) {
         root.innerHTML = "";
         return;
     }
@@ -7486,7 +7743,7 @@ function renderAbout() {
                     </section>
                     <section class="about-section">
                         <h3>Data, privacy, and transparency</h3>
-                        <ul class="about-list"><li>Predictions and records use real available data.</li><li>Unavailable fields are labelled instead of fabricated.</li><li>Optional API keys remain local and are never shown in the interface.</li><li>Bundled exports let core pages open without Python or live network access.</li><li>Favorites, tracking, and interface preferences use local storage.</li><li>LineLens does not provide betting advice.</li></ul>
+                        <ul class="about-list"><li>Predictions and records use real available data.</li><li>Unavailable fields are labelled instead of fabricated.</li><li>Installed clients automatically verify and download sanitized shared data; provider keys remain in GitHub Actions.</li><li>Optional developer keys remain local and are never shown in the interface.</li><li>Bundled exports let core pages open without Python or live network access.</li><li>Favorites, tracking, and interface preferences use local storage.</li><li>LineLens does not provide betting advice.</li></ul>
                     </section>
                     <section class="about-section about-section--notice">
                         <h3>Disclaimer</h3>
@@ -7515,6 +7772,11 @@ function openExternalLink(url) {
 }
 
 function renderAll() {
+    const visualAuditParams = new URLSearchParams(window.location.search);
+    const visualAuditView = visualAuditParams.get("dpi-view");
+    if (visualAuditParams.get("dpi-audit") === "1" && ["home", "underdogs"].includes(visualAuditView)) {
+        state.selected.view = visualAuditView;
+    }
     setBodyModes();
     renderView(state.selected.view || "home");
     renderGlobalTicker();
@@ -7570,6 +7832,10 @@ function bindEvents() {
         }
         if (event.target.closest("[data-save-api-keys]")) {
             saveApiKeys();
+            return;
+        }
+        if (event.target.closest("[data-sync-shared-data]")) {
+            syncSharedData({ background: false, force: true });
             return;
         }
         const viewLink = event.target.closest("[data-view-link]");
@@ -7982,6 +8248,12 @@ function bindEvents() {
     });
 
     document.addEventListener("change", event => {
+        if (event.target.id === "underdog-sport" || event.target.id === "underdog-result") {
+            if (event.target.id === "underdog-sport") state.selected.underdogSport = event.target.value;
+            if (event.target.id === "underdog-result") state.selected.underdogResult = event.target.value;
+            persistSettings();
+            renderUnderdogs();
+        }
         if (event.target.id === "report-sport-select") {
             state.selected.reportSport = event.target.value;
             persistSettings();

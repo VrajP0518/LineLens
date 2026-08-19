@@ -15,6 +15,10 @@ jobs:
   build-windows:
     name: Build LineLens Sports for Windows
     runs-on: windows-latest
+    env:
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+      SHARP_ODDS_API_KEY: ${{ secrets.SHARP_ODDS_API_KEY }}
+      PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -40,8 +44,24 @@ jobs:
       - name: Install Python data dependencies
         run: python -m pip install --disable-pip-version-check -r requirements.txt
 
-      - name: Refresh current MLB predictions before packaging
-        run: npm run refresh:mlb:predict
+      - name: Confirm shared provider secrets
+        shell: pwsh
+        run: |
+          $missing = @('ODDS_API_KEY', 'SHARP_ODDS_API_KEY', 'PROPLINE_API_KEY') | Where-Object { -not (Get-Item "Env:$_" -ErrorAction SilentlyContinue).Value }
+          if ($missing) { throw "Missing repository secrets: $($missing -join ', ')" }
+
+      - name: Refresh sanitized data before packaging
+        run: |
+          python scripts/refresh_data.py --sport mlb --mode predict
+          python scripts/refresh_data.py --sport wnba --mode predict
+          python scripts/live_scores.py --days-back 1 --days-forward 7 --output-stem live_heartbeat
+          python scripts/odds_snapshots.py
+          python scripts/refresh_props.py
+          python scripts/score_model_predictions.py
+          python scripts/score_prop_predictions.py
+
+      - name: Prove provider keys are not packaged
+        run: python scripts/build_shared_data_bundle.py --output-dir dist-shared-data-check --data-version "v6-build-${{ github.run_number }}"
 
       - name: Verify release bundle and data contracts
         run: npm run verify:release
@@ -72,7 +92,7 @@ jobs:
       - name: Upload Windows bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: LineLens-Sports-Windows-v5.6.0
+          name: LineLens-Sports-Windows-v6.0.0
           path: |
             src-tauri/target/release/bundle/**
             tauri-resource-verification.txt

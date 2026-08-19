@@ -1,6 +1,6 @@
 [package]
 name = "linelens-sports"
-version = "5.8.0"
+version = "6.0.0"
 description = "LineLens Sports desktop analytics dashboard"
 authors = ["Vraj Patel"]
 edition = "2021"
@@ -17,6 +17,10 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
+zip = { version = "2", default-features = false, features = ["deflate"] }

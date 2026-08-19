@@ -6253,6 +6253,16 @@ body {
     font-weight: 700;
 }
 
+.metric-card-v2[data-metric="time"] strong,
+.metric-card-v2[data-metric="rec"] strong {
+    font-size: clamp(1rem, 1.15vw, 1.25rem);
+    line-height: 1.2;
+}
+
+.metric-card-v2[data-metric="time"] strong {
+    white-space: nowrap;
+}
+
 .best-pick-v2,
 .daily-board-v2,
 .home-readout-v2 {
@@ -9148,4 +9158,351 @@ body {
     .econ-lower-grid { grid-template-columns: 1fr; }
     .econ-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .econ-hero h2 { font-size: 2.3rem; }
+}
+
+/* v6 prediction identity: larger default cards, stronger team color, and a
+   prediction-led reverse face without changing the existing board workflow. */
+body {
+    background-image:
+        radial-gradient(circle at 84% -4%, rgba(244, 176, 74, 0.18), transparent 30rem),
+        radial-gradient(circle at 7% 22%, rgba(39, 170, 224, 0.2), transparent 28rem),
+        linear-gradient(180deg, #173249 0%, #0e1c29 48%, #09141f 100%);
+}
+
+.mlb-game-grid {
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.1rem;
+}
+
+.mlb-game-grid--single {
+    grid-template-columns: minmax(0, 760px);
+}
+
+.mlb-card-flip__inner,
+.mlb-card-flip__front {
+    min-height: 540px;
+}
+
+.mlb-card-flip__front {
+    background:
+        radial-gradient(circle at 0% 34%, color-mix(in srgb, var(--away-color) 48%, transparent), transparent 53%),
+        radial-gradient(circle at 100% 34%, color-mix(in srgb, var(--home-color) 48%, transparent), transparent 53%),
+        linear-gradient(145deg, #26465c 0%, #183449 54%, #142a3d 100%);
+}
+
+.mlb-card-flip__front::before {
+    background: linear-gradient(90deg,
+        color-mix(in srgb, var(--away-color) 34%, transparent),
+        transparent 38%,
+        transparent 62%,
+        color-mix(in srgb, var(--home-color) 34%, transparent));
+}
+
+.mlb-card-flip__front .mlb-game-card__team:first-child strong,
+.mlb-card-flip__back .team-code--away {
+    color: color-mix(in srgb, var(--away-color) 68%, white);
+}
+
+.mlb-card-flip__front .mlb-game-card__team--home strong,
+.mlb-card-flip__back .team-code--home {
+    color: color-mix(in srgb, var(--home-color) 68%, white);
+}
+
+.mlb-game-card.has-prediction .mlb-game-card__signal-pick {
+    color: color-mix(in srgb, var(--pick-color) 65%, white);
+}
+
+.mlb-game-card.has-prediction .mlb-card-flip__back {
+    background:
+        radial-gradient(circle at 84% 8%, color-mix(in srgb, var(--pick-color) 72%, transparent), transparent 18rem),
+        linear-gradient(145deg,
+            color-mix(in srgb, var(--pick-color) 54%, #203c4e) 0%,
+            color-mix(in srgb, var(--pick-color) 28%, #172e40) 56%,
+            #102131 100%);
+    border-color: color-mix(in srgb, var(--pick-color) 58%, #8fb3c8);
+}
+
+.prediction-row-card--team-aware {
+    background:
+        linear-gradient(90deg,
+            color-mix(in srgb, var(--away-color) 24%, transparent),
+            transparent 28%,
+            transparent 72%,
+            color-mix(in srgb, var(--home-color) 24%, transparent)),
+        var(--ll-surface);
+}
+
+.prediction-row-card--team-aware.has-prediction {
+    border-left: 3px solid color-mix(in srgb, var(--pick-color) 72%, white);
+}
+
+.prediction-row-card--team-aware .desk-team strong {
+    color: color-mix(in srgb, var(--team-color) 66%, white);
+}
+
+.prediction-row-card--team-aware .desk-pick strong {
+    color: color-mix(in srgb, var(--pick-color) 66%, white);
+}
+
+.gamecast-box-score__scroll {
+    overflow-x: auto;
+    border: 1px solid var(--ll-line-soft);
+    border-radius: var(--ll-radius-md);
+}
+
+.gamecast-box-score table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.gamecast-box-score th,
+.gamecast-box-score td {
+    min-width: 42px;
+    padding: 0.62rem 0.55rem;
+    border-right: 1px solid var(--ll-line-soft);
+    border-bottom: 1px solid var(--ll-line-soft);
+    text-align: center;
+}
+
+.gamecast-box-score th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 72px;
+    background: var(--ll-surface-raised);
+    color: var(--ll-ink);
+    text-align: left;
+}
+
+.gamecast-box-score thead th {
+    background: var(--ll-surface-soft);
+    color: var(--ll-neutral);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+}
+
+.gamecast-box-score tr:last-child th,
+.gamecast-box-score tr:last-child td {
+    border-bottom: 0;
+}
+
+.gamecast-player-stats,
+.gamecast-player-teams,
+.gamecast-player-team,
+.gamecast-player-group {
+    display: grid;
+    gap: 14px;
+}
+
+.gamecast-leaders {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.gamecast-leaders article {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 5px 10px;
+    padding: 12px;
+    border: 1px solid rgba(104, 166, 202, .22);
+    border-radius: 11px;
+    background: rgba(8, 29, 46, .48);
+}
+
+.gamecast-leaders span {
+    grid-column: 1 / -1;
+    color: var(--muted);
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.gamecast-leaders b {
+    color: #9ee7c4;
+}
+
+.gamecast-player-team > h4,
+.gamecast-player-group > h5 {
+    margin: 0;
+}
+
+.gamecast-player-group > h5 {
+    color: var(--muted);
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.gamecast-player-table {
+    overflow-x: auto;
+    border: 1px solid rgba(104, 166, 202, .2);
+    border-radius: 10px;
+}
+
+.gamecast-player-table table {
+    width: 100%;
+    min-width: 620px;
+    border-collapse: collapse;
+    font-size: .76rem;
+}
+
+.gamecast-player-table th,
+.gamecast-player-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(104, 166, 202, .13);
+    text-align: right;
+    white-space: nowrap;
+}
+
+.gamecast-player-table th:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 145px;
+    background: #152f46;
+    text-align: left;
+}
+
+.underdogs-shell,
+.underdogs-results {
+    display: grid;
+    gap: 18px;
+}
+
+.underdogs-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    background: linear-gradient(125deg, rgba(12, 45, 76, .96), rgba(29, 60, 98, .84) 55%, rgba(225, 93, 40, .22));
+}
+
+.underdogs-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.underdogs-filters {
+    display: grid;
+    grid-template-columns: minmax(170px, 220px) minmax(170px, 220px) 1fr;
+    align-items: end;
+    gap: 16px;
+}
+
+.underdogs-filters label {
+    display: grid;
+    gap: 7px;
+    font-size: .78rem;
+    color: var(--muted);
+}
+
+.underdogs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.underdog-card {
+    display: grid;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid rgba(112, 169, 205, .28);
+    border-radius: 16px;
+    background: linear-gradient(150deg, rgba(25, 52, 77, .98), rgba(17, 37, 58, .96));
+    box-shadow: 0 16px 36px rgba(4, 16, 29, .2);
+}
+
+.underdog-card > header,
+.underdog-card > footer,
+.underdog-card__matchup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.underdog-card > header time,
+.underdog-card > footer small {
+    color: var(--muted);
+    font-size: .75rem;
+}
+
+.underdog-card__matchup > div {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 10px;
+    align-items: center;
+}
+
+.underdog-card__matchup > div .team-logo {
+    grid-row: 1 / 3;
+}
+
+.underdog-card__matchup > div span {
+    color: var(--muted);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.underdog-card__matchup > b {
+    color: #ffd08b;
+    font-size: 1.2rem;
+}
+
+.underdog-card__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.underdog-card__metrics span {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(5, 24, 40, .45);
+}
+
+.underdog-card__metrics small {
+    color: var(--muted);
+    font-size: .68rem;
+}
+
+.underdog-card__metrics strong {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+    .underdogs-summary,
+    .underdogs-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .underdogs-filters p {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 620px) {
+    .underdogs-hero,
+    .underdog-card > footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .underdogs-summary,
+    .underdogs-filters,
+    .underdog-card__metrics {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .mlb-game-grid,
+    .mlb-game-grid--single { grid-template-columns: 1fr; }
+    .mlb-card-flip__inner,
+    .mlb-card-flip__front { min-height: 510px; }
 }

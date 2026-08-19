@@ -58,7 +58,7 @@ def required_bundle_files() -> bool:
 def version_contract() -> bool:
     display_version = APP_VERSION.removeprefix("v")
     semver_parts = display_version.split(".")
-    expected = display_version if len(semver_parts) == 3 else f"{display_version}.0"
+    expected = display_version if len(semver_parts) == 3 else f"{display_version}.0" if len(semver_parts) == 2 else f"{display_version}.0.0"
     checks = [
         (ROOT / "package.json", json.loads((ROOT / "package.json").read_text(encoding="utf-8")).get("version")),
         (ROOT / "src-tauri" / "tauri.conf.json", json.loads((ROOT / "src-tauri" / "tauri.conf.json").read_text(encoding="utf-8")).get("version")),
@@ -116,6 +116,7 @@ def main() -> int:
         run("Data status", [NPM, "run", "check:data"]),
         run("Player props contracts", [NPM, "run", "check:props"]),
         run("Refresh contract", [NPM, "run", "check:refresh"]),
+        run("v6 contract", [NPM, "run", "check:v6"]),
         run("Team logo contract", [NPM, "run", "check:logos"]),
         run("Integrity contract", [python, "scripts/check_data_integrity.py"]),
         version_contract(),

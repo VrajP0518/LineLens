@@ -31,11 +31,15 @@ npm run app
 
 The app uses bundled exports first, so the core pages can open without a live feed. Startup and manual refreshes run in the background when the local refresh bridge is available; fresh exports are applied without replacing the whole window.
 
-The Windows release keeps a writable runtime copy in the user’s local app-data folder. On launch it refreshes live scores, schedules, available odds, and current model exports there, so daily data updates do not require a new GitHub release. A new release is only needed for application or model-code changes.
+The Windows release keeps a writable runtime copy in the user’s local app-data folder. On launch it automatically checks the approved `data-channel-v6` release, verifies the bundle and individual file hashes, and applies sanitized scores, schedules, available odds, props, records, and current predictions. End users do not need Python or provider API keys. Bundled exports remain available offline, and a new installer is only needed for application-code changes.
 
-## Optional odds
+LineLens v6 also includes a weekly/manual GitHub Actions retraining workflow. It rebuilds the selected MLB/WNBA model family, runs chronological checks, generates drift alerts, signs the review bundle with GitHub artifact provenance, and opens a review pull request rather than silently promoting a new model. After review and merge, the separate **Publish Approved Model Channel** workflow can publish a hash-locked v6 model bundle. Installed clients verify the manifest, archive, individual files, and allowed paths before installing it, so model artifacts can update without a complete app release. See [model delivery](docs/MODEL_DELIVERY.md) and [API key deployment](docs/API_KEY_DEPLOYMENT.md).
 
-Copy `.env.example` to `.env` and add the provider key you use:
+## Automatic shared data and optional developer keys
+
+Normal Windows users do not configure API keys. Repository secrets are used only by the scheduled **Publish Shared Data Channel** workflow, and the installed app downloads the sanitized result. See [API key deployment](docs/API_KEY_DEPLOYMENT.md) for the one-time channel activation and security boundary.
+
+Developers running the source checkout can optionally copy `.env.example` to `.env` and add their own provider keys for direct refresh testing:
 
 ```text
 ODDS_API_KEY=
@@ -51,7 +55,7 @@ npm run refresh:odds
 
 Missing odds remain unavailable; they are never inferred or fabricated.
 
-For the installed app, use Settings → API keys. The values are saved to the user’s local runtime `.env` and are never shown in the interface or included in a release. Manual fallback: place a user-owned `.env` containing the provider key in the app’s local-data `runtime` folder.
+The installed app also keeps Settings → Optional developer API keys as a local override. Values are saved to the user’s local runtime `.env`, are never shown back, and are never included in a release.
 
 ## Main commands
 
@@ -69,7 +73,8 @@ The props pipeline is optional and should only be run when the required real pla
 - Home dashboard for quick access
 - Picks: MLB and WNBA prediction feed
 - Props: qualified and research-only player projections
-- NFL / MLB / WNBA: sport-specific boards, date navigation, live scores, and model context
+- NFL / MLB / WNBA: sport-specific boards, date navigation, live scores, player-level box scores, and model context
+- Underdogs: real-odds-qualified model picks with settled win/loss accountability
 - GameCast: matchup detail, odds, timeline, and postgame review
 - Models, Reports, Record: evaluation, health, and accountability
 - Tracking ledger
