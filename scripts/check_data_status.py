@@ -69,8 +69,13 @@ def main() -> int:
     wnba_availability = load_json(DATA_DIR / "odds" / "wnba_availability.json")
     prop_record = load_json(DATA_DIR / "tracking" / "prop_record.json")
     selected_models = [row for row in registry.get("models", []) if row.get("selected")]
+    selected_by_sport = {
+        str(row.get("sport") or "").upper(): row
+        for row in selected_models
+        if row.get("sport")
+    }
     selected_model_name = (comparison.get("metadata") or {}).get("selected_model")
-    registry_selected_name = selected_models[0].get("model_name") if selected_models else None
+    registry_selected_name = (selected_by_sport.get("MLB") or {}).get("model_name")
     moltres_status = "missing"
     if moltres_card and not moltres_card.get("_error"):
         moltres_status = "selected" if registry_selected_name == "Moltres" else "challenger"
@@ -148,7 +153,7 @@ def main() -> int:
         "model_registry": {
             "status": "real_cached" if registry and not registry.get("_error") else "missing",
             "model_count": len(registry.get("models", [])),
-            "selected": selected_models[:1],
+            "selected": selected_models,
             "error": registry.get("_error"),
         },
         "model_tracking": {

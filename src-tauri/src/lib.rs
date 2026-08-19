@@ -112,6 +112,158 @@ struct SharedDataResult {
     message: String,
 }
 
+fn espn_live_scoreboards_inner() -> Result<serde_json::Value, String> {
+    let feeds = [
+        ("MLB", "baseball", "mlb"),
+        ("NFL", "football", "nfl"),
+        ("WNBA", "basketball", "wnba"),
+        ("NBA", "basketball", "nba"),
+        ("NHL", "hockey", "nhl"),
+    ];
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(15))
+        .user_agent("LineLens-v6-live-score-client")
+        .build()
+        .map_err(|error| error.to_string())?;
+    let mut games = Vec::new();
+    let mut warnings = Vec::new();
+
+    for (sport, category, league) in feeds {
+        let url = format!(
+            "https://site.api.espn.com/apis/site/v2/sports/{category}/{league}/scoreboard?limit=1000"
+        );
+        let response = match client
+            .get(&url)
+            .send()
+            .and_then(|value| value.error_for_status())
+        {
+            Ok(value) => value,
+            Err(error) => {
+                warnings.push(format!("{sport} scoreboard unavailable: {error}"));
+                continue;
+            }
+        };
+        let bytes = response
+            .bytes()
+            .map_err(|error| format!("Unable to read the {sport} scoreboard: {error}"))?;
+        let payload: serde_json::Value = serde_json::from_slice(&bytes)
+            .map_err(|error| format!("Unable to parse the {sport} scoreboard: {error}"))?;
+        let Some(events) = payload.get("events").and_then(|value| value.as_array()) else {
+            continue;
+        };
+        for event in events {
+            let Some(competition) = event
+                .get("competitions")
+                .and_then(|value| value.as_array())
+                .and_then(|values| values.first())
+            else {
+                continue;
+            };
+            let competitors = competition
+                .get("competitors")
+                .and_then(|value| value.as_array())
+                .cloned()
+                .unwrap_or_default();
+            let side = |name: &str| {
+                competitors.iter().find(|competitor| {
+                    competitor.get("homeAway").and_then(|value| value.as_str()) == Some(name)
+                })
+            };
+            let (Some(away), Some(home)) = (side("away"), side("home")) else {
+                continue;
+            };
+            let team_value = |competitor: &serde_json::Value, key: &str| {
+                competitor
+                    .get("team")
+                    .and_then(|team| team.get(key))
+                    .and_then(|value| value.as_str())
+                    .unwrap_or_default()
+                    .to_string()
+            };
+            let status_type = competition
+                .get("status")
+                .and_then(|value| value.get("type"))
+                .cloned()
+                .unwrap_or(serde_json::Value::Null);
+            let state = status_type
+                .get("state")
+                .and_then(|value| value.as_str())
+                .unwrap_or_default()
+                .to_lowercase();
+            let completed = status_type
+                .get("completed")
+                .and_then(|value| value.as_bool())
+                .unwrap_or(false);
+            let status = if completed || state == "post" {
+                "Final"
+            } else if state == "in" {
+                "In Progress"
+            } else {
+                "Scheduled"
+            };
+            let detail = if status == "Scheduled" {
+                "Scheduled".to_string()
+            } else {
+                status_type
+                    .get("shortDetail")
+                    .or_else(|| status_type.get("detail"))
+                    .and_then(|value| value.as_str())
+                    .unwrap_or(status)
+                    .to_string()
+            };
+            let game_time = competition
+                .get("date")
+                .or_else(|| event.get("date"))
+                .and_then(|value| value.as_str())
+                .unwrap_or_default();
+            games.push(serde_json::json!({
+                "sport": sport,
+                "game_id": event.get("id").and_then(|value| value.as_str()).unwrap_or_default(),
+                "game_time": game_time,
+                "status": status,
+                "status_detail": detail,
+                "source": "ESPN Scoreboard API",
+                "source_status": "direct_live_fresh",
+                "source_type": "live",
+                "away": team_value(away, "abbreviation"),
+                "home": team_value(home, "abbreviation"),
+                "away_display": team_value(away, "displayName"),
+                "home_display": team_value(home, "displayName"),
+                "away_logo": team_value(away, "logo"),
+                "home_logo": team_value(home, "logo"),
+                "away_score": away.get("score").cloned().unwrap_or(serde_json::Value::Null),
+                "home_score": home.get("score").cloned().unwrap_or(serde_json::Value::Null),
+                "inning": competition.get("status").and_then(|value| value.get("period")).cloned().unwrap_or(serde_json::Value::Null),
+                "clock": competition.get("status").and_then(|value| value.get("displayClock")).cloned().unwrap_or(serde_json::Value::Null),
+                "prediction_status": "scoreboard_only"
+            }));
+        }
+    }
+
+    if games.is_empty() && !warnings.is_empty() {
+        return Err(warnings.join(" | "));
+    }
+    Ok(serde_json::json!({
+        "metadata": {
+            "generated_at": timestamp(),
+            "source": "Direct ESPN scoreboard feeds",
+            "source_status": "direct_live_fresh",
+            "refresh_mode": "direct_live",
+            "live_poll_seconds_recommended": 30,
+            "warnings": warnings,
+            "row_count": games.len()
+        },
+        "games": games
+    }))
+}
+
+#[tauri::command]
+async fn fetch_live_scoreboards() -> Result<serde_json::Value, String> {
+    tauri::async_runtime::spawn_blocking(espn_live_scoreboards_inner)
+        .await
+        .map_err(|error| format!("Live scoreboard task failed: {error}"))?
+}
+
 fn background_command(program: &str) -> Command {
     let mut command = Command::new(program);
     #[cfg(windows)]
@@ -238,6 +390,16 @@ fn runtime_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
             fs::copy(source_env, runtime_env).map_err(|error| error.to_string())?;
         }
         copy_missing_directory(&source.join("data"), &runtime.join("data"))?;
+        // Release identity belongs to the installed binary, not to an older
+        // writable runtime snapshot. Always replace these two files during an
+        // app-version migration while preserving generated/user data.
+        for metadata_name in ["app_metadata.json", "app_metadata.js"] {
+            let bundled_metadata = source.join("data").join(metadata_name);
+            if bundled_metadata.exists() {
+                fs::copy(&bundled_metadata, runtime.join("data").join(metadata_name))
+                    .map_err(|error| error.to_string())?;
+            }
+        }
         fs::write(&marker, version).map_err(|error| error.to_string())?;
     }
 
@@ -363,6 +525,7 @@ fn shared_data_allowed_path(path: &str) -> bool {
             | "data/live/live_heartbeat.json"
             | "data/live/live_scores.json"
             | "data/live/live_widget.json"
+            | "data/live/result_history.json"
             | "data/odds/odds_snapshots.json"
             | "data/odds/player_props.json"
             | "data/odds/odds_health.json"
@@ -1169,6 +1332,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             sync_shared_data,
+            fetch_live_scoreboards,
             run_refresh_command,
             run_startup_automation,
             refresh_sports_data,

@@ -10,6 +10,10 @@ LineLens v6 instead uses the three repository secrets only inside GitHub Actions
 
 The **Publish Shared Data Channel** workflow refreshes scores, odds, props, predictions, and records every six hours. It creates a JSON-only ZIP, checks every export for the configured secret values, generates SHA-256 hashes, attaches GitHub provenance, and publishes the assets at the stable `data-channel-v6` release tag.
 
+Live scores do not wait six hours. The installed Tauri app and its Live widget query the keyless public scoreboards directly every 30 seconds while they are open. The shared channel supplies predictions, odds, records, and an offline score fallback; the direct feed supplies the changing score and game state. Model retraining remains a separate weekly review workflow.
+
+Before each record publication, `refresh_pending_results.py` reads the prediction log, fetches authoritative MLB/ESPN results for every still-pending date, preserves a result-history cache, and runs scoring again. Postponed, canceled, suspended, and delayed games are excluded from model accuracy instead of being mislabeled as losses or left pending forever.
+
 The installed app checks that channel automatically on startup and at a conservative background interval. It accepts only the pinned LineLens v6 release URL and an exact file allowlist, verifies the bundle hash plus every file hash and size, rejects unexpected paths, keeps a local backup, and then loads the new exports. If the network or workflow is unavailable, bundled data remains visible. End users do not need Python or API keys.
 
 ## One-time activation

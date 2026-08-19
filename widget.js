@@ -800,14 +800,19 @@ async function refreshLive(options = {}) {
     try {
         if (isTauri()) {
             if (!options.background) showToast("Refreshing live scores...");
-            const result = await tauriInvoke("run_refresh_command", { commandName: "live_scores" });
-            if (result && result.success === false) throw new Error(result.stderr || "Live score refresh failed.");
+            const result = await tauriInvoke("fetch_live_scoreboards", {});
+            state.payload = result || state.payload;
+            state.games = buildUnifiedGames();
+            ensureSelectedDate();
+            clampSelectedIndex();
+            state.refreshStatus = "Direct live scores";
         } else {
             const result = await requestLocalRefresh("live_scores");
             if (result?.success === false) throw new Error(result.stderr || "Live score refresh failed.");
             if (!result && !options.background) showToast("Start npm run app for live refresh, or showing cached data.");
         }
-        await loadLocalData("Reloading live schedule...", { forceFetch: true });
+        if (!isTauri()) await loadLocalData("Reloading live schedule...", { forceFetch: true });
+        else render();
         if (!options.background) showToast("Live scores loaded");
     } catch (error) {
         state.refreshStatus = `Showing cached schedule - live refresh failed`;

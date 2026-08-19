@@ -143,7 +143,12 @@ def check_exports() -> None:
     prediction_meta = predictions.get("metadata", {})
     check("production model identity", prediction_meta.get("model_id") == selected_model.get("model_id"), f"prediction model_id={prediction_meta.get('model_id')}, registry model_id={selected_model.get('model_id')}")
     check("production model version", prediction_meta.get("version") == selected_model.get("version"), f"prediction version={prediction_meta.get('version')}, registry version={selected_model.get('version')}")
-    check("production model UI identity", registry_name == "GradientBoostingClassifier" and "GradientBoostingClassifier" in app_js and 'legend: "Lugia"' in app_js, f"technical model={registry_name}, Lugia mapping present")
+    check(
+        "production model UI identity",
+        registry_name in {"EloBlend", "GradientBoostingClassifier"}
+        and f"{registry_name}: {{ legend: \"Lugia\"" in app_js,
+        f"technical model={registry_name}, Lugia mapping present",
+    )
     check("app metadata", bool(app.get("version")), f"version={app.get('version')}")
     check("app release version", app.get("version") == APP_VERSION, f"metadata={app.get('version')}, source={APP_VERSION}")
     check("real bundled exports", all(payload.get("metadata", {}).get("real_data", True) is not False for payload in (predictions, backtest, nfl, comparison, registry, card, record)), "no export marked synthetic")
@@ -153,6 +158,20 @@ def check_exports() -> None:
 
     supplements = [row for row in rows(nfl) if row.get("prediction_mode") == "postseason_result_supplement"]
     check("postseason supplements excluded", all(row.get("model_pick") in (None, "", "-") and row.get("model_result") == "No logged pick" for row in supplements), f"{len(supplements)} supplement rows")
+
+    nfl_2025_regular = [
+        row for row in rows(nfl)
+        if int(row.get("season") or 0) == 2025
+        and row.get("prediction_mode") != "postseason_result_supplement"
+    ]
+    nfl_2025_weeks = {int(row.get("week") or 0) for row in nfl_2025_regular}
+    check(
+        "NFL 2025 model coverage",
+        len(nfl_2025_regular) >= 260
+        and nfl_2025_weeks == set(range(1, 19))
+        and all(row.get("game_date") for row in nfl_2025_regular),
+        f"{len(nfl_2025_regular)} dated scorable rows across weeks {sorted(nfl_2025_weeks)}",
+    )
 
     pending = [row for row in rows(log, "predictions") if str(row.get("model_result") or row.get("result_status") or "").lower() == "pending"]
     check("pending remains pending", all(str(row.get("model_result") or "").lower() not in {"win", "loss", "push"} for row in pending), f"{len(pending)} pending log rows")

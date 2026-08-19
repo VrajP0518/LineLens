@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import typer
 from rich.console import Console
-from sklearn.ensemble import GradientBoostingClassifier, HistGradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, brier_score_loss, log_loss, roc_auc_score
 from sklearn.model_selection import TimeSeriesSplit
@@ -23,7 +23,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from src.shared.export_utils import write_json_and_js
-from src.shared.modeling import StackingEnsemble, clean_numeric_frame, read_table
+from src.shared.modeling import EloBlendClassifier, StackingEnsemble, clean_numeric_frame, read_table
 from src.shared.paths import MODEL_DIR, PROCESSED_DIR, ensure_project_dirs, resolve_project_path
 from src.shared.version import APP_NAME, APP_VERSION
 
@@ -44,6 +44,7 @@ MOLTRES_CARD_JS = Path("data/reports/mlb_moltres_model_card.js")
 TRAINING_LOCK = MODEL_DIR / ".mlb_moneyline_training.lock"
 
 LEAKY_COLS = {
+    "season",
     "home_score",
     "away_score",
     "home_win",
@@ -65,6 +66,34 @@ LEAKY_COLS = {
     "home_division",
     "away_division",
     "matchup_key",
+}
+
+CONTEXT_FEATURES = {
+    "home_field",
+    "home_is_home",
+    "away_is_away",
+    "month",
+    "day_of_week",
+    "late_season",
+    "division_game",
+    "interleague",
+    "is_doubleheader",
+    "doubleheader_game_number",
+    "same_series_game_number",
+    "home_won_previous_series_game",
+    "away_won_previous_series_game",
+    "previous_head_to_head_home_won",
+    "head_to_head_win_pct_recent",
+    "away_cross_country_trip",
+    "home_cross_country_trip",
+    "home_road_trip_game_number",
+    "away_road_trip_game_number",
+    "home_is_road_trip_opener",
+    "away_is_road_trip_opener",
+    "game_number_for_home_team",
+    "game_number_for_away_team",
+    "elo_home_win_probability",
+    "elo_rating_diff",
 }
 
 
@@ -136,7 +165,14 @@ def _stage_joblib(payload: dict, destination: Path) -> Path:
 
 def _feature_columns(df: pd.DataFrame) -> list[str]:
     numeric = set(df.select_dtypes(include=[np.number]).columns)
-    return [col for col in df.columns if col in numeric and col not in LEAKY_COLS and not col.endswith("_score")]
+    return [
+        col
+        for col in df.columns
+        if col in numeric
+        and col not in LEAKY_COLS
+        and not col.endswith("_score")
+        and (col.endswith("_diff") or col in CONTEXT_FEATURES)
+    ]
 
 
 def _metric_block(y_true: pd.Series, probabilities: np.ndarray) -> dict:
@@ -294,34 +330,40 @@ def _home_away_pick_accuracy(test_df: pd.DataFrame, probabilities: np.ndarray, y
 
 
 def _candidate_models() -> list[tuple[str, object]]:
+    shallow_boost = lambda: GradientBoostingClassifier(  # noqa: E731 - compact fresh estimator factory.
+        n_estimators=100,
+        learning_rate=0.03,
+        max_depth=1,
+        min_samples_leaf=30,
+        random_state=42,
+    )
     return [
         (
             "LogisticRegression",
             Pipeline(
                 [
                     ("scaler", StandardScaler()),
-                    ("model", LogisticRegression(max_iter=2000, class_weight="balanced")),
+                    ("model", LogisticRegression(C=0.01, max_iter=2000)),
                 ]
             ),
         ),
         (
             "RandomForestClassifier",
             RandomForestClassifier(
-                n_estimators=250,
-                min_samples_leaf=8,
-                max_features="sqrt",
-                class_weight="balanced_subsample",
+                n_estimators=300,
+                min_samples_leaf=20,
+                max_features=0.7,
                 random_state=42,
                 n_jobs=1,
             ),
         ),
         (
             "GradientBoostingClassifier",
-            GradientBoostingClassifier(n_estimators=180, learning_rate=0.035, max_depth=2, random_state=42),
+            shallow_boost(),
         ),
         (
-            "HistGradientBoostingClassifier",
-            HistGradientBoostingClassifier(max_iter=220, learning_rate=0.035, l2_regularization=0.02, random_state=42),
+            "EloBlend",
+            EloBlendClassifier(shallow_boost(), model_weight=0.35),
         ),
     ]
 
@@ -335,6 +377,24 @@ def _baseline_recent_form(test_df: pd.DataFrame) -> np.ndarray:
 def _feature_importance(model: object, features: list[str]) -> list[dict]:
     values = None
     signed = False
+    if isinstance(model, EloBlendClassifier):
+        rows = _feature_importance(model.base_model, features)
+        for row in rows:
+            row["importance"] *= float(model.model_weight)
+        elo_weight = 1.0 - float(model.model_weight)
+        existing = next((row for row in rows if row["feature"] == model.elo_feature), None)
+        if existing:
+            existing["importance"] += elo_weight
+        else:
+            rows.append(
+                {
+                    "feature": model.elo_feature,
+                    "importance": elo_weight,
+                    "signed_weight": elo_weight,
+                    "direction": "supports_home_when_higher",
+                }
+            )
+        return sorted(rows, key=lambda row: row["importance"], reverse=True)[:30]
     if isinstance(model, Pipeline) and "model" in model.named_steps and hasattr(model.named_steps["model"], "coef_"):
         values = model.named_steps["model"].coef_[0]
         signed = True
@@ -381,10 +441,26 @@ def _ensemble_feature_importance(row: dict, features: list[str]) -> list[dict]:
     return sorted(rows, key=lambda item: item["importance"], reverse=True)[:30]
 
 
-def _train_models(X_train: pd.DataFrame, y_train: pd.Series, X_test: pd.DataFrame, y_test: pd.Series) -> list[dict]:
+def _train_models(
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    train_seasons: pd.Series,
+    X_test: pd.DataFrame,
+    y_test: pd.Series,
+) -> list[dict]:
     rows = []
     for name, model in _candidate_models():
         try:
+            validation_probabilities = []
+            validation_targets = []
+            validation_seasons = sorted(int(value) for value in train_seasons.unique())[1:]
+            for validation_season in validation_seasons:
+                fold_train = train_seasons.lt(validation_season).to_numpy()
+                fold_valid = train_seasons.eq(validation_season).to_numpy()
+                fold_model = dict(_candidate_models())[name]
+                fold_model.fit(X_train.iloc[np.flatnonzero(fold_train)], y_train.iloc[np.flatnonzero(fold_train)])
+                validation_probabilities.extend(fold_model.predict_proba(X_train.iloc[np.flatnonzero(fold_valid)])[:, 1])
+                validation_targets.extend(y_train.iloc[np.flatnonzero(fold_valid)])
             model.fit(X_train, y_train)
             probabilities = model.predict_proba(X_test)[:, 1]
             rows.append(
@@ -393,12 +469,27 @@ def _train_models(X_train: pd.DataFrame, y_train: pd.Series, X_test: pd.DataFram
                     "model": model,
                     "probabilities": probabilities,
                     "metrics": _metric_block(y_test, probabilities),
+                    "validation_metrics": _metric_block(
+                        pd.Series(validation_targets, dtype=int),
+                        np.asarray(validation_probabilities, dtype=float),
+                    ),
+                    "validation_seasons": validation_seasons,
                     "status": "trained",
                     "error": None,
                 }
             )
         except Exception as exc:  # noqa: BLE001 - keep comparison robust if one estimator fails.
-            rows.append({"model_name": name, "model": None, "probabilities": None, "metrics": {}, "status": "failed", "error": f"{type(exc).__name__}: {exc}"})
+            rows.append(
+                {
+                    "model_name": name,
+                    "model": None,
+                    "probabilities": None,
+                    "metrics": {},
+                    "validation_metrics": {},
+                    "status": "failed",
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+            )
     return rows
 
 
@@ -433,7 +524,7 @@ def _train_moltres(
     if valid.sum() < 100:
         raise RuntimeError("Moltres could not produce enough chronological OOF rows for a meta-model.")
 
-    meta_model = LogisticRegression(max_iter=2000, class_weight="balanced")
+    meta_model = LogisticRegression(C=0.1, max_iter=2000)
     meta_model.fit(oof[valid][:, usable_cols], y_train.iloc[np.flatnonzero(valid)])
     final_models = []
     allowed_names = {candidates[column][0] for column in usable_cols}
@@ -492,6 +583,9 @@ def _comparison_rows(model_rows: list[dict], y_test: pd.Series, test_df: pd.Data
                 "status": row["status"],
                 "error": row.get("error"),
                 **metrics,
+                "holdout_metrics": metrics,
+                "validation_metrics": row.get("validation_metrics"),
+                "validation_seasons": row.get("validation_seasons"),
                 **diagnostics,
                 "components": row.get("component_models"),
             }
@@ -517,10 +611,21 @@ def _comparison_rows(model_rows: list[dict], y_test: pd.Series, test_df: pd.Data
 
 
 def _select_model(rows: list[dict]) -> dict:
-    trained = [row for row in rows if row["status"] == "trained" and row["metrics"].get("log_loss") is not None]
+    trained = [
+        row
+        for row in rows
+        if row["status"] == "trained"
+        and (row.get("validation_metrics") or {}).get("log_loss") is not None
+    ]
     if not trained:
-        raise RuntimeError("No MLB model candidate trained successfully.")
-    return sorted(trained, key=lambda row: (row["metrics"]["log_loss"], row["metrics"]["brier_score"]))[0]
+        raise RuntimeError("No MLB model candidate completed chronological development validation.")
+    return sorted(
+        trained,
+        key=lambda row: (
+            row["validation_metrics"]["log_loss"],
+            row["validation_metrics"]["brier_score"],
+        ),
+    )[0]
 
 
 def _load_json(path: Path) -> dict:
@@ -541,7 +646,7 @@ def _write_model_comparison(comparison: list[dict], selected: dict, metadata: di
             "version": APP_VERSION,
             "generated_at": utc_now(),
             "selected_model": selected["model_name"],
-            "selected_by": "lowest log_loss, then brier_score",
+            "selected_by": "lowest walk-forward validation log_loss, then brier_score; latest season remains sealed",
             "real_data": True,
         },
         "models": comparison,
@@ -611,6 +716,7 @@ def _write_report(
         "record_breakdowns": record_breakdowns,
         "top_global_features": top_features,
         "data_quality": {
+            "team_strength": "pregame Elo with offseason regression; selected on pre-holdout walk-forward seasons",
             "pitcher_features": "proxy features from probable pitcher prior starts where names are available",
             "travel_features": "estimated from team venue coordinates",
             "odds_features": "not connected",
@@ -662,6 +768,7 @@ def _write_moltres_card(metadata: dict, metrics: dict, comparison: list[dict], c
             "feature_count": metadata.get("feature_count"),
             "leakage_controls": [
                 "All rolling team features are shifted to prior games.",
+                "Elo ratings are frozen before each game and update only after a completed result.",
                 "The test season is never used for base or meta fitting.",
                 "Meta probabilities come from chronological out-of-fold rows only.",
             ],
@@ -670,8 +777,8 @@ def _write_moltres_card(metadata: dict, metrics: dict, comparison: list[dict], c
         "comparison": moltres_row,
         "selection": {
             "selected_for_production": selected,
-            "rule": "lowest holdout log loss, then Brier score, among trained models",
-            "evidence": "Moltres is not promoted unless its sealed test-season metrics win the same rule used for existing models.",
+            "rule": "production candidates are selected by pre-holdout expanding-window log loss, then Brier score",
+            "evidence": "The latest season is evaluation-only; Moltres remains a challenger until it completes the same outer walk-forward gate.",
         },
         "limitations": [
             "Pitcher inputs are proxy features when probable pitcher history is available.",
@@ -720,9 +827,11 @@ def train(
     y_test = test_df["home_win"].astype(int)
 
     console.print("[cyan][2/6] Fitting base models on pre-holdout seasons[/cyan]")
-    model_rows = _train_models(X_train, y_train, X_test, y_test)
+    model_rows = _train_models(X_train, y_train, train_df["season"].astype(int), X_test, y_test)
     console.print("[cyan][3/6] Building Moltres from chronological out-of-fold probabilities[/cyan]")
     moltres = _train_moltres(X_train, y_train, X_test, y_test)
+    moltres["validation_metrics"] = None
+    moltres["validation_seasons"] = []
     model_rows.append(moltres)
     console.print("[cyan][4/6] Evaluating every candidate on the sealed holdout season[/cyan]")
     selected = _select_model(model_rows)
@@ -776,7 +885,9 @@ def train(
         "production_fit_seasons": seasons,
         "production_fit_policy": "all completed rows after sealed latest-season evaluation",
         "holdout_sealed": True,
-        "selected_by": "log_loss",
+        "selected_by": "walk_forward_log_loss_then_brier",
+        "validation_metrics": selected.get("validation_metrics"),
+        "validation_seasons": selected.get("validation_seasons"),
         "calibration_error": calibration_error,
         "metrics": metrics,
         "record": record,
@@ -793,6 +904,12 @@ def train(
         "model_comparison": comparison,
         "top_global_features": top_features,
         "candidate_models": candidate_models,
+        "evaluation_model": selected["model"],
+        "evaluation_candidate_models": [
+            (row["model_name"], row["model"])
+            for row in model_rows
+            if row.get("status") == "trained" and row.get("model") is not None
+        ],
     }
     out = resolve_project_path(model_out)
     staged_selected = _stage_joblib(payload, out)
@@ -836,7 +953,10 @@ def train(
         "production_fit_policy": "all completed rows after sealed latest-season evaluation",
         "metrics": metrics,
         "selected": True,
-        "notes": "Selected by lowest log loss, then Brier score.",
+        "status": "production",
+        "validation_metrics": selected.get("validation_metrics"),
+        "validation_seasons": selected.get("validation_seasons"),
+        "notes": "Selected on expanding-window validation seasons; evaluated once on the latest sealed season.",
     }
     moltres_entry = {
         **registry_entry,
@@ -844,6 +964,9 @@ def train(
         "model_name": "Moltres",
         "metrics": moltres["metrics"],
         "selected": selected["model_name"] == "Moltres",
+        "status": "production" if selected["model_name"] == "Moltres" else "challenger",
+        "validation_metrics": moltres.get("validation_metrics"),
+        "validation_seasons": moltres.get("validation_seasons"),
         "notes": "Chronological OOF stacking challenger; promoted only when sealed holdout metrics win the production selection rule.",
         "components": moltres.get("component_models"),
         "component_weights": moltres.get("component_weights"),

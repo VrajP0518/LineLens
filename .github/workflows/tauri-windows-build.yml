@@ -57,6 +57,7 @@ jobs:
           python scripts/live_scores.py --days-back 1 --days-forward 7 --output-stem live_heartbeat
           python scripts/odds_snapshots.py
           python scripts/refresh_props.py
+          python scripts/refresh_pending_results.py --strict
           python scripts/score_model_predictions.py
           python scripts/score_prop_predictions.py
 

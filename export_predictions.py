@@ -152,6 +152,7 @@ def main() -> None:
             "id": f"{row_dict['season']}_{row_dict['week']:02d}_{row_dict['away_team']}_{row_dict['home_team']}",
             "season": int(row_dict["season"]),
             "week": int(row_dict["week"]),
+            "game_date": None if pd.isna(row_dict.get("gameday")) else str(row_dict["gameday"]),
             "home": row_dict["home_team"],
             "away": row_dict["away_team"],
             "home_score": _safe_float(row_dict.get("home_score")),

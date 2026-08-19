@@ -25,6 +25,10 @@ app = typer.Typer(help="Download nflfastR datasets via nfl-data-py and cache the
 RAW_DIR = Path(__file__).resolve().parent / "data" / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 NFLVERSE_GAMES_URL = "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv"
+NFLVERSE_WEEKLY_STATS_URL = (
+    "https://github.com/nflverse/nflverse-data/releases/download/"
+    "stats_player/stats_player_week_{season}.parquet"
+)
 
 
 def _build_season_list(start: int, end: int) -> List[int]:
@@ -200,9 +204,31 @@ def weekly(
                 frames.append(
                     nfl.import_weekly_data([season], columns=columns or None, downcast=downcast)
                 )
-            except HTTPError:
-                skipped.append(season)
-                console.print(f"[yellow]Season {season} weekly file not published yet, skipping.[/yellow]")
+            except (HTTPError, OSError, ValueError) as exc:
+                # nfl-data-py 0.3.3 still targets the deprecated player_stats
+                # release. nflverse moved weekly player files to stats_player
+                # in August 2025, so use the maintained release directly.
+                try:
+                    frame = pd.read_parquet(
+                        NFLVERSE_WEEKLY_STATS_URL.format(season=season),
+                        columns=columns or None,
+                    )
+                    if "season" not in frame.columns:
+                        frame["season"] = season
+                    if downcast:
+                        float_cols = frame.select_dtypes(include=["float64"]).columns
+                        frame[float_cols] = frame[float_cols].astype("float32")
+                    frames.append(frame)
+                    console.print(
+                        f"[yellow]Season {season} loaded from current nflverse stats_player release "
+                        f"after legacy source failed ({type(exc).__name__}).[/yellow]"
+                    )
+                except Exception as fallback_exc:  # noqa: BLE001 - report a missing upstream season cleanly.
+                    skipped.append(season)
+                    console.print(
+                        f"[yellow]Season {season} weekly file unavailable from legacy and current releases "
+                        f"({type(fallback_exc).__name__}: {fallback_exc}), skipping.[/yellow]"
+                    )
 
     if not frames:
         raise typer.BadParameter("No weekly data was downloaded; reduce end-season to published years.")

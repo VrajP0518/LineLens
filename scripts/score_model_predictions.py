@@ -31,7 +31,11 @@ WNBA_PREDICTIONS = PREDICTIONS_DIR / "wnba_predictions.json"
 WNBA_BACKTEST = PREDICTIONS_DIR / "wnba_backtest_predictions.json"
 NFL_PREDICTIONS = PREDICTIONS_DIR / "nfl_predictions.json"
 MLB_COMPARISON = REPORTS_DIR / "mlb_model_comparison.json"
-LIVE_SCORE_FILES = [ROOT / "data" / "live" / "live_heartbeat.json", ROOT / "data" / "live" / "live_scores.json"]
+LIVE_SCORE_FILES = [
+    ROOT / "data" / "live" / "result_history.json",
+    ROOT / "data" / "live" / "live_heartbeat.json",
+    ROOT / "data" / "live" / "live_scores.json",
+]
 LOCAL_TZ = safe_zone("America/Toronto")
 SCORED_RESULTS = {"win", "loss", "push"}
 NON_DECISIVE_STATUS_MARKERS = ("postponed", "canceled", "cancelled", "suspended", "delayed", "delay")
@@ -95,7 +99,12 @@ def normalize_result(value: Any) -> str:
 
 def is_excluded_prediction(row: dict[str, Any]) -> bool:
     status = str(row.get("status_at_prediction") or row.get("status") or row.get("status_detail") or "").strip().lower()
-    return row.get("prediction_mode") == "postseason_result_supplement" or any(marker in status for marker in NON_DECISIVE_STATUS_MARKERS)
+    result_state = str(row.get("result_status") or row.get("model_result") or "").strip().lower()
+    return (
+        row.get("prediction_mode") == "postseason_result_supplement"
+        or result_state in {"excluded", "no_result"}
+        or any(marker in status for marker in NON_DECISIVE_STATUS_MARKERS)
+    )
 
 
 def team_abbrev(side: dict[str, Any]) -> str:
@@ -133,15 +142,21 @@ def mlb_result_map() -> dict[str, dict[str, Any]]:
                 away = teams.get("away", {})
                 home_score = home.get("score")
                 away_score = away.get("score")
+                label = status_label(game)
+                home_code = team_abbrev(home)
+                away_code = team_abbrev(away)
+                game_date = game.get("officialDate") or str(game.get("gameDate", ""))[:10]
+                if any(marker in label.lower() for marker in NON_DECISIVE_STATUS_MARKERS):
+                    result = {"home": home_code, "away": away_code, "status": label, "game_date": game_date, "non_decisive": True}
+                    results[str(game.get("gamePk"))] = result
+                    results[f"fallback:{game_date}:{away_code}:{home_code}"] = result
+                    continue
                 if home_score is None or away_score is None:
                     continue
-                label = status_label(game)
                 if "Final" not in label and "Completed" not in label:
                     continue
                 if int(home_score) == int(away_score):
                     continue
-                home_code = team_abbrev(home)
-                away_code = team_abbrev(away)
                 result = {
                     "home": home_code,
                     "away": away_code,
@@ -149,7 +164,7 @@ def mlb_result_map() -> dict[str, dict[str, Any]]:
                     "away_score": int(away_score),
                     "actual_winner": home_code if int(home_score) > int(away_score) else away_code,
                     "status": label,
-                    "game_date": game.get("officialDate") or str(game.get("gameDate", ""))[:10],
+                    "game_date": game_date,
                 }
                 results[str(game.get("gamePk"))] = result
                 results[f"fallback:{result['game_date']}:{away_code}:{home_code}"] = result
@@ -315,6 +330,11 @@ def score_mlb_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
             row["model_result"] = "pending"
             pending += 1
             continue
+        if result.get("non_decisive"):
+            row["result_status"] = "excluded"
+            row["model_result"] = "no_result"
+            row["exclusion_reason"] = f"Official result status was {result.get('status')}; excluded from model accountability."
+            continue
         row["actual_winner"] = result["actual_winner"]
         row["home_score"] = result["home_score"]
         row["away_score"] = result["away_score"]
@@ -335,10 +355,15 @@ def wnba_result_map() -> dict[str, dict[str, Any]]:
         home_score = safe_float(game.get("home_score"))
         away_score = safe_float(game.get("away_score"))
         status = str(game.get("status") or "").lower()
-        if home_score is None or away_score is None or not any(marker in status for marker in ("final", "completed", "ft")):
-            continue
         home = str(game.get("home") or "")
         away = str(game.get("away") or "")
+        if any(marker in status for marker in NON_DECISIVE_STATUS_MARKERS):
+            result = {"home": home, "away": away, "status": game.get("status") or "No result", "non_decisive": True}
+            results[str(game.get("game_id") or game.get("id"))] = result
+            results[f"fallback:{str(game.get('game_date') or '')[:10]}:{away.upper()}:{home.upper()}"] = result
+            continue
+        if home_score is None or away_score is None or not any(marker in status for marker in ("final", "completed", "ft")):
+            continue
         result = {
             "home": home,
             "away": away,
@@ -357,10 +382,17 @@ def wnba_result_map() -> dict[str, dict[str, Any]]:
             status = str(game.get("status_detail") or game.get("status") or "").lower()
             home_score = safe_float(game.get("home_score"))
             away_score = safe_float(game.get("away_score"))
-            if not any(marker in status for marker in ("final", "completed")) or home_score is None or away_score is None or home_score == away_score:
-                continue
             home = str(game.get("home") or "").upper()
             away = str(game.get("away") or "").upper()
+            if any(marker in status for marker in NON_DECISIVE_STATUS_MARKERS):
+                result = {"home": home, "away": away, "status": game.get("status_detail") or game.get("status") or "No result", "non_decisive": True}
+                for game_id in (game.get("game_id"), game.get("espn_event_id"), game.get("id")):
+                    if game_id:
+                        results[str(game_id)] = result
+                results[f"fallback:{str(game.get('game_date') or game.get('game_time') or '')[:10]}:{away}:{home}"] = result
+                continue
+            if not any(marker in status for marker in ("final", "completed")) or home_score is None or away_score is None or home_score == away_score:
+                continue
             result = {"home": home, "away": away, "home_score": home_score, "away_score": away_score, "actual_winner": home if home_score > away_score else away, "status": game.get("status_detail") or game.get("status") or "Final"}
             for game_id in (game.get("game_id"), game.get("espn_event_id"), game.get("id")):
                 if game_id:
@@ -385,6 +417,11 @@ def score_wnba_predictions(rows: list[dict[str, Any]]) -> tuple[int, int]:
             row["result_status"] = "pending"
             row["model_result"] = "pending"
             pending += 1
+            continue
+        if result.get("non_decisive"):
+            row["result_status"] = "excluded"
+            row["model_result"] = "no_result"
+            row["exclusion_reason"] = f"Official result status was {result.get('status')}; excluded from model accountability."
             continue
         row["actual_winner"] = result["actual_winner"]
         row["home_score"] = result["home_score"]

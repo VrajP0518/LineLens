@@ -70,6 +70,12 @@ TEAM_CONTEXT = {
 }
 
 FEATURE_GROUPS = {
+    "team_strength": [
+        "home_elo_rating",
+        "away_elo_rating",
+        "elo_rating_diff",
+        "elo_home_win_probability",
+    ],
     "team_form": [
         "home_win_pct_3",
         "away_win_pct_3",
@@ -659,6 +665,58 @@ def _series_context(games: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _add_elo_features(games: pd.DataFrame) -> pd.DataFrame:
+    """Add strictly pregame Elo ratings with offseason regression.
+
+    Hyperparameters were selected on 2022-2024 chronological development
+    seasons only. Ratings update after completed games; scheduled/live rows
+    never feed their unknown result back into later predictions.
+    """
+
+    frame = games.sort_values(["season", "game_date", "game_datetime", "game_id"]).copy()
+    ratings: dict[str, float] = {}
+    current_season: int | None = None
+    home_ratings: list[float] = []
+    away_ratings: list[float] = []
+    rating_diffs: list[float] = []
+    home_probabilities: list[float] = []
+    k_factor = 8.0
+    offseason_carry = 0.65
+    home_advantage = 16.0
+
+    for row in frame.itertuples():
+        season = int(row.season)
+        if current_season is not None and season != current_season:
+            ratings = {
+                team: 1500.0 + (rating - 1500.0) * offseason_carry
+                for team, rating in ratings.items()
+            }
+        current_season = season
+
+        home = str(row.home_team)
+        away = str(row.away_team)
+        home_rating = ratings.get(home, 1500.0)
+        away_rating = ratings.get(away, 1500.0)
+        rating_diff = home_rating - away_rating
+        home_probability = 1.0 / (1.0 + 10.0 ** (-((rating_diff + home_advantage) / 400.0)))
+        home_ratings.append(home_rating)
+        away_ratings.append(away_rating)
+        rating_diffs.append(rating_diff)
+        home_probabilities.append(home_probability)
+
+        home_win = getattr(row, "home_win", np.nan)
+        if not pd.isna(home_win):
+            change = k_factor * (float(home_win) - home_probability)
+            ratings[home] = home_rating + change
+            ratings[away] = away_rating - change
+
+    frame["home_elo_rating"] = home_ratings
+    frame["away_elo_rating"] = away_ratings
+    frame["elo_rating_diff"] = rating_diffs
+    frame["elo_home_win_probability"] = home_probabilities
+    return frame
+
+
 def _load_schedule_frames(files: Iterable[tuple[Path, int]]) -> pd.DataFrame:
     frames = []
     for schedule_file, season in files:
@@ -797,7 +855,7 @@ def _add_derived_features(frame: pd.DataFrame) -> pd.DataFrame:
 def build_dataset_from_games(games: pd.DataFrame) -> pd.DataFrame:
     if games.empty:
         return games
-    games = _series_context(games)
+    games = _add_elo_features(_series_context(games))
     team_log = _team_game_log(games)
     if team_log.empty:
         feature_frame = games.copy()
@@ -862,6 +920,7 @@ def write_feature_summary(dataset: pd.DataFrame, output_file: Path) -> None:
         "features_dropped": dropped,
         "notes": [
             "Rolling features are shifted by one prior game to avoid same-game leakage.",
+            "Elo ratings are captured before each game, regress toward league average each offseason, and update only after completed games.",
             "Pitcher features are pitcher-team-result proxy features when probable pitcher names are available.",
             "Travel features are estimated from team venue coordinates, not exact travel itineraries.",
         ],

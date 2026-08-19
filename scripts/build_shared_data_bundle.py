@@ -18,6 +18,7 @@ SHARED_FILES = [
     "data/live/live_heartbeat.json",
     "data/live/live_scores.json",
     "data/live/live_widget.json",
+    "data/live/result_history.json",
     "data/odds/odds_snapshots.json",
     "data/odds/player_props.json",
     "data/odds/odds_health.json",

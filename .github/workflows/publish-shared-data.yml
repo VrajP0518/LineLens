@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "17 */6 * * *"
+    - cron: "43 10 * * 2"
 
 permissions:
   contents: write
@@ -42,6 +43,17 @@ jobs:
             fi
           done
           exit "$missing"
+      - name: Download previous shared-data state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/linelens-data-channel"
+          gh release download data-channel-v6 --dir "$RUNNER_TEMP/linelens-data-channel" --pattern 'linelens-shared-data-v6.zip' --pattern 'shared-data-manifest.json' || true
+          python scripts/restore_shared_data_bundle.py --manifest "$RUNNER_TEMP/linelens-data-channel/shared-data-manifest.json" --bundle "$RUNNER_TEMP/linelens-data-channel/linelens-shared-data-v6.zip"
+      - name: Refresh official NFL historical data
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '43 10 * * 2'
+        run: python scripts/refresh_data.py --sport nfl --mode real
       - name: Refresh sanitized shared exports
         run: |
           python scripts/refresh_data.py --sport mlb --mode predict
@@ -49,6 +61,7 @@ jobs:
           python scripts/live_scores.py --days-back 1 --days-forward 7 --output-stem live_heartbeat
           python scripts/odds_snapshots.py
           python scripts/refresh_props.py
+          python scripts/refresh_pending_results.py --strict
           python scripts/score_model_predictions.py
           python scripts/score_prop_predictions.py
       - name: Validate and package public data

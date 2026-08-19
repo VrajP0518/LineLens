@@ -1276,17 +1276,19 @@ async function refreshLiveHeartbeat(options = {}) {
 
     try {
         if (isTauriRefreshAvailable()) {
-            const result = await syncSharedData({
-                background: true,
-                force: Boolean(options.force),
-                minimumIntervalMs: 15 * 60 * 1000,
-            });
+            const payload = await tauriInvoke("fetch_live_scoreboards", {});
+            const directGames = normalizeGames(payload).map(game => ({ ...game, source_type: "live" }));
+            const cachedGames = state.live.games.map(game => ({ ...game, source_type: game.source_type || "live" }));
+            const predictionGames = currentGames().map(game => ({ ...game, source_type: "current" }));
+            state.live.games = mergeCanonicalGameRows([...directGames, ...cachedGames, ...predictionGames]);
+            state.live.payload = { ...payload, games: state.live.games };
+            state.live.stale = false;
+            state.live.error = null;
+            syncSharedData({ background: true, minimumIntervalMs: 15 * 60 * 1000 });
             const after = liveGames();
             detectLiveAlerts(before, after);
-            state.liveRefresh.lastStatus = result?.success ? "fresh" : "cached";
-            state.liveRefresh.lastMessage = result?.success
-                ? `Approved shared data checked; ${after.length} games loaded.`
-                : `Shared channel unavailable; retained ${after.length} cached rows.`;
+            state.liveRefresh.lastStatus = "fresh";
+            state.liveRefresh.lastMessage = `Direct live score feeds updated; ${after.length} games loaded.`;
             return;
         }
         const result = await runRefreshCommand("live_scores_fast", {
@@ -1331,11 +1333,11 @@ function startLiveHeartbeat() {
     const seconds = liveHeartbeatSeconds();
     if (!seconds) return;
     const refreshAvailable = isTauriRefreshAvailable() || browserRefreshAvailable();
-    const effectiveSeconds = isTauriRefreshAvailable() ? Math.max(seconds, 15 * 60) : seconds;
+    const effectiveSeconds = isTauriRefreshAvailable() ? Math.max(seconds, 30) : seconds;
     state.liveRefresh.lastStatus = refreshAvailable ? "waiting" : "cached";
     state.liveRefresh.lastMessage = refreshAvailable
         ? isTauriRefreshAvailable()
-            ? `Approved shared data is checked every ${Math.round(effectiveSeconds / 60)} minutes in the background.`
+            ? `Live score feeds refresh directly every ${effectiveSeconds} seconds; predictions remain on the approved data channel.`
             : `Live heartbeat ready every ${seconds}s; live_scores refresh runs in the background.`
         : `Static mode can only show bundled live data. Start npm run app to enable live refresh.`;
     state.liveRefresh.intervalId = window.setInterval(() => {
@@ -1487,7 +1489,8 @@ function arenaEntries(sport) {
 function renderArenaSportGroup(sport, title) {
     const entries = arenaEntries(sport);
     const leaderboard = [...entries].sort((a, b) => safeNumber(a.metrics?.log_loss, Infinity) - safeNumber(b.metrics?.log_loss, Infinity));
-    const selectionReason = sport === "MLB" ? "Lugia remains production because the selected GradientBoostingClassifier entry wins the sealed MLB log-loss/Brier rule; Moltres remains a challenger." : sport === "WNBA" ? (state.wnbaModelComparison?.metadata?.selection_policy || "Selected by the chronological holdout rule; metrics stay within WNBA.") : "NFL is shown as a historical model export, not a current production selection.";
+    const mlbSelection = selectedModelEntry("MLB");
+    const selectionReason = sport === "MLB" ? `${modelIdentity(mlbSelection?.model_name).legend} is production because ${mlbSelection?.model_name || "the selected candidate"} wins the pre-holdout expanding-window log-loss/Brier rule; 2025 stays evaluation-only and Moltres remains a challenger.` : sport === "WNBA" ? (state.wnbaModelComparison?.metadata?.selection_policy || "Selected by the chronological holdout rule; metrics stay within WNBA.") : "NFL is shown as a historical model export, not a current production selection.";
     return `<section class="arena-sport-group"><header class="section-header"><div><p class="eyebrow">${escapeHtml(sport)}</p><h2>${escapeHtml(title)}</h2><p class="muted">${escapeHtml(selectionReason)}</p></div><span class="chip chip--soft">${entries.length} real model${entries.length === 1 ? "" : "s"}</span></header><div class="arena-model-grid">${entries.map(entry => { const identity = modelIdentity(entry.model_name); const metrics = { ...(entry.metrics || {}), ...((sport === "MLB" && modelComparisonFor(entry.model_name)) || {}) }; const record = getModelRecord(sport); const live = entry.selected ? (record.live_record || record.overall || {}) : null; const backtest = record.backtest_record || {}; const status = entry.historical ? "HISTORICAL" : entry.selected ? "PRODUCTION" : entry.model_name === "Moltres" ? "CHALLENGER" : "EVALUATED"; return `<article class="arena-model-card ${entry.selected ? "is-production" : ""}"><div class="arena-model-card__visual model-gallery-card--${identity.element}"><strong>${escapeHtml(sport === "NFL" ? "NFL" : identity.legend)}</strong><span>${status}</span></div><div class="arena-model-card__body"><header><div><h3>${escapeHtml(sport === "NFL" ? entry.model_name : identity.legend)}</h3><code>${escapeHtml(entry.technical_name || entry.model_name || "Not declared")}</code></div><span>${escapeHtml(status)}</span></header><div class="arena-model-facts"><span>Sport <b>${sport}</b></span><span>Train <b>${escapeHtml(Array.isArray(entry.train_seasons) ? entry.train_seasons.join(", ") : entry.train_seasons || "Not exported")}</b></span><span>Test <b>${escapeHtml(entry.test_season || "Not exported")}</b></span><span>Features <b>${escapeHtml(entry.feature_count || "-")}</b></span><span>Trained <b>${escapeHtml(timestamp(entry.trained_at) || "Not exported")}</b></span></div><div class="model-gallery-card__metrics">${renderModelMetric("Accuracy", formatProbability(metrics.accuracy))}${renderModelMetric("Log loss", formatNumber(metrics.log_loss, 3))}${renderModelMetric("Brier", formatNumber(metrics.brier_score, 3))}${renderModelMetric("ROC AUC", formatNumber(metrics.roc_auc, 3))}${renderModelMetric("Calibration", formatEdge(metrics.calibration_error))}${renderModelMetric("Stability", formatNumber(metrics.stability?.stability_score, 3))}</div><p class="muted">${escapeHtml(entry.limitation || identity.weakness)}</p>${live ? `<small>Live record: ${escapeHtml(recordLine(live))}</small>` : ""}${backtest.sample_size ? `<small>Backtest record: ${escapeHtml(recordLine(backtest))}</small>` : ""}</div></article>`; }).join("")}</div><div class="arena-leaderboard"><h3>${escapeHtml(title)} leaderboard</h3><div class="table-wrapper"><table class="data-table"><thead><tr><th>Rank</th><th>Model</th><th>Accuracy</th><th>Log loss</th><th>Brier</th><th>Status</th></tr></thead><tbody>${leaderboard.map((entry, index) => `<tr><td>${index + 1}</td><td><strong>${escapeHtml(modelIdentity(entry.model_name).legend)}</strong><small>${escapeHtml(entry.technical_name || entry.model_name || "Not declared")}</small></td><td>${formatProbability(entry.metrics?.accuracy)}</td><td>${formatNumber(entry.metrics?.log_loss, 3)}</td><td>${formatNumber(entry.metrics?.brier_score, 3)}</td><td>${entry.selected ? "Production" : entry.historical ? "Historical" : "Challenger / evaluated"}</td></tr>`).join("")}</tbody></table></div></div></section>`;
 }
 
@@ -1525,7 +1528,8 @@ function isNonDecisiveGameStatus(row) {
 }
 
 function isExcludedPrediction(row) {
-    return isNonDecisiveGameStatus(row) || row?.prediction_mode === "postseason_result_supplement";
+    const resultState = String(row?.result_status || row?.model_result || "").toLowerCase();
+    return isNonDecisiveGameStatus(row) || row?.prediction_mode === "postseason_result_supplement" || ["excluded", "no_result"].includes(resultState);
 }
 
 function predictionLogIdentity(row) {
@@ -2479,7 +2483,7 @@ async function loadAll() {
 
     setAppLoading("Building the board...", "Model registry / Live board", 66);
 
-    state.app = app || state.app;
+    state.app = { ...(app || state.app), version: APP_VERSION };
     state.teamPayload = teams || state.teamPayload;
     state.report = report || state.report;
     state.modelComparison = modelComparison || state.modelComparison;
@@ -6418,9 +6422,10 @@ function renderReports() {
 
 const MODEL_IDENTITIES = {
     Moltres: { legend: "Moltres", element: "ember", role: "Flagship stacked ensemble challenger", motif: "A layered ember core for component consensus.", strength: "Combines multiple probability views through a chronological meta-model.", weakness: "Needs a completed sealed evaluation before production promotion." },
+    EloBlend: { legend: "Lugia", element: "tide", role: "Current Elo-blended production model", motif: "A steady team-strength current blended with a shallow nonlinear matchup read.", strength: "Combines leakage-safe pregame Elo with selected matchup differentials and improves locked-season probability quality.", weakness: "Baseball remains noisy; a positive historical edge cannot guarantee any single day." },
     LogisticRegression: { legend: "Articuno", element: "frost", role: "Stable linear reference", motif: "A cold, clean calibration line.", strength: "Transparent coefficients and a disciplined baseline probability shape.", weakness: "Linear decision surface may miss nonlinear matchup interactions." },
     RandomForestClassifier: { legend: "Zapdos", element: "electric", role: "Fast nonlinear challenger", motif: "Electric branching signals across many trees.", strength: "Captures interactions and remains resilient to noisy feature combinations.", weakness: "Probability behavior can be less smooth and harder to explain locally." },
-    GradientBoostingClassifier: { legend: "Lugia", element: "tide", role: "Current production model", motif: "A balanced current built from sequential corrections.", strength: "Strong general-purpose nonlinear fit in the existing MLB comparison.", weakness: "Can overreact to feature drift and depends on careful calibration." },
+    GradientBoostingClassifier: { legend: "Lugia", element: "tide", role: "Nonlinear MLB challenger", motif: "A balanced current built from sequential corrections.", strength: "Strong general-purpose nonlinear fit in the MLB comparison.", weakness: "Can overreact to feature drift and depends on careful calibration." },
     HistGradientBoostingClassifier: { legend: "Ho-Oh", element: "phoenix", role: "Modern boosting challenger", motif: "A rebirth loop for efficient histogram splits.", strength: "Efficient nonlinear learning with regularization controls.", weakness: "Only useful when its holdout evidence is present and comparable." },
     Raikou: { legend: "Raikou", element: "storm", role: "WNBA recency / Elo candidate", motif: "A fast electric read on recent team strength.", strength: "Transparent baseline using chronological form, rest, and Elo.", weakness: "Score-only inputs cannot see player availability or advanced efficiency." },
     Entei: { legend: "Entei", element: "ember", role: "WNBA nonlinear challenger", motif: "A heat-driven correction layer for team-form interactions.", strength: "Captures nonlinear combinations of form, margin, and rest.", weakness: "Needs more seasons and richer box-score inputs before stronger claims." },

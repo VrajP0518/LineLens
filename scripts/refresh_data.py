@@ -465,7 +465,7 @@ def refresh_mlb_train(status: dict[str, Any]) -> bool:
                 "--test-season",
                 str(history_end),
             ],
-            300,
+            600,
         ),
         (
             [
@@ -859,17 +859,22 @@ def refresh_nfl(status: dict[str, Any], *, require_real: bool = False) -> None:
 
 
 def rebuild_nfl_processed_dataset(status: dict[str, Any]) -> bool:
+    today = datetime.now(timezone.utc).date()
+    # NFL season labels follow the year in which the regular season begins.
+    # Before September, the latest usable regular-season feed is the prior
+    # year; from September onward, include completed games from the new season.
+    end_season = today.year if today.month >= 9 else today.year - 1
     steps = [
-        (["data_ingest.py", "schedules", "--start-season", "2018", "--end-season", "2025"], 300),
-        (["data_ingest.py", "pbp", "--start-season", "2018", "--end-season", "2025"], 1200),
-        (["data_ingest.py", "weekly", "--start-season", "2018", "--end-season", "2025"], 600),
+        (["data_ingest.py", "schedules", "--start-season", "2018", "--end-season", str(end_season)], 300),
+        (["data_ingest.py", "pbp", "--start-season", "2018", "--end-season", str(end_season)], 1200),
+        (["data_ingest.py", "weekly", "--start-season", "2018", "--end-season", str(end_season)], 600),
         (
             [
                 "feature_builder.py",
                 "--start-season",
                 "2018",
                 "--end-season",
-                "2025",
+                str(end_season),
                 "--output-file",
                 "data/processed/nfl/spread_dataset.parquet",
             ],
@@ -915,7 +920,7 @@ def normalize_nfl_export(json_path: Path, js_path: Path) -> None:
         "prediction_mode": "historical_backtest",
         "generated_at": utc_now(),
         "model_type": "existing_project_pipeline",
-        "source": "nfl-data-py / existing project pipeline",
+        "source": "nflverse schedules, play-by-play, and stats_player weekly data / existing project pipeline",
         "season_min": min([int(game.get("season")) for game in games if game.get("season") is not None], default=None),
         "season_max": max([int(game.get("season")) for game in games if game.get("season") is not None], default=None),
         "row_count": len(games),

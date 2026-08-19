@@ -52,6 +52,10 @@ def main() -> int:
 
     rust = (ROOT / "src-tauri" / "src" / "lib.rs").read_text(encoding="utf-8")
     require("CREATE_NO_WINDOW" in rust and "background_command" in rust, "Windows refresh process is not hidden")
+    require(
+        'for metadata_name in ["app_metadata.json", "app_metadata.js"]' in rust,
+        "installed runtime migration does not replace stale app-version metadata",
+    )
 
     row = game_from_espn_event(scheduled_espn_fixture(), "MLB", {}, {}, {})
     require(row is not None, "scheduled ESPN fixture was not normalized")
@@ -82,17 +86,22 @@ def main() -> int:
     model_channel = (ROOT / ".github" / "workflows" / "publish-model-channel.yml").read_text(encoding="utf-8")
     shared_data_channel = (ROOT / ".github" / "workflows" / "publish-shared-data.yml").read_text(encoding="utf-8")
     shared_data_builder = (ROOT / "scripts" / "build_shared_data_bundle.py").read_text(encoding="utf-8")
+    shared_data_restore = (ROOT / "scripts" / "restore_shared_data_bundle.py").read_text(encoding="utf-8")
     dpi_workflow = (ROOT / ".github" / "workflows" / "dpi-visual-audit.yml").read_text(encoding="utf-8")
     require('const APP_VERSION = "v6"' in app, "visible app version is not v6")
+    require("version: APP_VERSION" in app, "loaded runtime metadata can override the visible v6 app version")
     require("renderGameCastBoxScore" in app and "gamecast-box-score" in css, "box-score UI contract is missing")
     require("renderGameCastPlayerStats" in app and "player_box_score" in (ROOT / "scripts" / "live_scores.py").read_text(encoding="utf-8"), "player box-score contract is missing")
     require("renderUnderdogs" in app and 'data-view="underdogs"' in (ROOT / "index.html").read_text(encoding="utf-8"), "underdog view contract is missing")
     require("--pick-color" in app and "var(--pick-color)" in css, "prediction team-color contract is missing")
     require("LIVE_SCORE_FILES" in scorer and "fallback:" in scorer, "record scoring does not join refreshed finals")
+    require("result_history.json" in scorer and "refresh_pending_results.py" in workflow, "pending-result recovery is not wired into retraining")
     require("schedule:" in workflow and "create-pull-request" in workflow, "managed retraining workflow is incomplete")
     require("actions/attest@v4" in workflow and "model_drift_alerts" in workflow, "retraining drift/provenance contract is missing")
+    require("peter-evans/create-pull-request@v8" in workflow, "retraining PR action is not on the Node 24 runtime")
     require("model-channel-v6" in model_channel and "actions/attest@v4" in model_channel, "approved model channel is missing")
     require("sync_shared_data" in rust and "data-channel-v6" in rust, "native shared-data updater is missing")
+    require("fetch_live_scoreboards" in rust and "direct_live_fresh" in rust, "keyless direct live-score client is missing")
     require("sharedDataStatus" in app and "data-sync-shared-data" in app, "shared-data client UI is missing")
     require(
         all(name in shared_data_channel for name in ("ODDS_API_KEY", "SHARP_ODDS_API_KEY", "PROPLINE_API_KEY"))
@@ -100,6 +109,7 @@ def main() -> int:
         "shared-data workflow is not wired to secrets and provenance",
     )
     require("SECRET_NAMES" in shared_data_builder and "contains_api_keys" in shared_data_builder, "shared-data secret leak guard is missing")
+    require("restore_shared_data_bundle.py" in shared_data_channel and "exactly match" in shared_data_restore, "shared-data workflow does not preserve verified channel state")
     require("1.25" in (ROOT / "scripts" / "windows_dpi_audit.ps1").read_text(encoding="utf-8") and "windows-latest" in dpi_workflow, "Windows DPI audit contract is missing")
 
     print("PASS: LineLens v6 desktop, schedule, color, record, box-score, and retraining contracts")

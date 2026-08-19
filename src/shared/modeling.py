@@ -8,6 +8,41 @@ import numpy as np
 import pandas as pd
 
 
+class EloBlendClassifier:
+    """Blend a learned matchup model with a leakage-safe pregame Elo prior.
+
+    The Elo probability is supplied as an ordinary feature by the sport feature
+    builder. Keeping the blend in a small serializable estimator means live and
+    backtest exports use exactly the same probability rule.
+    """
+
+    def __init__(
+        self,
+        base_model: object,
+        model_weight: float = 0.35,
+        elo_feature: str = "elo_home_win_probability",
+    ):
+        self.base_model = base_model
+        self.model_weight = model_weight
+        self.elo_feature = elo_feature
+
+    def fit(self, frame: pd.DataFrame, target: pd.Series) -> "EloBlendClassifier":
+        if self.elo_feature not in frame.columns:
+            raise ValueError(f"Missing required Elo feature: {self.elo_feature}")
+        self.base_model.fit(frame, target)
+        return self
+
+    def predict_proba(self, frame: pd.DataFrame) -> np.ndarray:
+        learned = self.base_model.predict_proba(frame)[:, 1]
+        elo = pd.to_numeric(frame[self.elo_feature], errors="coerce").fillna(0.5).to_numpy(dtype=float)
+        weight = float(np.clip(self.model_weight, 0.0, 1.0))
+        probabilities = np.clip(weight * learned + (1.0 - weight) * elo, 0.001, 0.999)
+        return np.column_stack([1.0 - probabilities, probabilities])
+
+    def predict(self, frame: pd.DataFrame) -> np.ndarray:
+        return (self.predict_proba(frame)[:, 1] >= 0.5).astype(int)
+
+
 class StackingEnsemble:
     """Small, serializable probability stacker used by the MLB Moltres model.
 

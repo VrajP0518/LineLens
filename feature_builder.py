@@ -416,7 +416,7 @@ def _build_game_level_frame(team_games: pd.DataFrame, min_games: int) -> pd.Data
 
 
 def _finalize_dataset(schedule: pd.DataFrame, features: pd.DataFrame) -> pd.DataFrame:
-    schedule_subset = schedule[[
+    schedule_columns = [
         "game_id",
         "season",
         "week",
@@ -426,7 +426,12 @@ def _finalize_dataset(schedule: pd.DataFrame, features: pd.DataFrame) -> pd.Data
         "home_score",
         "away_score",
         "rest_diff",
-    ]].copy()
+    ]
+    # Preserve the canonical nflverse date so historical NFL rows can be
+    # ordered and displayed by their actual game date.
+    if "gameday" in schedule.columns:
+        schedule_columns.append("gameday")
+    schedule_subset = schedule[schedule_columns].copy()
     dataset = schedule_subset.merge(features, on="game_id", how="inner")
     dataset["cover_margin"] = dataset["home_score"] - dataset["away_score"] + dataset["spread_line"]
     dataset = dataset[dataset["cover_margin"].notnull()]

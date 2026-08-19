@@ -199,12 +199,22 @@ def _pitcher_summary(row: pd.Series, side: str) -> str:
     return "Pitcher proxy: " + ", ".join(pieces) + "."
 
 
-def _score_games(df: pd.DataFrame, model_path: Path, limit: Optional[int]) -> tuple[list[dict], dict]:
+def _score_games(
+    df: pd.DataFrame,
+    model_path: Path,
+    limit: Optional[int],
+    *,
+    evaluation: bool = False,
+) -> tuple[list[dict], dict]:
     import joblib
 
     artifact = joblib.load(model_path)
     feature_cols = artifact["features"]
-    model = artifact["model"]
+    if evaluation and "evaluation_model" not in artifact:
+        raise RuntimeError(
+            "This artifact predates leakage-safe backtests. Retrain it before exporting a holdout record."
+        )
+    model = artifact["evaluation_model"] if evaluation else artifact["model"]
     metadata = artifact.get("metadata", {})
     importances = _feature_importance_map(artifact)
     if df.empty:
@@ -214,7 +224,8 @@ def _score_games(df: pd.DataFrame, model_path: Path, limit: Optional[int]) -> tu
     probabilities = model.predict_proba(clean_numeric_frame(df, feature_cols))[:, 1]
     df["home_win_probability"] = probabilities
     numeric_frame = clean_numeric_frame(df, feature_cols)
-    candidate_models = artifact.get("candidate_models") or []
+    candidate_key = "evaluation_candidate_models" if evaluation else "candidate_models"
+    candidate_models = artifact.get(candidate_key) or []
     if not candidate_models and hasattr(model, "base_models"):
         candidate_models = list(model.base_models)
     candidate_predictions = {}
@@ -414,22 +425,16 @@ def _append_prediction_log(games: list[dict], artifact: dict, generated_at: str)
         else:
             old_prob = safe_float(existing.get("home_win_probability"))
             new_prob = safe_float(row.get("home_win_probability"))
+            existing_result = str(existing.get("model_result", "")).lower()
+            # A scored prediction is an immutable audit record. Retraining or
+            # replaying a stale schedule must never replace its original pick,
+            # probability, model identity, or timestamp after the result is known.
+            if existing_result in {"win", "loss", "push", "no_result"}:
+                continue
             result_changed = existing.get("model_result") in {None, "pending", "Pending"} and row.get("model_result") != "pending"
             probability_changed = old_prob is None or new_prob is None or abs(old_prob - new_prob) >= 0.002
             model_changed = existing.get("model_id") != row.get("model_id")
             if result_changed or probability_changed or model_changed:
-                existing_result = str(existing.get("model_result", "")).lower()
-                if existing_result in {"win", "loss", "push", "no_result"} and row.get("model_result") == "pending":
-                    for key in (
-                        "result_status",
-                        "actual_winner",
-                        "model_result",
-                        "home_score",
-                        "away_score",
-                        "scored_at",
-                    ):
-                        if key in existing:
-                            row[key] = existing[key]
                 existing.update(row)
                 updated += 1
     payload = {
@@ -531,7 +536,7 @@ def backtest(
     df = read_table(features_path)
     df["game_date"] = pd.to_datetime(df["game_date"])
     df = df[(df["season"] == season) & df["home_win"].notna()].copy()
-    games, artifact = _score_games(df, model_path, limit)
+    games, artifact = _score_games(df, model_path, limit, evaluation=True)
     artifact_meta = artifact.get("metadata", {})
     model_version = artifact_meta.get("version") or APP_VERSION
     payload = _payload(
@@ -548,6 +553,7 @@ def backtest(
             "feature_count": len(artifact.get("features", [])),
             "model_count": len((games[0].get("model_consensus") or []) if games else []),
             "consensus_available": len((games[0].get("model_consensus") or []) if games else []) > 1,
+            "scoring_policy": "pre-holdout evaluation model; holdout season excluded from fit",
         },
     )
     payload["metadata"]["mode"] = "real"
