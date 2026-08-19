@@ -36,6 +36,7 @@ REQUIRED_FILES = {
     "data/live/live_heartbeat.json",
     "data/odds/odds_snapshots.json",
     "data/predictions/mlb_predictions.json",
+    "data/predictions/nfl_predictions.json",
     "data/predictions/wnba_predictions.json",
 }
 SECRET_NAMES = ("ODDS_API_KEY", "SHARP_ODDS_API_KEY", "PROPLINE_API_KEY")

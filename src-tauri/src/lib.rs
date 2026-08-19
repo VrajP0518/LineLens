@@ -595,6 +595,7 @@ fn write_shared_data_status(
     status: &str,
     result: &SharedDataResult,
     commit_sha: Option<&str>,
+    bundle_sha256: Option<&str>,
 ) -> Result<(), String> {
     let path = shared_data_status_path(root);
     if let Some(parent) = path.parent() {
@@ -608,6 +609,7 @@ fn write_shared_data_status(
         "generated_at": result.generated_at,
         "checked_at": timestamp(),
         "commit_sha": commit_sha,
+        "bundle_sha256": bundle_sha256,
         "channel": "data-v6",
         "message": result.message,
         "contains_api_keys": false,
@@ -619,13 +621,18 @@ fn write_shared_data_status(
     .map_err(|error| error.to_string())
 }
 
-fn installed_shared_data_version(root: &Path) -> Option<String> {
+fn installed_shared_data_identity(root: &Path) -> Option<(String, String)> {
     let contents = fs::read_to_string(shared_data_status_path(root)).ok()?;
     let payload: serde_json::Value = serde_json::from_str(&contents).ok()?;
-    payload
+    let version = payload
         .get("data_version")
         .and_then(|value| value.as_str())
-        .map(str::to_string)
+        .map(str::to_string)?;
+    let bundle_sha256 = payload
+        .get("bundle_sha256")
+        .and_then(|value| value.as_str())
+        .map(str::to_string)?;
+    Some((version, bundle_sha256))
 }
 
 fn sync_shared_data_inner(app: &tauri::AppHandle) -> Result<SharedDataResult, String> {
@@ -653,7 +660,16 @@ fn sync_shared_data_inner(app: &tauri::AppHandle) -> Result<SharedDataResult, St
         }
     }
 
-    if installed_shared_data_version(&root).as_deref() == Some(manifest.data_version.as_str()) {
+    let installed_identity = installed_shared_data_identity(&root);
+    let manifest_identity = (
+        manifest.data_version.as_str(),
+        manifest.bundle.sha256.as_str(),
+    );
+    if installed_identity
+        .as_ref()
+        .map(|(version, sha256)| (version.as_str(), sha256.as_str()))
+        == Some(manifest_identity)
+    {
         let result = SharedDataResult {
             success: true,
             updated: false,
@@ -661,7 +677,13 @@ fn sync_shared_data_inner(app: &tauri::AppHandle) -> Result<SharedDataResult, St
             generated_at: manifest.generated_at,
             message: "Shared sports data is already current.".to_string(),
         };
-        write_shared_data_status(&root, "current", &result, Some(&manifest.commit_sha))?;
+        write_shared_data_status(
+            &root,
+            "current",
+            &result,
+            Some(&manifest.commit_sha),
+            Some(&manifest.bundle.sha256),
+        )?;
         return Ok(result);
     }
 
@@ -754,7 +776,13 @@ fn sync_shared_data_inner(app: &tauri::AppHandle) -> Result<SharedDataResult, St
         generated_at: manifest.generated_at,
         message: "Verified shared scores, odds, props, and predictions were installed.".to_string(),
     };
-    write_shared_data_status(&root, "installed", &result, Some(&manifest.commit_sha))?;
+    write_shared_data_status(
+        &root,
+        "installed",
+        &result,
+        Some(&manifest.commit_sha),
+        Some(&manifest.bundle.sha256),
+    )?;
     Ok(result)
 }
 

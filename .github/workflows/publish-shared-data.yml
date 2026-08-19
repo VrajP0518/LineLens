@@ -68,7 +68,7 @@ jobs:
         run: |
           python scripts/check_data_integrity.py
           python scripts/check_props.py
-          python scripts/build_shared_data_bundle.py --data-version "v6-${{ github.run_number }}"
+          python scripts/build_shared_data_bundle.py --data-version "v6-${{ github.run_number }}-${{ github.run_attempt }}"
       - name: Sign shared-data provenance
         uses: actions/attest@v4
         with:

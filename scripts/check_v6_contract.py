@@ -101,6 +101,10 @@ def main() -> int:
     require("peter-evans/create-pull-request@v8" in workflow, "retraining PR action is not on the Node 24 runtime")
     require("model-channel-v6" in model_channel and "actions/attest@v4" in model_channel, "approved model channel is missing")
     require("sync_shared_data" in rust and "data-channel-v6" in rust, "native shared-data updater is missing")
+    require(
+        "installed_shared_data_identity" in rust and '"bundle_sha256"' in rust,
+        "shared-data updater does not invalidate rerun bundles by hash",
+    )
     require("fetch_live_scoreboards" in rust and "direct_live_fresh" in rust, "keyless direct live-score client is missing")
     require("sharedDataStatus" in app and "data-sync-shared-data" in app, "shared-data client UI is missing")
     require(
@@ -109,6 +113,16 @@ def main() -> int:
         "shared-data workflow is not wired to secrets and provenance",
     )
     require("SECRET_NAMES" in shared_data_builder and "contains_api_keys" in shared_data_builder, "shared-data secret leak guard is missing")
+    require(
+        '"data/predictions/nfl_predictions.json"' in shared_data_builder
+        and "github.run_attempt" in shared_data_channel,
+        "NFL data or unique rerun channel identity is missing",
+    )
+    require(
+        "can_approve_pull_request_reviews" in workflow
+        and "Allow GitHub Actions to create and approve pull requests" in workflow,
+        "retraining workflow does not preflight repository PR permission",
+    )
     require("restore_shared_data_bundle.py" in shared_data_channel and "exactly match" in shared_data_restore, "shared-data workflow does not preserve verified channel state")
     require("1.25" in (ROOT / "scripts" / "windows_dpi_audit.ps1").read_text(encoding="utf-8") and "windows-latest" in dpi_workflow, "Windows DPI audit contract is missing")
 
