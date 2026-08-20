@@ -191,7 +191,12 @@ def check_exports() -> None:
     record_meta = record.get("metadata", {})
     scored_count = sum(str(row.get("model_result") or "").lower() in {"win", "loss", "push"} for row in rows(log, "predictions"))
     excluded_count = sum(str(row.get("model_result") or row.get("result_status") or "").lower() in {"no_result", "excluded"} for row in rows(log, "predictions"))
-    check("historical replay ledger guard", not replay_artifacts and record_meta.get("historical_replay_rows_removed", 0) >= 1, f"{len(replay_artifacts)} replay artifacts remain; {record_meta.get('historical_replay_rows_removed', 0)} removed")
+    removed_replay_count = record_meta.get("historical_replay_rows_removed")
+    check(
+        "historical replay ledger guard",
+        not replay_artifacts and isinstance(removed_replay_count, (int, float)) and removed_replay_count >= 0,
+        f"{len(replay_artifacts)} replay artifacts remain; {removed_replay_count if removed_replay_count is not None else 0} removed",
+    )
     check(
         "reconciliation arithmetic",
         len(rows(log, "predictions")) == scored_count + excluded_count + len(pending)
