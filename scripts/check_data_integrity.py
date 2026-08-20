@@ -209,9 +209,14 @@ def check_exports() -> None:
     canonical_log_keys = [prediction_log_game_key(row) for row in rows(log, "predictions")]
     check("one prediction log row per game", len(canonical_log_keys) == len(set(canonical_log_keys)), "model re-exports do not create duplicate game rows")
 
-    live_mlb = [row for row in rows(live_payload) if row.get("sport") == "MLB" and live_schedule_date(row) == "2026-07-10"]
+    live_mlb = [row for row in rows(live_payload) if row.get("sport") == "MLB" and live_schedule_date(row)]
+    live_dates = sorted({live_schedule_date(row) for row in live_mlb})
     unique_live = {live_composite_key(row) for row in live_mlb}
-    check("canonical MLB slate", bool(unique_live) and len(unique_live) == len(live_mlb), f"{len(unique_live)} unique Toronto-local games")
+    check(
+        "canonical MLB slate",
+        bool(unique_live) and len(unique_live) == len(live_mlb),
+        f"{len(unique_live)} unique Toronto-local games across {len(live_dates)} loaded date(s)",
+    )
     check("non-decisive record guard", "isNonDecisiveGameStatus" in app_js and "is_excluded_prediction" in (ROOT / "scripts/score_model_predictions.py").read_text(encoding="utf-8"), "postponed/delayed/canceled/suspended rows are excluded")
     check("past zero-zero guard", 'return "stale"' in app_js and "Past / verify" in app_js, "past schedule-only rows cannot render as Upcoming or Final")
 
