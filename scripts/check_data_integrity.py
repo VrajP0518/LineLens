@@ -176,6 +176,30 @@ def check_exports() -> None:
     pending = [row for row in rows(log, "predictions") if str(row.get("model_result") or row.get("result_status") or "").lower() == "pending"]
     check("pending remains pending", all(str(row.get("model_result") or "").lower() not in {"win", "loss", "push"} for row in pending), f"{len(pending)} pending log rows")
 
+    replay_artifacts = []
+    for row in rows(log, "predictions"):
+        result = str(row.get("model_result") or row.get("result_status") or "").lower()
+        if row.get("sport") != "MLB" or result not in {"no_result", "excluded"}:
+            continue
+        try:
+            generated = datetime.fromisoformat(str(row.get("generated_at") or "").replace("Z", "+00:00"))
+            game_day = datetime.fromisoformat(f"{str(row.get('game_date') or '')[:10]}T00:00:00+00:00")
+        except ValueError:
+            continue
+        if generated - game_day > timedelta(days=45):
+            replay_artifacts.append(row)
+    record_meta = record.get("metadata", {})
+    scored_count = sum(str(row.get("model_result") or "").lower() in {"win", "loss", "push"} for row in rows(log, "predictions"))
+    excluded_count = sum(str(row.get("model_result") or row.get("result_status") or "").lower() in {"no_result", "excluded"} for row in rows(log, "predictions"))
+    check("historical replay ledger guard", not replay_artifacts and record_meta.get("historical_replay_rows_removed", 0) >= 1, f"{len(replay_artifacts)} replay artifacts remain; {record_meta.get('historical_replay_rows_removed', 0)} removed")
+    check(
+        "reconciliation arithmetic",
+        len(rows(log, "predictions")) == scored_count + excluded_count + len(pending)
+        and record_meta.get("scored_predictions") == scored_count
+        and record_meta.get("excluded_predictions") == excluded_count,
+        f"{len(rows(log, 'predictions'))} ledger = {scored_count} scored + {excluded_count} excluded + {len(pending)} pending",
+    )
+
     finals = rows(predictions)
     zero_final = [row for row in finals if str(row.get("status") or row.get("status_detail") or "").lower() in {"final", "completed"} and row.get("away_score") == 0 and row.get("home_score") == 0]
     check("scheduled zero-zero safety", not zero_final, f"{len(zero_final)} zero-zero final rows")

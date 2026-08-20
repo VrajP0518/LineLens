@@ -2,12 +2,15 @@
   "metadata": {
     "app": "LineLens Sports",
     "version": "v6",
-    "generated_at": "2026-08-19T17:16:33Z",
+    "generated_at": "2026-08-19T21:08:38Z",
     "real_data": true,
-    "predictions_logged": 375,
+    "predictions_logged": 149,
     "predictions_scored_this_run": 146,
+    "scored_predictions": 146,
+    "excluded_predictions": 3,
     "pending_predictions": 0,
-    "last_scoring_run": "2026-08-19T17:16:33Z"
+    "historical_replay_rows_removed": 226,
+    "last_scoring_run": "2026-08-19T21:08:38Z"
   },
   "sports": {
     "MLB": {

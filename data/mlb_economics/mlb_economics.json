@@ -1,7 +1,7 @@
 {
   "metadata": {
     "app": "LineLens Sports",
-    "generated_at": "2026-08-19T16:45:22Z",
+    "generated_at": "2026-08-19T21:06:50Z",
     "real_data": false,
     "data_available": false,
     "setup_state": "payroll_required",
@@ -14,7 +14,7 @@
       "custom": null,
       "lahman": null,
       "line_lens": "data/predictions/mlb_predictions.json",
-      "generated_at": "2026-07-22T21:06:38Z"
+      "generated_at": "2026-08-19T16:55:49Z"
     },
     "season_coverage": [],
     "payroll_rows": 0,

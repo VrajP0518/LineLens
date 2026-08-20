@@ -1,7 +1,10 @@
 param(
     [int]$Port = 4174,
     [string]$OutputDirectory = "artifacts/dpi",
-    [string[]]$Views = @("home", "underdogs")
+    [string[]]$Views = @("home", "underdogs"),
+    [double[]]$Scales = @(1.25, 1.5),
+    [int]$ViewportWidth = 1480,
+    [int]$ViewportHeight = 940
 )
 
 $ErrorActionPreference = "Stop"
@@ -33,7 +36,7 @@ try {
 
     foreach ($view in $Views) {
         if ($view -notin @("home", "underdogs")) { throw "Unsupported DPI audit view: $view" }
-        foreach ($scale in @(1.25, 1.5)) {
+        foreach ($scale in $Scales) {
             $label = [int]($scale * 100)
             $screenshot = Join-Path $outputRoot "linelens-$view-dpi-$label.png"
             if (Test-Path -LiteralPath $screenshot) { Remove-Item -LiteralPath $screenshot -Force }
@@ -49,7 +52,7 @@ try {
                 "--virtual-time-budget=10000",
                 "--user-data-dir=$profile",
                 "--force-device-scale-factor=$scale",
-                "--window-size=1480,940",
+                "--window-size=$ViewportWidth,$ViewportHeight",
                 "--screenshot=$screenshot",
                 $url
             )

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-08-19T17:16:31Z",
-  "mode": "export",
+  "generated_at": "2026-08-19T21:06:59Z",
+  "mode": "predict",
   "sports": {
     "NFL": {
       "status": "real_fresh",
       "message": "Found existing NFL processed dataset. Exported 2046 real historical predictions.",
-      "last_success_at": "2026-08-19T17:16:31Z",
+      "last_success_at": "2026-08-19T21:06:54Z",
       "used_cache": false,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     },
@@ -17,9 +17,9 @@
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     },
     "WNBA": {
-      "status": "model_generated",
-      "message": "WNBA current model probabilities refreshed from real ESPN schedule rows. Cached source used.",
-      "last_success_at": "2026-07-17T17:27:42Z",
+      "status": "schedule_only",
+      "message": "WNBA source unavailable: ProxyError: HTTPSConnectionPool(host='site.api.espn.com', port=443): Max retries exceeded with url: /apis/site/v2/sports/basketball/wnba/scoreboard?limit=1000&dates=20260819 (Caused by ProxyError('Unable to connect to proxy', NewConnectionError(\"HTTPSConnection(host='127.0.0.1', port=9): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it\")))",
+      "last_success_at": "2026-08-19T21:06:57Z",
       "used_cache": true,
       "python": "C:\\Users\\Vraj.Patel\\Downloads\\coop\\LineLens\\.venv\\Scripts\\python.exe"
     }
@@ -44,8 +44,8 @@
   },
   "model_record": {
     "status": "real_fresh",
-    "message": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v6\",\n  \"generated_at\": \"2026-08-19T16:45:22Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 375,\n  \"predictions_scored_this_run\": 146,\n  \"pending_predictions\": 0,\n  \"last_scoring_run\": \"2026-08-19T16:45:22Z\"\n}",
-    "last_run_at": "2026-08-19T16:45:22Z"
+    "message": "{\n  \"app\": \"LineLens Sports\",\n  \"version\": \"v6\",\n  \"generated_at\": \"2026-08-19T21:06:59Z\",\n  \"real_data\": true,\n  \"predictions_logged\": 149,\n  \"predictions_scored_this_run\": 146,\n  \"scored_predictions\": 146,\n  \"excluded_predictions\": 3,\n  \"pending_predictions\": 0,\n  \"historical_replay_rows_removed\": 226,\n  \"last_scoring_run\": \"2026-08-19T21:06:59Z\"\n}",
+    "last_run_at": "2026-08-19T21:06:59Z"
   },
   "version": "v6",
   "training": {
@@ -71,6 +71,6 @@
   "mlb_economics": {
     "status": "real_fresh",
     "message": "MLB economics export: payroll_required | payroll rows=0 | joined rows=0",
-    "generated_at": "2026-08-19T16:45:22Z"
+    "generated_at": "2026-08-19T21:06:50Z"
   }
 }

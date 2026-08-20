@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generated_at": "2026-08-19T17:16:30Z",
+    "generated_at": "2026-08-19T21:06:54Z",
     "features_file": "data\\processed\\nfl\\spread_dataset.parquet",
     "model_file": "models\\nfl_spread_model.joblib",
     "row_count": 2045
@@ -96171,7 +96171,7 @@
     "version": "v6",
     "real_data": true,
     "prediction_mode": "historical_backtest",
-    "generated_at": "2026-08-19T17:16:31Z",
+    "generated_at": "2026-08-19T21:06:54Z",
     "model_type": "existing_project_pipeline",
     "source": "nflverse schedules, play-by-play, and stats_player weekly data / existing project pipeline",
     "season_min": 2018,

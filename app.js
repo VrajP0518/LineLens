@@ -24,6 +24,7 @@ const DATA_SOURCES = {
     refresh: ["data/refresh_status.json"],
     sharedDataStatus: ["data/shared_data_status.json"],
     live: ["data/live/live_heartbeat.json", "data/live/live_scores.json"],
+    resultHistory: ["data/live/result_history.json"],
     odds: ["data/odds/odds_snapshots.json"],
     playerProps: ["data/odds/player_props.json"],
     oddsHealth: ["data/odds/odds_health.json"],
@@ -68,6 +69,7 @@ const state = {
     refreshStatus: window.__REFRESH_STATUS__ || null,
     sharedDataStatus: window.__SHARED_DATA_STATUS__ || null,
     live: { payload: window.__LIVE_SCORES__ || null, games: [], error: null, stale: false },
+    resultHistory: window.__RESULT_HISTORY__ || null,
     odds: window.__ODDS_SNAPSHOTS__ || null,
     playerProps: window.__PLAYER_PROPS__ || null,
     oddsHealth: window.__ODDS_HEALTH__ || null,
@@ -87,6 +89,7 @@ const state = {
     mlbPropDatasetSummary: window.__MLB_PROP_DATASET_SUMMARY__ || null,
     refreshRuntime: {
         available: false,
+        bridgeVerified: false,
         active: false,
         command: null,
         phase: "idle",
@@ -153,6 +156,7 @@ const state = {
         homeNflSeason: null,
         homeNflWeek: null,
         nflSeasonManual: false,
+        nflWeekManual: false,
         presentationMode: false,
         tableDensity: "comfortable",
         liveHeartbeatEnabled: true,
@@ -183,6 +187,7 @@ const state = {
     },
     favorites: { teams: [], games: [] },
     gamecast: { open: false, sport: null, gameId: null },
+    commandPalette: { open: false, query: "", activeIndex: 0, lastFocus: null },
     liveRefresh: {
         intervalId: null,
         refreshing: false,
@@ -198,6 +203,30 @@ const state = {
     aboutOpen: false,
 };
 window.__LINELENS_STATE__ = state;
+
+const COMMAND_PALETTE_VIEWS = [
+    { id: "home", label: "Today’s Board", detail: "Live games and strongest current signals", icon: "⌂", keywords: "home dashboard today live" },
+    { id: "picks", label: "Picks", detail: "Search and filter every model prediction", icon: "P", keywords: "predictions feed model" },
+    { id: "underdogs", label: "Underdogs", detail: "Picks where LineLens disagrees with the market", icon: "↗", keywords: "dogs plus money upset" },
+    { id: "props", label: "Player Props", detail: "Player-level projections and markets", icon: "⌁", keywords: "players stats markets" },
+    { id: "models", label: "Model Lab", detail: "Compare models, calibration, and health", icon: "M", keywords: "machine learning comparison calibration" },
+    { id: "record", label: "Model Record", detail: "Scored picks and accountability", icon: "R", keywords: "wins losses pending results performance" },
+    { id: "history", label: "History Explorer", detail: "Search the prediction ledger", icon: "H", keywords: "past archive ledger" },
+    { id: "watchlist", label: "Watchlist", detail: "Saved teams, games, and models", icon: "☆", keywords: "favorites saved" },
+    { id: "reports", label: "Model Reports", detail: "Evaluation and feature reports", icon: "▥", keywords: "analysis evaluation metrics" },
+    { id: "teams", label: "Team Profiles", detail: "Team-level form and model context", icon: "T", keywords: "clubs profiles" },
+    { id: "tracking", label: "Tracking", detail: "Your local analysis ledger", icon: "✓", keywords: "local notes ledger" },
+    { id: "foryou", label: "For You", detail: "Personalized updates and saved preferences", icon: "✦", keywords: "personal alerts" },
+    { id: "notifications", label: "Notifications", detail: "Live and model alerts", icon: "◌", keywords: "alerts updates unread" },
+    { id: "settings", label: "Settings & Data", detail: "Freshness, delivery, and app controls", icon: "⚙", keywords: "configuration refresh status sync" },
+    { id: "nfl", label: "NFL Board", detail: "Season and week spread predictions", icon: "NFL", keywords: "football spread" },
+    { id: "mlb", label: "MLB Board", detail: "Daily baseball predictions and live scores", icon: "MLB", keywords: "baseball games" },
+    { id: "wnba", label: "WNBA Board", detail: "Predictions and live scoreboard", icon: "W", keywords: "basketball women" },
+    { id: "nba", label: "NBA Scoreboard", detail: "Live basketball scoreboard", icon: "NBA", keywords: "basketball live" },
+    { id: "nhl", label: "NHL Scoreboard", detail: "Live hockey scoreboard", icon: "NHL", keywords: "hockey live" },
+    { id: "soccer", label: "Soccer Scoreboard", detail: "Live international fixtures", icon: "⚽", keywords: "football world cup" },
+    { id: "mlb-economics", label: "MLB Economics", detail: "Payroll, wins, and efficiency", icon: "$", keywords: "baseball payroll money efficiency" },
+];
 
 const derivedCache = {
     mlbReviewKey: "",
@@ -524,7 +553,27 @@ async function fetchJson(url) {
 }
 
 function browserRefreshAvailable() {
-    return Boolean(window.location && ["http:", "https:"].includes(window.location.protocol));
+    return Boolean(state.refreshRuntime.bridgeVerified);
+}
+
+async function detectBrowserRefreshBridge() {
+    if (!window.location || !["http:", "https:"].includes(window.location.protocol)) {
+        state.refreshRuntime.bridgeVerified = false;
+        return false;
+    }
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 1600);
+    try {
+        const response = await fetch("/api/health", { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw new Error(`bridge health returned ${response.status}`);
+        const payload = await response.json();
+        state.refreshRuntime.bridgeVerified = payload?.ok === true && payload?.service === "linelens-local-refresh";
+    } catch (_error) {
+        state.refreshRuntime.bridgeVerified = false;
+    } finally {
+        window.clearTimeout(timeoutId);
+    }
+    return state.refreshRuntime.bridgeVerified;
 }
 
 function livePayloadAgeSeconds(payload) {
@@ -1349,6 +1398,7 @@ function startLiveHeartbeat() {
 function topEdges(limit = 5, options = {}) {
     const source = options.includeBacktest ? allGames() : currentGames();
     return source
+        .filter(game => options.includeHistorical || isCurrentAttentionGame(game))
         .map(game => ({
             game,
             edge: getGameEdge(game, game.sport),
@@ -1359,6 +1409,41 @@ function topEdges(limit = 5, options = {}) {
         .filter(row => row.probability !== null)
         .sort((a, b) => (b.edge ?? 0) - (a.edge ?? 0))
         .slice(0, limit);
+}
+
+function globalDataHealth() {
+    const predictionRows = state.mlb.games.length + state.nfl.games.length + state.wnba.games.length;
+    if (state.liveRefresh.refreshing || state.refreshRuntime.active) {
+        return { tone: "refreshing", label: "Refreshing", detail: "A background data refresh is running; cached rows remain visible." };
+    }
+    if (!predictionRows) {
+        return { tone: "error", label: "Needs data", detail: "No prediction rows are loaded. Open Settings to inspect data sources." };
+    }
+    if (state.live.games.length && !state.live.stale) {
+        return { tone: "success", label: "Live current", detail: `${state.live.games.length} live-score rows are inside the freshness threshold.` };
+    }
+    if (state.live.games.length) {
+        return { tone: "warning", label: "Cached scores", detail: "Predictions are loaded, but the live-score export is outside the freshness threshold." };
+    }
+    return { tone: "warning", label: "Predictions only", detail: "Prediction boards are loaded; no live-score export is currently available." };
+}
+
+function renderGlobalHealthSignal() {
+    const signal = $("#global-health-signal");
+    if (!signal) return;
+    const health = globalDataHealth();
+    signal.dataset.tone = health.tone;
+    const label = signal.querySelector("strong");
+    if (label) label.textContent = health.label;
+    signal.title = health.detail;
+    signal.setAttribute("aria-label", `${health.label}. ${health.detail} Open data health in Settings.`);
+}
+
+function isCurrentAttentionGame(game) {
+    if (isLiveSportGame(game)) return true;
+    const date = gameIsoDate(game);
+    if (!date) return false;
+    return [dateOffsetIso(-1), localDateIso(), dateOffsetIso(1)].includes(date);
 }
 
 function selectedModelEntry(sport = "MLB") {
@@ -1468,14 +1553,14 @@ function modelHealthSummary(sport) {
     let reason = `Needs at least 10 scored predictions; ${recent10.sample} available in the last-10 window.`;
     if (stale) { status = "Stale model"; reason = "The current prediction export is more than 14 days newer than the selected model training timestamp."; }
     else if (recent10.sample >= 10 && drift) { status = "Drifting"; reason = "Last-10 accuracy differs from the last-30 window by at least 15 percentage points."; }
-    else if (recent10.sample >= 10 && (recent10.calibration ?? 0) > 0.12) { status = "Monitor"; reason = "Average absolute confidence error is above 12% in the last-10 scored predictions."; }
+    else if (recent10.sample >= 10 && (recent10.calibration ?? 0) > 0.12) { status = "Monitor"; reason = "Mean absolute probability error is above 12% in the last-10 scored predictions."; }
     else if (recent10.sample >= 10) { status = recent10.sample >= 30 ? "Healthy" : "Stable"; reason = "Recent sample is large enough for a directional health read."; }
     return { sport, status, reason, recent10, recent30, rows, stale, drift };
 }
 
 function renderModelHealthPanel() {
     const summaries = [modelHealthSummary("MLB"), modelHealthSummary("WNBA")];
-    return `<section class="panel model-health-dashboard"><header class="section-header"><div><p class="eyebrow">Model Health and Drift</p><h2>Production model pulse</h2><p class="muted">Rolling metrics are calculated only from scored prediction-log rows. Cross-sport values are intentionally kept separate.</p></div><span class="chip chip--soft">No cross-sport metric ranking</span></header><div class="model-health-grid">${summaries.map(summary => `<article class="model-health-card" data-variant="${summary.status.toLowerCase().replaceAll(" ", "-")}"><header><div><p class="eyebrow">${summary.sport} production</p><h3>${escapeHtml(modelIdentity(modelOpsSummary(summary.sport).modelName).legend)}</h3></div><span>${escapeHtml(summary.status)}</span></header><p class="muted">${escapeHtml(summary.reason)}</p><div class="model-health-windows"><div><strong>Last 10</strong><b>${formatProbability(summary.recent10.accuracy)}</b><small>${summary.recent10.sample} scored · LL ${formatNumber(summary.recent10.logLoss, 3)} · Brier ${formatNumber(summary.recent10.brier, 3)}</small></div><div><strong>Last 30</strong><b>${formatProbability(summary.recent30.accuracy)}</b><small>${summary.recent30.sample} scored · LL ${formatNumber(summary.recent30.logLoss, 3)} · Brier ${formatNumber(summary.recent30.brier, 3)}</small></div></div><div class="model-health-facts"><span>Calibration <b>${formatProbability(summary.recent10.calibration)}</b></span><span>Home picks <b>${formatProbability(summary.rows.length ? summary.rows.filter(row => getGamePick(row, summary.sport) === row.home).length / summary.rows.length : null)}</b></span><span>Feature drift <b>${state[summary.sport === "MLB" ? "featureSummary" : "wnbaFeatureSummary"]?.drift_status || "Unavailable"}</b></span></div></article>`).join("")}</div></section>`;
+    return `<section class="panel model-health-dashboard"><header class="section-header"><div><p class="eyebrow">Model Health and Drift</p><h2>Production model pulse</h2><p class="muted">Rolling metrics are calculated only from scored prediction-log rows. Cross-sport values are intentionally kept separate.</p></div><span class="chip chip--soft">No cross-sport metric ranking</span></header><div class="model-health-grid">${summaries.map(summary => `<article class="model-health-card" data-variant="${summary.status.toLowerCase().replaceAll(" ", "-")}"><header><div><p class="eyebrow">${summary.sport} production</p><h3>${escapeHtml(modelIdentity(modelOpsSummary(summary.sport).modelName).legend)}</h3></div><span>${escapeHtml(summary.status)}</span></header><p class="muted">${escapeHtml(summary.reason)}</p><div class="model-health-windows"><div><strong>Last 10</strong><b>${formatProbability(summary.recent10.accuracy)}</b><small>${summary.recent10.sample} scored · LL ${formatNumber(summary.recent10.logLoss, 3)} · Brier ${formatNumber(summary.recent10.brier, 3)}</small></div><div><strong>Last 30</strong><b>${formatProbability(summary.recent30.accuracy)}</b><small>${summary.recent30.sample} scored · LL ${formatNumber(summary.recent30.logLoss, 3)} · Brier ${formatNumber(summary.recent30.brier, 3)}</small></div></div><div class="model-health-facts"><span>Mean abs probability error <b>${formatProbability(summary.recent10.calibration)}</b></span><span>Home picks <b>${formatProbability(summary.rows.length ? summary.rows.filter(row => getGamePick(row, summary.sport) === row.home).length / summary.rows.length : null)}</b></span><span>Feature drift <b>${state[summary.sport === "MLB" ? "featureSummary" : "wnbaFeatureSummary"]?.drift_status || "Unavailable"}</b></span></div></article>`).join("")}</div></section>`;
 }
 
 function arenaEntries(sport) {
@@ -1495,7 +1580,7 @@ function renderArenaSportGroup(sport, title) {
 }
 
 function renderCrossSportModelArena() {
-    return `<section class="panel cross-sport-warning" data-variant="warning"><strong>Cross-sport comparison warning</strong><span>MLB, WNBA, and NFL metrics use different targets, samples, seasons, and prediction difficulty. Compare models within a sport; do not rank sports against one another.</span></section><section class="model-arena"><header class="section-header"><div><p class="eyebrow">Cross-sport Model Arena</p><h2>One observatory, separate evidence</h2></div></header>${renderArenaSportGroup("MLB", "MLB Models")}${renderArenaSportGroup("WNBA", "WNBA Models")}${renderArenaSportGroup("NFL", "NFL Historical Model")}</section>`;
+    return `${renderOperationalModelPassport()}<section class="panel cross-sport-warning" data-variant="warning"><strong>Cross-sport comparison warning</strong><span>MLB, WNBA, and NFL metrics use different targets, samples, seasons, and prediction difficulty. Compare models within a sport; do not rank sports against one another.</span></section><section class="model-arena"><header class="section-header"><div><p class="eyebrow">Cross-sport Model Arena</p><h2>One observatory, separate evidence</h2></div></header>${renderArenaSportGroup("MLB", "MLB Models")}${renderArenaSportGroup("WNBA", "WNBA Models")}${renderArenaSportGroup("NFL", "NFL Historical Model")}</section>`;
 }
 
 function moltresCard() {
@@ -1748,6 +1833,7 @@ function findGameByKey(sport, key) {
 }
 
 function liveGameFor(game) {
+    if (game?.__visual_live_fixture) return game;
     return liveGames().find(row => row.sport === (game?.sport || "MLB") && sameGame(row, game)) || null;
 }
 
@@ -1987,6 +2073,21 @@ function latestNflWeek(season) {
     return typeof last === "object" ? last.week : last;
 }
 
+function latestNflModelWeek(season) {
+    const modelWeeks = uniqueSortedNumbers(nflModelGamesForSeason(season).map(gameWeek), "asc");
+    return modelWeeks.at(-1) ?? latestNflWeek(season);
+}
+
+function nflModelCoverage(season) {
+    const rows = nflModelGamesForSeason(season);
+    const weeks = uniqueSortedNumbers(rows.map(gameWeek), "asc");
+    if (!rows.length || !weeks.length) return { rows: rows.length, label: "Model coverage unavailable" };
+    const first = weeks[0];
+    const last = weeks.at(-1);
+    const label = first === last ? `Week ${first}` : `Weeks ${first}–${last}`;
+    return { rows: rows.length, label };
+}
+
 function ensureNflScope() {
     const seasons = nflSeasons();
     if (!seasons.length) return { season: null, week: null, weeks: [], games: [] };
@@ -1995,7 +2096,10 @@ function ensureNflScope() {
     const weeks = nflWeeksForSeason(season);
     const weekValues = weeks.map(item => typeof item === "object" ? item.week : item);
     let week = safeNumber(state.selected.homeNflWeek);
-    if (!weekValues.includes(week)) week = latestNflWeek(season);
+    const selectedWeekHasModelRows = nflModelGamesForSeason(season).some(game => gameWeek(game) === week);
+    if (!weekValues.includes(week) || (!state.selected.nflWeekManual && !selectedWeekHasModelRows)) {
+        week = latestNflModelWeek(season);
+    }
     state.selected.homeNflSeason = season;
     state.selected.homeNflWeek = week;
     const fallbackDate = weeks.find(item => typeof item === "object" && item.week === week)?.date;
@@ -2013,6 +2117,7 @@ function moveNflWeek(delta) {
     const index = values.indexOf(scope.week);
     if (index === -1) return scope;
     state.selected.homeNflWeek = values[Math.max(0, Math.min(values.length - 1, index + delta))];
+    state.selected.nflWeekManual = true;
     persistSettings();
     return ensureNflScope();
 }
@@ -2409,6 +2514,7 @@ async function loadAll() {
         refresh,
         sharedDataStatus,
         live,
+        resultHistory,
         odds,
         nfl,
         mlb,
@@ -2451,6 +2557,7 @@ async function loadAll() {
         loadOptional("refresh", ["__REFRESH_STATUS__"]),
         loadOptional("sharedDataStatus", ["__SHARED_DATA_STATUS__"]),
         loadOptional("live", ["__LIVE_HEARTBEAT__", "__LIVE_SCORES__"]),
+        loadOptional("resultHistory", ["__RESULT_HISTORY__"]),
         loadOptional("odds", ["__ODDS_SNAPSHOTS__"]),
         loadOptional("nfl", ["__NFL_PREDICTIONS__", "__PREDICTIONS__"]),
         loadOptional("mlb", ["__MLB_PREDICTIONS__"]),
@@ -2500,6 +2607,7 @@ async function loadAll() {
     state.startupStatus = startup || state.startupStatus;
     state.refreshStatus = refresh || state.refreshStatus;
     state.sharedDataStatus = sharedDataStatus || state.sharedDataStatus;
+    state.resultHistory = resultHistory || state.resultHistory;
     state.live.payload = live;
     state.live.games = normalizeGames(live);
     state.live.stale = !livePayloadIsFresh(live);
@@ -2551,6 +2659,7 @@ async function loadAll() {
     setStatus(allGames().length ? "" : `No prediction exports loaded. ${modes.join(" / ")}.`, allGames().length ? "success" : "warning");
     if (!state.refreshRuntime.checked) {
         state.refreshRuntime.checked = true;
+        if (!isTauriRefreshAvailable()) await detectBrowserRefreshBridge();
         state.refreshRuntime.available = isTauriRefreshAvailable() || browserRefreshAvailable();
         state.refreshRuntime.message = state.refreshRuntime.available
             ? isTauriRefreshAvailable()
@@ -3080,7 +3189,16 @@ function renderView(view = state.selected.view || "home") {
         nba: renderNBA,
         nhl: renderNHL,
         wnba: renderWNBA,
-        models: () => { renderModels(); const root = $("#view-models"); if (root && window.LineLensSprint5) root.insertAdjacentHTML("afterbegin", window.LineLensSprint5.renderModelLab(state)); },
+        models: () => {
+            renderModels();
+            const root = $("#view-models");
+            const passport = root?.querySelector(".model-passport");
+            if (root && window.LineLensSprint5) {
+                const lab = window.LineLensSprint5.renderModelLab(state);
+                if (passport) passport.insertAdjacentHTML("afterend", lab);
+                else root.insertAdjacentHTML("afterbegin", lab);
+            }
+        },
         history: renderHistory,
         watchlist: renderWatchlist,
         reports: renderReports,
@@ -3093,6 +3211,217 @@ function renderView(view = state.selected.view || "home") {
     };
     renderers[view]?.();
     armScrollReveals(view);
+}
+
+function commandPaletteGameRows() {
+    const scopedNfl = ensureNflScope().games.map(game => ({ ...game, sport: "NFL" }));
+    const currentMlb = lifecycleBoardGames().slice(0, 40).map(game => ({ ...game, sport: "MLB" }));
+    const currentWnba = state.wnba.games.slice(0, 24).map(game => ({ ...game, sport: "WNBA" }));
+    const scoreboard = liveGames().slice(0, 40);
+    const seen = new Set();
+    return [...scoreboard, ...currentMlb, ...scopedNfl, ...currentWnba].filter(game => {
+        const identity = canonicalGameKey(game);
+        if (!identity || seen.has(identity)) return false;
+        seen.add(identity);
+        return true;
+    });
+}
+
+function commandPaletteItems() {
+    const views = COMMAND_PALETTE_VIEWS.map(view => ({
+        id: `view:${view.id}`,
+        kind: "page",
+        eyebrow: "Go to",
+        label: view.label,
+        detail: view.detail,
+        icon: view.icon,
+        search: `${view.label} ${view.detail} ${view.keywords}`,
+        run: () => switchView(view.id),
+    }));
+    const actions = [
+        {
+            id: "action:refresh-live",
+            kind: "action",
+            eyebrow: "Action",
+            label: "Refresh live scores",
+            detail: "Fetch the latest score, clock, and game-state heartbeat",
+            icon: "↻",
+            search: "refresh update live scores innings outs clock",
+            run: () => refreshLiveHeartbeat({ force: true, source: "command-palette" }),
+        },
+        {
+            id: "action:sync-data",
+            kind: "action",
+            eyebrow: "Action",
+            label: "Sync approved data",
+            detail: "Check the signed shared-data channel for a newer bundle",
+            icon: "⇣",
+            search: "sync shared github data predictions download",
+            run: () => syncSharedData({ background: false, force: true }),
+        },
+        {
+            id: "action:score-record",
+            kind: "action",
+            eyebrow: "Action",
+            label: "Score model record",
+            detail: "Resolve logged predictions against available final scores",
+            icon: "✓",
+            search: "score record results wins losses pending",
+            run: () => runRefreshCommand("score_models"),
+        },
+        {
+            id: "action:live-widget",
+            kind: "action",
+            eyebrow: "Action",
+            label: "Open live widget",
+            detail: "Launch the compact always-on score view",
+            icon: "◫",
+            search: "open widget scores compact",
+            run: () => openLiveWidget(),
+        },
+        {
+            id: "action:refresh-all",
+            kind: "action",
+            eyebrow: "Action",
+            label: "Reload all exports",
+            detail: "Run the startup refresh and reload the current data layer",
+            icon: "⟳",
+            search: "reload refresh startup all exports",
+            run: () => runStartupAutomation(),
+        },
+    ];
+    const games = commandPaletteGameRows().map(game => {
+        const sport = normalizedSportCode(game.sport || "MLB");
+        const away = game.away_display || game.away || "Away";
+        const home = game.home_display || game.home || "Home";
+        const status = isLiveSportGame(game)
+            ? game.status_detail || game.status || "Live"
+            : isFinalSportGame(game)
+                ? "Final"
+                : getGameTimeLabel(game) || formatDate(gameIsoDate(game));
+        return {
+            id: `game:${sport}:${gameKey(game)}`,
+            kind: "game",
+            eyebrow: `${sport} matchup`,
+            label: `${away} @ ${home}`,
+            detail: status,
+            icon: sport === "SOCCER" ? "⚽" : sport,
+            search: `${sport} ${away} ${home} ${game.away || ""} ${game.home || ""} ${status} ${gameIsoDate(game)}`,
+            run: () => openGameCast(sport, game),
+        };
+    });
+    return [...actions, ...views, ...games];
+}
+
+function filteredCommandPaletteItems() {
+    const query = String(state.commandPalette.query || "").trim().toLowerCase();
+    const tokens = query.split(/\s+/).filter(Boolean);
+    const items = commandPaletteItems().filter(item => {
+        if (!tokens.length) return item.kind !== "game";
+        const haystack = `${item.label} ${item.detail} ${item.eyebrow} ${item.search}`.toLowerCase();
+        return tokens.every(token => haystack.includes(token));
+    });
+    return items.slice(0, tokens.length ? 18 : 12);
+}
+
+function renderCommandPalette({ focusInput = false } = {}) {
+    const root = $("#command-palette-root");
+    if (!root) return;
+    if (!state.commandPalette.open) {
+        root.innerHTML = "";
+        root.setAttribute("aria-hidden", "true");
+        return;
+    }
+    const items = filteredCommandPaletteItems();
+    state.commandPalette.activeIndex = Math.max(0, Math.min(state.commandPalette.activeIndex, Math.max(0, items.length - 1)));
+    const activeId = items[state.commandPalette.activeIndex]?.id || "";
+    root.removeAttribute("aria-hidden");
+    root.innerHTML = `
+        <div class="command-palette-layer" data-command-close>
+            <section class="command-palette" role="dialog" aria-modal="true" aria-labelledby="command-palette-title" data-command-panel>
+                <header class="command-palette__header">
+                    <span class="command-palette__search-icon" aria-hidden="true">⌕</span>
+                    <label class="sr-only" for="command-palette-input" id="command-palette-title">Search LineLens</label>
+                    <input id="command-palette-input" type="search" role="combobox" autocomplete="off" spellcheck="false"
+                        aria-expanded="true" aria-controls="command-palette-results" aria-autocomplete="list"
+                        ${activeId ? `aria-activedescendant="command-${escapeHtml(activeId)}"` : ""}
+                        placeholder="Search pages, teams, matchups, or actions…" value="${escapeHtml(state.commandPalette.query)}" />
+                    <kbd>Esc</kbd>
+                </header>
+                <div class="command-palette__context">
+                    <span>${state.commandPalette.query ? `${items.length} best matches` : "Suggested destinations"}</span>
+                    <span>Type a team name to open GameCast</span>
+                </div>
+                <div class="command-palette__results" id="command-palette-results" role="listbox" aria-label="LineLens commands">
+                    ${items.length ? items.map((item, index) => `
+                        <button id="command-${escapeHtml(item.id)}" class="command-palette__item ${index === state.commandPalette.activeIndex ? "is-active" : ""}"
+                            type="button" role="option" aria-selected="${index === state.commandPalette.activeIndex}" data-command-id="${escapeHtml(item.id)}" data-command-index="${index}">
+                            <span class="command-palette__mark command-palette__mark--${escapeHtml(item.kind)}" aria-hidden="true">${escapeHtml(item.icon)}</span>
+                            <span class="command-palette__copy">
+                                <small>${escapeHtml(item.eyebrow)}</small>
+                                <strong>${escapeHtml(item.label)}</strong>
+                            </span>
+                            <span class="command-palette__detail">${escapeHtml(item.detail)}</span>
+                            <span class="command-palette__arrow" aria-hidden="true">↵</span>
+                        </button>
+                    `).join("") : `
+                        <div class="command-palette__empty" role="status">
+                            <span aria-hidden="true">⌕</span>
+                            <strong>No matching page, game, or action</strong>
+                            <p>Try a team abbreviation, sport, feature, or “refresh”.</p>
+                        </div>
+                    `}
+                </div>
+                <footer class="command-palette__footer">
+                    <span><kbd>↑</kbd><kbd>↓</kbd> Move</span>
+                    <span><kbd>Enter</kbd> Open</span>
+                    <span class="command-palette__brand">LineLens <b>v6</b></span>
+                </footer>
+            </section>
+        </div>
+    `;
+    if (focusInput) {
+        requestAnimationFrame(() => {
+            const input = $("#command-palette-input");
+            input?.focus({ preventScroll: true });
+            input?.setSelectionRange(input.value.length, input.value.length);
+        });
+    }
+}
+
+function openCommandPalette(initialQuery = "") {
+    if (!state.commandPalette.open) state.commandPalette.lastFocus = document.activeElement;
+    state.commandPalette.open = true;
+    state.commandPalette.query = initialQuery;
+    state.commandPalette.activeIndex = 0;
+    document.body.classList.add("is-command-palette-open");
+    renderCommandPalette({ focusInput: true });
+}
+
+function closeCommandPalette({ restoreFocus = true } = {}) {
+    const previousFocus = state.commandPalette.lastFocus;
+    state.commandPalette.open = false;
+    state.commandPalette.query = "";
+    state.commandPalette.activeIndex = 0;
+    state.commandPalette.lastFocus = null;
+    document.body.classList.remove("is-command-palette-open");
+    renderCommandPalette();
+    if (restoreFocus && previousFocus?.focus) requestAnimationFrame(() => previousFocus.focus({ preventScroll: true }));
+}
+
+function moveCommandPaletteSelection(delta) {
+    const items = filteredCommandPaletteItems();
+    if (!items.length) return;
+    state.commandPalette.activeIndex = (state.commandPalette.activeIndex + delta + items.length) % items.length;
+    renderCommandPalette({ focusInput: true });
+    requestAnimationFrame(() => document.getElementById(`command-${items[state.commandPalette.activeIndex]?.id}`)?.scrollIntoView({ block: "nearest" }));
+}
+
+function executeCommandPaletteItem(itemId) {
+    const item = commandPaletteItems().find(candidate => candidate.id === itemId);
+    if (!item) return;
+    closeCommandPalette({ restoreFocus: false });
+    item.run();
 }
 
 async function loadApiKeyStatus() {
@@ -3445,7 +3774,7 @@ function renderNflWeekControls(context = "home") {
     const weeks = scope.weeks.map(item => typeof item === "object" ? item.week : item);
     const weekAttr = context === "home" ? "data-home-nfl-week" : "data-nfl-week";
     const labelForWeek = week => {
-        const row = scope.games.find(game => gameWeek(game) === week && game.week_label);
+        const row = nflGamesForSeason(scope.season).find(game => gameWeek(game) === week && game.week_label);
         return row?.week_label || `Week ${week}`;
     };
     return `
@@ -3591,6 +3920,91 @@ function renderHomeReadoutV2(rows) {
                 }).join("") : emptyState("No other edge rows", "The spotlight already owns the top pick.")}
             </div>
         </article>
+    `;
+}
+
+function homeDecisionRadarSignals() {
+    const current = uniqueRowsByGame([...liveGames(), ...homeBoardGames(), ...currentGames()]).filter(isCurrentAttentionGame);
+    const live = current
+        .filter(isLiveSportGame)
+        .sort((a, b) => Number(isWatchedGame(b)) - Number(isWatchedGame(a)) || tickerPriority(b) - tickerPriority(a))[0] || null;
+    const strongest = rankRowsByEdge(current, 1)[0] || null;
+    const disagreement = current
+        .map(game => ({ game, consensus: picksConsensus(game), confidence: getConfidenceScore(game, game.sport || "MLB") }))
+        .filter(row => row.consensus.disagree)
+        .sort((a, b) => safeNumber(b.confidence, 0) - safeNumber(a.confidence, 0))[0] || null;
+    const underdog = underdogCandidateRows()
+        .filter(game => !isFinalSportGame(game) && isCurrentAttentionGame(game))
+        .sort((a, b) => safeNumber(b.underdog_model_probability, 0) - safeNumber(a.underdog_model_probability, 0))[0] || null;
+    return [
+        {
+            key: "live",
+            label: "Live now",
+            tone: "live",
+            game: live,
+            primary: live ? finalScoreLabel(live) || "Live" : "No live game",
+            secondary: live ? gameStatusLine(live, live) : "The lane activates from the real live scoreboard.",
+        },
+        {
+            key: "edge",
+            label: "Strongest signal",
+            tone: "edge",
+            game: strongest?.game || null,
+            primary: strongest ? `${strongest.pick} · ${formatEdge(strongest.edge)}` : "No ranked signal",
+            secondary: strongest ? `${formatConfidencePercent(strongest.game, strongest.game.sport)} · model separation` : "A current model probability is required.",
+        },
+        {
+            key: "split",
+            label: "Model disagreement",
+            tone: "split",
+            game: disagreement?.game || null,
+            primary: disagreement ? disagreement.consensus.label : "No active split",
+            secondary: disagreement ? `Top read ${getGamePick(disagreement.game, disagreement.game.sport)} · compare before acting` : "Only multi-model disagreements appear here.",
+        },
+        {
+            key: "underdog",
+            label: "Underdog watch",
+            tone: "underdog",
+            game: underdog,
+            primary: underdog ? `${underdog.underdog_pick} · ${underdog.sport === "NFL" ? runLine(underdog.underdog_line) : americanOdds(underdog.underdog_line)}` : "No qualified underdog",
+            secondary: underdog ? `${formatProbability(underdog.underdog_model_probability)} model read · real odds joined` : "No synthetic prices are used.",
+        },
+    ];
+}
+
+function renderHomeDecisionRadar() {
+    const signals = homeDecisionRadarSignals();
+    const active = signals.filter(signal => signal.game).length;
+    const freshness = normalizeMeta(state.live.payload).generated_at;
+    return `
+        <section class="panel decision-radar" aria-labelledby="decision-radar-title">
+            <header class="decision-radar__header">
+                <div>
+                    <p class="eyebrow">Decision radar</p>
+                    <h2 id="decision-radar-title">What deserves attention now</h2>
+                    <p>Four distinct reads from loaded scores, models, consensus, and real joined odds.</p>
+                </div>
+                <div class="decision-radar__status"><strong>${active}/4 active</strong><span>${freshness ? `Live checked ${timestamp(freshness)}` : "Live feed not loaded"}</span></div>
+            </header>
+            <div class="decision-radar__lanes">
+                ${signals.map(signal => {
+                    const game = signal.game;
+                    const sport = game?.sport || "";
+                    return `
+                        <article class="decision-radar__lane ${game ? "has-signal" : "is-empty"}" data-tone="${signal.tone}">
+                            <div class="decision-radar__type"><i aria-hidden="true"></i><span>${escapeHtml(signal.label)}</span></div>
+                            <div class="decision-radar__matchup">
+                                <strong>${game ? `${escapeHtml(game.away_display || game.away)} @ ${escapeHtml(game.home_display || game.home)}` : "Waiting for verified input"}</strong>
+                                <span>${game ? `${escapeHtml(sport)} · ${escapeHtml(formatDate(gameIsoDate(game)))}` : "Unavailable, not estimated"}</span>
+                            </div>
+                            <div class="decision-radar__readout"><strong>${escapeHtml(signal.primary)}</strong><span>${escapeHtml(signal.secondary)}</span></div>
+                            ${game ? `<button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(sport)}" data-game-id="${escapeHtml(gameKey(game))}">Open GameCast</button>` : `<span class="decision-radar__waiting">Stand by</span>`}
+                        </article>
+                    `;
+                }).join("")}
+            </div>
+            <footer class="decision-radar__legend"><span><i data-tone="live"></i> scoreboard</span><span><i data-tone="edge"></i> model</span><span><i data-tone="split"></i> consensus</span><span><i data-tone="underdog"></i> real odds</span><b>Missing evidence stays missing.</b></footer>
+        </section>
     `;
 }
 
@@ -3795,7 +4209,7 @@ function latestScoredLog(result) {
 }
 
 function dailyBriefData() {
-    const top = topEdges(1)[0] || homeTopEdges(1)[0] || null;
+    const top = topEdges(1)[0] || null;
     const today = dateOffsetIso(0);
     const yesterday = dateOffsetIso(-1);
     const todayRecord = summarizeRecordRows(rowsForDateFromLogs(today));
@@ -4289,6 +4703,7 @@ function renderHome() {
             </section>
             ${nflAvailableLatest && nflLatest && nflAvailableLatest !== nflLatest ? `<div class="home-source-strip" data-variant="warning"><strong>NFL source note</strong><span>${nflAvailableLatest} currently has only a verified postseason supplement; Home defaults to the latest complete model season, ${nflLatest}.</span><button class="btn btn--micro" data-view-link="nfl">Inspect NFL</button></div>` : ""}
             ${renderDailyBrief()}
+            ${renderHomeDecisionRadar()}
             <section class="home-v2-grid">
                 ${renderBestPickFeatureV2(best)}
                 ${renderHomeDailyBoard(scopedRows)}
@@ -4856,6 +5271,40 @@ function renderMlbStageFilters(games) {
     return `<div class="mlb-stage-filters" role="tablist" aria-label="MLB lifecycle stage">${options.map(([value, label]) => `<button type="button" data-mlb-stage-filter="${value}" class="${(state.selected.mlbLifecycleFilter || "all") === value ? "is-active" : ""}">${label}<span>${value === "all" ? games.length : games.filter(game => lifecycleStage(game) === value).length}</span></button>`).join("")}</div>`;
 }
 
+function renderMlbLiveSituation(game, showBaseLabel = false) {
+    const inning = safeNumber(game?.inning);
+    const statusHalf = String(game?.status_detail || game?.status || "").match(/\b(top|bottom|bot|middle|mid|end)\b/i)?.[1] || "";
+    const inningState = String(game?.inning_state || statusHalf).trim();
+    const normalizedState = inningState.toLowerCase();
+    const half = normalizedState.startsWith("top")
+        ? "Top"
+        : normalizedState.startsWith("bot")
+            ? "Bot"
+            : normalizedState.startsWith("mid")
+                ? "Mid"
+                : inningState || "Live";
+    const outs = safeNumber(game?.outs);
+    const balls = safeNumber(game?.balls);
+    const strikes = safeNumber(game?.strikes);
+    const bases = game?.bases && typeof game.bases === "object" ? game.bases : {};
+    const baseDescription = basesLabel(bases);
+    const inningLabel = inning === null ? half : `${half} ${inning}`;
+    const outsLabel = outs === null ? "Outs pending" : `${outs} out${outs === 1 ? "" : "s"}`;
+    const countLabel = balls === null || strikes === null ? "Count pending" : `${balls}–${strikes} count`;
+    return `
+        <div class="mlb-live-scoreboard__situation" aria-label="${escapeHtml(`${inningLabel}, ${outsLabel}, ${countLabel}, ${baseDescription}`)}">
+            <div class="mlb-live-scoreboard__inning"><strong>${escapeHtml(inningLabel)}</strong><span>${escapeHtml(outsLabel)}</span></div>
+            <div class="mlb-base-state" aria-label="${escapeHtml(baseDescription)}">
+                <span class="mlb-base mlb-base--second ${bases.second ? "is-occupied" : ""}"></span>
+                <span class="mlb-base mlb-base--third ${bases.third ? "is-occupied" : ""}"></span>
+                <span class="mlb-base mlb-base--first ${bases.first ? "is-occupied" : ""}"></span>
+            </div>
+            <div class="mlb-live-scoreboard__count"><span>${escapeHtml(countLabel)}</span><span class="mlb-out-lights" aria-hidden="true">${[0, 1, 2].map(index => `<i class="${outs !== null && index < outs ? "is-active" : ""}"></i>`).join("")}</span></div>
+            ${showBaseLabel ? `<small class="mlb-base-state__label">${escapeHtml(baseDescription)}</small>` : ""}
+        </div>
+    `;
+}
+
 function renderMlbLifecycleCard(game) {
     const stage = lifecycleStage(game);
     const market = lifecycleMarketRead(game);
@@ -4878,17 +5327,20 @@ function renderMlbLifecycleCard(game) {
     const dateLabel = stage === "pregame" ? `${gameIsoDate(game) === localDateIso() ? "TODAY" : formatDateOnly(gameIsoDate(game), { month: "short", day: "numeric" }).toUpperCase()} · ${getGameTimeLabel(game)}` : stage === "stale" ? "PAST · VERIFY SOURCE" : gameStatusLine(game, live);
     const marketRead = !market.movement.available ? "" : `<div class="mlb-game-card__market"><span>Market ${market.marketProbability === null ? "Linked" : formatProbability(market.marketProbability)}</span>${market.edge === null ? "" : `<strong>Edge ${formatEdge(market.edge)}</strong>`}</div>`;
     const latestPlay = stage === "live" && live?.latest_play ? `<small class="mlb-game-card__play">${escapeHtml(live.latest_play)}</small>` : "";
+    const liveScoreboard = stage === "live"
+        ? `<div class="mlb-live-scoreboard"><strong class="mlb-live-scoreboard__score">${escapeHtml(score || "–")}</strong>${renderMlbLiveSituation(source)}</div>`
+        : `<div class="mlb-game-card__at">${score ? `<b>${escapeHtml(score)}</b>` : "VS"}<small>${stage === "final" ? "FINAL" : "FIRST PITCH"}</small></div>`;
     const edgeCopy = market.edge === null ? "No joined edge" : `${formatEdge(market.edge)} model edge`;
     const marketCopy = market.movement.available
         ? `Current market is linked${market.marketProbability === null ? "" : ` at ${formatProbability(market.marketProbability)}`}.`
         : "Market movement is not available for this matchup.";
     return `<article class="mlb-game-card mlb-card-flip mlb-game-card--${stage} ${predictionReady ? "has-prediction" : ""} ${modelWon ? "is-model-won" : ""} ${modelLost ? "is-model-lost" : ""} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
         <div class="mlb-card-flip__inner">
-            <div class="mlb-card-flip__face mlb-card-flip__front">
+            <div class="mlb-card-flip__face mlb-card-flip__front" aria-hidden="false">
         <header class="mlb-game-card__header"><span class="mlb-game-card__status">${statusLabel}</span><span class="mlb-game-card__time">${escapeHtml(dateLabel)}</span>${renderWatchButton(game, "Watch matchup")}</header>
-        <div class="mlb-game-card__matchup">
+        <div class="mlb-game-card__matchup ${stage === "live" ? "is-live" : ""}">
             <div class="mlb-game-card__team">${renderTeamLogo("MLB", awayMeta.abbreviation, "lg", awayMeta.full_name)}<strong>${escapeHtml(awayMeta.abbreviation)}</strong></div>
-            <div class="mlb-game-card__at">${score ? `<b>${escapeHtml(score)}</b>` : "VS"}<small>${stage === "live" ? "LIVE SCORE" : stage === "final" ? "FINAL" : "FIRST PITCH"}</small></div>
+            ${liveScoreboard}
             <div class="mlb-game-card__team mlb-game-card__team--home">${renderTeamLogo("MLB", homeMeta.abbreviation, "lg", homeMeta.full_name)}<strong>${escapeHtml(homeMeta.abbreviation)}</strong></div>
         </div>
         <div class="mlb-game-card__signal"><span>${escapeHtml(predictionReady ? modelPickLabel(game) : "Prediction status")}</span><strong class="mlb-game-card__signal-pick">${escapeHtml(predictionReady ? pick : "Pending")}</strong><b>${predictionReady ? formatProbability(market.pickProbability) : "Awaiting inputs"}</b></div>
@@ -4897,7 +5349,7 @@ function renderMlbLifecycleCard(game) {
         ${marketRead}${latestPlay}
         <footer class="mlb-game-card__footer"><span>${resultChip(cardResult)}</span><span class="mlb-card-flip__footer-actions"><button class="btn btn--micro mlb-card-flip__toggle" type="button" data-flip-card aria-pressed="false" aria-label="Show matchup details">Details</button><button class="btn btn--micro" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">${stage === "live" ? "Open GameCast" : "View Matchup"}</button></span></footer>
             </div>
-            <div class="mlb-card-flip__face mlb-card-flip__back" aria-label="${escapeHtml(`${awayMeta.abbreviation} at ${homeMeta.abbreviation} matchup details`)}">
+            <div class="mlb-card-flip__face mlb-card-flip__back" aria-hidden="true" inert aria-label="${escapeHtml(`${awayMeta.abbreviation} at ${homeMeta.abbreviation} matchup details`)}">
                 <div class="mlb-card-flip__back-content">
                     <div class="mlb-card-flip__back-kicker"><span>Matchup notes</span><span>${escapeHtml(statusLabel)}</span></div>
                     <div class="mlb-card-flip__back-title"><strong><span class="team-code team-code--away">${escapeHtml(awayMeta.abbreviation)}</span> <span>@</span> <span class="team-code team-code--home">${escapeHtml(homeMeta.abbreviation)}</span></strong><small>${escapeHtml(dateLabel)}</small></div>
@@ -4908,7 +5360,7 @@ function renderMlbLifecycleCard(game) {
                         <div><span>Board state</span><strong>${escapeHtml(cardResult)}</strong></div>
                     </div>
                     <p class="mlb-card-flip__back-copy">${escapeHtml(marketCopy)} The summary stays on the front; this side keeps the decision context readable at a glance.</p>
-                    <footer class="mlb-card-flip__back-footer"><span>LineLens MLB board</span><span class="mlb-card-flip__footer-actions"><button class="btn btn--micro" type="button" data-flip-card aria-pressed="true" aria-label="Show matchup summary">Summary</button><button class="btn btn--micro" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">Open Matchup</button></span></footer>
+                    <footer class="mlb-card-flip__back-footer"><span>LineLens MLB board</span><span class="mlb-card-flip__footer-actions"><button class="btn btn--micro" type="button" data-flip-card aria-pressed="true" aria-label="Show matchup summary">Summary</button><button class="btn btn--micro btn--primary" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">${stage === "live" ? "Open GameCast" : "Open Matchup"}</button></span></footer>
                 </div>
             </div>
         </div>
@@ -4934,6 +5386,9 @@ function underdogCandidateRows() {
         const opponentLine = marketLine(snapshot, opponent, sport);
         const implied = marketImplied(snapshot, side);
         const opponentImplied = marketImplied(snapshot, opponent);
+        const marketProbability = implied !== null && opponentImplied !== null && implied + opponentImplied > 0
+            ? implied / (implied + opponentImplied)
+            : implied;
         const hasRealMarket = String(snapshot.data_mode || "").includes("real")
             || Boolean(snapshot.source && (line !== null || implied !== null));
         const isUnderdog = line !== null && opponentLine !== null
@@ -4947,6 +5402,7 @@ function underdogCandidateRows() {
             underdog_side: side,
             underdog_line: line,
             underdog_implied: implied,
+            underdog_market_probability: marketProbability,
             underdog_model_probability: modelProbabilityForSide(game, side, sport),
             underdog_snapshot_at: snapshot.snapshot_at,
             underdog_source: snapshot.source || "Real odds snapshot",
@@ -4962,9 +5418,52 @@ function renderUnderdogRow(game) {
     return `<article class="underdog-card">
         <header><span class="sport-pill sport-pill--${game.sport.toLowerCase()}">${escapeHtml(game.sport)}</span>${resultChip(result)}<time>${escapeHtml(formatDate(gameIsoDate(game)))}</time></header>
         <div class="underdog-card__matchup"><div>${renderTeamLogo(game.sport, game.underdog_pick, "md")}<span>Model underdog</span><strong>${escapeHtml(game.underdog_pick)}</strong></div><b>${escapeHtml(price)}</b></div>
-        <div class="underdog-card__metrics"><span><small>Market implied</small><strong>${formatProbability(game.underdog_implied)}</strong></span><span><small>Model confidence</small><strong>${formatProbability(game.underdog_model_probability)}</strong></span><span><small>Final score</small><strong>${escapeHtml(score || "Pending")}</strong></span></div>
+        <div class="underdog-card__metrics"><span><small>Market no-vig</small><strong>${formatProbability(game.underdog_market_probability)}</strong></span><span><small>Model confidence</small><strong>${formatProbability(game.underdog_model_probability)}</strong></span><span><small>Final score</small><strong>${escapeHtml(score || "Pending")}</strong></span></div>
         <footer><small>Pregame snapshot · ${escapeHtml(timestamp(game.underdog_snapshot_at) || "time unavailable")}</small><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport)}" data-game-id="${escapeHtml(gameKey(game))}">Open matchup</button></footer>
     </article>`;
+}
+
+function underdogPerformanceSummary(rows) {
+    const settled = rows.filter(row => ["Won", "Lost"].includes(row.underdog_result))
+        .map(row => ({
+            outcome: row.underdog_result === "Won" ? 1 : 0,
+            model: safeNumber(row.underdog_model_probability),
+            market: safeNumber(row.underdog_market_probability),
+        }))
+        .filter(row => row.model !== null && row.market !== null);
+    const mean = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+    const wins = settled.reduce((sum, row) => sum + row.outcome, 0);
+    const modelBrier = mean(settled.map(row => (row.model - row.outcome) ** 2));
+    const marketBrier = mean(settled.map(row => (row.market - row.outcome) ** 2));
+    return {
+        count: settled.length,
+        label: settled.length >= 30 ? "Evaluation sample" : settled.length ? "Early sample" : "Awaiting decisions",
+        observed: settled.length ? wins / settled.length : null,
+        marketBaseline: mean(settled.map(row => row.market)),
+        modelBaseline: mean(settled.map(row => row.model)),
+        probabilityGap: mean(settled.map(row => row.model - row.market)),
+        modelBrier,
+        marketBrier,
+        brierDelta: modelBrier === null || marketBrier === null ? null : marketBrier - modelBrier,
+    };
+}
+
+function renderUnderdogEvidence(summary) {
+    const metric = (label, value, note) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(note)}</small></div>`;
+    const brier = value => value === null ? "Unavailable" : value.toFixed(3);
+    const delta = summary.brierDelta === null ? "Unavailable" : `${summary.brierDelta >= 0 ? "+" : ""}${summary.brierDelta.toFixed(3)}`;
+    return `<section class="panel underdog-evidence" aria-label="Underdog evaluation evidence">
+        <header><div><p class="eyebrow">Evaluation, not a victory lap</p><h2>Does the underdog signal add information?</h2></div><span class="chip chip--soft">${escapeHtml(summary.label)} · n=${summary.count}</span></header>
+        <div class="underdog-evidence__grid">
+            ${metric("Observed wins", formatProbability(summary.observed), "settled non-push picks")}
+            ${metric("Market baseline", formatProbability(summary.marketBaseline), "average no-vig probability")}
+            ${metric("Model read", formatProbability(summary.modelBaseline), "average picked probability")}
+            ${metric("Probability gap", summary.probabilityGap === null ? "Unavailable" : `${summary.probabilityGap >= 0 ? "+" : ""}${(summary.probabilityGap * 100).toFixed(1)} pts`, "model minus market")}
+            ${metric("Model Brier", brier(summary.modelBrier), "lower is better")}
+            ${metric("Vs market Brier", delta, summary.brierDelta === null ? "needs settled rows" : summary.brierDelta >= 0 ? "positive favours model" : "market baseline is better")}
+        </div>
+        <footer><strong>Brier score</strong><span>Mean squared error of the stated probability. This evaluates probability quality, not just the win-loss record.</span></footer>
+    </section>`;
 }
 
 function renderUnderdogs() {
@@ -4976,13 +5475,19 @@ function renderUnderdogs() {
     const losses = settled.filter(row => row.underdog_result === "Lost").length;
     const pushes = settled.filter(row => row.underdog_result === "Push").length;
     const winRate = wins + losses ? wins / (wins + losses) : null;
-    const averagePriceRows = all.map(row => row.underdog_line).filter(value => value !== null);
-    const averagePrice = averagePriceRows.length ? averagePriceRows.reduce((sum, value) => sum + value, 0) / averagePriceRows.length : null;
+    const evidence = underdogPerformanceSummary(all);
+    const averageGapRows = all.map(row => {
+        const model = safeNumber(row.underdog_model_probability);
+        const market = safeNumber(row.underdog_market_probability);
+        return model === null || market === null ? null : model - market;
+    }).filter(value => value !== null);
+    const averageGap = averageGapRows.length ? averageGapRows.reduce((sum, value) => sum + value, 0) / averageGapRows.length : null;
     const root = $("#view-underdogs");
     if (!root) return;
     root.innerHTML = `<section class="underdogs-shell">
         <section class="panel underdogs-hero"><div><p class="eyebrow">Real market accountability</p><h2>When the model goes against the favourite</h2><p class="muted">Only picks joined to a real pregame odds snapshot are counted. Missing or unmatched odds are excluded instead of being estimated.</p></div><span class="chip chip--soft">${all.length} qualified picks</span></section>
-        <section class="summary-grid underdogs-summary">${card("Underdog record", `${wins}-${losses}${pushes ? `-${pushes}` : ""}`, `${settled.length} decided`)}${card("Win rate", formatProbability(winRate), "pushes excluded")}${card("Average price", averagePrice === null ? "Unavailable" : americanOdds(averagePrice), "real snapshots")}${card("Pending", String(all.length - settled.length), "awaiting finals")}</section>
+        <section class="summary-grid underdogs-summary">${card("Underdog record", `${wins}-${losses}${pushes ? `-${pushes}` : ""}`, `${settled.length} decided`)}${card("Win rate", formatProbability(winRate), "pushes excluded")}${card("Model-market gap", averageGap === null ? "Unavailable" : `${averageGap >= 0 ? "+" : ""}${(averageGap * 100).toFixed(1)} pts`, "probability difference")}${card("Pending", String(all.length - settled.length), "awaiting finals")}</section>
+        ${renderUnderdogEvidence(evidence)}
         <section class="panel underdogs-filters"><label>Sport<select id="underdog-sport"><option value="all">All sports</option>${["MLB", "WNBA", "NFL"].map(sport => `<option value="${sport}" ${state.selected.underdogSport === sport ? "selected" : ""}>${sport}</option>`).join("")}</select></label><label>Outcome<select id="underdog-result"><option value="all">All outcomes</option>${["won", "lost", "push", "pending"].map(result => `<option value="${result}" ${state.selected.underdogResult === result ? "selected" : ""}>${result.replace(/^./, value => value.toUpperCase())}</option>`).join("")}</select></label><p class="muted">Favourite/underdog status comes from the earliest available real odds snapshot for the matchup.</p></section>
         <section class="underdogs-results"><header class="section-header"><div><p class="eyebrow">Qualified model picks</p><h2>${filtered.length} underdogs in view</h2></div><span class="muted">No synthetic prices</span></header><div class="underdogs-grid">${filtered.length ? filtered.map(renderUnderdogRow).join("") : emptyState("No qualified underdogs", "Try another filter, or refresh real odds and prediction results.")}</div></section>
     </section>`;
@@ -5466,6 +5971,7 @@ function renderMlbDeskHeader(rawGames, selectedDate, usingBacktest) {
 function renderNflDeskHeader(scope, games) {
     const record = summarizeRecordRows(games);
     const label = gameWeekLabel(games[0] || { week: scope.week });
+    const coverage = nflModelCoverage(scope.season);
     return `
         <header class="desk-header desk-header--nfl">
             <div class="desk-date-block">
@@ -5477,6 +5983,7 @@ function renderNflDeskHeader(scope, games) {
                         <strong>${escapeHtml(`Season ${scope.season || "-"}`)}</strong>
                         <span>${games.length} games loaded</span>
                         <span>${record.wins + record.losses} scored</span>
+                        <span>${escapeHtml(`${coverage.label} · ${coverage.rows} model rows`)}</span>
                     </div>
                 </div>
             </div>
@@ -5559,20 +6066,23 @@ function renderPredictionCard(sport, game, source, index) {
                 <span>${formatProbability(probability)}</span>
                 <small>${escapeHtml(projectionLine(game, sport))}</small>
             </div>
-            <div class="desk-edge">
-                <span>Edge</span>
-                <strong>${formatEdge(getGameEdge(game, sport))}</strong>
-            </div>
-            <div class="desk-confidence">
-                <span>Confidence</span>
-                ${confidenceTag(confidence)}
-                <small>${escapeHtml(formatConfidencePercent(game, sport))}</small>
+            <div class="desk-evidence" aria-label="Prediction evidence">
+                <div class="desk-edge">
+                    <span>Edge</span>
+                    <strong>${formatEdge(getGameEdge(game, sport))}</strong>
+                </div>
+                <div class="desk-confidence">
+                    <span>Confidence</span>
+                    ${confidenceTag(confidence)}
+                    <small>${escapeHtml(formatConfidencePercent(game, sport))}</small>
+                </div>
+                <div class="desk-result">
+                    <span>Result</span>
+                    ${resultChip(result)}
+                    <small>${escapeHtml(finalScoreLabel(game) || "")}</small>
+                </div>
             </div>
             ${window.LineLensSprint5 ? window.LineLensSprint5.renderReaction({ ...game, sport }, sport) : ""}
-            <div class="desk-result">
-                ${resultChip(result)}
-                <small>${escapeHtml(finalScoreLabel(game) || "")}</small>
-            </div>
             <div class="desk-factor">
                 <span>Top factor</span>
                 <strong>${escapeHtml(sport === "MLB" ? (game.top_factor_label || game.explanation?.top_factors?.[0]?.label || "Model signal") : (game.top_factor_label || (sport === "WNBA" ? "Form + Elo signal" : "Spread signal")))}</strong>
@@ -5993,7 +6503,9 @@ function gameStatusLine(game, live) {
         return `First pitch ${getGameTimeLabel(source)}`;
     }
     const parts = [status || getGameTimeLabel(game)].filter(Boolean);
-    if (source?.inning) parts.push(`${source.inning_state || ""} ${source.inning}`.trim());
+    const inningText = source?.inning ? `${source.inning_state || ""} ${source.inning}`.trim() : "";
+    const inningAlreadyInStatus = inningText && status.toLowerCase().includes(inningText.toLowerCase());
+    if (inningText && !inningAlreadyInStatus) parts.push(inningText);
     if (outs !== null) parts.push(`${outs} out${outs === 1 ? "" : "s"}`);
     if (safeNumber(source?.balls) !== null && safeNumber(source?.strikes) !== null) parts.push(`${source.balls}-${source.strikes} count`);
     return parts.join(" · ") || "Status pending";
@@ -6008,6 +6520,27 @@ function basesLabel(bases) {
     return labels.length ? `Runners: ${labels.join(" + ")}` : "Bases empty";
 }
 
+function renderGameCastLiveCommand(source, sport) {
+    if (!isLiveSportGame(source)) return "";
+    const sourceAt = source?.updated_at || source?.last_updated || source?.generated_at || normalizeMeta(state.live.payload).generated_at;
+    const freshness = source?.__visual_live_fixture
+        ? "Design fixture · not live data"
+        : state.live.stale
+            ? "Cached live state"
+            : "Live feed update";
+    const latestPlay = source?.latest_play || source?.down_distance || "Latest play unavailable from the feed";
+    const situation = sport === "MLB"
+        ? renderMlbLiveSituation(source, true)
+        : `<div class="gamecast-live-command__field"><strong>${escapeHtml(source?.period_label || source?.quarter || source?.inning_state || "Live")}</strong><span>${escapeHtml(source?.clock || source?.down_distance || "Game clock unavailable")}</span></div>`;
+    return `
+        <section class="gamecast-live-command ${source?.__visual_live_fixture ? "is-fixture" : ""}" aria-label="Live game situation">
+            <div class="gamecast-live-command__status"><span aria-hidden="true"></span><strong>Live situation</strong><small>${escapeHtml(freshness)}${sourceAt ? ` · ${escapeHtml(timestamp(sourceAt))}` : ""}</small></div>
+            ${situation}
+            <div class="gamecast-live-command__play"><span>Latest play</span><strong>${escapeHtml(latestPlay)}</strong></div>
+        </section>
+    `;
+}
+
 function renderGameCastScore(game, live) {
     const sport = game?.sport || "MLB";
     const source = live || game;
@@ -6015,13 +6548,15 @@ function renderGameCastScore(game, live) {
     const home = getTeamMeta(sport, game.home, game.home_display);
     const awayScore = safeNumber(source?.away_score);
     const homeScore = safeNumber(source?.home_score);
+    const isLive = isLiveSportGame(source);
     return `
-        <section class="gamecast-score">
+        <section class="gamecast-score ${isLive ? "gamecast-score--live" : ""}">
             <div>${renderTeamLogo(sport, away.abbreviation, "md", away.full_name)}<span>${escapeHtml(away.abbreviation)}</span><strong>${awayScore === null ? "-" : awayScore}</strong></div>
             <span>@</span>
             <div>${renderTeamLogo(sport, home.abbreviation, "md", home.full_name)}<span>${escapeHtml(home.abbreviation)}</span><strong>${homeScore === null ? "-" : homeScore}</strong></div>
         </section>
         <p class="gamecast-status">${escapeHtml(gameStatusLine(game, live))}</p>
+        ${renderGameCastLiveCommand(source, sport)}
     `;
 }
 
@@ -6035,7 +6570,7 @@ function renderGameCastBoxScore(game, live) {
     const box = source?.box_score;
     const periods = Array.isArray(box?.periods) ? box.periods : [];
     if (!periods.length) {
-        return `<section class="gamecast-section gamecast-box-score"><header><h3>Box Score</h3></header>${emptyState("Box score not available yet", "LineLens will show the real inning or period breakdown when the live source provides it.")}</section>`;
+        return `<div class="gamecast-stat-availability gamecast-stat-availability--live"><span aria-hidden="true">▦</span><div><strong>Box score awaiting the official feed</strong><small>Inning or period totals appear here when the joined source publishes them.</small></div></div>`;
     }
     const sport = game?.sport || "MLB";
     const away = getTeamMeta(sport, game.away, game.away_display);
@@ -6057,7 +6592,7 @@ function renderGameCastPlayerStats(game, live) {
     const teams = Array.isArray(playerBox?.teams) ? playerBox.teams : [];
     const leaders = Array.isArray(source?.leaders) ? source.leaders : Array.isArray(playerBox?.leaders) ? playerBox.leaders : [];
     if (!teams.length) {
-        return `<section class="gamecast-section gamecast-player-stats"><header><h3>Player Box Score</h3></header>${emptyState("Player statistics not available yet", "Live and recently completed games show official player rows when the source publishes them.")}</section>`;
+        return `<div class="gamecast-stat-availability gamecast-stat-availability--live"><span aria-hidden="true">●</span><div><strong>Player statistics awaiting the official feed</strong><small>Official player rows and leaders appear only after the joined source publishes them.</small></div></div>`;
     }
     const leadersMarkup = leaders.length ? `<div class="gamecast-leaders">${leaders.slice(0, 8).map(leader => `<article><span>${escapeHtml(leader.team || "Team")} · ${escapeHtml(leader.category || "Leader")}</span><strong>${escapeHtml(leader.name || "—")}</strong><b>${escapeHtml(leader.value ?? "—")}</b></article>`).join("")}</div>` : "";
     const teamSections = teams.map(team => `<section class="gamecast-player-team"><h4>${escapeHtml(team.team_display || team.team || "Team")}</h4>${(team.groups || []).map(group => {
@@ -6254,7 +6789,128 @@ function renderGameCastProvenance(game, sport) {
     const odds = latestOddsForGame(game);
     const payload = sport === "MLB" ? state.mlb.payload : sport === "WNBA" ? state.wnba.payload : state.nfl.payload;
     const model = selectedModelEntry(sport);
-    return `<div class="gamecast-provenance" aria-label="GameCast data provenance"><span><strong>Prediction</strong>${escapeHtml(timestamp(game.generated_at || normalizeMeta(payload).generated_at))}</span><span><strong>Model</strong>${escapeHtml(model?.model_name || game.model_name || "not declared")}</span><span><strong>Live feed</strong>${escapeHtml(live ? "joined" : "not joined")}</span><span><strong>Odds</strong>${escapeHtml(odds ? oddsFreshness(odds) : "not linked")}</span></div>`;
+    const predictionAt = game.generated_at || normalizeMeta(payload).generated_at;
+    const predictionAge = predictionAt ? Math.max(0, (Date.now() - Date.parse(String(predictionAt))) / 1000) : Number.POSITIVE_INFINITY;
+    const historical = isFinalSportGame(game) || (gameIsoDate(game) && gameIsoDate(game) < dateOffsetIso(-1));
+    const predictionState = historical
+        ? { tone: "history", label: "Historical record", detail: timestamp(predictionAt) }
+        : predictionAge <= 48 * 60 * 60
+            ? { tone: "current", label: "Current export", detail: timestamp(predictionAt) }
+            : { tone: "warning", label: "Cached / verify", detail: predictionAt ? timestamp(predictionAt) : "No export timestamp" };
+    const liveState = live
+        ? state.live.stale
+            ? { tone: "warning", label: "Cached / stale", detail: timestamp(normalizeMeta(state.live.payload).generated_at) }
+            : { tone: "current", label: "Current join", detail: gameStatusLine(game, live) }
+        : { tone: historical ? "history" : "missing", label: historical ? "No current join" : "Not joined", detail: historical ? "Historical matchup" : "Refresh live scores" };
+    const oddsLabel = odds ? oddsFreshness(odds) : "Not linked";
+    const oddsState = odds
+        ? { tone: /current|fresh/i.test(oddsLabel) ? "current" : "warning", label: oddsLabel, detail: timestamp(odds.snapshot_at) }
+        : { tone: "missing", label: "Not linked", detail: "No matched real snapshot" };
+    const overallTone = [predictionState, liveState, oddsState].some(item => item.tone === "warning" || item.tone === "missing") ? "warning" : "current";
+    const overallLabel = overallTone === "current" ? "Sources ready" : historical ? "Historical context" : "Source check required";
+    return `
+        <section class="gamecast-source-health" data-tone="${overallTone}" aria-label="GameCast source freshness">
+            <header><span aria-hidden="true"></span><strong>${escapeHtml(overallLabel)}</strong><small>Freshness is shown per source; unavailable data is not estimated.</small></header>
+            <div class="gamecast-provenance" aria-label="GameCast data provenance">
+                <span data-tone="${predictionState.tone}"><strong>Prediction</strong><em>${escapeHtml(predictionState.label)}</em><small>${escapeHtml(predictionState.detail || "Unavailable")}</small></span>
+                <span data-tone="history"><strong>Model</strong><em>${escapeHtml(model?.model_name || game.model_name || "Not declared")}</em><small>${escapeHtml(model?.trained_at ? `Trained ${timestamp(model.trained_at)}` : "Training timestamp unavailable")}</small></span>
+                <span data-tone="${liveState.tone}"><strong>Live feed</strong><em>${escapeHtml(liveState.label)}</em><small>${escapeHtml(liveState.detail || "Unavailable")}</small></span>
+                <span data-tone="${oddsState.tone}"><strong>Odds</strong><em>${escapeHtml(oddsState.label)}</em><small>${escapeHtml(oddsState.detail || "Unavailable")}</small></span>
+            </div>
+        </section>
+    `;
+}
+
+function confidenceAnatomyData(game, sport) {
+    const pick = getGamePick(game, sport);
+    const probability = getConfidenceScore(game, sport);
+    const model = selectedModelEntry(sport);
+    const comparison = getComparisonRows(sport).find(row => row.model_name === model?.model_name || row.technical_name === model?.technical_name) || {};
+    const metrics = { ...(comparison.metrics || {}), ...(model?.metrics || {}) };
+    const brier = safeNumber(metrics.brier_score ?? comparison.brier_score ?? model?.brier_score);
+    const logLoss = safeNumber(metrics.log_loss ?? comparison.log_loss ?? model?.log_loss);
+    const sampleSize = safeNumber(metrics.sample_size ?? comparison.sample_size ?? comparison.test_rows ?? model?.test_rows);
+    const consensus = modelConsensusForGame(game);
+    const odds = latestOddsForGame(game);
+    const side = marketSideForPick(game, sport);
+    const marketProbability = odds ? marketImplied(odds, side) : null;
+    const marketEdge = probability !== null && marketProbability !== null ? probability - marketProbability : null;
+    const available = [
+        probability !== null,
+        brier !== null || logLoss !== null,
+        Boolean(consensus && consensus.total >= 2),
+        Boolean(odds && marketProbability !== null),
+    ];
+    const coverage = available.filter(Boolean).length;
+    const coverageLabel = coverage === 4 ? "Full evidence" : coverage === 3 ? "Strong coverage" : coverage === 2 ? "Partial coverage" : "Limited coverage";
+    return { pick, probability, model, brier, logLoss, sampleSize, consensus, odds, marketProbability, marketEdge, coverage, coverageLabel };
+}
+
+function renderConfidenceAnatomy(game, sport) {
+    const data = confidenceAnatomyData(game, sport);
+    const probabilityPercent = data.probability === null ? null : Math.max(0, Math.min(100, data.probability * 100));
+    const consensusLabel = data.consensus
+        ? `${data.consensus.consensusCount} of ${data.consensus.total} select ${data.consensus.consensusPick}`
+        : "Multi-model vote unavailable";
+    const calibrationLabel = data.brier !== null
+        ? `Brier ${formatNumber(data.brier, 3)}`
+        : data.logLoss !== null
+            ? `Log loss ${formatNumber(data.logLoss, 3)}`
+            : "Validation metric unavailable";
+    const marketLabel = data.marketProbability === null
+        ? "No joined market probability"
+        : `${formatProbability(data.marketProbability)} market implied`;
+    const pickLabel = data.pick && data.pick !== "-" ? `${data.pick} model lean` : "No model lean";
+    return `
+        <section class="confidence-anatomy" aria-labelledby="confidence-anatomy-title">
+            <header class="confidence-anatomy__header">
+                <div><p class="eyebrow">Confidence anatomy</p><h3 id="confidence-anatomy-title">${escapeHtml(pickLabel)}</h3><p>A model probability is a measured lean, not a guarantee. These signals stay separate so agreement is visible without being double-counted.</p></div>
+                <span class="confidence-coverage" data-coverage="${data.coverage}"><strong>${data.coverage}/4</strong><small>${escapeHtml(data.coverageLabel)}</small></span>
+            </header>
+            <div class="confidence-anatomy__signals">
+                <article class="confidence-signal confidence-signal--probability">
+                    <span>Model probability</span>
+                    <strong>${data.probability === null ? "Unavailable" : formatProbability(data.probability)}</strong>
+                    <small>${escapeHtml(data.pick && data.pick !== "-" ? `Picked side · ${data.pick}` : "No prediction exported")}</small>
+                    <div class="confidence-scale ${probabilityPercent === null ? "is-empty" : ""}" aria-label="${escapeHtml(data.probability === null ? "Model probability unavailable" : `Model probability ${formatProbability(data.probability)}`)}">
+                        <i style="--confidence-position:${probabilityPercent === null ? 50 : probabilityPercent}%"></i><span>50%</span><b>100%</b>
+                    </div>
+                </article>
+                <article class="confidence-signal">
+                    <span>Validation</span>
+                    <strong>${escapeHtml(calibrationLabel)}</strong>
+                    <small>${data.sampleSize === null ? "Holdout size unavailable" : `${Math.round(data.sampleSize).toLocaleString()} holdout rows`}</small>
+                    <em>Proper score; not calibration alone</em>
+                </article>
+                <article class="confidence-signal">
+                    <span>Model consensus</span>
+                    <strong>${escapeHtml(consensusLabel)}</strong>
+                    <small>${data.consensus ? (new Set(data.consensus.rows.map(row => row.pick)).size > 1 ? "Models disagree" : "Models align") : "Production model only"}</small>
+                    <em>Correlated models are not independent votes</em>
+                </article>
+                <article class="confidence-signal">
+                    <span>Market comparison</span>
+                    <strong>${escapeHtml(marketLabel)}</strong>
+                    <small>${data.marketEdge === null ? "Edge unavailable" : `${formatEdge(data.marketEdge)} model difference`}</small>
+                    <em>${data.odds ? escapeHtml(oddsFreshness(data.odds)) : "Real matched odds required"}</em>
+                </article>
+            </div>
+            <details class="confidence-anatomy__details">
+                <summary aria-controls="confidence-anatomy-explanation"><span>How to read this confidence</span><small>Probability, validation, consensus, and market evidence</small><i aria-hidden="true"></i></summary>
+                <div id="confidence-anatomy-explanation" class="confidence-anatomy__explanation">
+                    <article><strong>Probability</strong><p>The selected model's estimated chance for its picked side. A 55% estimate still implies substantial uncertainty.</p></article>
+                    <article><strong>Validation</strong><p>Brier score and log loss are proper scoring rules that combine reliability and discrimination. They should not be presented as calibration in isolation.</p></article>
+                    <article><strong>Consensus</strong><p>Agreement can increase confidence in a shared signal, but LineLens models may use overlapping data and therefore are not independent confirmations.</p></article>
+                    <article><strong>Market</strong><p>Model-versus-market difference appears only when a real matched odds snapshot exists. Missing prices are never estimated.</p></article>
+                </div>
+            </details>
+            <footer><strong>Evidence coverage is availability, not a quality score.</strong><span>Model: ${escapeHtml(data.model?.model_name || game.model_name || "Not declared")}</span></footer>
+        </section>
+    `;
+}
+
+function renderPregameStatAvailability() {
+    return `<div class="gamecast-stat-availability"><span aria-hidden="true">▦</span><div><strong>Box scores unlock from the official game feed</strong><small>Inning or period totals, player statistics, and leaders appear only after the source publishes them.</small></div></div>`;
 }
 
 function renderGameCastConsensus(game) {
@@ -6267,6 +6923,11 @@ function renderGameCast(game, sport) {
     const live = liveGameFor(game);
     const quality = featureQualityForGame(game);
     const prediction = getGamePick(game, sport);
+    const scoreSource = live || game;
+    const hasBoxScore = Boolean(scoreSource?.box_score?.periods?.length);
+    const hasPlayerStats = Boolean(scoreSource?.player_box_score?.teams?.length);
+    const gameActive = isLiveSportGame(scoreSource) || isFinalSportGame(scoreSource) || hasBoxScore || hasPlayerStats;
+    const statSections = gameActive ? `${renderGameCastBoxScore(game, live)}${renderGameCastPlayerStats(game, live)}` : renderPregameStatAvailability();
     return `
         <div class="gamecast-backdrop" data-close-gamecast></div>
         <aside class="gamecast-drawer" role="dialog" aria-modal="true" aria-label="LineLens GameCast">
@@ -6281,9 +6942,10 @@ function renderGameCast(game, sport) {
                 </div>
             </header>
             ${renderGameCastScore(game, live)}
+            ${gameActive ? statSections : ""}
             ${renderGameCastProvenance(game, sport)}
-            ${renderGameCastBoxScore(game, live)}
-            ${renderGameCastPlayerStats(game, live)}
+            ${renderConfidenceAnatomy(game, sport)}
+            ${gameActive ? "" : statSections}
             ${window.LineLensSprint5 ? window.LineLensSprint5.renderReaction({ ...game, sport }, sport) : ""}
             <section class="gamecast-grid">
                 <article class="gamecast-panel gamecast-panel--pick">
@@ -6655,6 +7317,102 @@ function togglePinnedModel(name) {
     showToast(state.selected.pinnedModel ? `${name} pinned to Watchlist` : "Model unpinned");
 }
 
+function latestRegistryModel(sport, modelName) {
+    return (state.modelRegistry?.models || [])
+        .filter(row => row.sport === sport && row.model_name === modelName)
+        .sort((a, b) => String(b.trained_at || "").localeCompare(String(a.trained_at || "")))[0] || null;
+}
+
+function metricComparison(challengerValue, productionValue, digits = 4) {
+    const challenger = safeNumber(challengerValue);
+    const production = safeNumber(productionValue);
+    if (challenger === null || production === null) return { available: false, value: "Unavailable", improved: null };
+    const delta = challenger - production;
+    return {
+        available: true,
+        value: `${delta > 0 ? "+" : ""}${delta.toFixed(digits)}`,
+        improved: delta < 0,
+    };
+}
+
+function formatSeasonSpan(seasons) {
+    if (!Array.isArray(seasons) || !seasons.length) return "Not exported";
+    const values = seasons.map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+    if (!values.length) return "Not exported";
+    const contiguous = values.every((value, index) => index === 0 || value === values[index - 1] + 1);
+    return contiguous && values.length > 1 ? `${values[0]}–${values[values.length - 1]}` : values.join(", ");
+}
+
+function renderOperationalModelPassport() {
+    const production = selectedModelEntry("MLB");
+    if (!production) return `<section class="panel model-passport model-passport--empty">${emptyState("No MLB production passport", "Train and select a real registry model before LineLens declares a production identity.")}</section>`;
+    const challenger = latestRegistryModel("MLB", "Moltres");
+    const productionMetrics = production.metrics || {};
+    const challengerMetrics = challenger?.metrics || {};
+    const logLossDelta = metricComparison(challengerMetrics.log_loss, productionMetrics.log_loss);
+    const brierDelta = metricComparison(challengerMetrics.brier_score, productionMetrics.brier_score);
+    const promotionEvidenceReady = Boolean(challenger && logLossDelta.available && brierDelta.available);
+    const challengerWinsRule = promotionEvidenceReady && logLossDelta.improved && brierDelta.improved;
+    const health = modelHealthSummary("MLB");
+    const registryMeta = normalizeMeta(state.modelRegistry);
+    const update = state.modelUpdateStatus || {};
+    const provenanceProvider = update.provenance?.provider || update.provenance?.issuer;
+    const trainSeasons = formatSeasonSpan(production.train_seasons);
+    const validationSeasons = formatSeasonSpan(production.validation_seasons);
+    const fitSeasons = formatSeasonSpan(production.production_fit_seasons);
+    const promotionLabel = !promotionEvidenceReady ? "Promotion evidence incomplete" : challengerWinsRule ? "Review challenger for promotion" : "Production retained";
+    const promotionTone = challengerWinsRule ? "review" : promotionEvidenceReady ? "retained" : "incomplete";
+    const challengerName = challenger ? modelIdentity(challenger.model_name).legend : "No challenger export";
+    return `
+        <section class="panel model-passport" aria-labelledby="model-passport-title">
+            <header class="model-passport__header">
+                <div><p class="eyebrow">Operational model passport</p><h2 id="model-passport-title">What is running, why it won, and what could replace it</h2><p>Registry identity, evaluation boundaries, monitoring, and promotion evidence stay connected to the exported v6 model record.</p></div>
+                <span class="model-passport__state" data-tone="${promotionTone}"><strong>${escapeHtml(promotionLabel)}</strong><small>lower log loss + Brier required</small></span>
+            </header>
+            <div class="model-passport__layout">
+                <article class="model-passport__identity">
+                    <span class="model-passport__alias">Production alias</span>
+                    <div><strong>${escapeHtml(modelIdentity(production.model_name).legend)}</strong><code>${escapeHtml(production.model_name)}</code></div>
+                    <p>${escapeHtml(production.notes || "Selected by the exported chronological evaluation policy.")}</p>
+                    <dl>
+                        <div><dt>Model ID</dt><dd>${escapeHtml(production.model_id || "Not exported")}</dd></div>
+                        <div><dt>Target</dt><dd>${escapeHtml(production.target || "Not exported")}</dd></div>
+                        <div><dt>Version</dt><dd>${escapeHtml(production.version || APP_VERSION)}</dd></div>
+                        <div><dt>Trained</dt><dd>${escapeHtml(timestamp(production.trained_at) || "Not exported")}</dd></div>
+                    </dl>
+                </article>
+                <div class="model-passport__evidence">
+                    <section class="model-passport__timeline" aria-label="MLB model evaluation boundary">
+                        <article><span>1 · Train</span><strong>${escapeHtml(trainSeasons)}</strong><small>${safeNumber(production.train_rows) === null ? "Rows not exported" : `${Number(production.train_rows).toLocaleString()} rows`}</small></article>
+                        <article><span>2 · Validate</span><strong>${escapeHtml(validationSeasons)}</strong><small>${safeNumber(production.validation_metrics?.sample_size) === null ? "Expanding-window rows unavailable" : `${Number(production.validation_metrics.sample_size).toLocaleString()} expanding-window rows`}</small></article>
+                        <article><span>3 · Seal holdout</span><strong>${escapeHtml(String(production.test_season || "Not exported"))}</strong><small>${safeNumber(production.test_rows) === null ? "Rows not exported" : `${Number(production.test_rows).toLocaleString()} untouched evaluation rows`}</small></article>
+                        <article><span>4 · Refit</span><strong>${escapeHtml(fitSeasons)}</strong><small>${safeNumber(production.production_fit_rows) === null ? "Rows not exported" : `${Number(production.production_fit_rows).toLocaleString()} completed rows`}</small></article>
+                    </section>
+                    <section class="model-passport__promotion" aria-label="Champion challenger promotion read">
+                        <header><div><span>Challenger</span><strong>${escapeHtml(challengerName)}</strong></div><small>${challenger ? escapeHtml(challenger.model_id || "ID not exported") : "No comparable registry row"}</small></header>
+                        <div class="model-passport__metric-compare">
+                            <article><span>Log loss delta</span><strong data-result="${logLossDelta.improved === true ? "better" : logLossDelta.improved === false ? "worse" : "missing"}">${escapeHtml(logLossDelta.value)}</strong><small>challenger minus production · lower wins</small></article>
+                            <article><span>Brier delta</span><strong data-result="${brierDelta.improved === true ? "better" : brierDelta.improved === false ? "worse" : "missing"}">${escapeHtml(brierDelta.value)}</strong><small>challenger minus production · lower wins</small></article>
+                            <article><span>Holdout rows</span><strong>${safeNumber(challenger?.test_rows) === null ? "Unavailable" : Number(challenger.test_rows).toLocaleString()}</strong><small>${challenger?.test_season ? `${escapeHtml(String(challenger.test_season))} sealed season` : "Boundary not exported"}</small></article>
+                        </div>
+                        <p>${challengerWinsRule ? "Both exported proper scores improve. This is a review signal, not automatic deployment approval." : promotionEvidenceReady ? "The challenger does not beat the production model on both exported proper scores, so the production alias remains unchanged." : "LineLens will not infer promotion readiness without comparable exported holdout metrics."}</p>
+                    </section>
+                </div>
+            </div>
+            <div class="model-passport__monitoring">
+                <span data-tone="${health.status.toLowerCase().replaceAll(" ", "-")}"><strong>Monitoring · ${escapeHtml(health.status)}</strong><small>${escapeHtml(health.reason)}</small></span>
+                <span><strong>Feature drift · ${escapeHtml(state.featureSummary?.drift_status || "Unavailable")}</strong><small>${state.featureSummary?.drift_status ? "Exported feature summary" : "No drift verdict in bundled feature report"}</small></span>
+                <span><strong>Registry · ${registryMeta.real_data === true ? "Real export" : "Unverified"}</strong><small>${escapeHtml(timestamp(registryMeta.generated_at) || "Generation time unavailable")}</small></span>
+                <span><strong>Artifact provenance · ${escapeHtml(provenanceProvider || "Not installed")}</strong><small>${provenanceProvider ? "Approved model-channel record" : "Bundled registry only; no standalone attestation record"}</small></span>
+            </div>
+            <details class="model-passport__policy">
+                <summary><span>Evaluation and promotion policy</span><small>Show the boundary and limitations</small></summary>
+                <div><p><strong>Evaluation boundary.</strong> ${escapeHtml(production.production_fit_policy || "Production fit policy was not exported.")} The sealed holdout metrics remain the comparison evidence.</p><p><strong>Promotion boundary.</strong> A challenger must improve both log loss and Brier on comparable sealed data before human review. Accuracy alone does not trigger promotion.</p><p><strong>Provenance boundary.</strong> Registry metadata identifies this bundled model. Signed artifact provenance is shown only when an approved standalone update record exists.</p></div>
+            </details>
+        </section>
+    `;
+}
+
 function renderWatchlist() {
     const watched = watchlistRows();
     const teams = state.favorites.teams.map(id => {
@@ -6765,7 +7523,10 @@ function confidenceValue(row, sport = row?.sport || "MLB") {
 
 function recordSummaryLine(summary) {
     const decided = summary.wins + summary.losses + summary.pushes;
-    const accuracy = decided ? `${((summary.wins / decided) * 100).toFixed(1)}%` : "pending";
+    if (!decided) {
+        return summary.pending ? `0-0 / ${summary.pending} pending · Awaiting final` : "No logged picks";
+    }
+    const accuracy = `${((summary.wins / decided) * 100).toFixed(1)}%`;
     return `${summary.wins}-${summary.losses}${summary.pushes ? `-${summary.pushes}` : ""}${summary.pending ? ` / ${summary.pending} pending` : ""} · ${accuracy}`;
 }
 
@@ -6793,11 +7554,12 @@ function bestPickRowsByDay(rows) {
 
 function renderModelAccountabilityCenter() {
     const mlbRows = getLogEntries().filter(row => row.sport === "MLB");
-    const bestPicks = bestPickRowsByDay(mlbRows);
+    const accountableMlbRows = mlbRows.filter(row => accountabilityLabel(row) !== "Excluded");
+    const bestPicks = bestPickRowsByDay(accountableMlbRows);
     const yesterdayBest = bestPicks.find(row => String(row.game_date || row.generated_at || "").slice(0, 10) === dateOffsetIso(-1));
     const last10 = summarizeRecordRows(bestPicks.slice(0, 10));
-    const hotPicks = summarizeRecordRows(mlbRows.filter(row => confidenceValue(row) >= 0.6));
-    const leans = summarizeRecordRows(mlbRows.filter(row => confidenceValue(row) < 0.55));
+    const hotPicks = summarizeRecordRows(accountableMlbRows.filter(row => confidenceValue(row) >= 0.6));
+    const leans = summarizeRecordRows(accountableMlbRows.filter(row => confidenceValue(row) < 0.55));
     const yesterday = summarizeRecordRows(rowsForDateFromLogs(dateOffsetIso(-1)));
     const last7 = summarizeRecordRows(rowsWithinDays(mlbRows, 7));
     const last30 = summarizeRecordRows(rowsWithinDays(mlbRows, 30));
@@ -6827,7 +7589,7 @@ function renderModelAccountabilityCenter() {
                 ${card("MLB live", recordLine(mlbRecord.live_record || mlbRecord.overall || {}), formatProbability((mlbRecord.live_record || mlbRecord.overall || {}).accuracy))}
                 ${card("MLB backtest", recordLine(mlbRecord.backtest_record || {}), formatProbability((mlbRecord.backtest_record || {}).accuracy))}
                 ${card("NFL historical", recordLine(nflRecord.historical_record || nflRecord.overall || {}), formatProbability((nflRecord.historical_record || nflRecord.overall || {}).accuracy))}
-                ${card("Model vs market", marketScored.length ? recordSummaryLine(marketSummary) : "pending", marketScored.length ? "scored odds-joined picks" : "needs scored odds rows")}
+                ${card("Model vs market", marketScored.length ? recordSummaryLine(marketSummary) : "No scored market picks", marketScored.length ? "scored odds-joined picks" : "needs scored odds rows")}
             </div>
         </section>
     `;
@@ -6846,9 +7608,74 @@ function renderRecord() {
                 ${["MLB", "NFL", "WNBA"].map(value => `<button class="${sport === value ? "is-active" : ""}" data-record-sport="${value}">${value}</button>`).join("")}
             </div>
         </section>
+        ${renderRecordReconciliationReceipt()}
         ${renderModelAccountabilityCenter()}
         ${sport === "MLB" ? renderMlbRecordView() : sport === "WNBA" ? renderWnbaRecordView() : renderNflRecordView()}
     `;
+}
+
+function renderRecordReconciliationReceipt() {
+    const recordMeta = state.modelRecord?.metadata || {};
+    const history = state.resultHistory || {};
+    const historyMeta = history.metadata || {};
+    const resultRows = Array.isArray(history.games) ? history.games : [];
+    const logged = safeNumber(recordMeta.predictions_logged, getLogEntries().length) || 0;
+    const scored = safeNumber(recordMeta.scored_predictions, recordMeta.predictions_scored_this_run) || 0;
+    const excluded = safeNumber(recordMeta.excluded_predictions, getLogEntries().filter(isExcludedRecordRow).length) || 0;
+    const pending = safeNumber(recordMeta.pending_predictions, 0) || 0;
+    const removed = safeNumber(recordMeta.historical_replay_rows_removed, 0) || 0;
+    const warnings = Array.isArray(historyMeta.warnings) ? historyMeta.warnings : [];
+    const bySport = resultRows.reduce((summary, game) => {
+        const sport = normalizedSportCode(game.sport || "Other");
+        const status = String(game.status_detail || game.status || "").toLowerCase();
+        const row = summary[sport] || { rows: 0, final: 0, nonDecisive: 0 };
+        row.rows += 1;
+        if (status.includes("final") || status.includes("completed")) row.final += 1;
+        if (["postponed", "canceled", "cancelled", "suspended", "delayed"].some(marker => status.includes(marker))) row.nonDecisive += 1;
+        summary[sport] = row;
+        return summary;
+    }, {});
+    const settled = pending === 0;
+    const sportCopy = Object.entries(bySport)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([sport, row]) => `${sport} ${row.final} final${row.nonDecisive ? ` · ${row.nonDecisive} non-decisive` : ""}`);
+    return `
+        <section class="panel record-reconciliation" aria-labelledby="record-reconciliation-title">
+            <header class="section-header">
+                <div>
+                    <p class="eyebrow">Result reconciliation</p>
+                    <h2 id="record-reconciliation-title">Scoring receipt</h2>
+                    <p class="muted">Every ledger row ends as scored, explicitly excluded, or still open. Excluded games never improve or damage accuracy.</p>
+                </div>
+                <span class="chip ${settled ? "chip--success" : "chip--warning"}">${settled ? "ledger settled" : `${pending} awaiting final`}</span>
+            </header>
+            <div class="record-reconciliation__flow" aria-label="Prediction ledger reconciliation">
+                <article><span>1 · Ingested</span><strong>${logged}</strong><small>valid live ledger rows</small></article>
+                <i aria-hidden="true">→</i>
+                <article data-variant="success"><span>2 · Scored</span><strong>${scored}</strong><small>win, loss, or push</small></article>
+                <i aria-hidden="true">→</i>
+                <article data-variant="warning"><span>3 · Excluded</span><strong>${excluded}</strong><small>postponed or no result</small></article>
+                <i aria-hidden="true">→</i>
+                <article data-variant="${pending ? "error" : "success"}"><span>4 · Open</span><strong>${pending}</strong><small>${pending ? "awaiting authoritative final" : "nothing left pending"}</small></article>
+            </div>
+            <div class="record-reconciliation__evidence">
+                <div><span>Authoritative result cache</span><strong>${safeNumber(historyMeta.row_count, resultRows.length) || 0} unique rows</strong><small>${escapeHtml(sportCopy.join(" · ") || "No result rows loaded")}</small></div>
+                <div><span>Sources</span><strong>${escapeHtml(historyMeta.source || "Unavailable")}</strong><small>Updated ${escapeHtml(timestamp(historyMeta.generated_at))}</small></div>
+                <div><span>Provider warnings</span><strong>${warnings.length}</strong><small>${escapeHtml(warnings[0] || "No warnings in the latest result refresh")}</small></div>
+                <div><span>Last scoring pass</span><strong>${escapeHtml(timestamp(recordMeta.last_scoring_run || recordMeta.generated_at))}</strong><small>${escapeHtml(state.refreshStatus?.model_record?.status || "record export")}</small></div>
+            </div>
+            ${removed ? `<p class="record-reconciliation__repair"><strong>${removed} legacy replay rows removed.</strong> Historical postponed MLB games had been copied into the live ledger by an older export. They were never counted in accuracy; the corrected ledger now keeps only genuine live prediction records.</p>` : ""}
+            <details class="record-reconciliation__policy">
+                <summary><span>What counts and what does not</span><small>Audit policy</small><i aria-hidden="true"></i></summary>
+                <div><p><strong>Scored:</strong> a logged pregame pick joined to an authoritative final score.</p><p><strong>Excluded:</strong> postponed, canceled, suspended, delayed, or explicitly no-result games. These are retained as audit evidence but removed from the accuracy denominator.</p><p><strong>Open:</strong> a valid logged pick whose authoritative final is not available yet. Schedule-only rows and historical backtests never enter this live receipt.</p></div>
+            </details>
+        </section>
+    `;
+}
+
+function isExcludedRecordRow(row) {
+    const result = String(row?.model_result || row?.result_status || "").toLowerCase();
+    return result === "no_result" || result === "excluded";
 }
 
 function accountabilityLabel(row) {
@@ -6856,6 +7683,7 @@ function accountabilityLabel(row) {
     if (["win", "won", "correct"].includes(raw)) return "Correct";
     if (["loss", "lost", "wrong"].includes(raw)) return "Wrong";
     if (raw.includes("push")) return "Push";
+    if (raw === "no_result" || raw === "excluded" || raw.includes("no result")) return "Excluded";
     if (raw.includes("no") && raw.includes("prediction")) return "No pick";
     if (raw.includes("pending") || !raw) return "Pending";
     return raw.replaceAll("_", " ");
@@ -6898,7 +7726,7 @@ function summarizeRecordRows(rows) {
         if (label === "correct") acc.wins += 1;
         else if (label === "wrong") acc.losses += 1;
         else if (label === "push") acc.pushes += 1;
-        else if (label !== "no pick") acc.pending += 1;
+        else if (!["no pick", "excluded"].includes(label)) acc.pending += 1;
         return acc;
     }, { wins: 0, losses: 0, pushes: 0, pending: 0 });
 }
@@ -7547,6 +8375,7 @@ function renderSettings() {
             <div class="report-actions"><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn btn--primary" type="button" data-open-about>Open About</button></div>
             <span class="chip">${escapeHtml(state.app.version || APP_VERSION)}</span>
         </section>
+        ${renderDataOperationsMap()}
         ${renderUiPreferencesPanel()}
         ${window.LineLensSprint5 ? window.LineLensSprint5.renderPreferences(state) : ""}
         ${renderSharedDataPanel()}
@@ -7560,6 +8389,57 @@ function renderSettings() {
         ${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}
         <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><span class="muted">Release notes ship with published builds.</span><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
         <section class="panel"><p class="data-status" data-variant="${state.refreshRuntime.available ? "success" : "warning"}">${state.refreshRuntime.available ? "Bundled exports load first. Python refresh commands are available when the packaged app can access the project scripts." : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment."} Tracking data is stored locally in <code>${TRACKER_KEY}</code>. Refresh logs use <code>${REFRESH_LOGS_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
+    `;
+}
+
+function renderDataOperationsMap() {
+    const heartbeatSeconds = Math.max(liveHeartbeatSeconds() || 30, 30);
+    const desktopLive = isTauriRefreshAvailable();
+    const liveStatus = state.liveRefresh.lastStatus || (state.live.games.length ? "cached" : "waiting");
+    const sharedStatus = state.sharedDataRuntime.active
+        ? "checking"
+        : state.sharedDataStatus?.status || (state.sharedDataRuntime.lastResult?.success ? "connected" : "bundled fallback");
+    const trainingRuns = Object.values(state.refreshStatus?.training || {})
+        .map(row => row?.last_run_at)
+        .filter(Boolean)
+        .sort();
+    const lastTraining = trainingRuns.at(-1);
+    return `
+        <section class="panel data-operations-map" aria-labelledby="data-operations-title">
+            <header class="section-header data-operations-map__header">
+                <div>
+                    <p class="eyebrow">Data operations</p>
+                    <h2 id="data-operations-title">Three clocks, three separate jobs</h2>
+                    <p class="muted">Live game state does not wait for model retraining. Provider secrets stay in GitHub; installed clients receive only verified exports.</p>
+                </div>
+                <span class="chip chip--soft">v6 delivery map</span>
+            </header>
+            <div class="data-operations-map__grid">
+                <article class="operations-lane operations-lane--live" data-variant="${escapeHtml(healthTone(liveStatus))}">
+                    <div class="operations-lane__cadence"><span>During games</span><strong>${desktopLive ? `Every ${heartbeatSeconds}s` : "Desktop heartbeat"}</strong></div>
+                    <div class="operations-lane__body"><span>1</span><div><p>Live scoreboard</p><h3>Scores and game state</h3><small>Keyless ESPN scoreboards feed score, inning, outs, count, bases, and latest play directly to the desktop app.</small></div></div>
+                    <footer><span class="operations-state"><i></i>${escapeHtml(liveStatus)}</span><small>${escapeHtml(state.liveRefresh.lastMessage || "Bundled scores remain visible between refreshes.")}</small></footer>
+                </article>
+                <article class="operations-lane operations-lane--data" data-variant="${escapeHtml(healthTone(sharedStatus))}">
+                    <div class="operations-lane__cadence"><span>Scheduled channel</span><strong>Every 6 hours</strong></div>
+                    <div class="operations-lane__body"><span>2</span><div><p>Approved shared data</p><h3>Predictions, odds, props, records</h3><small>GitHub Actions uses repository secrets, strips credentials, signs the bundle, and publishes exact-file hashes for client verification.</small></div></div>
+                    <footer><span class="operations-state"><i></i>${escapeHtml(sharedStatus)}</span><small>Checked at startup and no more than once per 15 minutes during desktop heartbeat.</small></footer>
+                </article>
+                <article class="operations-lane operations-lane--model" data-variant="info">
+                    <div class="operations-lane__cadence"><span>Research cycle</span><strong>Sunday + manual</strong></div>
+                    <div class="operations-lane__body"><span>3</span><div><p>Model retraining</p><h3>Evaluate before promotion</h3><small>Chronological holdout tests, drift alerts, signed provenance, and a review PR gate every candidate. No retraining run silently ships a model.</small></div></div>
+                    <footer><span class="operations-state"><i></i>review gated</span><small>${lastTraining ? `Last bundled training ${timestamp(lastTraining)}.` : "Training history is unavailable in this export."} PR-disabled runs keep a signed patch artifact.</small></footer>
+                </article>
+            </div>
+            <div class="data-operations-map__actions">
+                <p><strong>Bottom line:</strong> live scores continue independently even if the daily data channel or weekly retraining job has not run.</p>
+                <div class="report-actions">
+                    <button class="btn btn--primary" type="button" data-live-heartbeat-now>Refresh live scores now</button>
+                    <button class="btn" type="button" data-sync-shared-data ${state.sharedDataRuntime.active || !desktopLive ? "disabled" : ""}>Check approved data</button>
+                    <button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/actions">Open automation</button>
+                </div>
+            </div>
+        </section>
     `;
 }
 
@@ -7779,10 +8659,11 @@ function openExternalLink(url) {
 function renderAll() {
     const visualAuditParams = new URLSearchParams(window.location.search);
     const visualAuditView = visualAuditParams.get("dpi-view");
-    if (visualAuditParams.get("dpi-audit") === "1" && ["home", "underdogs"].includes(visualAuditView)) {
+    if (visualAuditParams.get("dpi-audit") === "1" && ["home", "underdogs", "models", "nfl", "record", "settings"].includes(visualAuditView)) {
         state.selected.view = visualAuditView;
     }
     setBodyModes();
+    renderGlobalHealthSignal();
     renderView(state.selected.view || "home");
     renderGlobalTicker();
     renderGameCastRoot();
@@ -7793,11 +8674,71 @@ function renderAll() {
     }
     renderOnboarding();
     renderAbout();
+    renderCommandPalette();
     switchView(state.selected.view || "home");
+    if (visualAuditParams.get("dpi-audit") === "1" && visualAuditParams.get("quick-switch") === "1") {
+        openCommandPalette(visualAuditParams.get("quick-switch-query") || "");
+    }
+    if (visualAuditParams.get("dpi-audit") === "1" && visualAuditParams.get("dpi-section") === "radar") {
+        requestAnimationFrame(() => document.querySelector(".decision-radar")?.scrollIntoView({ block: "start" }));
+    }
+    if (visualAuditParams.get("dpi-audit") === "1" && visualAuditParams.get("dpi-section") === "operations") {
+        requestAnimationFrame(() => document.querySelector(".data-operations-map")?.scrollIntoView({ block: "start" }));
+    }
+    if (visualAuditParams.get("dpi-audit") === "1" && visualAuditParams.get("dpi-gamecast")) {
+        const auditSport = normalizedSportCode(visualAuditParams.get("dpi-gamecast"));
+        const auditRows = auditSport === "MLB"
+            ? [...state.mlb.games, ...lifecycleBoardGames()]
+            : auditSport === "NFL"
+                ? ensureNflScope().games
+                : state.wnba.games;
+        let auditGame = auditRows.find(game => getGamePick(game, auditSport) !== "-" && getGameProbability(game, auditSport) !== null) || auditRows[0];
+        if (auditGame && auditSport === "MLB" && visualAuditParams.get("dpi-live-fixture") === "1") {
+            auditGame = {
+                ...auditGame,
+                __visual_live_fixture: true,
+                status: "In Progress",
+                status_detail: "Bottom 7",
+                inning: 7,
+                inning_state: "Bottom",
+                outs: 1,
+                balls: 2,
+                strikes: 1,
+                bases: { first: true, second: false, third: true },
+                away_score: 3,
+                home_score: 4,
+                latest_play: "Runner advances to third on a single.",
+                updated_at: "2026-08-19T20:30:00Z",
+            };
+        }
+        if (auditGame) {
+            openGameCast(auditSport, { ...auditGame, sport: auditSport });
+            if (visualAuditParams.get("dpi-gamecast-section") === "confidence") {
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    const drawer = document.querySelector(".gamecast-drawer");
+                    const section = drawer?.querySelector(".confidence-anatomy");
+                    if (drawer && section) drawer.scrollTop = Math.max(0, section.offsetTop - 16);
+                }));
+            }
+        }
+    }
 }
 
 function bindEvents() {
     document.addEventListener("click", event => {
+        if (event.target.closest("#command-palette-btn")) {
+            openCommandPalette();
+            return;
+        }
+        const commandItem = event.target.closest("[data-command-id]");
+        if (commandItem) {
+            executeCommandPaletteItem(commandItem.dataset.commandId);
+            return;
+        }
+        if (event.target.matches("[data-command-close]") && !event.target.closest("[data-command-panel]")) {
+            closeCommandPalette();
+            return;
+        }
         if (event.target.id === "about-btn" || event.target.closest("[data-open-about]")) {
             switchView("about");
             return;
@@ -7929,6 +8870,14 @@ function bindEvents() {
             const card = flipCardButton.closest(".mlb-card-flip");
             if (card) {
                 const flipped = card.classList.toggle("is-flipped");
+                const front = card.querySelector(".mlb-card-flip__front");
+                const back = card.querySelector(".mlb-card-flip__back");
+                if (front && back) {
+                    front.inert = flipped;
+                    back.inert = !flipped;
+                    front.setAttribute("aria-hidden", String(flipped));
+                    back.setAttribute("aria-hidden", String(!flipped));
+                }
                 card.querySelectorAll("[data-flip-card]").forEach(button => {
                     button.setAttribute("aria-pressed", String(flipped));
                     button.setAttribute("aria-label", flipped ? "Show matchup summary" : "Show matchup details");
@@ -8348,12 +9297,14 @@ function bindEvents() {
         if (event.target.id === "home-nfl-season" || event.target.id === "nfl-nfl-season") {
             state.selected.homeNflSeason = safeNumber(event.target.value);
             state.selected.nflSeasonManual = true;
-            state.selected.homeNflWeek = latestNflWeek(state.selected.homeNflSeason);
+            state.selected.nflWeekManual = false;
+            state.selected.homeNflWeek = latestNflModelWeek(state.selected.homeNflSeason);
             persistSettings();
             event.target.id === "home-nfl-season" ? renderHome() : renderNFL();
         }
         if (event.target.id === "home-nfl-week" || event.target.id === "nfl-nfl-week") {
             state.selected.homeNflWeek = safeNumber(event.target.value);
+            state.selected.nflWeekManual = true;
             persistSettings();
             event.target.id === "home-nfl-week" ? renderHome() : renderNFL();
         }
@@ -8434,6 +9385,12 @@ function bindEvents() {
     });
 
     document.addEventListener("input", event => {
+        if (event.target.id === "command-palette-input") {
+            state.commandPalette.query = event.target.value;
+            state.commandPalette.activeIndex = 0;
+            renderCommandPalette({ focusInput: true });
+            return;
+        }
         if (event.target.id === "history-search") {
             state.selected.historyQuery = event.target.value;
             renderHistory();
@@ -8446,6 +9403,36 @@ function bindEvents() {
     });
 
     document.addEventListener("keydown", event => {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+            event.preventDefault();
+            state.commandPalette.open ? closeCommandPalette() : openCommandPalette();
+            return;
+        }
+        if (state.commandPalette.open) {
+            if (event.key === "Escape") {
+                event.preventDefault();
+                closeCommandPalette();
+                return;
+            }
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                event.preventDefault();
+                moveCommandPaletteSelection(event.key === "ArrowDown" ? 1 : -1);
+                return;
+            }
+            if (event.key === "Home" || event.key === "End") {
+                event.preventDefault();
+                const items = filteredCommandPaletteItems();
+                state.commandPalette.activeIndex = event.key === "Home" ? 0 : Math.max(0, items.length - 1);
+                renderCommandPalette({ focusInput: true });
+                return;
+            }
+            if (event.key === "Enter") {
+                event.preventDefault();
+                const item = filteredCommandPaletteItems()[state.commandPalette.activeIndex];
+                if (item) executeCommandPaletteItem(item.id);
+                return;
+            }
+        }
         if (event.key === "Escape" && state.gamecast.open) {
             closeGameCast();
         }

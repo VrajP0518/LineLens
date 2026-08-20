@@ -117,6 +117,7 @@ def main() -> int:
         run("Player props contracts", [NPM, "run", "check:props"]),
         run("Refresh contract", [NPM, "run", "check:refresh"]),
         run("v6 contract", [NPM, "run", "check:v6"]),
+        run("Design contract", [NPM, "run", "check:design"]),
         run("Team logo contract", [NPM, "run", "check:logos"]),
         run("Integrity contract", [python, "scripts/check_data_integrity.py"]),
         version_contract(),

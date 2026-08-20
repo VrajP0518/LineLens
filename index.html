@@ -34,6 +34,7 @@
     <script src="data/startup_status.js" defer></script>
     <script src="data/refresh_status.js" defer></script>
     <script src="data/live/live_heartbeat.js" defer></script>
+    <script src="data/live/result_history.js" defer></script>
     <script src="data/predictions/nfl_predictions.js" defer></script>
     <script src="data/predictions.js" defer></script>
     <script src="data/predictions/mlb_predictions.js" defer></script>
@@ -141,12 +142,29 @@
         <div class="workspace">
             <header class="topbar">
                 <div>
-            <p class="eyebrow" id="view-kicker">Today’s board</p>
+                    <div class="topbar__eyebrow-row">
+                        <p class="eyebrow" id="view-kicker">Today’s board</p>
+                        <button id="global-health-signal" class="global-health-signal" type="button" data-view-link="settings" data-tone="loading" aria-label="Open data health in Settings">
+                            <span aria-hidden="true"></span>
+                            <strong>Loading data</strong>
+                        </button>
+                    </div>
                     <h1 id="view-title">LineLens Sports</h1>
                 </div>
                 <div class="topbar__meta">
-                    <button id="refresh-btn" class="btn btn--primary">Reload exports</button>
-                    <button id="about-btn" class="btn" data-view-link="about">About</button>
+                    <button id="command-palette-btn" class="btn command-palette-trigger topbar-action" type="button" aria-label="Search and quick switch" aria-haspopup="dialog" aria-controls="command-palette-root">
+                        <svg class="topbar-action__icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+                        <span class="topbar-action__label">Search</span>
+                        <kbd>Ctrl K</kbd>
+                    </button>
+                    <button id="refresh-btn" class="btn btn--primary topbar-action" type="button" aria-label="Refresh data">
+                        <svg class="topbar-action__icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 7v5h-5"></path><path d="M18.2 15.5a7 7 0 1 1-.4-7.5L20 10"></path></svg>
+                        <span class="topbar-action__label">Refresh</span>
+                    </button>
+                    <button id="about-btn" class="btn topbar-action" type="button" aria-label="About LineLens" data-view-link="about">
+                        <svg class="topbar-action__icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6"></path><path d="M12 7h.01"></path></svg>
+                        <span class="topbar-action__label">About</span>
+                    </button>
                 </div>
             </header>
 
@@ -185,6 +203,7 @@
     <div id="live-notification-root" class="live-notification-root" aria-live="polite"></div>
     <div id="onboarding-root"></div>
     <div id="about-root"></div>
+    <div id="command-palette-root"></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="sprint5.js" defer></script>
     <script src="app.js" defer></script>

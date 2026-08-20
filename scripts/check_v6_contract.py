@@ -88,10 +88,33 @@ def main() -> int:
     shared_data_builder = (ROOT / "scripts" / "build_shared_data_bundle.py").read_text(encoding="utf-8")
     shared_data_restore = (ROOT / "scripts" / "restore_shared_data_bundle.py").read_text(encoding="utf-8")
     dpi_workflow = (ROOT / ".github" / "workflows" / "dpi-visual-audit.yml").read_text(encoding="utf-8")
+    all_workflows = "\n".join(path.read_text(encoding="utf-8") for path in (ROOT / ".github" / "workflows").glob("*.yml"))
     require('const APP_VERSION = "v6"' in app, "visible app version is not v6")
     require("version: APP_VERSION" in app, "loaded runtime metadata can override the visible v6 app version")
     require("renderGameCastBoxScore" in app and "gamecast-box-score" in css, "box-score UI contract is missing")
     require("renderGameCastPlayerStats" in app and "player_box_score" in (ROOT / "scripts" / "live_scores.py").read_text(encoding="utf-8"), "player box-score contract is missing")
+    require(
+        "renderMlbLiveSituation" in app
+        and "mlb-live-scoreboard__score" in css
+        and "mlb-base-state" in css,
+        "live MLB score, inning, outs, count, or base-state hierarchy is missing",
+    )
+    require(
+        "@container prediction-board" in css
+        and "container-name: prediction-board" in css,
+        "NFL prediction board is not container-responsive",
+    )
+    require(
+        ".mlb-game-card.is-model-won .mlb-card-flip__face" in css
+        and ".mlb-game-card.is-model-lost .mlb-card-flip__face" in css,
+        "MLB settled-result borders are not visibly reinforced",
+    )
+    require(
+        "renderCommandPalette" in app
+        and "commandPaletteGameRows" in app
+        and 'id="command-palette-root"' in (ROOT / "index.html").read_text(encoding="utf-8"),
+        "global page, matchup, and action search is missing",
+    )
     require("renderUnderdogs" in app and 'data-view="underdogs"' in (ROOT / "index.html").read_text(encoding="utf-8"), "underdog view contract is missing")
     require("--pick-color" in app and "var(--pick-color)" in css, "prediction team-color contract is missing")
     require("LIVE_SCORE_FILES" in scorer and "fallback:" in scorer, "record scoring does not join refreshed finals")
@@ -99,6 +122,11 @@ def main() -> int:
     require("schedule:" in workflow and "create-pull-request" in workflow, "managed retraining workflow is incomplete")
     require("actions/attest@v4" in workflow and "model_drift_alerts" in workflow, "retraining drift/provenance contract is missing")
     require("peter-evans/create-pull-request@v8" in workflow, "retraining PR action is not on the Node 24 runtime")
+    require(
+        all(old not in all_workflows for old in ("actions/checkout@v4", "actions/setup-node@v4", "actions/setup-python@v5", "actions/upload-artifact@v4"))
+        and all(new in all_workflows for new in ("actions/checkout@v6", "actions/setup-node@v6", "actions/setup-python@v6", "actions/upload-artifact@v6")),
+        "one or more first-party workflows still depend on a deprecated Node 20 action line",
+    )
     require("model-channel-v6" in model_channel and "actions/attest@v4" in model_channel, "approved model channel is missing")
     require("sync_shared_data" in rust and "data-channel-v6" in rust, "native shared-data updater is missing")
     require(
@@ -122,6 +150,24 @@ def main() -> int:
         "can_approve_pull_request_reviews" in workflow
         and "Allow GitHub Actions to create and approve pull requests" in workflow,
         "retraining workflow does not preflight repository PR permission",
+    )
+    require(
+        "continue-on-error: true" in workflow
+        and "retraining-review.patch" in workflow
+        and "Manual model review required" in workflow,
+        "retraining workflow cannot preserve a signed manual review path when PR creation is unavailable",
+    )
+    require(
+        "renderDataOperationsMap" in app
+        and "Three clocks, three separate jobs" in app
+        and "Live game state does not wait for model retraining" in app,
+        "live-score, shared-data, and retraining cadences are not clearly separated in the product",
+    )
+    require(
+        "renderRecordReconciliationReceipt" in app
+        and "data/live/result_history.json" in app
+        and "historical_replay_rows_removed" in scorer,
+        "record reconciliation receipt or historical replay repair is missing",
     )
     require("restore_shared_data_bundle.py" in shared_data_channel and "exactly match" in shared_data_restore, "shared-data workflow does not preserve verified channel state")
     require("1.25" in (ROOT / "scripts" / "windows_dpi_audit.ps1").read_text(encoding="utf-8") and "windows-latest" in dpi_workflow, "Windows DPI audit contract is missing")

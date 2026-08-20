@@ -36,4 +36,4 @@ Before public distribution, confirm that each provider plan permits redistributi
 
 ## Model retraining
 
-The weekly **Retrain Models** workflow also receives the repository secrets for market evidence. It retrains in Actions, generates drift alerts and signed provenance, and opens a review pull request; it does not silently publish an unreviewed candidate to installed clients.
+The weekly **Retrain Models** workflow also receives the repository secrets for market evidence. It retrains in Actions, generates drift alerts and signed provenance, and attempts to open a review pull request. If repository policy blocks PR creation, the workflow publishes the same review evidence plus a patch in its signed run artifact; it still does not publish an unreviewed candidate to installed clients.

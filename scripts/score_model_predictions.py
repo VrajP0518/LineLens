@@ -107,6 +107,22 @@ def is_excluded_prediction(row: dict[str, Any]) -> bool:
     )
 
 
+def is_historical_replay_artifact(row: dict[str, Any]) -> bool:
+    """Identify legacy non-decisive rows accidentally logged by historical exports.
+
+    A genuine postponement logged near game day remains immutable. Only MLB
+    no-result rows whose prediction timestamp trails the game by more than 45
+    days are removed from the live ledger; those belong to historical replay.
+    """
+    if str(row.get("sport") or "").upper() != "MLB" or not is_excluded_prediction(row):
+        return False
+    generated_at = parse_datetime(row.get("generated_at"))
+    game_date = parse_datetime(row.get("game_date"))
+    if generated_at is None or game_date is None:
+        return False
+    return generated_at - game_date > timedelta(days=45)
+
+
 def team_abbrev(side: dict[str, Any]) -> str:
     return mlb_team_abbreviation(side)
 
@@ -618,6 +634,8 @@ def nfl_record() -> dict[str, Any]:
 
 def build_record(log_payload: dict[str, Any], scored: int, pending: int) -> dict[str, Any]:
     rows = log_payload.get("predictions", [])
+    scored_total = sum(normalize_result(row.get("model_result")) in SCORED_RESULTS for row in rows)
+    excluded_total = sum(is_excluded_prediction(row) for row in rows)
     mlb = mlb_live_record(rows)
     wnba = wnba_live_record(rows)
     nfl = nfl_record()
@@ -629,7 +647,10 @@ def build_record(log_payload: dict[str, Any], scored: int, pending: int) -> dict
             "real_data": True,
             "predictions_logged": len(rows),
             "predictions_scored_this_run": scored,
+            "scored_predictions": scored_total,
+            "excluded_predictions": excluded_total,
             "pending_predictions": pending,
+            "historical_replay_rows_removed": int(safe_float((log_payload.get("metadata") or {}).get("historical_replay_rows_removed")) or 0),
             "last_scoring_run": utc_now(),
         },
         "sports": {
@@ -643,6 +664,10 @@ def build_record(log_payload: dict[str, Any], scored: int, pending: int) -> dict
 def main() -> int:
     payload = load_json(LOG_JSON) or {"metadata": {}, "predictions": []}
     payload.setdefault("predictions", [])
+    previously_removed = int(safe_float((payload.get("metadata") or {}).get("historical_replay_rows_removed")) or 0)
+    replay_artifacts = [row for row in payload["predictions"] if is_historical_replay_artifact(row)]
+    if replay_artifacts:
+        payload["predictions"] = [row for row in payload["predictions"] if not is_historical_replay_artifact(row)]
     mlb_scored, mlb_pending = score_mlb_predictions(payload["predictions"])
     wnba_scored, wnba_pending = score_wnba_predictions(payload["predictions"])
     scored = mlb_scored + wnba_scored
@@ -655,6 +680,8 @@ def main() -> int:
         "row_count": len(payload["predictions"]),
         "scored_this_run": scored,
         "pending": pending,
+        "historical_replay_rows_removed": previously_removed + len(replay_artifacts),
+        "historical_replay_policy": "MLB excluded/no-result rows generated more than 45 days after game date are not live predictions.",
     }
     write_json_and_js(payload, LOG_JSON, LOG_JS, "__MODEL_PREDICTIONS_LOG__")
     record = build_record(payload, scored, pending)

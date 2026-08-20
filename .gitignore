@@ -36,6 +36,8 @@ data/processed/mlb/*
 src-tauri/target/
 dist/
 dist-web/
+dist-models/
+artifacts/
 *.log
 *.tmp
 *.cache
@@ -62,3 +64,18 @@ nfl-spread-predictor/
 !README.md
 !docs/API_KEY_DEPLOYMENT.md
 !docs/MODEL_DELIVERY.md
+
+# Private goal-mode product journal and design captures.
+GOAL MODE.md
+goal-mode-assets/
+
+# Browser/DPI audit profiles and generated screenshots. Keep only the two
+# curated README images under docs/images/ in the public repository.
+**/edge-*/
+**/*edge-profile*/
+**/.edge/
+.edge-audit-*/
+**/.edge-audit-*/
+*.edge
+**/*dpi*.png
+**/*screenshot*.png

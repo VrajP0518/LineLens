@@ -10,54 +10,15 @@ LineLens Sports is a desktop sports-intelligence and model-evaluation app built 
   <img src="image-2.png" alt="LineLens Sports home dashboard with MLB, NFL, reports, tracking, model health, and live ticker" width="100%" />
 </p>
 
+<p align="center">
+  <img src="docs/images/v6-compact-home.png" alt="LineLens v6 compact home dashboard with responsive navigation and data-health signal" width="49%" />
+  <img src="docs/images/v6-underdogs-evaluation.png" alt="LineLens v6 Underdogs page with no-vig market and Brier evaluation evidence" width="49%" />
+</p>
 
-## Download (RECOMMENDED)
+
+## Download
 
 For Windows, download the latest `.msi` or `.exe` from the repository’s [Releases](https://github.com/VrajP0518/LineLens/releases) page.
-
-## Run locally
-
-Requires Python 3.11 and Node.js.
-
-```powershell
-git clone https://github.com/VrajP0518/LineLens.git
-cd LineLens
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-npm install
-npm run app
-```
-
-The app uses bundled exports first, so the core pages can open without a live feed. Startup and manual refreshes run in the background when the local refresh bridge is available; fresh exports are applied without replacing the whole window.
-
-The Windows release keeps a writable runtime copy in the user’s local app-data folder. On launch it automatically checks the approved `data-channel-v6` release, verifies the bundle and individual file hashes, and applies sanitized scores, schedules, available odds, props, records, and current predictions. End users do not need Python or provider API keys. Bundled exports remain available offline, and a new installer is only needed for application-code changes.
-
-Live scores use a separate fast path: while the installed app or Live widget is open, its native Tauri client requests the public scoreboards directly every 30 seconds. Daily predictions remain stable while score, inning/period, and final status continue to move. The scheduled data workflow also revisits every pending MLB/WNBA prediction date and settles final results, postponed games, and other no-result states instead of allowing old rows to remain pending indefinitely.
-
-LineLens v6 also includes a weekly/manual GitHub Actions retraining workflow. It rebuilds the selected MLB/WNBA model family, runs chronological checks, generates drift alerts, signs the review bundle with GitHub artifact provenance, and opens a review pull request rather than silently promoting a new model. After review and merge, the separate **Publish Approved Model Channel** workflow can publish a hash-locked v6 model bundle. Installed clients verify the manifest, archive, individual files, and allowed paths before installing it, so model artifacts can update without a complete app release. See [model delivery](docs/MODEL_DELIVERY.md) and [API key deployment](docs/API_KEY_DEPLOYMENT.md).
-
-## Automatic shared data and optional developer keys
-
-Normal Windows users do not configure API keys. Repository secrets are used only by the scheduled **Publish Shared Data Channel** workflow, and the installed app downloads the sanitized result. See [API key deployment](docs/API_KEY_DEPLOYMENT.md) for the one-time channel activation and security boundary.
-
-Developers running the source checkout can optionally copy `.env.example` to `.env` and add their own provider keys for direct refresh testing:
-
-```text
-ODDS_API_KEY=
-SHARP_ODDS_API_KEY=
-PROPLINE_API_KEY=
-```
-
-Refresh odds with:
-
-```powershell
-npm run refresh:odds
-```
-
-Missing odds remain unavailable; they are never inferred or fabricated.
-
-The installed app also keeps Settings → Optional developer API keys as a local override. Values are saved to the user’s local runtime `.env`, are never shown back, and are never included in a release.
 
 ## Features
 

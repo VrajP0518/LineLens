@@ -97,6 +97,11 @@ def _is_final_status(status: str | None) -> bool:
     return "final" in normalized or "completed" in normalized
 
 
+def _is_non_decisive_status(status: str | None) -> bool:
+    normalized = str(status or "").lower()
+    return any(marker in normalized for marker in ("postponed", "canceled", "cancelled", "suspended", "delayed"))
+
+
 def _trend(row: pd.Series) -> dict:
     return {
         "labels": ["Win %", "Run diff", "Runs scored", "Runs allowed"],
@@ -391,7 +396,10 @@ def _append_prediction_log(games: list[dict], artifact: dict, generated_at: str)
     for game in games:
         if game.get("prediction_mode") != "model":
             continue
-        if _is_final_status(game.get("status")):
+        # The immutable live ledger records actionable pregame predictions.
+        # Historical replays already marked final/non-decisive belong in
+        # backtests and result history, never in the live accountability log.
+        if _is_final_status(game.get("status")) or _is_non_decisive_status(game.get("status")):
             continue
         row = {
             "prediction_id": _stable_prediction_id(game),
