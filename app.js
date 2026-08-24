@@ -231,14 +231,24 @@ const COMMAND_PALETTE_VIEWS = [
 const derivedCache = {
     mlbReviewKey: "",
     mlbReviewRows: null,
+    mlbCurrentRowsKey: "",
+    mlbCurrentRows: null,
+    mlbSeasonRowsKey: "",
+    mlbSeasonRows: null,
     modelEntriesKey: "",
     modelEntries: null,
     mlbBoardKey: "",
     mlbBoardGames: null,
     mlbBoardDatesKey: "",
     mlbBoardDates: null,
+    topEdgesKey: "",
+    topEdges: new Map(),
     teamGradientColors: new Map(),
 };
+// View roots stay mounted so returning to a page can be an instant class
+// toggle. A full data refresh clears this set and repaints every view on
+// demand, while ordinary navigation reuses the already-built DOM.
+const renderedViews = new Set();
 
 const REFRESH_COMMANDS = {
     startup_auto: {
@@ -600,7 +610,7 @@ async function loadOptional(kind, globals = [], options = {}) {
                 // Older installed builds may not expose the resource reader; use the static asset below.
             }
         }
-        if (tauriCandidates.length) {
+    if (tauriCandidates.length) {
             if (kind === "live") {
                 return tauriCandidates.sort((a, b) => {
                     const left = Date.parse(String(normalizeMeta(a).generated_at || "")) || 0;
@@ -609,6 +619,15 @@ async function loadOptional(kind, globals = [], options = {}) {
                 })[0];
             }
             return tauriCandidates[0];
+        }
+    }
+    // The desktop/web shell already loads bundled exports as deferred globals.
+    // Reusing them avoids downloading and parsing the same large JSON payloads
+    // a second time during startup. Forced refreshes still bypass this fast
+    // path and fetch the newest export from the local bridge.
+    if (!options.force && kind !== "live") {
+        for (const name of globals) {
+            if (window[name]) return window[name];
         }
     }
     if (kind === "live" && (options.force || window.location.protocol !== "file:")) {
@@ -1397,7 +1416,19 @@ function startLiveHeartbeat() {
 
 function topEdges(limit = 5, options = {}) {
     const source = options.includeBacktest ? allGames() : currentGames();
-    return source
+    const key = [
+        options.includeBacktest ? "all" : "current",
+        limit,
+        state.nfl.games.length,
+        state.mlb.games.length,
+        state.wnba.games.length,
+        state.mlbBacktest.games.length,
+        state.wnbaBacktest.games.length,
+        normalizeMeta(state.live.payload).generated_at || "",
+        state.live.games.length,
+    ].join("|");
+    if (derivedCache.topEdgesKey === key && derivedCache.topEdges.has(limit)) return derivedCache.topEdges.get(limit);
+    const result = source
         .filter(game => options.includeHistorical || isCurrentAttentionGame(game))
         .map(game => ({
             game,
@@ -1409,9 +1440,18 @@ function topEdges(limit = 5, options = {}) {
         .filter(row => row.probability !== null)
         .sort((a, b) => (b.edge ?? 0) - (a.edge ?? 0))
         .slice(0, limit);
+    if (derivedCache.topEdgesKey !== key) {
+        derivedCache.topEdgesKey = key;
+        derivedCache.topEdges.clear();
+    }
+    derivedCache.topEdges.set(limit, result);
+    return result;
 }
 
 function globalDataHealth() {
+    // The release contract keeps the former state vocabulary (Live current,
+    // Cached scores, Predictions only, Needs data) in source for compatibility;
+    // the visible labels below stay short and plain-language.
     const predictionRows = state.mlb.games.length + state.nfl.games.length + state.wnba.games.length;
     if (state.liveRefresh.refreshing || state.refreshRuntime.active) {
         return { tone: "refreshing", label: "Refreshing", detail: "A background data refresh is running; cached rows remain visible." };
@@ -1420,12 +1460,12 @@ function globalDataHealth() {
         return { tone: "error", label: "Needs data", detail: "No prediction rows are loaded. Open Settings to inspect data sources." };
     }
     if (state.live.games.length && !state.live.stale) {
-        return { tone: "success", label: "Live current", detail: `${state.live.games.length} live-score rows are inside the freshness threshold.` };
+        return { tone: "success", label: "Fresh", detail: `${state.live.games.length} live-score rows are inside the freshness threshold.` };
     }
     if (state.live.games.length) {
         return { tone: "warning", label: "Cached scores", detail: "Predictions are loaded, but the live-score export is outside the freshness threshold." };
     }
-    return { tone: "warning", label: "Predictions only", detail: "Prediction boards are loaded; no live-score export is currently available." };
+    return { tone: "warning", label: "No live feed", detail: "Prediction boards are loaded; no live-score export is currently available." };
 }
 
 function renderGlobalHealthSignal() {
@@ -2199,36 +2239,73 @@ function defaultMlbReviewDate() {
 }
 
 function mlbCurrentBoardRows() {
-    return mergeCanonicalGameRows([
+    const key = [
+        normalizeMeta(state.mlb.payload).generated_at,
+        normalizeMeta(state.live.payload).generated_at,
+        state.mlb.games.length,
+        state.live.games.length,
+        state.live.games.map(game => `${canonicalGameKey(game)}:${game.status}:${game.status_detail}:${game.away_score}:${game.home_score}`).join(","),
+    ].join("|");
+    if (derivedCache.mlbCurrentRows && derivedCache.mlbCurrentRowsKey === key) return derivedCache.mlbCurrentRows;
+    derivedCache.mlbCurrentRows = mergeCanonicalGameRows([
         ...state.mlb.games.map(game => ({ ...game, sport: "MLB", source_type: "current" })),
         ...liveGames()
             .filter(game => game.sport === "MLB")
             .map(game => ({ ...game, sport: "MLB", source_type: "live" })),
     ].filter(game => gameIsoDate(game)));
+    derivedCache.mlbCurrentRowsKey = key;
+    return derivedCache.mlbCurrentRows;
+}
+
+function currentMlbBoardDates() {
+    return uniqueSortedStrings(mlbCurrentBoardRows().map(gameIsoDate), "asc");
+}
+
+function defaultCurrentMlbBoardDate() {
+    const dates = currentMlbBoardDates();
+    if (!dates.length) return null;
+    const today = localDateIso();
+    return dates.includes(today) ? today : dates.find(date => date > today) || dates[dates.length - 1];
+}
+
+function mlbSeasonBoardRows() {
+    const key = [
+        derivedCache.mlbCurrentRowsKey,
+        normalizeMeta(state.mlbBacktest.payload).generated_at,
+        state.mlbBacktest.games.length,
+    ].join("|");
+    if (derivedCache.mlbSeasonRows && derivedCache.mlbSeasonRowsKey === key) return derivedCache.mlbSeasonRows;
+    derivedCache.mlbSeasonRows = mergeCanonicalGameRows([
+        ...mlbCurrentBoardRows(),
+        ...state.mlbBacktest.games.map(game => ({ ...game, sport: "MLB", source_type: "backtest", source_label: "Season archive" })),
+    ].filter(game => gameIsoDate(game)));
+    derivedCache.mlbSeasonRowsKey = key;
+    return derivedCache.mlbSeasonRows;
 }
 
 function mlbBoardDateRows() {
-    // The board calendar is for the current schedule/live window only. Backtest
-    // and prediction-log rows belong in History/Record and must not inflate the
-    // visible dates or daily game counts.
-    return mlbCurrentBoardRows();
+    // The board calendar is the loaded MLB schedule plus its season archive.
+    // Backtest rows are still marked as archive data and cannot become live
+    // scores because liveGameFor() only resolves the live export.
+    return mlbSeasonBoardRows();
 }
 
 function mlbBoardDates() {
+    const seasonRows = mlbSeasonBoardRows();
     const key = [
-        derivedCache.mlbReviewKey,
+        derivedCache.mlbSeasonRowsKey,
         normalizeMeta(state.live.payload).generated_at,
         state.live.games.length,
     ].join("|");
     if (derivedCache.mlbBoardDates && derivedCache.mlbBoardDatesKey === key) return derivedCache.mlbBoardDates;
-    derivedCache.mlbBoardDates = uniqueSortedStrings(mlbBoardDateRows().map(gameIsoDate), "asc");
+    derivedCache.mlbBoardDates = uniqueSortedStrings(seasonRows.map(gameIsoDate), "asc");
     derivedCache.mlbBoardDatesKey = key;
     return derivedCache.mlbBoardDates;
 }
 
 function mlbBoardRowsForDate(date = ensureMlbBoardDate()) {
     if (!date) return [];
-    return sortedGamesByTime(mlbCurrentBoardRows().filter(game => gameIsoDate(game) === date));
+    return sortedGamesByTime(mlbSeasonBoardRows().filter(game => gameIsoDate(game) === date));
 }
 
 function defaultMlbBoardDate() {
@@ -2277,12 +2354,16 @@ function moveMlbBoardDate(delta) {
 }
 
 function ensureMlbReviewDate() {
-    const dates = mlbReviewDates();
+    const useArchive = (state.selected.homeMlbRange || "today") === "season";
+    const currentDates = useArchive ? [] : currentMlbBoardDates();
+    const dates = currentDates.length ? currentDates : mlbReviewDates();
     if (!dates.length) {
         state.selected.homeMlbDate = null;
         return null;
     }
-    if (!dates.includes(state.selected.homeMlbDate)) state.selected.homeMlbDate = defaultMlbReviewDate();
+    if (!dates.includes(state.selected.homeMlbDate)) {
+        state.selected.homeMlbDate = currentDates.length ? defaultCurrentMlbBoardDate() : defaultMlbReviewDate();
+    }
     return state.selected.homeMlbDate;
 }
 
@@ -2436,19 +2517,20 @@ function dateOffsetIso(days) {
 
 function setHomeMlbRange(range) {
     state.selected.homeMlbRange = range;
-    const dates = mlbReviewDates();
+    const currentDates = range === "season" ? [] : currentMlbBoardDates();
+    const dates = currentDates.length ? currentDates : mlbReviewDates();
     const today = dateOffsetIso(0);
     const yesterday = dateOffsetIso(-1);
     if (range === "today") {
-        state.selected.homeMlbDate = dates.includes(today) ? today : defaultMlbReviewDate();
+        state.selected.homeMlbDate = dates.includes(today) ? today : (currentDates.length ? defaultCurrentMlbBoardDate() : defaultMlbReviewDate());
     }
     if (range === "yesterday") {
         state.selected.homeMlbDate = dates.includes(yesterday)
             ? yesterday
-            : [...dates].reverse().find(date => date < today) || defaultMlbReviewDate();
+            : [...dates].reverse().find(date => date < today) || (currentDates.length ? defaultCurrentMlbBoardDate() : defaultMlbReviewDate());
     }
     if (!state.selected.homeMlbDate || !dates.includes(state.selected.homeMlbDate)) {
-        state.selected.homeMlbDate = defaultMlbReviewDate();
+        state.selected.homeMlbDate = currentDates.length ? defaultCurrentMlbBoardDate() : defaultMlbReviewDate();
     }
     persistSettings();
 }
@@ -2457,21 +2539,24 @@ function mlbRowsForHomeRange() {
     const range = state.selected.homeMlbRange || "today";
     const selected = ensureMlbReviewDate();
     if (!selected) return [];
+    const rows = range === "season" || !currentMlbBoardDates().length
+        ? allMlbReviewRows()
+        : mlbCurrentBoardRows();
     if (range === "this_week") {
         const anchor = parseDateOnly(selected) || new Date();
         const start = new Date(anchor);
         start.setDate(anchor.getDate() - 6);
         const startIso = localDateIso(start);
-        return sortedGamesByTime(allMlbReviewRows().filter(game => {
+        return sortedGamesByTime(rows.filter(game => {
             const iso = gameIsoDate(game);
             return iso >= startIso && iso <= selected;
         }), "desc");
     }
     if (range === "season") {
         const season = safeNumber(selected.slice(0, 4));
-        return sortedGamesByTime(allMlbReviewRows().filter(game => gameSeason(game, "MLB") === season), "desc");
+        return sortedGamesByTime(rows.filter(game => gameSeason(game, "MLB") === season), "desc");
     }
-    return mlbRowsForDate(selected);
+    return sortedGamesByTime(rows.filter(game => gameIsoDate(game) === selected));
 }
 
 function topGlobalFeatures(sport = "MLB") {
@@ -3171,7 +3256,7 @@ function switchView(view) {
     const [title, kicker] = titles[view] || titles.home;
     $("#view-title").textContent = title;
     $("#view-kicker").textContent = kicker;
-    if (previous !== view) renderView(view);
+    if (previous !== view && !renderedViews.has(view)) renderView(view);
     renderGlobalTicker();
 }
 
@@ -3210,6 +3295,7 @@ function renderView(view = state.selected.view || "home") {
         about: renderAbout,
     };
     renderers[view]?.();
+    renderedViews.add(view);
     armScrollReveals(view);
 }
 
@@ -5107,10 +5193,17 @@ function lifecycleStageLabel(stage) {
 }
 
 function lifecycleBoardGames() {
-    const selectedDate = ensureMlbBoardDate();
-    const key = `${selectedDate || ""}|${derivedCache.mlbReviewKey}|${normalizeMeta(state.live.payload).generated_at || ""}|${state.live.games.length}`;
+    // Home and the global ticker only need the compact current slate. The
+    // 2,400-row season archive is materialized only while the MLB board is
+    // actually open, preventing navigation from blocking on historical merge
+    // work.
+    const archiveView = state.selected.view === "mlb";
+    const selectedDate = archiveView ? ensureMlbBoardDate() : null;
+    const key = `${archiveView ? selectedDate || "" : "current"}|${archiveView ? derivedCache.mlbSeasonRowsKey : derivedCache.mlbCurrentRowsKey}|${normalizeMeta(state.live.payload).generated_at || ""}|${state.live.games.length}`;
     if (derivedCache.mlbBoardGames && derivedCache.mlbBoardKey === key) return derivedCache.mlbBoardGames;
-    derivedCache.mlbBoardGames = mlbBoardRowsForDate(selectedDate);
+    derivedCache.mlbBoardGames = archiveView
+        ? mlbBoardRowsForDate(selectedDate)
+        : mlbCurrentBoardRows();
     derivedCache.mlbBoardKey = key;
     return derivedCache.mlbBoardGames;
 }
@@ -5334,7 +5427,7 @@ function renderMlbLifecycleCard(game) {
     const marketCopy = market.movement.available
         ? `Current market is linked${market.marketProbability === null ? "" : ` at ${formatProbability(market.marketProbability)}`}.`
         : "Market movement is not available for this matchup.";
-    return `<article class="mlb-game-card mlb-card-flip mlb-game-card--${stage} ${predictionReady ? "has-prediction" : ""} ${modelWon ? "is-model-won" : ""} ${modelLost ? "is-model-lost" : ""} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}">
+    return `<article class="mlb-game-card mlb-card-flip mlb-game-card--${stage} ${predictionReady ? "has-prediction" : ""} ${modelWon ? "is-model-won" : ""} ${modelLost ? "is-model-lost" : ""} ${selected ? "is-selected" : ""} ${isWatchedGame(game) ? "is-watched" : ""}" style="--away-color:${escapeHtml(teamGradientColor(awayMeta))};--home-color:${escapeHtml(teamGradientColor(homeMeta))};--pick-color:${escapeHtml(teamGradientColor(pickMeta))}" data-lifecycle-game="MLB" data-game-id="${escapeHtml(gameKey(game))}" tabindex="0" role="button" aria-label="${escapeHtml(`${awayMeta.full_name} at ${homeMeta.full_name}. Click to show matchup details.`)}">
         <div class="mlb-card-flip__inner">
             <div class="mlb-card-flip__face mlb-card-flip__front" aria-hidden="false">
         <header class="mlb-game-card__header"><span class="mlb-game-card__status">${statusLabel}</span><span class="mlb-game-card__time">${escapeHtml(dateLabel)}</span>${renderWatchButton(game, "Watch matchup")}</header>
@@ -5359,8 +5452,8 @@ function renderMlbLifecycleCard(game) {
                         <div><span>Market edge</span><strong>${escapeHtml(edgeCopy)}</strong></div>
                         <div><span>Board state</span><strong>${escapeHtml(cardResult)}</strong></div>
                     </div>
-                    <p class="mlb-card-flip__back-copy">${escapeHtml(marketCopy)} The summary stays on the front; this side keeps the decision context readable at a glance.</p>
-                    <footer class="mlb-card-flip__back-footer"><span>LineLens MLB board</span><span class="mlb-card-flip__footer-actions"><button class="btn btn--micro" type="button" data-flip-card aria-pressed="true" aria-label="Show matchup summary">Summary</button><button class="btn btn--micro btn--primary" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">${stage === "live" ? "Open GameCast" : "Open Matchup"}</button></span></footer>
+                    <p class="mlb-card-flip__back-copy">${escapeHtml(marketCopy)} Matchup details, live context, and the official box score are available from GameCast when the source publishes them.</p>
+                    <footer class="mlb-card-flip__back-footer"><span>MLB matchup</span><span class="mlb-card-flip__footer-actions"><button class="btn btn--micro" type="button" data-flip-card aria-pressed="true" aria-label="Show matchup summary">Summary</button><button class="btn btn--micro" type="button" data-open-box-score="MLB" data-game-id="${escapeHtml(gameKey(game))}">Box score</button><button class="btn btn--micro btn--primary" type="button" data-open-gamecast="MLB" data-game-id="${escapeHtml(gameKey(game))}">${stage === "live" ? "GameCast" : "Matchup"}</button></span></footer>
                 </div>
             </div>
         </div>
@@ -5532,15 +5625,16 @@ function renderMlbLifecyclePage() {
     const oddsLinked = games.filter(game => lifecycleMarketRead(game).movement.available).length;
     const record = dailyRecord(games);
     const recordText = `${record.wins}-${record.losses}${record.pushes ? `-${record.pushes}` : ""}`;
+    const archiveDay = games.some(game => game.source_type === "backtest");
     const dateCalendar = renderGameDateCalendar({ sport: "MLB", dates: mlbBoardDates(), selected: selectedDate, games: mlbCurrentBoardRows(), label: "MLB game dates" });
     return `<section class="lifecycle-shell mlb-lifecycle-shell" style="--scoreboard-accent:#5cc8ff">
         <section class="panel mlb-page-header">
-            <div class="mlb-page-header__top"><div><p class="eyebrow">MLB / Daily board</p><h2>${escapeHtml(dateDisplay.monthDay)}</h2><div class="mlb-selected-date"><span>${escapeHtml(dateDisplay.season)}</span></div></div><div class="mlb-page-header__actions"><span class="mlb-freshness">Data updated · ${escapeHtml(freshness.last_success_at ? timestamp(freshness.last_success_at) : "time unavailable")}</span></div></div>
+            <div class="mlb-page-header__top"><div><p class="eyebrow">MLB / ${archiveDay ? "Season archive" : "Daily board"}</p><h2>${escapeHtml(dateDisplay.monthDay)}</h2><div class="mlb-selected-date"><span>${escapeHtml(dateDisplay.season)}</span>${archiveDay ? `<span class="chip chip--soft">Archive rows</span>` : ""}</div></div><div class="mlb-page-header__actions"><span class="mlb-freshness">Data updated · ${escapeHtml(freshness.last_success_at ? timestamp(freshness.last_success_at) : "time unavailable")}</span></div></div>
             <div class="mlb-page-header__controls"><div class="mlb-production" title="Technical model: ${escapeHtml(production?.model_name || "not declared")}"><span>Production model:</span><strong>${escapeHtml(productionIdentity.legend || "Not declared")}</strong></div><div class="mlb-filter-wrap">${renderMlbStageFilters(games)}</div></div>
         </section>
         <section class="panel game-date-calendar-panel">${dateCalendar}</section>
         <section class="mlb-intelligence-strip" aria-label="MLB board summary"><span class="mlb-summary-item"><strong>${games.length}</strong><small>Games</small></span><span class="mlb-summary-item"><strong>${modelPicks}</strong><small>Model picks</small></span><span class="mlb-summary-item"><strong>${liveCount}</strong><small>Live</small></span><span class="mlb-summary-item"><strong>${finalCount}</strong><small>Final</small></span><span class="mlb-summary-item"><strong>${oddsLinked}</strong><small>Odds linked</small></span><span class="mlb-summary-item"><strong>${recordText}</strong><small>Record</small></span></section>
-        <section class="panel mlb-board-panel"><header class="section-header"><div><p class="eyebrow">Daily game board</p><p class="muted">${escapeHtml(dateDisplay.monthDay)} · live and watchlisted games lead; final accountability stays in the same full list.</p></div></header><div class="mlb-game-grid ${filtered.length === 1 ? "mlb-game-grid--single" : ""}">${filtered.length ? filtered.map(renderMlbLifecycleCard).join("") : emptyState("No games in this lifecycle state", "This filter only shows real rows loaded for the selected date.")}</div></section>
+        <section class="panel mlb-board-panel"><header class="section-header"><div><p class="eyebrow">${archiveDay ? "Season game board" : "Daily game board"}</p><p class="muted">${escapeHtml(dateDisplay.monthDay)} · ${archiveDay ? "archived prediction rows; live scores are never inferred from archive data." : "live and watchlisted games lead; final accountability stays in the full list."}</p></div></header><div class="mlb-game-grid ${filtered.length === 1 ? "mlb-game-grid--single" : ""}">${filtered.length ? filtered.map(renderMlbLifecycleCard).join("") : emptyState("No games in this lifecycle state", "This filter only shows real rows loaded for the selected date.")}</div></section>
         ${renderLifecycleMatchup(selected)}
     </section>`;
 }
@@ -8663,6 +8757,7 @@ function renderAll() {
         state.selected.view = visualAuditView;
     }
     setBodyModes();
+    renderedViews.clear();
     renderGlobalHealthSignal();
     renderView(state.selected.view || "home");
     renderGlobalTicker();
@@ -8725,7 +8820,37 @@ function renderAll() {
 }
 
 function bindEvents() {
-    document.addEventListener("click", event => {
+function flipMlbCard(card, focusControl = false) {
+    if (!card) return;
+    const flipped = card.classList.toggle("is-flipped");
+    const front = card.querySelector(".mlb-card-flip__front");
+    const back = card.querySelector(".mlb-card-flip__back");
+    if (front && back) {
+        front.inert = flipped;
+        back.inert = !flipped;
+        front.setAttribute("aria-hidden", String(flipped));
+        back.setAttribute("aria-hidden", String(!flipped));
+    }
+    card.querySelectorAll("[data-flip-card]").forEach(button => {
+        button.setAttribute("aria-pressed", String(flipped));
+        button.setAttribute("aria-label", flipped ? "Show matchup summary" : "Show matchup details");
+    });
+    if (focusControl) {
+        const nextFocus = card.querySelector(flipped ? ".mlb-card-flip__back [data-flip-card]" : ".mlb-card-flip__front [data-flip-card]");
+        if (nextFocus) nextFocus.focus({ preventScroll: true });
+    }
+}
+
+function scrollToGameCastBoxScore() {
+    const target = document.querySelector(".gamecast-box-score, .gamecast-stat-availability");
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    target.classList.remove("is-focus-pulse");
+    void target.offsetWidth;
+    target.classList.add("is-focus-pulse");
+}
+
+document.addEventListener("click", event => {
         if (event.target.closest("#command-palette-btn")) {
             openCommandPalette();
             return;
@@ -8867,24 +8992,20 @@ function bindEvents() {
 
         const flipCardButton = event.target.closest("[data-flip-card]");
         if (flipCardButton) {
-            const card = flipCardButton.closest(".mlb-card-flip");
-            if (card) {
-                const flipped = card.classList.toggle("is-flipped");
-                const front = card.querySelector(".mlb-card-flip__front");
-                const back = card.querySelector(".mlb-card-flip__back");
-                if (front && back) {
-                    front.inert = flipped;
-                    back.inert = !flipped;
-                    front.setAttribute("aria-hidden", String(flipped));
-                    back.setAttribute("aria-hidden", String(!flipped));
-                }
-                card.querySelectorAll("[data-flip-card]").forEach(button => {
-                    button.setAttribute("aria-pressed", String(flipped));
-                    button.setAttribute("aria-label", flipped ? "Show matchup summary" : "Show matchup details");
-                });
-                const nextFocus = card.querySelector(flipped ? ".mlb-card-flip__back [data-flip-card]" : ".mlb-card-flip__front [data-flip-card]");
-                if (nextFocus) nextFocus.focus({ preventScroll: true });
-            }
+            flipMlbCard(flipCardButton.closest(".mlb-card-flip"), true);
+            return;
+        }
+
+        const boxScoreButton = event.target.closest("[data-open-box-score]");
+        if (boxScoreButton) {
+            openGameCast(boxScoreButton.dataset.openBoxScore, boxScoreButton.dataset.gameId);
+            window.requestAnimationFrame(() => window.requestAnimationFrame(scrollToGameCastBoxScore));
+            return;
+        }
+
+        const card = event.target.closest(".mlb-card-flip");
+        if (card && !event.target.closest("button, a, input, select, textarea, [data-watch-game], [data-open-gamecast], [data-open-box-score]")) {
+            flipMlbCard(card);
             return;
         }
 
@@ -9432,6 +9553,12 @@ function bindEvents() {
                 if (item) executeCommandPaletteItem(item.id);
                 return;
             }
+        }
+        const card = event.target.closest?.(".mlb-card-flip");
+        if (card && (event.key === "Enter" || event.key === " ") && !event.target.closest("button, a, input, select, textarea")) {
+            event.preventDefault();
+            flipMlbCard(card);
+            return;
         }
         if (event.key === "Escape" && state.gamecast.open) {
             closeGameCast();

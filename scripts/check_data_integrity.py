@@ -234,10 +234,15 @@ def check_exports() -> None:
     board_start = app_js.find("function mlbBoardDateRows")
     board_end = app_js.find("function mlbBoardDates", board_start)
     board_calendar = app_js[board_start:board_end] if board_start >= 0 and board_end >= 0 else ""
+    board_rows_start = app_js.find("function mlbCurrentBoardRows")
+    board_rows_end = app_js.find("function mlbBoardDateRows", board_rows_start)
+    board_rows = app_js[board_rows_start:board_rows_end] if board_rows_start >= 0 and board_rows_end >= 0 else ""
     check(
-        "board calendar excludes backtest rows",
-        "return mlbCurrentBoardRows();" in board_calendar and "allMlbReviewRows" not in board_calendar,
-        "MLB date rail uses current/live schedule rows only",
+        "board calendar includes season archive",
+        "return mlbSeasonBoardRows();" in board_calendar
+        and "state.mlbBacktest.games" in board_rows
+        and "allMlbReviewRows" not in board_calendar,
+        "MLB date rail uses current/live rows plus explicitly marked season archive rows",
     )
 
 
