@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "generated_at": "2026-08-24T19:32:20Z",
+    "status": "clear",
+    "policy": "alert at +0.03 log loss, +0.02 Brier, or -0.05 accuracy/ROC AUC"
+  },
+  "sports": [
+    {
+      "sport": "MLB",
+      "status": "clear",
+      "before_model": "EloBlend",
+      "after_model": "EloBlend",
+      "before_id": "mlb_moneyline_v6_20260819T165008",
+      "after_id": "mlb_moneyline_v6_20260824T193110",
+      "metric_deltas": {
+        "log_loss": 0.0,
+        "brier_score": 0.0,
+        "accuracy": 0.0,
+        "roc_auc": 0.0
+      },
+      "alerts": [],
+      "warnings": []
+    },
+    {
+      "sport": "WNBA",
+      "status": "clear",
+      "before_model": "Entei",
+      "after_model": "Entei",
+      "before_id": "wnba_entei_moneyline",
+      "after_id": "wnba_entei_moneyline",
+      "metric_deltas": {
+        "log_loss": 0.0,
+        "brier_score": 0.0,
+        "accuracy": 0.0,
+        "roc_auc": 0.0
+      },
+      "alerts": [],
+      "warnings": []
+    }
+  ]
+}
