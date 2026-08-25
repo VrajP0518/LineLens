@@ -24,6 +24,7 @@ def main() -> int:
         all(token in app for token in (
             "function renderCommandPalette",
             "function commandPaletteGameRows",
+            "function commandPalettePropRows",
             "function executeCommandPaletteItem",
             'event.key.toLowerCase() === "k"',
             'role="combobox"',
@@ -100,6 +101,20 @@ def main() -> int:
         "compact windows still place the full vertical sidebar before content",
     )
     require("renderHomeDecisionRadar" in app and ".decision-radar__lane" in css, "decision-first Home radar is missing")
+    require(
+        "Today’s best opportunities" in app
+        and "Prediction History" in html
+        and "My Tracker" in html
+        and "Scores only" in html
+        and "Data health" in html,
+        "first-time navigation and Home positioning are not clear enough",
+    )
+    require(
+        "Model edge is the difference between LineLens’ picked probability" in app
+        and "marketProbabilityForPick" in app
+        and "pick-freshness" in app,
+        "prediction cards do not separate model probability, market probability, edge, and freshness",
+    )
     require(
         "gamecast-source-health" in app
         and "Cached / verify" in app
