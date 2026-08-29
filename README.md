@@ -2,13 +2,21 @@
 
 LineLens is a desktop sports-intelligence app that compares machine-learning predictions with real market odds and tracks every prediction for long-term accountability.
 
+## Screenshots / product tour
+
+### Home: today, the best edge, live games, and your watchlist
+
 <p align="center">
   <img src="image-1.png" alt="LineLens Sports home dashboard with MLB, NFL, reports, tracking, model health, and live ticker" width="100%" />
 </p>
 
+### The full board and supporting analysis
+
 <p align="center">
   <img src="image-2.png" alt="LineLens Sports home dashboard with MLB, NFL, reports, tracking, model health, and live ticker" width="100%" />
 </p>
+
+### Compact Home and prediction accountability
 
 <p align="center">
   <img src="docs/images/v6-compact-home.png" alt="LineLens v6 compact home dashboard with responsive navigation and data-health signal" width="49%" />
@@ -39,14 +47,14 @@ LineLens currently provides prediction pipelines for **MLB, NFL, and WNBA**. NBA
 - Picks: MLB and WNBA prediction feed
 - Props: qualified and research-only player projections
 - NFL / MLB / WNBA: sport-specific boards, date navigation, live scores, player-level box scores, and model context
-- Underdogs: real-odds-qualified model picks with settled win/loss accountability
+- Picks focus filters: All, Best Edge, Underdogs, and Favorites
 - GameCast: matchup detail, odds, timeline, and postgame review
 - Models, Reports, and Performance: evaluation, health, and accountability
 - My Tracker and Prediction History
 - Personalized notifications
 - Background refresh with cached-data fallback
 - Settings release-readiness diagnostics and secret-safe support report
-- MLB Economics: payroll-versus-wins regression, efficiency ranking, and team detail
+- MLB tabs: Games, Predictions, Players, and Economics, with payroll-versus-wins analysis
 
 ## Data policy and limitations
 

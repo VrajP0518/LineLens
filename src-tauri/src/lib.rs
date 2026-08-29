@@ -74,8 +74,16 @@ const SHARED_DATA_MANIFEST_URL: &str = "https://github.com/VrajP0518/LineLens/re
 const SHARED_DATA_CHANNEL_PREFIX: &str =
     "https://github.com/VrajP0518/LineLens/releases/download/data-channel-v6/";
 const SHARED_DATA_MAX_BYTES: usize = 100 * 1024 * 1024;
+const PROVIDER_KEY_NAMES: [&str; 3] = ["ODDS_API_KEY", "SHARP_ODDS_API_KEY", "PROPLINE_API_KEY"];
 static RUNTIME_SEED_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 static REFRESH_PROCESS_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+// Release builds may receive these values from GitHub Actions at compile time.
+// They are intentionally separate from the normal runtime environment names so
+// a developer's local environment cannot accidentally bake a key into a build.
+const DEFAULT_ODDS_API_KEY: Option<&str> = option_env!("LINELENS_DEFAULT_ODDS_API_KEY");
+const DEFAULT_SHARP_ODDS_API_KEY: Option<&str> = option_env!("LINELENS_DEFAULT_SHARP_ODDS_API_KEY");
+const DEFAULT_PROPLINE_API_KEY: Option<&str> = option_env!("LINELENS_DEFAULT_PROPLINE_API_KEY");
 
 #[derive(Deserialize)]
 struct SharedDataBundle {
@@ -216,9 +224,14 @@ fn espn_live_scoreboards_inner() -> Result<serde_json::Value, String> {
                 .or_else(|| event.get("date"))
                 .and_then(|value| value.as_str())
                 .unwrap_or_default();
+            let situation = competition
+                .get("situation")
+                .cloned()
+                .unwrap_or(serde_json::Value::Null);
             games.push(serde_json::json!({
                 "sport": sport,
                 "game_id": event.get("id").and_then(|value| value.as_str()).unwrap_or_default(),
+                "game_date": game_time.get(..10).unwrap_or_default(),
                 "game_time": game_time,
                 "status": status,
                 "status_detail": detail,
@@ -234,7 +247,16 @@ fn espn_live_scoreboards_inner() -> Result<serde_json::Value, String> {
                 "away_score": away.get("score").cloned().unwrap_or(serde_json::Value::Null),
                 "home_score": home.get("score").cloned().unwrap_or(serde_json::Value::Null),
                 "inning": competition.get("status").and_then(|value| value.get("period")).cloned().unwrap_or(serde_json::Value::Null),
+                "inning_state": status_type.get("shortDetail").cloned().unwrap_or(serde_json::Value::Null),
                 "clock": competition.get("status").and_then(|value| value.get("displayClock")).cloned().unwrap_or(serde_json::Value::Null),
+                "balls": situation.get("balls").cloned().unwrap_or(serde_json::Value::Null),
+                "strikes": situation.get("strikes").cloned().unwrap_or(serde_json::Value::Null),
+                "outs": situation.get("outs").cloned().unwrap_or(serde_json::Value::Null),
+                "bases": {
+                    "first": situation.get("onFirst").and_then(|value| value.as_bool()).unwrap_or(false),
+                    "second": situation.get("onSecond").and_then(|value| value.as_bool()).unwrap_or(false),
+                    "third": situation.get("onThird").and_then(|value| value.as_bool()).unwrap_or(false)
+                },
                 "prediction_status": "scoreboard_only"
             }));
         }
@@ -409,35 +431,75 @@ fn runtime_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     Ok(runtime)
 }
 
-fn env_key_configured(path: &Path, key: &str) -> bool {
-    let contents = match fs::read_to_string(path) {
-        Ok(contents) => contents,
-        Err(_) => return false,
-    };
-    contents.lines().any(|line| {
+fn env_key_value(path: &Path, key: &str) -> Option<String> {
+    let contents = fs::read_to_string(path).ok()?;
+    contents.lines().find_map(|line| {
         let trimmed = line.trim_start();
         if trimmed.starts_with('#') {
-            return false;
+            return None;
         }
         let Some((name, value)) = trimmed.split_once('=') else {
-            return false;
+            return None;
         };
-        name.trim() == key
-            && !value
-                .trim()
-                .trim_matches(|character| character == '"' || character == '\'')
-                .is_empty()
+        if name.trim() != key {
+            return None;
+        }
+        let value = value
+            .trim()
+            .trim_matches(|character| character == '"' || character == '\'')
+            .trim();
+        (!value.is_empty()).then(|| value.to_string())
     })
 }
 
+fn bundled_default_key(key: &str) -> Option<&'static str> {
+    let value = match key {
+        "ODDS_API_KEY" => DEFAULT_ODDS_API_KEY,
+        "SHARP_ODDS_API_KEY" => DEFAULT_SHARP_ODDS_API_KEY,
+        "PROPLINE_API_KEY" => DEFAULT_PROPLINE_API_KEY,
+        _ => None,
+    }?;
+    (!value.trim().is_empty()).then_some(value)
+}
+
+fn effective_key(root: &Path, key: &str) -> Option<String> {
+    if let Ok(value) = std::env::var(key) {
+        let value = value.trim();
+        if !value.is_empty() {
+            return Some(value.to_string());
+        }
+    }
+    env_key_value(&root.join(".env"), key).or_else(|| bundled_default_key(key).map(str::to_string))
+}
+
+fn api_key_configured(root: &Path, key: &str) -> bool {
+    effective_key(root, key).is_some()
+}
+
+fn configure_provider_environment(command: &mut Command, root: &Path) {
+    for key in PROVIDER_KEY_NAMES {
+        // Preserve an explicit process environment value. Otherwise provide the
+        // user's saved .env value, falling back to the release default.
+        let process_has_value = std::env::var(key)
+            .map(|value| !value.trim().is_empty())
+            .unwrap_or(false);
+        if !process_has_value {
+            if let Some(value) = env_key_value(&root.join(".env"), key)
+                .or_else(|| bundled_default_key(key).map(str::to_string))
+            {
+                command.env(key, value);
+            }
+        }
+    }
+}
+
 fn api_key_status(root: &Path) -> ApiKeyStatus {
-    let env_path = root.join(".env");
     ApiKeyStatus {
         available: true,
-        odds_api_key: env_key_configured(&env_path, "ODDS_API_KEY"),
-        sharp_odds_api_key: env_key_configured(&env_path, "SHARP_ODDS_API_KEY"),
-        propline_api_key: env_key_configured(&env_path, "PROPLINE_API_KEY"),
-        message: "Keys are stored locally and are never included in exports.".to_string(),
+        odds_api_key: api_key_configured(root, "ODDS_API_KEY"),
+        sharp_odds_api_key: api_key_configured(root, "SHARP_ODDS_API_KEY"),
+        propline_api_key: api_key_configured(root, "PROPLINE_API_KEY"),
+        message: "Release defaults and locally saved keys are used for refreshes; keys are never written to data exports.".to_string(),
     }
 }
 
@@ -860,6 +922,10 @@ fn collect_runtime_diagnostics(app: &tauri::AppHandle) -> Result<RuntimeDiagnost
     let env_bundled = source
         .map(|path| path.join(".env").exists())
         .unwrap_or(false);
+    let release_defaults = PROVIDER_KEY_NAMES
+        .iter()
+        .filter(|key| bundled_default_key(key).is_some())
+        .count();
     let api_keys = api_key_status(&root);
     let configured_keys = [
         api_keys.odds_api_key,
@@ -936,6 +1002,8 @@ fn collect_runtime_diagnostics(app: &tauri::AppHandle) -> Result<RuntimeDiagnost
             !env_bundled,
             if env_bundled {
                 "a .env file was found in the bundled resource"
+            } else if release_defaults > 0 {
+                "release provider defaults are available; no .env file is bundled"
             } else {
                 "no .env file is bundled"
             },
@@ -1197,10 +1265,10 @@ fn execute_refresh_command(
         args.push(spec.script.to_string());
         args.extend(spec.args.iter().map(|arg| arg.to_string()));
         let command_string = shell_command(&program, &args);
-        let output = background_command(&program)
-            .args(args)
-            .current_dir(&root)
-            .output();
+        let mut command = background_command(&program);
+        command.args(args).current_dir(&root);
+        configure_provider_environment(&mut command, &root);
+        let output = command.output();
         match output {
             Ok(result) => {
                 return Ok(CommandResult {

@@ -2697,6 +2697,150 @@ body {
     }
 }
 
+/* Compact hierarchical navigation: secondary destinations stay one click away. */
+.nav__section-toggle {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    border: 0;
+    border-bottom: 1px solid rgba(226, 235, 249, 0.1);
+    border-radius: 0;
+    background: transparent;
+    color: #8fa1ba;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.61rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    padding: 0.48rem 0.7rem;
+    text-align: left;
+    text-transform: uppercase;
+}
+.nav__section-toggle:hover,
+.nav__section-toggle:focus-visible {
+    color: var(--text);
+    background: rgba(92, 200, 255, 0.07);
+    outline: none;
+}
+.nav__section-toggle > span:last-child {
+    font-size: 0.95rem;
+    line-height: 0.8;
+}
+.nav__section.is-collapsed .nav__section-toggle {
+    border-bottom-color: transparent;
+}
+.nav__section.is-collapsed .nav__item {
+    display: none;
+}
+/* For You is intentionally held back until preference onboarding is connected to a real feed. */
+.nav__item--foryou {
+    display: none !important;
+}
+.topbar-action--icon {
+    position: relative;
+    min-width: 2.65rem;
+    padding-inline: 0.62rem;
+}
+.notification-bell {
+    display: inline-grid;
+    place-items: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 1px solid currentColor;
+    border-radius: 50% 50% 44% 44%;
+    font-size: 0;
+}
+.notification-bell::after {
+    content: "";
+    width: 0.28rem;
+    height: 0.14rem;
+    margin-top: 0.85rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+.topbar-notification-badge {
+    position: absolute;
+    top: 0.18rem;
+    right: 0.2rem;
+    min-width: 1rem;
+    padding: 0.08rem 0.25rem;
+    border-radius: 999px;
+    color: #071019;
+    background: #8ce6f4;
+    font-size: 0.58rem;
+    line-height: 1;
+}
+
+.home-focus-shell { display: grid; gap: 1rem; }
+.home-focus-header { display: flex; align-items: end; justify-content: space-between; gap: 1rem; padding: 0.4rem 0.15rem; }
+.home-focus-header h2 { margin: 0.15rem 0 0.3rem; font-size: clamp(1.8rem, 4vw, 3rem); }
+.home-focus-header p { margin: 0; }
+.home-focus-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.85fr); gap: 1rem; align-items: start; }
+.home-focus-main, .home-focus-side { display: grid; gap: 1rem; min-width: 0; }
+.home-focus-pick { display: grid; gap: 0.8rem; padding: clamp(1rem, 2vw, 1.45rem); border: 1px solid rgba(103, 232, 249, 0.35); border-radius: var(--ll-radius-lg, 1rem); background: radial-gradient(circle at 95% 0%, rgba(103,232,249,0.16), transparent 35%), linear-gradient(145deg, rgba(13, 36, 52, 0.96), rgba(8, 17, 27, 0.98)); box-shadow: 0 16px 40px rgba(0,0,0,0.18); }
+.home-focus-pick > header, .home-focus-pick > footer { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.home-focus-pick__teams { display: grid; gap: 0.15rem; }
+.home-focus-pick__teams strong { font-size: clamp(1.2rem, 2vw, 1.8rem); letter-spacing: -0.03em; }
+.home-focus-pick__teams span, .home-focus-pick__why span { color: var(--ll-ink-muted, #93a5b7); font-size: 0.76rem; }
+.home-focus-pick__readout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
+.home-focus-pick__readout div, .home-pulse-grid div { display: grid; gap: 0.16rem; padding: 0.65rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.65rem; background: rgba(255,255,255,0.04); }
+.home-focus-pick__readout small, .home-pulse-grid small { color: var(--ll-ink-muted, #93a5b7); font-size: 0.67rem; }
+.home-focus-pick__readout strong { font-size: 1.05rem; }
+.home-focus-pick__why { display: grid; gap: 0.18rem; margin: 0; color: var(--ll-ink-soft, #cad8e5); font-size: 0.84rem; }
+.home-focus-picks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+.home-focus-picks .home-focus-pick { padding: 0.85rem; }
+.home-focus-picks .home-focus-pick__readout { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.home-focus-panel { padding: 1rem; }
+.home-focus-panel h2 { font-size: 1.1rem; }
+.home-focus-live-list, .home-focus-watch-list { display: grid; gap: 0.55rem; }
+.home-focus-live-list article, .home-focus-watch-list article { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; padding: 0.68rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.65rem; background: rgba(255,255,255,0.035); }
+.home-focus-live-list article > div, .home-focus-watch-list article { min-width: 0; }
+.home-focus-live-list strong, .home-focus-watch-list strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.83rem; }
+.home-focus-live-list small, .home-focus-watch-list small { display: block; color: var(--ll-ink-muted, #93a5b7); font-size: 0.7rem; }
+.home-focus-live-list .lifecycle-status { margin-right: 0.35rem; }
+.home-focus-watch-list article { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
+.home-focus-watch-list article > span { color: var(--ll-accent, #8ce6f4); font-size: 0.66rem; font-weight: 900; }
+.home-focus-watch-list article small { grid-column: 2; }
+.home-pulse-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.55rem; }
+.home-pulse-grid strong { font-size: 0.95rem; }
+.picks-focus-filter { grid-column: 1 / -1; padding-bottom: 0.2rem; border-bottom: 1px solid rgba(255,255,255,0.09); }
+.picks-focus-filter .segmented-control { margin-top: 0.35rem; }
+.gamecast-why-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem; margin-top: 0.75rem; }
+.gamecast-why-card { padding: 0.8rem; border: 1px solid rgba(255,255,255,0.1); border-left: 3px solid #77d3ff; border-radius: 0.7rem; background: rgba(255,255,255,0.035); }
+.gamecast-why-card[data-tone="oppose"] { border-left-color: #ff9b9b; }
+.gamecast-why-card header { display: grid; grid-template-columns: 1.25rem minmax(0, 1fr) auto; gap: 0.35rem; align-items: center; }
+.gamecast-why-card header > span { display: grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 50%; color: #071019; background: #8ce6f4; font-weight: 950; }
+.gamecast-why-card[data-tone="oppose"] header > span { color: #260c13; background: #ff9b9b; }
+.gamecast-why-card header strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gamecast-why-card header b { color: var(--ll-accent, #8ce6f4); font-size: 0.78rem; }
+.gamecast-why-card[data-tone="oppose"] header b { color: #ffb5b5; }
+.gamecast-why-card p { margin: 0.45rem 0 0.25rem; color: var(--ll-ink-soft, #cad8e5); font-size: 0.78rem; line-height: 1.45; }
+.gamecast-why-card small { color: var(--ll-ink-muted, #93a5b7); font-size: 0.68rem; }
+.gamecast-technical-factors { margin-top: 0.7rem; }
+.mlb-subnav { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.95rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
+.mlb-subnav button { border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 0.42rem 0.75rem; color: var(--ll-ink-muted, #93a5b7); background: rgba(255,255,255,0.035); cursor: pointer; font: inherit; font-size: 0.72rem; font-weight: 800; }
+.mlb-subnav button:hover, .mlb-subnav button:focus-visible, .mlb-subnav button.is-active { border-color: rgba(103,232,249,0.4); color: var(--ll-ink, #f3f6f5); background: rgba(103,232,249,0.12); outline: none; }
+@media (max-width: 620px) { .gamecast-why-grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 980px) {
+    .home-focus-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+    .home-focus-header { align-items: flex-start; flex-direction: column; }
+    .home-focus-header .report-actions { width: 100%; }
+    .home-focus-header .report-actions .btn { flex: 1; }
+    .home-focus-pick__readout, .home-pulse-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .home-focus-picks { grid-template-columns: 1fr; }
+}
+.onboarding-dialog--preferences { width: min(760px, calc(100vw - 2rem)); }
+.onboarding-preferences { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin: 1rem 0 1.2rem; }
+.onboarding-preferences fieldset { display: grid; gap: 0.5rem; margin: 0; padding: 0.8rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.7rem; background: rgba(255,255,255,0.035); }
+.onboarding-preferences legend { padding-inline: 0.25rem; color: var(--ll-ink, #f3f6f5); font-size: 0.78rem; font-weight: 850; }
+.onboarding-preferences label { display: flex; gap: 0.45rem; align-items: center; color: var(--ll-ink-soft, #cad8e5); font-size: 0.78rem; }
+.onboarding-preferences input { accent-color: var(--ll-accent, #8ce6f4); }
+@media (max-width: 620px) { .onboarding-preferences { grid-template-columns: 1fr; } }
+
 /* ==========================================================
    Sprint 4 art direction: broadcast-night / luxury utility
    Inspired by Apple Materials and modern live-score products:
@@ -12307,3 +12451,21 @@ body {
         transition: none;
     }
 }
+
+/* Keep the matchup decision legible before the technical GameCast details. */
+.game-detail-hero {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0.9rem 0;
+    padding: 1rem;
+    border: 1px solid rgba(103, 232, 249, 0.24);
+    border-radius: 0.85rem;
+    background: linear-gradient(135deg, rgba(28, 56, 72, 0.65), rgba(8, 16, 27, 0.76));
+}
+.game-detail-hero__intro h3 { margin: 0.18rem 0 0.3rem; font-size: 1.15rem; }
+.game-detail-hero__intro p:last-child { max-width: 58ch; margin: 0; color: var(--ll-ink-muted, #93a5b7); font-size: 0.76rem; line-height: 1.45; }
+.game-detail-hero__readout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.55rem; }
+.game-detail-hero__readout > div { display: grid; gap: 0.16rem; min-width: 0; padding: 0.65rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.65rem; background: rgba(255,255,255,0.04); }
+.game-detail-hero__readout span, .game-detail-hero__readout small { color: var(--ll-ink-muted, #93a5b7); font-size: 0.66rem; }
+.game-detail-hero__readout strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.95rem; }
+@media (max-width: 560px) { .game-detail-hero__readout { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

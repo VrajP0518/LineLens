@@ -100,6 +100,21 @@ def main() -> int:
         and "overflow-x: auto" in css,
         "compact windows still place the full vertical sidebar before content",
     )
+    require(
+        all(f'data-nav-group="{group}"' in html for group in ("home", "explore", "mine", "analytics", "more"))
+        and 'id="notifications-btn"' in html
+        and "NAV_SECTIONS_KEY" in app
+        and ".nav__section.is-collapsed .nav__item" in css,
+        "hierarchical navigation or top-bar notifications are missing",
+    )
+    require(
+        "function renderGameDetailHero" in app
+        and "data-picks-edge" in app
+        and "data-mlb-tab=\"economics\"" in app
+        and "onboardingSports" in app
+        and ".game-detail-hero" in css,
+        "focused Home, Picks, Game Detail, MLB tabs, or onboarding experience is missing",
+    )
     require("renderHomeDecisionRadar" in app and ".decision-radar__lane" in css, "decision-first Home radar is missing")
     require(
         "Today’s best opportunities" in app

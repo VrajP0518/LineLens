@@ -4,6 +4,16 @@ const SETTINGS_KEY = "linelens.settings.v1";
 const REFRESH_LOGS_KEY = "linelens.refreshLogs.v1";
 const FAVORITES_KEY = "linelens.favorites.v1";
 const LIVE_ALERTS_KEY = "linelens.liveAlerts.v1";
+const NAV_SECTIONS_KEY = "linelens.navSections.v1";
+
+const navSections = {
+    home: false,
+    explore: false,
+    sports: true,
+    mine: true,
+    analytics: true,
+    more: true,
+};
 
 const DATA_SOURCES = {
     app: ["data/app_metadata.json"],
@@ -134,6 +144,7 @@ const state = {
         picksConfidence: "all",
         picksModel: "all",
         picksSort: "confidence",
+        picksEdgeFilter: "all",
         picksWatchlist: false,
         picksDisagree: false,
         underdogSport: "all",
@@ -163,6 +174,9 @@ const state = {
         liveHeartbeatSeconds: 15,
         onboardingSeen: false,
         onboardingNever: false,
+        onboardingSports: [],
+        onboardingInterests: [],
+        onboardingExperience: "casual",
         modelName: null,
         pinnedModel: null,
         mlbLifecycleFilter: "all",
@@ -601,7 +615,10 @@ function livePayloadIsFresh(payload, maxAgeSeconds = state.sharedDataStatus ? 7 
 async function loadOptional(kind, globals = [], options = {}) {
     if (isTauriRefreshAvailable()) {
         const tauriCandidates = [];
-        for (const url of DATA_SOURCES[kind] || []) {
+        const tauriUrls = kind === "live" && !options.force
+            ? (DATA_SOURCES[kind] || []).slice(0, 1)
+            : (DATA_SOURCES[kind] || []);
+        for (const url of tauriUrls) {
             try {
                 const raw = await tauriInvoke("read_data_export", { path: url });
                 const payload = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -629,6 +646,9 @@ async function loadOptional(kind, globals = [], options = {}) {
         for (const name of globals) {
             if (window[name]) return window[name];
         }
+    }
+    if (!options.force && kind === "live" && window.__LIVE_HEARTBEAT__) {
+        return window.__LIVE_HEARTBEAT__;
     }
     if (kind === "live" && (options.force || window.location.protocol !== "file:")) {
         const candidates = [];
@@ -665,6 +685,142 @@ async function loadOptional(kind, globals = [], options = {}) {
         if (window[name]) return window[name];
     }
     return null;
+}
+
+const DATA_GLOBALS = {
+    app: ["__APP_METADATA__"],
+    teams: ["__TEAM_METADATA__"],
+    reports: ["__MODEL_REPORT__"],
+    modelComparison: ["__MLB_MODEL_COMPARISON__"],
+    wnbaModelComparison: ["__WNBA_MODEL_COMPARISON__"],
+    moltresCard: ["__MLB_MOLTRES_MODEL_CARD__"],
+    featureSummary: ["__MLB_FEATURE_SUMMARY__"],
+    wnbaFeatureSummary: ["__WNBA_FEATURE_SUMMARY__"],
+    wnbaCard: ["__WNBA_MODEL_CARD__"],
+    modelRegistry: ["__MODEL_REGISTRY__"],
+    modelUpdateStatus: ["__MODEL_UPDATE_STATUS__"],
+    modelRecord: ["__MODEL_RECORD__"],
+    predictionLog: ["__MODEL_PREDICTIONS_LOG__"],
+    bootstrap: ["__BOOTSTRAP_STATUS__"],
+    startup: ["__STARTUP_STATUS__"],
+    refresh: ["__REFRESH_STATUS__"],
+    sharedDataStatus: ["__SHARED_DATA_STATUS__"],
+    live: ["__LIVE_HEARTBEAT__", "__LIVE_SCORES__"],
+    resultHistory: ["__RESULT_HISTORY__"],
+    odds: ["__ODDS_SNAPSHOTS__"],
+    playerProps: ["__PLAYER_PROPS__"],
+    oddsHealth: ["__ODDS_HEALTH__"],
+    wnbaAvailability: ["__WNBA_AVAILABILITY__"],
+    propsDiagnostics: ["__PROPS_MATCHING_DIAGNOSTICS__"],
+    nfl: ["__NFL_PREDICTIONS__", "__PREDICTIONS__"],
+    mlb: ["__MLB_PREDICTIONS__"],
+    mlbBacktest: ["__MLB_BACKTEST_PREDICTIONS__"],
+    mlbEconomics: ["__MLB_ECONOMICS__"],
+    wnba: ["__WNBA_PREDICTIONS__"],
+    wnbaBacktest: ["__WNBA_BACKTEST_PREDICTIONS__"],
+    wnbaPropPredictions: ["__WNBA_PROP_PREDICTIONS__"],
+    mlbPropPredictions: ["__MLB_PROP_PREDICTIONS__"],
+    propLog: ["__PROP_PREDICTION_LOG__"],
+    propRecord: ["__PROP_RECORD__"],
+    wnbaPropModelRegistry: ["__WNBA_PROP_MODEL_REGISTRY__"],
+    wnbaPropModelCards: ["__WNBA_PROP_MODEL_CARDS__"],
+    wnbaPropModelHealth: ["__WNBA_PROP_MODEL_HEALTH__"],
+    wnbaPropDatasetSummary: ["__WNBA_PROP_DATASET_SUMMARY__"],
+    mlbPropModelRegistry: ["__MLB_PROP_MODEL_REGISTRY__"],
+    mlbPropModelCards: ["__MLB_PROP_MODEL_CARDS__"],
+    mlbPropModelHealth: ["__MLB_PROP_MODEL_HEALTH__"],
+    mlbPropDatasetSummary: ["__MLB_PROP_DATASET_SUMMARY__"],
+};
+
+const dataLoadPromises = new Map();
+const loadedDataKinds = new Set();
+
+function applyDataPayload(kind, payload) {
+    if (!payload) return;
+    const directTargets = {
+        app: "app", teams: "teamPayload", report: "report", modelComparison: "modelComparison",
+        wnbaModelComparison: "wnbaModelComparison", moltresCard: "moltresCard", featureSummary: "featureSummary",
+        wnbaFeatureSummary: "wnbaFeatureSummary", wnbaCard: "wnbaCard", modelRegistry: "modelRegistry",
+        modelUpdateStatus: "modelUpdateStatus", modelRecord: "modelRecord", predictionLog: "predictionLog",
+        bootstrap: "bootstrapStatus", startup: "startupStatus", refresh: "refreshStatus",
+        sharedDataStatus: "sharedDataStatus", resultHistory: "resultHistory", odds: "odds", playerProps: "playerProps",
+        oddsHealth: "oddsHealth", wnbaAvailability: "wnbaAvailability", propsDiagnostics: "propsDiagnostics",
+        mlbEconomics: "mlbEconomics", propLog: "propLog", propRecord: "propRecord",
+        wnbaPropModelRegistry: "wnbaPropModelRegistry", wnbaPropModelCards: "wnbaPropModelCards",
+        wnbaPropModelHealth: "wnbaPropModelHealth", wnbaPropDatasetSummary: "wnbaPropDatasetSummary",
+        mlbPropModelRegistry: "mlbPropModelRegistry", mlbPropModelCards: "mlbPropModelCards",
+        mlbPropModelHealth: "mlbPropModelHealth", mlbPropDatasetSummary: "mlbPropDatasetSummary",
+    };
+    if (directTargets[kind]) state[directTargets[kind]] = payload;
+    if (kind === "live") {
+        state.live.payload = payload;
+        state.live.games = normalizeGames(payload);
+        state.live.stale = !livePayloadIsFresh(payload);
+        state.live.error = state.live.stale ? "Live export is outside the freshness window; waiting for a direct refresh." : null;
+    }
+    if (["nfl", "mlb", "mlbBacktest", "wnba", "wnbaBacktest", "wnbaPropPredictions", "mlbPropPredictions"].includes(kind)) {
+        const target = kind === "nfl" ? state.nfl : kind === "mlb" ? state.mlb : kind === "mlbBacktest" ? state.mlbBacktest : kind === "wnba" ? state.wnba : kind === "wnbaBacktest" ? state.wnbaBacktest : null;
+        if (target) {
+            target.payload = kind === "nfl" ? resolveNflPayload(payload) : payload;
+            target.games = normalizeGames(target.payload);
+            target.error = null;
+        } else if (kind === "wnbaPropPredictions") state.wnbaPropPredictions = payload;
+        else if (kind === "mlbPropPredictions") state.mlbPropPredictions = payload;
+    }
+    const globalName = DATA_GLOBALS[kind]?.[0];
+    if (globalName) window[globalName] = payload;
+}
+
+function loadDataKinds(kinds, options = {}) {
+    const uniqueKinds = [...new Set(kinds)];
+    const key = `${options.force ? "force" : "normal"}:${uniqueKinds.join(",")}`;
+    if (!options.force && dataLoadPromises.has(key)) return dataLoadPromises.get(key);
+    const promise = Promise.all(uniqueKinds.map(async kind => [kind, await loadOptional(kind, DATA_GLOBALS[kind] || [], options)]))
+        .then(entries => {
+            entries.forEach(([kind, payload]) => {
+                applyDataPayload(kind, payload);
+                if (payload) loadedDataKinds.add(kind);
+            });
+            teamIndex = buildTeamIndex();
+            return entries;
+        });
+    if (!options.force) dataLoadPromises.set(key, promise);
+    return promise;
+}
+
+const DEFERRED_DATA_BY_VIEW = {
+    nfl: ["nfl"],
+    mlb: ["mlbBacktest", "odds"],
+    "mlb-economics": ["mlbEconomics"],
+    props: ["playerProps", "wnbaPropPredictions", "mlbPropPredictions", "propLog", "propRecord", "wnbaPropModelRegistry", "wnbaPropModelCards", "wnbaPropModelHealth", "wnbaPropDatasetSummary", "mlbPropModelRegistry", "mlbPropModelCards", "mlbPropModelHealth", "mlbPropDatasetSummary", "propsDiagnostics"],
+    history: ["mlbBacktest", "wnbaBacktest", "resultHistory"],
+    record: ["resultHistory"],
+    settings: ["oddsHealth", "sharedDataStatus"],
+};
+
+function scheduleDeferredData() {
+    const run = () => loadDataKinds(["reports", "modelComparison", "moltresCard", "featureSummary", "wnbaModelComparison", "wnbaCard", "wnbaFeatureSummary", "modelUpdateStatus", "bootstrap", "startup", "refresh", "sharedDataStatus", "wnbaAvailability"])
+        .then(() => { renderView(state.selected.view || "home"); renderGlobalTicker(); })
+        .catch(() => {});
+    if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(run, { timeout: 1200 });
+    else window.setTimeout(run, 80);
+}
+
+function ensureViewData(view) {
+    const kinds = (DEFERRED_DATA_BY_VIEW[view] || []).filter(kind => !loadedDataKinds.has(kind));
+    if (!kinds.length) return Promise.resolve();
+    let loadingScreenStarted = false;
+    const loadingTimer = window.setTimeout(() => {
+        if (state.selected.view !== view) return;
+        loadingScreenStarted = true;
+        startAppLoading(`Loading ${view.replaceAll("-", " ")}…`, "Preparing this workspace", 34);
+    }, 140);
+    return loadDataKinds(kinds).then(() => {
+        if (state.selected.view === view) renderView(view);
+    }).catch(() => {}).finally(() => {
+        window.clearTimeout(loadingTimer);
+        if (loadingScreenStarted) finishAppLoading();
+    });
 }
 
 function setStatus(message, variant = "info") {
@@ -731,6 +887,39 @@ function showToast(message) {
 
 function persistSettings() {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(state.selected));
+}
+
+function loadNavSections() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(NAV_SECTIONS_KEY) || "{}");
+        Object.keys(navSections).forEach(key => {
+            if (typeof saved[key] === "boolean") navSections[key] = saved[key];
+        });
+    } catch (_error) {
+        // Keep the intentionally compact defaults.
+    }
+    applyNavSections();
+}
+
+function applyNavSections() {
+    document.querySelectorAll("[data-nav-group]").forEach(section => {
+        const key = section.dataset.navGroup;
+        const collapsed = Boolean(navSections[key]);
+        section.classList.toggle("is-collapsed", collapsed);
+        const toggle = section.querySelector("[data-nav-toggle]");
+        if (toggle) {
+            toggle.setAttribute("aria-expanded", String(!collapsed));
+            const icon = toggle.querySelector("[aria-hidden='true']");
+            if (icon) icon.textContent = collapsed ? "›" : "⌄";
+        }
+    });
+}
+
+function toggleNavSection(key) {
+    if (!(key in navSections)) return;
+    navSections[key] = !navSections[key];
+    localStorage.setItem(NAV_SECTIONS_KEY, JSON.stringify(navSections));
+    applyNavSections();
 }
 
 function loadSettings() {
@@ -1344,11 +1533,115 @@ function renderLiveNotifications() {
     ` : "";
 }
 
+const DIRECT_LIVE_FEEDS = [
+    ["MLB", "baseball", "mlb"],
+    ["WNBA", "basketball", "wnba"],
+    ["NBA", "basketball", "nba"],
+    ["NHL", "hockey", "nhl"],
+    ["NFL", "football", "nfl"],
+];
+
+async function fetchDirectBrowserLiveScores() {
+    if (!window.location || !["file:", "http:", "https:"].includes(window.location.protocol)) return null;
+    const fetchFeed = async ([sport, category, league]) => {
+        const controller = new AbortController();
+        const timeout = window.setTimeout(() => controller.abort(), 8000);
+        try {
+            const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${category}/${league}/scoreboard?limit=1000`, {
+                cache: "no-store",
+                signal: controller.signal,
+            });
+            if (!response.ok) throw new Error(`${sport} returned ${response.status}`);
+            return [sport, await response.json()];
+        } finally {
+            window.clearTimeout(timeout);
+        }
+    };
+    const results = await Promise.allSettled(DIRECT_LIVE_FEEDS.map(fetchFeed));
+    const games = [];
+    const warnings = [];
+    results.forEach(result => {
+        if (result.status === "rejected") {
+            warnings.push(String(result.reason?.message || result.reason || "scoreboard unavailable"));
+            return;
+        }
+        const [sport, payload] = result.value;
+        (payload?.events || []).forEach(event => {
+            const competition = event.competitions?.[0];
+            const competitors = competition?.competitors || [];
+            const away = competitors.find(item => item.homeAway === "away");
+            const home = competitors.find(item => item.homeAway === "home");
+            if (!away || !home) return;
+            const statusType = competition?.status?.type || {};
+            const status = statusType.completed || statusType.state === "post" ? "Final" : statusType.state === "in" ? "In Progress" : "Scheduled";
+            games.push({
+                sport,
+                game_id: String(event.id || competition.id || ""),
+                game_date: toIsoDate(event.date || competition.date),
+                game_time: event.date || competition.date || null,
+                status,
+                status_detail: status === "Scheduled" ? "Scheduled" : statusType.shortDetail || statusType.detail || status,
+                source: "ESPN Scoreboard API",
+                source_status: "direct_live_fresh",
+                source_type: "live",
+                away: away.team?.abbreviation || "AWAY",
+                home: home.team?.abbreviation || "HOME",
+                away_display: away.team?.displayName || away.team?.name || away.team?.abbreviation,
+                home_display: home.team?.displayName || home.team?.name || home.team?.abbreviation,
+                away_logo: away.team?.logo || null,
+                home_logo: home.team?.logo || null,
+                away_score: safeNumber(away.score),
+                home_score: safeNumber(home.score),
+                inning: sport === "MLB" ? competition.status?.period || null : null,
+                period: sport === "MLB" ? null : competition.status?.period || null,
+                clock: competition.status?.displayClock || null,
+                balls: sport === "MLB" ? competition.situation?.balls ?? null : null,
+                strikes: sport === "MLB" ? competition.situation?.strikes ?? null : null,
+                outs: sport === "MLB" ? competition.situation?.outs ?? null : null,
+                bases: sport === "MLB" ? {
+                    first: Boolean(competition.situation?.onFirst || competition.situation?.runnerOnFirst),
+                    second: Boolean(competition.situation?.onSecond || competition.situation?.runnerOnSecond),
+                    third: Boolean(competition.situation?.onThird || competition.situation?.runnerOnThird),
+                } : null,
+            });
+        });
+    });
+    if (!games.length && warnings.length === DIRECT_LIVE_FEEDS.length) return null;
+    return {
+        metadata: {
+            app: "LineLens Sports",
+            version: APP_VERSION,
+            generated_at: new Date().toISOString(),
+            real_data: true,
+            source: "Direct ESPN scoreboard feeds",
+            source_status: "direct_live_fresh",
+            refresh_mode: "direct_live",
+            live_poll_seconds_recommended: 30,
+            warnings,
+            row_count: games.length,
+        },
+        games,
+    };
+}
+
+function applyDirectLivePayload(payload) {
+    const before = liveGames();
+    const directGames = normalizeGames(payload).map(game => ({ ...game, source_type: "live" }));
+    const cachedGames = state.live.games.map(game => ({ ...game, source_type: game.source_type || "live" }));
+    const predictionGames = currentGames().map(game => ({ ...game, source_type: "current" }));
+    state.live.games = mergeCanonicalGameRows([...directGames, ...cachedGames, ...predictionGames]);
+    state.live.payload = { ...payload, games: state.live.games };
+    state.live.stale = false;
+    state.live.error = null;
+    detectLiveAlerts(before, liveGames());
+    return liveGames().length;
+}
+
 async function refreshLiveHeartbeat(options = {}) {
     if (!state.selected.liveHeartbeatEnabled || state.liveRefresh.refreshing) return;
-    if (!isTauriRefreshAvailable() && !browserRefreshAvailable()) {
+    if (!isTauriRefreshAvailable() && !browserRefreshAvailable() && !["file:", "http:", "https:"].includes(window.location?.protocol)) {
         state.liveRefresh.lastStatus = "cached";
-        state.liveRefresh.lastMessage = "Static mode cannot refresh live data; start npm run app.";
+        state.liveRefresh.lastMessage = "This browser cannot reach the public score feed; bundled data remains available.";
         renderLiveNotifications();
         return;
     }
@@ -1361,19 +1654,23 @@ async function refreshLiveHeartbeat(options = {}) {
     try {
         if (isTauriRefreshAvailable()) {
             const payload = await tauriInvoke("fetch_live_scoreboards", {});
-            const directGames = normalizeGames(payload).map(game => ({ ...game, source_type: "live" }));
-            const cachedGames = state.live.games.map(game => ({ ...game, source_type: game.source_type || "live" }));
-            const predictionGames = currentGames().map(game => ({ ...game, source_type: "current" }));
-            state.live.games = mergeCanonicalGameRows([...directGames, ...cachedGames, ...predictionGames]);
-            state.live.payload = { ...payload, games: state.live.games };
-            state.live.stale = false;
-            state.live.error = null;
+            const count = applyDirectLivePayload(payload);
             syncSharedData({ background: true, minimumIntervalMs: 15 * 60 * 1000 });
-            const after = liveGames();
-            detectLiveAlerts(before, after);
             state.liveRefresh.lastStatus = "fresh";
-            state.liveRefresh.lastMessage = `Direct live score feeds updated; ${after.length} games loaded.`;
+            state.liveRefresh.lastMessage = `Direct live score feeds updated; ${count} games loaded.`;
             return;
+        }
+        try {
+            const directPayload = await fetchDirectBrowserLiveScores();
+            if (directPayload) {
+                const count = applyDirectLivePayload(directPayload);
+                state.liveRefresh.lastStatus = "fresh";
+                state.liveRefresh.lastMessage = `Direct ESPN score feeds updated; ${count} games loaded.`;
+                return;
+            }
+        } catch (_error) {
+            // Fall through to the local Python bridge when browser CORS/network
+            // access is unavailable.
         }
         const result = await runRefreshCommand("live_scores_fast", {
             background: true,
@@ -1386,7 +1683,11 @@ async function refreshLiveHeartbeat(options = {}) {
         } else if (!result) {
             state.liveRefresh.lastStatus = "cached";
         }
-        if (result?.success) await loadAllAfterRefresh();
+        if (result?.success) {
+            const live = await loadOptional("live", DATA_GLOBALS.live, { force: true });
+            applyDataPayload("live", live);
+            renderAll();
+        }
         const after = liveGames();
         detectLiveAlerts(before, after);
         state.liveRefresh.lastMessage = result?.success
@@ -1427,7 +1728,9 @@ function startLiveHeartbeat() {
     state.liveRefresh.intervalId = window.setInterval(() => {
         refreshLiveHeartbeat({ source: "interval" });
     }, effectiveSeconds * 1000);
-    window.setTimeout(() => refreshLiveHeartbeat({ source: "startup" }), isTauriRefreshAvailable() ? 6000 : 15000);
+    // Refresh as soon as the shell is interactive so the bundled snapshot is
+    // not mistaken for the current score while the rest of the app hydrates.
+    window.setTimeout(() => refreshLiveHeartbeat({ source: "startup" }), 750);
 }
 
 function topEdges(limit = 5, options = {}) {
@@ -2257,7 +2560,7 @@ function defaultMlbReviewDate() {
     if (!dates.length) return null;
     const today = localDateIso();
     if (dates.includes(today)) return today;
-    return dates.find(date => date > today) || dates[dates.length - 1];
+    return dates.filter(date => date < today).at(-1) || dates.find(date => date > today) || dates[dates.length - 1];
 }
 
 function mlbCurrentBoardRows() {
@@ -2287,7 +2590,7 @@ function defaultCurrentMlbBoardDate() {
     const dates = currentMlbBoardDates();
     if (!dates.length) return null;
     const today = localDateIso();
-    return dates.includes(today) ? today : dates.find(date => date > today) || dates[dates.length - 1];
+    return dates.includes(today) ? today : dates.filter(date => date < today).at(-1) || dates.find(date => date > today) || dates[dates.length - 1];
 }
 
 function mlbSeasonBoardRows() {
@@ -2562,23 +2865,26 @@ function dateOffsetIso(days) {
     return localDateIso(date);
 }
 
+function homeMlbWeekRange(reference = localDateIso(), weekOffset = 0) {
+    const anchor = parseDateOnly(reference) || parseDateOnly(localDateIso());
+    if (!anchor) return { start: "", end: "" };
+    anchor.setDate(anchor.getDate() - anchor.getDay() + (weekOffset * 7));
+    const start = localDateIso(anchor);
+    anchor.setDate(anchor.getDate() + 6);
+    return { start, end: localDateIso(anchor) };
+}
+
 function setHomeMlbRange(range) {
     state.selected.homeMlbRange = range;
     const currentDates = range === "season" ? [] : currentMlbBoardDates();
-    const dates = currentDates.length ? currentDates : mlbReviewDates();
     const today = dateOffsetIso(0);
     const yesterday = dateOffsetIso(-1);
-    if (range === "today") {
-        state.selected.homeMlbDate = dates.includes(today) ? today : (currentDates.length ? defaultCurrentMlbBoardDate() : defaultMlbReviewDate());
-    }
-    if (range === "yesterday") {
-        state.selected.homeMlbDate = dates.includes(yesterday)
-            ? yesterday
-            : [...dates].reverse().find(date => date < today) || (currentDates.length ? defaultCurrentMlbBoardDate() : defaultMlbReviewDate());
-    }
-    if (!state.selected.homeMlbDate || !dates.includes(state.selected.homeMlbDate)) {
-        state.selected.homeMlbDate = currentDates.length ? defaultCurrentMlbBoardDate() : defaultMlbReviewDate();
-    }
+    const previousWeek = homeMlbWeekRange(today, -1);
+    if (range === "today") state.selected.homeMlbDate = today;
+    else if (range === "yesterday") state.selected.homeMlbDate = yesterday;
+    else if (range === "this_week") state.selected.homeMlbDate = today;
+    else if (range === "last_week") state.selected.homeMlbDate = previousWeek.end;
+    else state.selected.homeMlbDate = currentDates.length ? defaultCurrentMlbBoardDate() : defaultMlbReviewDate();
     persistSettings();
 }
 
@@ -2589,14 +2895,15 @@ function mlbRowsForHomeRange() {
     const rows = range === "season" || !currentMlbBoardDates().length
         ? allMlbReviewRows()
         : mlbCurrentBoardRows();
-    if (range === "this_week") {
-        const anchor = parseDateOnly(selected) || new Date();
-        const start = new Date(anchor);
-        start.setDate(anchor.getDate() - 6);
-        const startIso = localDateIso(start);
+    if (range === "today" || range === "yesterday") {
+        const target = range === "today" ? localDateIso() : dateOffsetIso(-1);
+        return sortedGamesByTime(rows.filter(game => gameIsoDate(game) === target));
+    }
+    if (range === "this_week" || range === "last_week") {
+        const week = homeMlbWeekRange(localDateIso(), range === "last_week" ? -1 : 0);
         return sortedGamesByTime(rows.filter(game => {
             const iso = gameIsoDate(game);
-            return iso >= startIso && iso <= selected;
+            return iso >= week.start && iso <= week.end;
         }), "desc");
     }
     if (range === "season") {
@@ -2626,157 +2933,16 @@ async function loadAll() {
     startAppLoading("Fetching today’s games and predictions…", "LineLens Sports", 18);
     setStatus("Getting today’s games and predictions…", "info");
     loadSettings();
+    loadNavSections();
     loadTracker();
     loadFavorites();
     loadRefreshLogs();
     loadLiveAlerts();
-    const [
-        app,
-        teams,
-        report,
-        modelComparison,
-        moltresCard,
-        featureSummary,
-        modelRegistry,
-        modelUpdateStatus,
-        modelRecord,
-        predictionLog,
-        bootstrap,
-        startup,
-        refresh,
-        sharedDataStatus,
-        live,
-        resultHistory,
-        odds,
-        nfl,
-        mlb,
-        mlbBacktest,
-        mlbEconomics,
-        wnbaModelComparison,
-        wnbaFeatureSummary,
-        wnbaCard,
-        wnba,
-        wnbaBacktest,
-        playerProps,
-        oddsHealth,
-        wnbaPropPredictions,
-        propLog,
-        propRecord,
-        wnbaPropModelRegistry,
-        wnbaPropModelCards,
-        wnbaPropModelHealth,
-        wnbaPropDatasetSummary,
-        propsDiagnostics,
-        mlbPropPredictions,
-        mlbPropModelRegistry,
-        mlbPropModelCards,
-        mlbPropModelHealth,
-        mlbPropDatasetSummary,
-        wnbaAvailability,
-    ] = await Promise.all([
-        loadOptional("app", ["__APP_METADATA__"]),
-        loadOptional("teams", ["__TEAM_METADATA__"]),
-        loadOptional("reports", ["__MODEL_REPORT__"]),
-        loadOptional("modelComparison", ["__MLB_MODEL_COMPARISON__"]),
-        loadOptional("moltresCard", ["__MLB_MOLTRES_MODEL_CARD__"]),
-        loadOptional("featureSummary", ["__MLB_FEATURE_SUMMARY__"]),
-        loadOptional("modelRegistry", ["__MODEL_REGISTRY__"]),
-        loadOptional("modelUpdateStatus", ["__MODEL_UPDATE_STATUS__"]),
-        loadOptional("modelRecord", ["__MODEL_RECORD__"]),
-        loadOptional("predictionLog", ["__MODEL_PREDICTIONS_LOG__"]),
-        loadOptional("bootstrap", ["__BOOTSTRAP_STATUS__"]),
-        loadOptional("startup", ["__STARTUP_STATUS__"]),
-        loadOptional("refresh", ["__REFRESH_STATUS__"]),
-        loadOptional("sharedDataStatus", ["__SHARED_DATA_STATUS__"]),
-        loadOptional("live", ["__LIVE_HEARTBEAT__", "__LIVE_SCORES__"]),
-        loadOptional("resultHistory", ["__RESULT_HISTORY__"]),
-        loadOptional("odds", ["__ODDS_SNAPSHOTS__"]),
-        loadOptional("nfl", ["__NFL_PREDICTIONS__", "__PREDICTIONS__"]),
-        loadOptional("mlb", ["__MLB_PREDICTIONS__"]),
-        loadOptional("mlbBacktest", ["__MLB_BACKTEST_PREDICTIONS__"]),
-        loadOptional("mlbEconomics", ["__MLB_ECONOMICS__"]),
-        loadOptional("wnbaModelComparison", ["__WNBA_MODEL_COMPARISON__"]),
-        loadOptional("wnbaFeatureSummary", ["__WNBA_FEATURE_SUMMARY__"]),
-        loadOptional("wnbaCard", ["__WNBA_MODEL_CARD__"]),
-        loadOptional("wnba", ["__WNBA_PREDICTIONS__"]),
-        loadOptional("wnbaBacktest", ["__WNBA_BACKTEST_PREDICTIONS__"]),
-        loadOptional("playerProps", ["__PLAYER_PROPS__"]),
-        loadOptional("oddsHealth", ["__ODDS_HEALTH__"]),
-        loadOptional("wnbaPropPredictions", ["__WNBA_PROP_PREDICTIONS__"]),
-        loadOptional("propLog", ["__PROP_PREDICTION_LOG__"]),
-        loadOptional("propRecord", ["__PROP_RECORD__"]),
-        loadOptional("wnbaPropModelRegistry", ["__WNBA_PROP_MODEL_REGISTRY__"]),
-        loadOptional("wnbaPropModelCards", ["__WNBA_PROP_MODEL_CARDS__"]),
-        loadOptional("wnbaPropModelHealth", ["__WNBA_PROP_MODEL_HEALTH__"]),
-        loadOptional("wnbaPropDatasetSummary", ["__WNBA_PROP_DATASET_SUMMARY__"]),
-        loadOptional("propsDiagnostics", ["__PROPS_MATCHING_DIAGNOSTICS__"]),
-        loadOptional("mlbPropPredictions", ["__MLB_PROP_PREDICTIONS__"]),
-        loadOptional("mlbPropModelRegistry", ["__MLB_PROP_MODEL_REGISTRY__"]),
-        loadOptional("mlbPropModelCards", ["__MLB_PROP_MODEL_CARDS__"]),
-        loadOptional("mlbPropModelHealth", ["__MLB_PROP_MODEL_HEALTH__"]),
-        loadOptional("mlbPropDatasetSummary", ["__MLB_PROP_DATASET_SUMMARY__"]),
-        loadOptional("wnbaAvailability", ["__WNBA_AVAILABILITY__"]),
-    ]);
-
-    await loadApiKeyStatus();
-
+    await loadDataKinds(["app", "teams", "modelRegistry", "modelRecord", "predictionLog", "live", "mlb", "wnba"]);
     setAppLoading("Preparing your board…", "Games / predictions / live updates", 66);
-
-    state.app = { ...(app || state.app), version: APP_VERSION };
-    state.teamPayload = teams || state.teamPayload;
-    state.report = report || state.report;
-    state.modelComparison = modelComparison || state.modelComparison;
-    state.wnbaModelComparison = wnbaModelComparison || state.wnbaModelComparison;
-    state.moltresCard = moltresCard || state.moltresCard;
-    state.featureSummary = featureSummary || state.featureSummary;
-    state.wnbaFeatureSummary = wnbaFeatureSummary || state.wnbaFeatureSummary;
-    state.wnbaCard = wnbaCard || state.wnbaCard;
-    state.modelRegistry = modelRegistry || state.modelRegistry;
-    state.modelUpdateStatus = modelUpdateStatus || state.modelUpdateStatus;
-    state.modelRecord = modelRecord || state.modelRecord;
-    state.predictionLog = predictionLog || state.predictionLog;
-    state.bootstrapStatus = bootstrap || state.bootstrapStatus;
-    state.startupStatus = startup || state.startupStatus;
-    state.refreshStatus = refresh || state.refreshStatus;
-    state.sharedDataStatus = sharedDataStatus || state.sharedDataStatus;
-    state.resultHistory = resultHistory || state.resultHistory;
-    state.live.payload = live;
-    state.live.games = normalizeGames(live);
-    state.live.stale = !livePayloadIsFresh(live);
-    state.live.error = live
-        ? (state.live.stale ? "Live export is older than three minutes; waiting for background refresh." : null)
-        : "No live widget export found. Run npm run refresh:live.";
-    state.odds = odds || state.odds;
-    state.nfl.payload = resolveNflPayload(nfl);
-    state.nfl.games = normalizeGames(state.nfl.payload);
-    state.nfl.error = state.nfl.payload ? null : "No NFL predictions found. Run the NFL export command.";
-    state.mlb.payload = mlb;
-    state.mlb.games = normalizeGames(mlb);
-    state.mlb.error = mlb ? null : "No MLB predictions found. Run the MLB export command.";
-    state.mlbBacktest.payload = mlbBacktest;
-    state.mlbBacktest.games = normalizeGames(mlbBacktest);
-    state.mlbEconomics = mlbEconomics || state.mlbEconomics;
-    state.wnba.payload = wnba;
-    state.wnba.games = normalizeGames(wnba);
-    state.wnba.error = wnba ? null : "No WNBA model export found. Run npm run refresh:wnba:all.";
-    state.wnbaBacktest.payload = wnbaBacktest;
-    state.wnbaBacktest.games = normalizeGames(wnbaBacktest);
-    state.playerProps = playerProps || state.playerProps;
-    state.oddsHealth = oddsHealth || state.oddsHealth;
-    state.wnbaAvailability = wnbaAvailability || state.wnbaAvailability;
-    state.propsDiagnostics = propsDiagnostics || state.propsDiagnostics;
-    state.wnbaPropPredictions = wnbaPropPredictions || state.wnbaPropPredictions;
-    state.mlbPropPredictions = mlbPropPredictions || state.mlbPropPredictions;
-    state.propLog = propLog || state.propLog;
-    state.propRecord = propRecord || state.propRecord;
-    state.wnbaPropModelRegistry = wnbaPropModelRegistry || state.wnbaPropModelRegistry;
-    state.wnbaPropModelCards = wnbaPropModelCards || state.wnbaPropModelCards;
-    state.wnbaPropModelHealth = wnbaPropModelHealth || state.wnbaPropModelHealth;
-    state.wnbaPropDatasetSummary = wnbaPropDatasetSummary || state.wnbaPropDatasetSummary;
-    state.mlbPropModelRegistry = mlbPropModelRegistry || state.mlbPropModelRegistry;
-    state.mlbPropModelCards = mlbPropModelCards || state.mlbPropModelCards;
-    state.mlbPropModelHealth = mlbPropModelHealth || state.mlbPropModelHealth;
-    state.mlbPropDatasetSummary = mlbPropDatasetSummary || state.mlbPropDatasetSummary;
+    state.app = { ...(state.app || {}), version: APP_VERSION };
+    state.mlb.error = state.mlb.payload ? null : "No MLB predictions found. Run the MLB export command.";
+    state.wnba.error = state.wnba.payload ? null : "No WNBA model export found. Run npm run refresh:wnba:all.";
     teamIndex = buildTeamIndex();
     if (window.LineLensSprint5) window.LineLensSprint5.initialize(state);
 
@@ -2789,27 +2955,35 @@ async function loadAll() {
 
     const modes = [`NFL ${dataMode(state.nfl.payload, state.nfl.games)}`, `MLB ${dataMode(state.mlb.payload, state.mlb.games)}`, `WNBA ${dataMode(state.wnba.payload, state.wnba.games)}`];
     setStatus(allGames().length ? "" : `No predictions loaded. ${modes.join(" / ")}.`, allGames().length ? "success" : "warning");
-    if (!state.refreshRuntime.checked) {
-        state.refreshRuntime.checked = true;
-        if (!isTauriRefreshAvailable()) await detectBrowserRefreshBridge();
-        state.refreshRuntime.available = isTauriRefreshAvailable() || browserRefreshAvailable();
-        state.refreshRuntime.message = state.refreshRuntime.available
-            ? isTauriRefreshAvailable()
-                ? "Desktop auto-refresh is available."
-                : "Local refresh bridge detected; background refresh is enabled."
-            : "Showing bundled exports. Start npm run app to enable local command refresh.";
-        renderAll();
-        if (state.refreshRuntime.available) {
-            if (isTauriRefreshAvailable()) {
-                syncSharedData({ background: true, force: true }).then(result => {
-                    if (!result?.success) runStartupAutomation({ background: true });
-                });
-            } else {
-                runStartupAutomation({ background: true });
+    loadApiKeyStatus().catch(() => {});
+    Promise.resolve().then(async () => {
+        if (!state.refreshRuntime.checked) {
+            state.refreshRuntime.checked = true;
+            if (!isTauriRefreshAvailable()) await detectBrowserRefreshBridge();
+            state.refreshRuntime.available = isTauriRefreshAvailable() || browserRefreshAvailable();
+            state.refreshRuntime.message = state.refreshRuntime.available
+                ? isTauriRefreshAvailable()
+                    ? "Desktop auto-refresh is available."
+                    : "Local refresh bridge detected; background refresh is enabled."
+                : "Showing bundled exports. Start npm run app to enable local command refresh.";
+            renderAll();
+            if (state.refreshRuntime.available) {
+                if (isTauriRefreshAvailable()) {
+                    syncSharedData({ background: true, force: true }).then(result => {
+                        if (!result?.success) refreshLiveHeartbeat({ background: true, source: "startup-fallback" });
+                    });
+                } else {
+                    // A full model rebuild on every page load was the source
+                    // of long background stalls. Live scores are the only
+                    // startup refresh that needs to run automatically; the
+                    // full refresh remains available from Settings.
+                    refreshLiveHeartbeat({ background: true, source: "startup" });
+                }
             }
         }
-    }
+    }).catch(() => {});
     startLiveHeartbeat();
+    scheduleDeferredData();
     loadRuntimeDiagnostics().then(() => {
         if (state.selected.view === "settings") renderSettings();
     });
@@ -3267,6 +3441,12 @@ function switchView(view) {
     if (previous !== view) triggerViewTransition();
     state.selected.view = view;
     persistSettings();
+    const activeNavSection = document.querySelector(`.nav__item[data-view="${view}"]`)?.closest("[data-nav-group]");
+    if (activeNavSection && navSections[activeNavSection.dataset.navGroup]) {
+        navSections[activeNavSection.dataset.navGroup] = false;
+        localStorage.setItem(NAV_SECTIONS_KEY, JSON.stringify(navSections));
+        applyNavSections();
+    }
     $$(".view").forEach(el => {
         const active = el.id === `view-${view}`;
         el.classList.toggle("is-active", active);
@@ -3304,6 +3484,7 @@ function switchView(view) {
     $("#view-title").textContent = title;
     $("#view-kicker").textContent = kicker;
     if (previous !== view && !renderedViews.has(view)) renderView(view);
+    if (previous !== view) ensureViewData(view);
     renderGlobalTicker();
 }
 
@@ -3379,7 +3560,7 @@ function commandPalettePropRows() {
 }
 
 function commandPaletteItems() {
-    const views = COMMAND_PALETTE_VIEWS.map(view => ({
+    const views = COMMAND_PALETTE_VIEWS.filter(view => !["foryou", "underdogs"].includes(view.id)).map(view => ({
         id: `view:${view.id}`,
         kind: "page",
         eyebrow: "Go to",
@@ -3577,7 +3758,7 @@ function executeCommandPaletteItem(itemId) {
 
 async function loadApiKeyStatus() {
     if (!isTauriRefreshAvailable()) {
-        state.apiKeys = { checked: true, available: false, odds_api_key: false, sharp_odds_api_key: false, propline_api_key: false, message: "API key entry is available in the installed desktop app." };
+        state.apiKeys = { checked: true, available: false, odds_api_key: false, sharp_odds_api_key: false, propline_api_key: false, message: "Live scores use keyless public feeds. Release builds include configured provider defaults; optional local key entry is available in the installed desktop app." };
         return;
     }
     try {
@@ -3948,6 +4129,7 @@ function renderHomeRangeTabs() {
         ["today", "Today"],
         ["yesterday", "Yesterday"],
         ["this_week", "This Week"],
+        ["last_week", "Last Week"],
         ["season", "Season"],
     ];
     return `
@@ -4019,12 +4201,16 @@ function renderHomeBoardRows(rows, sport) {
 
 function renderHomeDailyBoard(rows) {
     const sport = state.selected.homeSport || "MLB";
+    const mlbRange = state.selected.homeMlbRange || "today";
+    const mlbHeading = mlbRange === "this_week" || mlbRange === "last_week"
+        ? `${formatDateOnly(homeMlbWeekRange(localDateIso(), mlbRange === "last_week" ? -1 : 0).start, { month: "short", day: "numeric" })} – ${formatDateOnly(homeMlbWeekRange(localDateIso(), mlbRange === "last_week" ? -1 : 0).end, { month: "short", day: "numeric" })}`
+        : formatDate(ensureMlbReviewDate());
     return `
         <article class="panel daily-board-v2">
             <header class="section-header">
                 <div>
                     <p class="eyebrow">${sport === "MLB" ? "Daily Review" : sport === "WNBA" ? "Current WNBA Board" : "Weekly Board"}</p>
-                    <h2>${sport === "MLB" ? formatDate(ensureMlbReviewDate()) : sport === "WNBA" ? "WNBA model + scoreboard" : `NFL ${ensureNflScope().season} ${gameWeekLabel((ensureNflScope().games || [])[0] || { week: ensureNflScope().week })}`}</h2>
+                    <h2>${sport === "MLB" ? mlbHeading : sport === "WNBA" ? "WNBA model + scoreboard" : `NFL ${ensureNflScope().season} ${gameWeekLabel((ensureNflScope().games || [])[0] || { week: ensureNflScope().week })}`}</h2>
                 </div>
                 ${renderHomeSportTabs()}
             </header>
@@ -4517,6 +4703,12 @@ function filteredPicksRows() {
         if (selected.picksStatus !== "all" && status !== selected.picksStatus) return false;
         if (selected.picksConfidence !== "all" && confidence !== selected.picksConfidence) return false;
         if (selected.picksModel !== "all" && model !== selected.picksModel) return false;
+        if (selected.picksEdgeFilter === "best") {
+            const marketEdge = safeNumber(lineMovementSummary(game, game.sport).marketEdge);
+            if (marketEdge === null || marketEdge < 0.05) return false;
+        }
+        if (selected.picksEdgeFilter === "underdogs" && !underdogCandidateRows().some(row => gameKey(row) === gameKey(game) && row.sport === game.sport)) return false;
+        if (selected.picksEdgeFilter === "favorites" && !isWatchedGame(game) && !isFavoriteTeam(game.sport, game.home) && !isFavoriteTeam(game.sport, game.away)) return false;
         if (selected.picksWatchlist && !isWatchedGame(game)) return false;
         if (selected.picksDisagree && !picksConsensus(game).disagree) return false;
         return true;
@@ -4755,7 +4947,8 @@ function renderProps() {
 function renderPicksFilters(rows) {
     const models = uniqueSortedStrings(rows.map(game => game.model_name).filter(Boolean), "asc");
     const date = ensurePicksDate(rows);
-    return `<section class="panel picks-filters"><div class="picks-filter-group"><span class="eyebrow">Sport</span><div class="segmented-control">${[["all", "All Sports"], ["MLB", "MLB"], ["WNBA", "WNBA"]].map(([value, label]) => `<button type="button" data-picks-sport="${value}" class="${state.selected.picksSport === value ? "is-active" : ""}">${label}</button>`).join("")}</div></div><label><span>Date</span><input id="picks-date-picker" type="date" value="${escapeHtml(date || "")}" /></label><div class="picks-date-nav"><button class="icon-btn" type="button" data-picks-shift="-1" aria-label="Previous picks date">‹</button><strong>${escapeHtml(date ? formatDate(date) : "No dates")}</strong><button class="icon-btn" type="button" data-picks-shift="1" aria-label="Next picks date">›</button></div><label><span>Status</span><select id="picks-status-filter"><option value="all">All states</option><option value="upcoming" ${state.selected.picksStatus === "upcoming" ? "selected" : ""}>Upcoming</option><option value="live" ${state.selected.picksStatus === "live" ? "selected" : ""}>Live</option><option value="final" ${state.selected.picksStatus === "final" ? "selected" : ""}>Final</option></select></label><label><span>Confidence</span><select id="picks-confidence-filter"><option value="all">All confidence</option>${["High", "Medium", "Low"].map(value => `<option value="${value}" ${state.selected.picksConfidence === value ? "selected" : ""}>${value}</option>`).join("")}</select></label><label><span>Model</span><select id="picks-model-filter"><option value="all">All models</option>${models.map(value => `<option value="${escapeHtml(value)}" ${state.selected.picksModel === value ? "selected" : ""}>${escapeHtml(modelIdentity(value).legend)}</option>`).join("")}</select></label><label><span>Sort</span><select id="picks-sort-select">${[["confidence", "Strongest confidence"], ["edge", "Model edge"], ["consensus", "Consensus"], ["time", "Game time"], ["watchlist", "Watchlist priority"]].map(([value, label]) => `<option value="${value}" ${state.selected.picksSort === value ? "selected" : ""}>${label}</option>`).join("")}</select></label><label class="picks-check"><input id="picks-watchlist-filter" type="checkbox" ${state.selected.picksWatchlist ? "checked" : ""} /><span>Watchlist only</span></label><label class="picks-check"><input id="picks-disagreement-filter" type="checkbox" ${state.selected.picksDisagree ? "checked" : ""} /><span>Models disagree</span></label></section>`;
+    const focusTabs = [["all", "All"], ["best", "Best Edge"], ["underdogs", "Underdogs"], ["favorites", "Favorites"]];
+    return `<section class="panel picks-filters"><div class="picks-focus-filter"><span class="eyebrow">Focus</span><div class="segmented-control">${focusTabs.map(([value, label]) => `<button type="button" data-picks-edge="${value}" class="${state.selected.picksEdgeFilter === value ? "is-active" : ""}">${label}</button>`).join("")}</div></div><div class="picks-filter-group"><span class="eyebrow">Sport</span><div class="segmented-control">${[["all", "All Sports"], ["MLB", "MLB"], ["WNBA", "WNBA"]].map(([value, label]) => `<button type="button" data-picks-sport="${value}" class="${state.selected.picksSport === value ? "is-active" : ""}">${label}</button>`).join("")}</div></div><label><span>Date</span><input id="picks-date-picker" type="date" value="${escapeHtml(date || "")}" /></label><div class="picks-date-nav"><button class="icon-btn" type="button" data-picks-shift="-1" aria-label="Previous picks date">‹</button><strong>${escapeHtml(date ? formatDate(date) : "No dates")}</strong><button class="icon-btn" type="button" data-picks-shift="1" aria-label="Next picks date">›</button></div><label><span>Status</span><select id="picks-status-filter"><option value="all">All states</option><option value="upcoming" ${state.selected.picksStatus === "upcoming" ? "selected" : ""}>Upcoming</option><option value="live" ${state.selected.picksStatus === "live" ? "selected" : ""}>Live</option><option value="final" ${state.selected.picksStatus === "final" ? "selected" : ""}>Final</option></select></label><label><span>Confidence</span><select id="picks-confidence-filter"><option value="all">All confidence</option>${["High", "Medium", "Low"].map(value => `<option value="${value}" ${state.selected.picksConfidence === value ? "selected" : ""}>${value}</option>`).join("")}</select></label><label><span>Model</span><select id="picks-model-filter"><option value="all">All models</option>${models.map(value => `<option value="${escapeHtml(value)}" ${state.selected.picksModel === value ? "selected" : ""}>${escapeHtml(modelIdentity(value).legend)}</option>`).join("")}</select></label><label><span>Sort</span><select id="picks-sort-select">${[["confidence", "Strongest confidence"], ["edge", "Model edge"], ["consensus", "Consensus"], ["time", "Game time"], ["watchlist", "Watchlist priority"]].map(([value, label]) => `<option value="${value}" ${state.selected.picksSort === value ? "selected" : ""}>${label}</option>`).join("")}</select></label><label class="picks-check"><input id="picks-watchlist-filter" type="checkbox" ${state.selected.picksWatchlist ? "checked" : ""} /><span>Watchlist only</span></label><label class="picks-check"><input id="picks-disagreement-filter" type="checkbox" ${state.selected.picksDisagree ? "checked" : ""} /><span>Models disagree</span></label></section>`;
 }
 
 function renderPickCard(game) {
@@ -4828,7 +5021,7 @@ function renderModelTrustCenterCompact() {
     `;
 }
 
-function renderHome() {
+function renderHomeLegacy() {
     const scopedRows = homeBoardGames();
     const top = homeTopEdges(8);
     const latest = [normalizeMeta(state.nfl.payload).generated_at, normalizeMeta(state.mlb.payload).generated_at, state.report?.metadata?.generated_at].filter(Boolean).sort().at(-1);
@@ -4869,6 +5062,58 @@ function renderHome() {
             ${renderLiveWidgetPreview()}
         </section>
     `;
+}
+
+function homeFocusPickCard(row, label = "Top pick") {
+    if (!row?.game) return emptyState("No model pick loaded", "Refresh the current board to populate this section.");
+    const game = row.game;
+    const sport = game.sport || "MLB";
+    const probability = row.probability === null ? null : (getGamePick(game, sport) === game.home ? row.probability : 1 - row.probability);
+    const movement = lineMovementSummary(game, sport);
+    const marketProbability = marketProbabilityForPick(game, sport, movement);
+    return `<article class="home-focus-pick"><header><span class="eyebrow">${escapeHtml(label)}</span><span class="sport-pill sport-pill--${sport.toLowerCase()}">${escapeHtml(sport)}</span></header><div class="home-focus-pick__teams"><strong>${escapeHtml(game.away_display || game.away)} @ ${escapeHtml(game.home_display || game.home)}</strong><span>${escapeHtml(getGameTimeLabel(game))}</span></div><div class="home-focus-pick__readout"><div><small>LineLens pick</small><strong>${escapeHtml(row.pick)}</strong></div><div><small>Model</small><strong>${formatProbability(probability)}</strong></div><div><small>Market</small><strong>${marketProbability === null ? "Unavailable" : formatProbability(marketProbability)}</strong></div><div><small>Edge</small><strong>${movement.marketEdge === null ? "Unavailable" : formatEdge(movement.marketEdge)}</strong></div></div><p class="home-focus-pick__why"><span>Why</span>${escapeHtml(bestPickFactors(game).slice(0, 2).join(" · ") || "Model signal")}</p><footer><button class="btn btn--micro btn--primary" type="button" data-open-gamecast="${escapeHtml(sport)}" data-game-id="${escapeHtml(gameKey(game))}">View analysis</button>${renderWatchButton(game, "Watch pick")}</footer></article>`;
+}
+
+function homeFocusLiveRows() {
+    return uniqueRowsByGame([
+        ...liveGames().filter(game => isLiveSportGame(game)),
+        ...lifecycleBoardGames().filter(game => lifecycleStage(game) === "live"),
+    ]).slice(0, 4);
+}
+
+function homeFocusWatchingRows() {
+    return uniqueRowsByGame(watchlistRows().filter(row => !isFinalSportGame(row)).concat(
+        homeBoardGames().filter(game => isFavoriteTeam(game.sport, game.home) || isFavoriteTeam(game.sport, game.away)),
+    )).slice(0, 4);
+}
+
+function renderHomeFocusLive() {
+    const rows = homeFocusLiveRows();
+    return `<section class="panel home-focus-panel"><header class="section-header"><div><p class="eyebrow">Live</p><h2>Games happening now</h2></div><span class="chip chip--soft">${rows.length} live</span></header>${rows.length ? `<div class="home-focus-live-list">${rows.map(game => `<article><div><span class="lifecycle-status lifecycle-status--live">LIVE</span><strong>${escapeHtml(game.away || "Away")} ${escapeHtml(String(game.away_score ?? "–"))} @ ${escapeHtml(game.home || "Home")} ${escapeHtml(String(game.home_score ?? "–"))}</strong><small>${escapeHtml(game.status_detail || game.inning_state || "Live feed")}</small></div><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport || "MLB")}" data-game-id="${escapeHtml(gameKey(game))}">GameCast</button></article>`).join("")}</div>` : emptyState("No live games loaded", "Live rows appear here when the official scoreboard feed reports an active game.")}</section>`;
+}
+
+function renderHomeFocusWatching() {
+    const rows = homeFocusWatchingRows();
+    return `<section class="panel home-focus-panel"><header class="section-header"><div><p class="eyebrow">Watching</p><h2>Your follow list</h2></div><button class="btn btn--micro" type="button" data-view-link="watchlist">Open Watchlist</button></header>${rows.length ? `<div class="home-focus-watch-list">${rows.map(game => `<article><span>${escapeHtml(game.sport || "MLB")}</span><strong>${escapeHtml(game.away || "Away")} @ ${escapeHtml(game.home || "Home")}</strong><small>${escapeHtml(getGamePick(game, game.sport || "MLB"))} · ${escapeHtml(modelResultLabel(game))}</small><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport || "MLB")}" data-game-id="${escapeHtml(gameKey(game))}">Open</button></article>`).join("")}</div>` : emptyState("Nothing watched yet", "Star a team or matchup and it will appear here.")}</section>`;
+}
+
+function renderHomeModelPulse() {
+    const cutoff = dateOffsetIso(-30);
+    const recent = getLogEntries().filter(row => String(row.game_date || row.generated_at || "").slice(0, 10) >= cutoff);
+    const record = summarizeRecordRows(recent);
+    const decided = record.wins + record.losses + record.pushes;
+    return `<section class="panel home-focus-panel home-model-pulse"><header class="section-header"><div><p class="eyebrow">Model pulse</p><h2>Last 30 days</h2></div><span class="chip ${decided ? "chip--success" : "chip--soft"}">${decided ? `${((record.wins / Math.max(1, record.wins + record.losses)) * 100).toFixed(1)}% wins` : "Awaiting results"}</span></header><div class="home-pulse-grid"><div><strong>${escapeHtml(recordSummaryCopy(record))}</strong><small>scored model rows</small></div><div><strong>${record.pending}</strong><small>pending</small></div><div><strong>${escapeHtml(selectedModelEntry("MLB")?.model_name || "Not declared")}</strong><small>MLB production model</small></div></div><p class="muted">Performance uses logged results only; unavailable rows stay out of the record.</p><button class="btn btn--micro" type="button" data-view-link="record">View performance</button></section>`;
+}
+
+function renderHome() {
+    const top = homeTopEdges(6);
+    const best = top[0];
+    const today = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+    const picks = top.slice(1, 3);
+    const totalPicks = universalPickRows().filter(game => gameIsoDate(game) === localDateIso()).length;
+    const nflLatest = latestNflSeason();
+    const nflAvailableLatest = nflSeasons()[0];
+    $("#view-home").innerHTML = `<section class="home-focus-shell"><header class="home-focus-header"><div><p class="eyebrow">Today</p><h2>${escapeHtml(today)}</h2><p class="muted">The strongest available signals, live action, and the teams you follow.</p></div><div class="report-actions"><span class="chip chip--soft">${totalPicks} predictions</span><button class="btn btn--primary" type="button" data-view-link="picks">View all picks</button></div></header><section class="home-focus-layout"><div class="home-focus-main">${best ? homeFocusPickCard(best, "Best edge") : emptyState("No top edge available", "Load a current prediction export to populate Home.")}${picks.length ? `<section class="panel home-focus-panel"><header class="section-header"><div><p class="eyebrow">Top picks</p><h2>Decisions worth your attention</h2></div><button class="btn btn--micro" type="button" data-view-link="picks">See all</button></header><div class="home-focus-picks">${picks.map((row, index) => homeFocusPickCard(row, `Top pick ${index + 2}`)).join("")}</div></section>` : ""}</div><div class="home-focus-side">${renderHomeFocusLive()}${renderHomeFocusWatching()}${renderHomeModelPulse()}</div></section>${nflAvailableLatest && nflLatest && nflAvailableLatest !== nflLatest ? `<div class="home-source-strip" data-variant="warning"><strong>NFL source note</strong><span>${nflAvailableLatest} currently has only a verified postseason supplement; Home defaults to the latest complete model season, ${nflLatest}.</span><button class="btn btn--micro" data-view-link="nfl">Inspect NFL</button></div>` : ""}</section>`;
 }
 
 function statusTone(status) {
@@ -5702,6 +5947,7 @@ function renderMlbLifecyclePage() {
             <div class="mlb-page-header__top"><div><p class="eyebrow">MLB / ${archiveDay ? "Season archive" : "Daily board"}</p><h2>${escapeHtml(dateDisplay.monthDay)}</h2><div class="mlb-selected-date"><span>${escapeHtml(dateDisplay.season)}</span>${archiveDay ? `<span class="chip chip--soft">Archive rows</span>` : ""}</div></div><div class="mlb-page-header__actions"><span class="mlb-freshness">Data updated · ${escapeHtml(freshness.last_success_at ? timestamp(freshness.last_success_at) : "time unavailable")}</span></div></div>
             <div class="mlb-page-header__controls"><div class="mlb-production" title="Technical model: ${escapeHtml(production?.model_name || "not declared")}"><span>Production model:</span><strong>${escapeHtml(productionIdentity.legend || "Not declared")}</strong></div><div class="mlb-filter-wrap">${renderMlbStageFilters(games)}</div></div>
         </section>
+        <nav class="mlb-subnav" aria-label="MLB sections"><button type="button" class="is-active" data-mlb-tab="games">Games</button><button type="button" data-mlb-tab="predictions">Predictions</button><button type="button" data-mlb-tab="players">Players</button><button type="button" data-mlb-tab="economics">Economics</button></nav>
         <section class="panel game-date-calendar-panel">${dateCalendar}</section>
         <section class="mlb-intelligence-strip" aria-label="MLB board summary"><span class="mlb-summary-item"><strong>${games.length}</strong><small>Games</small></span><span class="mlb-summary-item"><strong>${modelPicks}</strong><small>Model picks</small></span><span class="mlb-summary-item"><strong>${liveCount}</strong><small>Live</small></span><span class="mlb-summary-item"><strong>${finalCount}</strong><small>Final</small></span><span class="mlb-summary-item"><strong>${oddsLinked}</strong><small>Odds linked</small></span><span class="mlb-summary-item"><strong>${recordText}</strong><small>Record</small></span></section>
         <section class="panel mlb-board-panel"><header class="section-header"><div><p class="eyebrow">${archiveDay ? "Season game board" : "Daily game board"}</p><p class="muted">${escapeHtml(dateDisplay.monthDay)} · ${archiveDay ? "archived prediction rows; live scores are never inferred from archive data." : "live and watchlisted games lead; final accountability stays in the full list."}</p></div></header><div class="mlb-game-grid ${filtered.length === 1 ? "mlb-game-grid--single" : ""}">${filtered.length ? filtered.map(renderMlbLifecycleCard).join("") : emptyState("No games in this lifecycle state", "This filter only shows real rows loaded for the selected date.")}</div></section>
@@ -6879,11 +7125,34 @@ function renderGameCastMarket(game) {
     `;
 }
 
+function readableFactorNote(factor) {
+    const feature = String(factor?.feature || "").toLowerCase();
+    if (feature.includes("pitcher") || feature.includes("runs_allowed")) return "Starting-pitcher context from the exported pregame inputs.";
+    if (feature.includes("run_diff") || feature.includes("win_pct") || feature.includes("form")) return "Recent team form is moving the model read.";
+    if (feature.includes("home_split") || feature.includes("away_split")) return "Home/away split is part of the matchup signal.";
+    if (feature.includes("travel") || feature.includes("fatigue") || feature.includes("rest")) return "Schedule and travel context from the current export.";
+    if (feature.includes("volatility")) return "The model is responding to recent game-to-game volatility.";
+    return "An exported local feature contributing to this matchup read.";
+}
+
+function renderReadableWhy(game, sport) {
+    const factors = Array.isArray(game?.explanation?.top_factors) ? game.explanation.top_factors.slice(0, 4) : [];
+    const pick = getGamePick(game, sport);
+    if (!factors.length) return emptyState("No readable factor attribution", "The current prediction export does not include local factor details.");
+    return `<div class="gamecast-why-grid">${factors.map(factor => {
+        const impact = String(factor.impact || "").toLowerCase();
+        const supportsPick = (pick === game.home && impact.includes("home")) || (pick === game.away && impact.includes("away"));
+        const magnitude = safeNumber(factor.strength);
+        const label = factor.label || factor.feature || "Model factor";
+        return `<article class="gamecast-why-card" data-tone="${supportsPick ? "support" : "oppose"}"><header><span>${supportsPick ? "+" : "−"}</span><strong>${escapeHtml(label)}</strong><b>${magnitude === null ? "Signal" : `${supportsPick ? "+" : "−"}${(magnitude * 100).toFixed(1)} pp`}</b></header><p>${escapeHtml(readableFactorNote(factor))}</p><small>${escapeHtml(supportsPick ? `Supports ${pick}` : `Pulls against ${pick}`)}</small></article>`;
+    }).join("")}</div>`;
+}
+
 function renderGameCastWhy(game) {
     const sport = game?.sport || "MLB";
     if (sport === "WNBA") {
         const factors = game.explanation?.top_factors || [];
-        return `<div class="gamecast-model-identity"><span>${escapeHtml(game.model_name || "WNBA model")}</span></div><p class="muted">${escapeHtml(game.top_factor_label || "Pregame Elo and recent team form")}. Advanced/player inputs remain unavailable unless exported by the source.</p>${factors.length ? `<div class="factor-list factor-list--compact">${factors.slice(0, 3).map(renderFactorRow).join("")}</div>` : emptyState("No WNBA factor attribution", "The current score + Elo export does not include local factor values.")}`;
+        return `<div class="gamecast-model-identity"><span>${escapeHtml(game.model_name || "WNBA model")}</span></div><p class="muted">${escapeHtml(game.top_factor_label || "Pregame Elo and recent team form")}. Advanced/player inputs remain unavailable unless exported by the source.</p>${factors.length ? renderReadableWhy(game, sport) : emptyState("No WNBA factor attribution", "The current score + Elo export does not include local factor values.")}${factors.length ? `<details class="feature-details gamecast-technical-factors"><summary>View technical factor values</summary><div class="factor-list factor-list--compact">${factors.slice(0, 3).map(renderFactorRow).join("")}</div></details>` : ""}`;
     }
     if (sport !== "MLB") {
         return `<p class="muted">NFL explanations depend on exported spread feature fields. Historical rows show the scored pick and spread context when available.</p>`;
@@ -6893,7 +7162,8 @@ function renderGameCastWhy(game) {
     return `
         <div class="gamecast-model-identity"><span>${escapeHtml(game.model_name || "MLB model")}</span>${isMoltresGame(game) ? renderMoltresBadge(true) : ""}</div>
         <p class="muted">${escapeHtml(explanation.summary || "No exported explanation for this row.")}</p>
-        ${factors.length ? `<div class="factor-list factor-list--compact">${factors.slice(0, 3).map(renderFactorRow).join("")}</div>` : ""}
+        ${renderReadableWhy(game, sport)}
+        ${factors.length ? `<details class="feature-details gamecast-technical-factors"><summary>View technical factor values</summary><div class="factor-list factor-list--compact">${factors.slice(0, 5).map(renderFactorRow).join("")}</div></details>` : ""}
         ${renderMoltresComponents(game, true)}
     `;
 }
@@ -7083,6 +7353,17 @@ function renderGameCastConsensus(game) {
     return `<div class="gamecast-consensus"><header><strong>${escapeHtml(picksConsensus(game).label)}</strong><span>Full model vote</span></header>${consensus.rows.map(row => `<div><span>${escapeHtml(row.legend)}</span><strong>${escapeHtml(row.pick)}</strong><small>${formatProbability(row.pick === game.home ? row.homeProbability : 1 - row.homeProbability)}</small></div>`).join("")}</div>`;
 }
 
+function renderGameDetailHero(game, sport, live) {
+    const pick = getGamePick(game, sport);
+    const probability = getGameProbability(game, sport);
+    const pickedProbability = probability === null ? null : pick === game.home ? probability : 1 - probability;
+    const movement = lineMovementSummary(game, sport);
+    const marketProbability = marketProbabilityForPick(game, sport, movement);
+    const stage = isFinalSportGame(live || game) ? "Postgame review" : isLiveSportGame(live || game) ? "Live GameCast" : "Pregame decision";
+    const edgeLabel = movement.marketEdge === null ? "Edge unavailable" : formatEdge(movement.marketEdge);
+    return `<section class="game-detail-hero" aria-label="Matchup decision summary"><div class="game-detail-hero__intro"><p class="eyebrow">${escapeHtml(stage)}</p><h3>${escapeHtml(pick === "-" ? "No model pick exported" : `${pick} is the current model lean`)}</h3><p>One matchup surface for the decision, the live state, and the postgame result. Source freshness stays visible below.</p></div><div class="game-detail-hero__readout"><div><span>Pick</span><strong>${escapeHtml(pick)}</strong><small>${escapeHtml(game.model_name || `${sport} model`)}</small></div><div><span>Model probability</span><strong>${formatProbability(pickedProbability)}</strong><small>Picked side</small></div><div><span>Market implied</span><strong>${marketProbability === null ? "Unavailable" : formatProbability(marketProbability)}</strong><small>Real matched odds</small></div><div><span>Model edge</span><strong>${escapeHtml(edgeLabel)}</strong><small>${escapeHtml(movement.freshness || "Market comparison")}</small></div></div></section>`;
+}
+
 function renderGameCast(game, sport) {
     const live = liveGameFor(game);
     const quality = featureQualityForGame(game);
@@ -7094,10 +7375,10 @@ function renderGameCast(game, sport) {
     const statSections = gameActive ? `${renderGameCastBoxScore(game, live)}${renderGameCastPlayerStats(game, live)}` : renderPregameStatAvailability();
     return `
         <div class="gamecast-backdrop" data-close-gamecast></div>
-        <aside class="gamecast-drawer" role="dialog" aria-modal="true" aria-label="LineLens GameCast">
+        <aside class="gamecast-drawer" role="dialog" aria-modal="true" aria-label="LineLens Game Detail">
             <header class="gamecast-header">
                 <div>
-                    <p class="eyebrow">LineLens GameCast</p>
+                    <p class="eyebrow">LineLens Game Detail</p>
                     <h2>${escapeHtml(game.away || "Away")} @ ${escapeHtml(game.home || "Home")}</h2>
                 </div>
                 <div class="gamecast-actions">
@@ -7106,6 +7387,7 @@ function renderGameCast(game, sport) {
                 </div>
             </header>
             ${renderGameCastScore(game, live)}
+            ${renderGameDetailHero(game, sport, live)}
             ${gameActive ? statSections : ""}
             ${renderGameCastProvenance(game, sport)}
             ${renderConfidenceAnatomy(game, sport)}
@@ -8682,13 +8964,25 @@ function renderApiKeysPanel() {
 }
 
 function finishOnboarding() {
+    const sports = [...document.querySelectorAll("[data-onboarding-sport]:checked")].map(input => input.value);
+    const teams = [...document.querySelectorAll("[data-onboarding-team]:checked")].map(input => input.dataset.onboardingTeam);
+    const interests = [...document.querySelectorAll("[data-onboarding-interest]:checked")].map(input => input.value);
+    const experience = document.querySelector("[data-onboarding-experience]:checked")?.value || "casual";
+    state.selected.onboardingSports = sports;
+    state.selected.onboardingInterests = interests;
+    state.selected.onboardingExperience = experience;
+    if (sports.length) state.selected.homeSport = sports.includes("MLB") ? "MLB" : sports[0];
+    if (teams.length) {
+        state.favorites.teams = [...new Set([...teams, ...state.favorites.teams])];
+        saveFavorites();
+    }
     state.selected.onboardingSeen = true;
     state.selected.onboardingNever = Boolean($("#onboarding-dont-show")?.checked);
     persistSettings();
     renderOnboarding();
 }
 
-function renderOnboarding() {
+function renderOnboardingLegacy() {
     const root = $("#onboarding-root");
     if (!root) return;
     const visualAudit = new URLSearchParams(window.location.search).get("dpi-audit") === "1";
@@ -8705,6 +8999,20 @@ function renderOnboarding() {
             <footer><label class="onboarding-check"><input id="onboarding-dont-show" type="checkbox" /> Do not show again</label><div class="onboarding-actions"><button class="btn" type="button" data-onboarding-skip>Skip</button><button class="btn btn--primary" type="button" data-onboarding-start>Start Demo</button></div></footer>
         </section>
     `;
+}
+
+function renderOnboarding() {
+    const root = $("#onboarding-root");
+    if (!root) return;
+    const visualAudit = new URLSearchParams(window.location.search).get("dpi-audit") === "1";
+    if (visualAudit || state.selected.onboardingSeen || state.selected.onboardingNever) {
+        root.innerHTML = "";
+        return;
+    }
+    const selectedSports = new Set(state.selected.onboardingSports || ["MLB"]);
+    const selectedInterests = new Set(state.selected.onboardingInterests || ["edges", "live"]);
+    const selectedTeams = new Set(state.favorites.teams || []);
+    root.innerHTML = `<div class="onboarding-backdrop" data-onboarding-close></div><section class="onboarding-dialog onboarding-dialog--preferences" role="dialog" aria-modal="true" aria-labelledby="onboarding-title"><header><span class="brand__mark"><img src="images/Logo1.png" alt="LineLens logo" /></span><div><p class="eyebrow">LineLens Sports ${escapeHtml(state.app.version || APP_VERSION)}</p><h2 id="onboarding-title">Make the board yours.</h2></div></header><p class="muted">Choose what you follow. Home will prioritize those sports and your Watchlist will start with any teams you select.</p><div class="onboarding-preferences"><fieldset><legend>Sports you follow</legend><label><input type="checkbox" data-onboarding-sport value="MLB" ${selectedSports.has("MLB") ? "checked" : ""} /> MLB</label><label><input type="checkbox" data-onboarding-sport value="NFL" ${selectedSports.has("NFL") ? "checked" : ""} /> NFL</label><label><input type="checkbox" data-onboarding-sport value="WNBA" ${selectedSports.has("WNBA") ? "checked" : ""} /> WNBA</label></fieldset><fieldset><legend>Favorite teams</legend><label><input type="checkbox" data-onboarding-team="MLB:TOR" data-onboarding-team value="MLB:TOR" ${selectedTeams.has("MLB:TOR") ? "checked" : ""} /> Toronto Blue Jays</label><label><input type="checkbox" data-onboarding-team="NFL:BUF" data-onboarding-team value="NFL:BUF" ${selectedTeams.has("NFL:BUF") ? "checked" : ""} /> Buffalo Bills</label><label><input type="checkbox" data-onboarding-team="MLB:NYY" data-onboarding-team value="MLB:NYY" ${selectedTeams.has("MLB:NYY") ? "checked" : ""} /> New York Yankees</label></fieldset><fieldset><legend>What matters most?</legend><label><input type="checkbox" data-onboarding-interest value="edges" ${selectedInterests.has("edges") ? "checked" : ""} /> Best model edges</label><label><input type="checkbox" data-onboarding-interest value="props" ${selectedInterests.has("props") ? "checked" : ""} /> Player props</label><label><input type="checkbox" data-onboarding-interest value="live" ${selectedInterests.has("live") ? "checked" : ""} /> Live games</label><label><input type="checkbox" data-onboarding-interest value="advanced" ${selectedInterests.has("advanced") ? "checked" : ""} /> Advanced analytics</label></fieldset><fieldset><legend>Experience</legend><label><input type="radio" data-onboarding-experience name="onboarding-experience" value="casual" ${state.selected.onboardingExperience === "casual" ? "checked" : ""} /> Casual</label><label><input type="radio" data-onboarding-experience name="onboarding-experience" value="fan" ${state.selected.onboardingExperience === "fan" ? "checked" : ""} /> Sports analytics fan</label><label><input type="radio" data-onboarding-experience name="onboarding-experience" value="advanced" ${state.selected.onboardingExperience === "advanced" ? "checked" : ""} /> Advanced/model details</label></fieldset></div><footer><label class="onboarding-check"><input id="onboarding-dont-show" type="checkbox" /> Do not show again</label><div class="onboarding-actions"><button class="btn" type="button" data-onboarding-skip>Skip</button><button class="btn btn--primary" type="button" data-onboarding-start>Finish</button></div></footer></section>`;
 }
 
 function renderAbout() {
@@ -8930,6 +9238,20 @@ document.addEventListener("click", event => {
             openCommandPalette();
             return;
         }
+        const navToggle = event.target.closest("[data-nav-toggle]");
+        if (navToggle) {
+            toggleNavSection(navToggle.dataset.navToggle);
+            return;
+        }
+        const mlbTab = event.target.closest("[data-mlb-tab]");
+        if (mlbTab) {
+            const tab = mlbTab.dataset.mlbTab;
+            if (tab === "games") switchView("mlb");
+            if (tab === "predictions") { state.selected.picksSport = "MLB"; persistSettings(); switchView("picks"); renderPicks(); }
+            if (tab === "players") { state.selected.propsSport = "MLB"; persistSettings(); switchView("props"); renderProps(); }
+            if (tab === "economics") switchView("mlb-economics");
+            return;
+        }
         const commandItem = event.target.closest("[data-command-id]");
         if (commandItem) {
             executeCommandPaletteItem(commandItem.dataset.commandId);
@@ -8990,6 +9312,14 @@ document.addEventListener("click", event => {
         const picksSport = event.target.closest("[data-picks-sport]");
         if (picksSport) {
             state.selected.picksSport = picksSport.dataset.picksSport;
+            persistSettings();
+            renderPicks();
+            return;
+        }
+        const picksEdge = event.target.closest("[data-picks-edge]");
+        if (picksEdge) {
+            state.selected.picksEdgeFilter = picksEdge.dataset.picksEdge;
+            state.selected.picksWatchlist = false;
             persistSettings();
             renderPicks();
             return;

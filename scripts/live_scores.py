@@ -9,6 +9,7 @@ LineLens exports, so model data can stay daily/stable while scores refresh often
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import math
 import re
@@ -64,12 +65,14 @@ def utc_now() -> str:
 
 
 def today_iso() -> str:
-    return datetime.now().date().isoformat()
+    # Scoreboard dates must follow the app's display timezone. Using UTC here
+    # moves the live window to tomorrow during the evening in North America.
+    return datetime.now(LOCAL_TZ).date().isoformat()
 
 
 def parse_iso_date(value: str | None) -> date:
     if not value:
-        return datetime.now().date()
+        return datetime.now(LOCAL_TZ).date()
     return datetime.strptime(value[:10], "%Y-%m-%d").date()
 
 
@@ -687,7 +690,17 @@ def game_from_espn_event(
         or "Scheduled"
     )
     status_state = str(status_type.get("state") or "").lower()
-    status = "Scheduled" if status_state == "pre" else status_bucket(str(status_detail))
+    # ESPN's detail for a game that has started can still say "1st Pitch".
+    # The machine-readable state is authoritative; otherwise the UI shows a
+    # started game as a future first-pitch time.
+    if status_type.get("completed") is True or status_state == "post":
+        status = "Final"
+    elif status_state == "in":
+        status = "In Progress"
+    elif status_state == "pre":
+        status = "Scheduled"
+    else:
+        status = status_bucket(str(status_detail))
     if status_state == "pre":
         status_detail = "Scheduled"
     if status_type.get("completed") is True:
@@ -787,16 +800,35 @@ def fetch_espn_games(
     if requests is None:
         return [], ["requests package is missing; ESPN live feed unavailable"]
 
-    for day in date_range(start_date, end_date):
-        for sport in ("MLB", "SOCCER", "NBA", "NHL", "WNBA"):
-            try:
-                payload = espn_scoreboard(sport, day)
-                for event in payload.get("events", []):
-                    row = game_from_espn_event(event, sport, mlb_predictions, nfl_predictions, wnba_predictions)
-                    if row:
-                        games.append(row)
-            except Exception as error:  # noqa: BLE001 - every scoreboard feed is optional.
-                warnings.append(f"ESPN {sport} scoreboard failed for {day.isoformat()}: {error}")
+    requests_to_make = [
+        (day, sport)
+        for day in date_range(start_date, end_date)
+        for sport in ("MLB", "SOCCER", "NBA", "NHL", "WNBA")
+    ]
+
+    # These feeds are independent. Serial requests made an unavailable
+    # provider block the whole refresh for several minutes (especially during
+    # startup), even though one live scoreboard is enough to keep the UI
+    # useful. Keep the worker count modest for the public endpoints.
+    def fetch_one(item: tuple[date, str]) -> tuple[date, str, dict[str, Any] | None, str | None]:
+        day, sport = item
+        try:
+            return day, sport, espn_scoreboard(sport, day), None
+        except Exception as error:  # noqa: BLE001 - every scoreboard feed is optional.
+            return day, sport, None, str(error)
+
+    with ThreadPoolExecutor(max_workers=min(10, max(1, len(requests_to_make)))) as executor:
+        futures = [executor.submit(fetch_one, item) for item in requests_to_make]
+        results = sorted((future.result() for future in as_completed(futures)), key=lambda item: (item[0], item[1]))
+
+    for day, sport, payload, error in results:
+        if error:
+            warnings.append(f"ESPN {sport} scoreboard failed for {day.isoformat()}: {error}")
+            continue
+        for event in (payload or {}).get("events", []):
+            row = game_from_espn_event(event, sport, mlb_predictions, nfl_predictions, wnba_predictions)
+            if row:
+                games.append(row)
 
     try:
         payload = espn_scoreboard("NFL")

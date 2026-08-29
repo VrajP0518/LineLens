@@ -115,7 +115,7 @@ def main() -> int:
         and 'id="command-palette-root"' in (ROOT / "index.html").read_text(encoding="utf-8"),
         "global page, matchup, and action search is missing",
     )
-    require("renderUnderdogs" in app and 'data-view="underdogs"' in (ROOT / "index.html").read_text(encoding="utf-8"), "underdog view contract is missing")
+    require("renderUnderdogs" in app and "data-picks-edge" in app and "underdogs" in app, "underdog Picks filter contract is missing")
     require("--pick-color" in app and "var(--pick-color)" in css, "prediction team-color contract is missing")
     require("LIVE_SCORE_FILES" in scorer and "fallback:" in scorer, "record scoring does not join refreshed finals")
     require("result_history.json" in scorer and "refresh_pending_results.py" in workflow, "pending-result recovery is not wired into retraining")

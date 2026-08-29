@@ -20,7 +20,7 @@ def main() -> int:
         "in-place refresh export application": "async function loadAllAfterRefresh()",
         "refresh result propagation": "return result;",
         "background runtime state": 'phase: "idle"',
-        "background live reload": "if (result?.success) await loadAllAfterRefresh();",
+        "background live reload": "applyDataPayload(\"live\", live);",
     }
     for label, needle in required_app.items():
         if needle not in app:
