@@ -15,6 +15,7 @@ DIST = ROOT / "dist-web"
 
 REQUIRED_ROOT_FILES = ["index.html", "app.js", "sprint5.js", "styles.css", "widget.html", "widget.js", "widget.css"]
 ASSET_DIRS = ["assets", "images"]
+UI_DIRS = ["src/ui"]
 DATA_FILES = [
     "app_metadata.json",
     "app_metadata.js",
@@ -59,6 +60,10 @@ def main() -> None:
         copied.append(filename)
 
     for dirname in ASSET_DIRS:
+        copy_tree(ROOT / dirname, DIST / dirname)
+        copied.append(f"{dirname}/")
+
+    for dirname in UI_DIRS:
         copy_tree(ROOT / dirname, DIST / dirname)
         copied.append(f"{dirname}/")
 

@@ -12469,3 +12469,28 @@ body {
 .game-detail-hero__readout span, .game-detail-hero__readout small { color: var(--ll-ink-muted, #93a5b7); font-size: 0.66rem; }
 .game-detail-hero__readout strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.95rem; }
 @media (max-width: 560px) { .game-detail-hero__readout { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Restraint pass: data carries the hierarchy; normal states stay quiet. */
+.global-health-signal.is-quiet {
+    border-color: transparent;
+    background: transparent;
+    color: var(--ll-ink-muted, #93a5b7);
+    padding-inline: 0;
+}
+.global-health-signal.is-quiet > span { display: none; }
+.home-focus-header > div > .muted,
+.home-focus-pick > header > .eyebrow,
+.home-focus-panel > header .eyebrow,
+.home-focus-panel > header > .chip,
+.model-health-dashboard > header > .chip,
+.model-health-card[data-variant="healthy"] > header > span,
+.model-health-card[data-variant="stable"] > header > span,
+.model-ops-card[data-variant="success"] .model-ops-card__status { display: none; }
+.home-focus-pick > header { justify-content: flex-end; }
+.home-focus-pick .sport-pill { border: 0; padding: 0; color: var(--ll-ink-muted, #93a5b7); background: transparent; }
+.home-focus-pick { border-color: rgba(255,255,255,0.12); background: #111823; box-shadow: none; }
+.home-focus-pick__readout div,
+.home-pulse-grid div { border: 0; border-bottom: 1px solid rgba(255,255,255,0.12); border-radius: 0; background: transparent; }
+.panel { box-shadow: none; }
+.chip--soft { border-color: transparent; background: transparent; color: var(--ll-ink-muted, #93a5b7); }
+.picks-hero, .picks-results, .picks-filters, .gamecast-panel, .gamecast-section { background: #111823; }

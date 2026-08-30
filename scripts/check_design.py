@@ -115,6 +115,12 @@ def main() -> int:
         and ".game-detail-hero" in css,
         "focused Home, Picks, Game Detail, MLB tabs, or onboarding experience is missing",
     )
+    require(
+        'src/ui/view_policies.js' in html
+        and "applyRestraintCopy" in app
+        and (ROOT / "src" / "ui" / "view_policies.js").exists(),
+        "frontend view-policy extraction seam is missing",
+    )
     require("renderHomeDecisionRadar" in app and ".decision-radar__lane" in css, "decision-first Home radar is missing")
     require(
         "Today’s best opportunities" in app

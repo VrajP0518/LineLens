@@ -143,7 +143,7 @@ const state = {
         picksStatus: "all",
         picksConfidence: "all",
         picksModel: "all",
-        picksSort: "confidence",
+        picksSort: "edge",
         picksEdgeFilter: "all",
         picksWatchlist: false,
         picksDisagree: false,
@@ -813,7 +813,7 @@ function ensureViewData(view) {
     const loadingTimer = window.setTimeout(() => {
         if (state.selected.view !== view) return;
         loadingScreenStarted = true;
-        startAppLoading(`Loading ${view.replaceAll("-", " ")}…`, "Preparing this workspace", 34);
+        startAppLoading("Updating data…", "", 34);
     }, 140);
     return loadDataKinds(kinds).then(() => {
         if (state.selected.view === view) renderView(view);
@@ -1185,6 +1185,7 @@ function confidenceClass(confidence) {
 
 function confidenceTag(confidence) {
     const label = confidence || "Pending";
+    if (["High", "Medium", "Low"].includes(label)) return "";
     return `<span class="tag ${confidenceClass(label)}">${escapeHtml(label)}</span>`;
 }
 
@@ -1791,11 +1792,13 @@ function renderGlobalHealthSignal() {
     const signal = $("#global-health-signal");
     if (!signal) return;
     const health = globalDataHealth();
+    const updatedAt = normalizeMeta(state.live.payload).generated_at || normalizeMeta(state.mlb.payload).generated_at || normalizeMeta(state.wnba.payload).generated_at;
     signal.dataset.tone = health.tone;
     const label = signal.querySelector("strong");
-    if (label) label.textContent = health.label;
+    if (label) label.textContent = health.tone === "success" ? `Updated ${timestamp(updatedAt) || "recently"}` : health.label;
     signal.title = health.detail;
-    signal.setAttribute("aria-label", `${health.label}. ${health.detail} Open data health in Settings.`);
+    signal.classList.toggle("is-quiet", health.tone === "success");
+    signal.setAttribute("aria-label", `${health.tone === "success" ? "Data updated" : health.label}. ${health.detail} Open data health in Settings.`);
 }
 
 function isCurrentAttentionGame(game) {
@@ -2334,11 +2337,11 @@ function oddsFreshness(snapshot) {
     const ageMs = Date.now() - new Date(snapshot.snapshot_at).getTime();
     if (!Number.isFinite(ageMs)) return timestamp(snapshot.snapshot_at);
     const minutes = Math.max(0, Math.round(ageMs / 60000));
-    if (minutes < 2) return "fresh";
-    if (minutes < 60) return `${minutes}m old`;
+    if (minutes < 2) return `Updated ${timestamp(snapshot.snapshot_at) || "recently"}`;
+    if (minutes < 60) return `Updated ${minutes}m ago`;
     const hours = Math.round(minutes / 60);
-    if (hours < 48) return `${hours}h old`;
-    return `${Math.round(hours / 24)}d old`;
+    if (hours < 48) return `Updated ${hours}h ago · Data may be outdated`;
+    return `Updated ${Math.round(hours / 24)}d ago · Data may be outdated`;
 }
 
 function lineMovementSummary(game, sport = game?.sport || "MLB") {
@@ -2930,8 +2933,8 @@ function featureQualityForGame(game) {
 }
 
 async function loadAll() {
-    startAppLoading("Fetching today’s games and predictions…", "LineLens Sports", 18);
-    setStatus("Getting today’s games and predictions…", "info");
+    startAppLoading("Updating data…", "", 18);
+    setStatus("Updating data…", "info");
     loadSettings();
     loadNavSections();
     loadTracker();
@@ -2939,7 +2942,7 @@ async function loadAll() {
     loadRefreshLogs();
     loadLiveAlerts();
     await loadDataKinds(["app", "teams", "modelRegistry", "modelRecord", "predictionLog", "live", "mlb", "wnba"]);
-    setAppLoading("Preparing your board…", "Games / predictions / live updates", 66);
+    setAppLoading("Updating data…", "", 66);
     state.app = { ...(state.app || {}), version: APP_VERSION };
     state.mlb.error = state.mlb.payload ? null : "No MLB predictions found. Run the MLB export command.";
     state.wnba.error = state.wnba.payload ? null : "No WNBA model export found. Run npm run refresh:wnba:all.";
@@ -2950,7 +2953,7 @@ async function loadAll() {
     if ($("#app-version-chip")) $("#app-version-chip").textContent = state.app.version || APP_VERSION;
     if ($("#footer-version")) $("#footer-version").textContent = state.app.version || APP_VERSION;
     renderAll();
-    setAppLoading("Data loaded.", "Exports and model status ready", 94);
+    setAppLoading("Done.", "", 94);
     finishAppLoading();
 
     const modes = [`NFL ${dataMode(state.nfl.payload, state.nfl.games)}`, `MLB ${dataMode(state.mlb.payload, state.mlb.games)}`, `WNBA ${dataMode(state.wnba.payload, state.wnba.games)}`];
@@ -3457,26 +3460,26 @@ function switchView(view) {
     });
     $$(".nav__item").forEach(btn => btn.classList.toggle("is-active", btn.dataset.view === view));
     const titles = {
-        home: ["LineLens Sports", "Today’s board"],
+        home: ["LineLens Sports", "Today"],
         foryou: ["For You", "saved preferences and updates"],
-        picks: ["Picks", "prediction feed"],
+        picks: ["Picks", "Today’s picks"],
         underdogs: ["Underdogs", "model picks against the market"],
         props: ["Player Props", "WNBA projection feed"],
         nfl: ["NFL Spread Predictor", "spread module"],
-        mlb: ["MLB Game Board", "today’s games"],
+        mlb: ["MLB", "Games"],
         "mlb-economics": ["MLB Economics", "payroll, wins, and efficiency"],
-        soccer: ["Soccer / World Cup", "today’s games"],
-        nba: ["NBA Scoreboard", "today’s games"],
-        nhl: ["NHL Scoreboard", "today’s games"],
+        soccer: ["Soccer", "Scores"],
+        nba: ["NBA", "Scores"],
+        nhl: ["NHL", "Scores"],
         wnba: ["WNBA Game Board", "model + live scoreboard"],
-        models: ["Models", "model comparison"],
+        models: ["Models", "Model comparison"],
         history: ["Prediction History", "search the prediction ledger"],
         watchlist: ["Watchlist", "your teams, games, and model"],
         reports: ["Model Reports", "calibration and evaluation"],
         record: ["Performance", "prediction accountability"],
         teams: ["Team Profiles", "team-level model context"],
         tracking: ["My Tracker", "saved picks and results"],
-        settings: ["Settings", "data health and preferences"],
+        settings: ["Settings", "Data and preferences"],
         notifications: ["Notifications", "deduplicated local alerts"],
         about: ["About LineLens", "product information and support"],
     };
@@ -3486,6 +3489,11 @@ function switchView(view) {
     if (previous !== view && !renderedViews.has(view)) renderView(view);
     if (previous !== view) ensureViewData(view);
     renderGlobalTicker();
+}
+
+function applyRestraintCopy(view) {
+    const root = $(`#view-${view}`);
+    window.LineLensUI?.applyRestraintCopy(view, root);
 }
 
 function renderView(view = state.selected.view || "home") {
@@ -3523,6 +3531,7 @@ function renderView(view = state.selected.view || "home") {
         about: renderAbout,
     };
     renderers[view]?.();
+    applyRestraintCopy(view);
     renderedViews.add(view);
     armScrollReveals(view);
 }
@@ -4513,15 +4522,15 @@ function renderSportsTickerV2(rows = []) {
     if (!games.length) {
         return `
             <section class="sports-ticker-v2 sports-ticker-v2--empty">
-                <span class="ticker-label-v2">LineLens Board</span>
+                <span class="ticker-label-v2">Scores</span>
                 <div class="ticker-empty-v2">No current games loaded. Run startup automation or refresh predictions.</div>
             </section>
         `;
     }
     const items = games.map(renderTickerItem).join("");
     return `
-        <section class="sports-ticker-v2" aria-label="Sports pulse ticker">
-            <span class="ticker-label-v2"><i></i> LineLens Board</span>
+        <section class="sports-ticker-v2" aria-label="Scores">
+            <span class="ticker-label-v2">Scores</span>
             <div class="ticker-window-v2" tabindex="0">
                 <div class="ticker-track-v2">${items}${items}</div>
             </div>
@@ -4681,7 +4690,7 @@ function movePicksDate(delta) {
 }
 
 function picksSortedRows(rows) {
-    const sort = state.selected.picksSort || "confidence";
+    const sort = state.selected.picksSort || "edge";
     return [...rows].sort((a, b) => {
         if (sort === "edge") return safeNumber(getGameEdge(b, b.sport), -Infinity) - safeNumber(getGameEdge(a, a.sport), -Infinity);
         if (sort === "consensus") return (picksConsensus(b).count / Math.max(1, picksConsensus(b).total)) - (picksConsensus(a).count / Math.max(1, picksConsensus(a).total));
@@ -7238,7 +7247,7 @@ function renderGameCastProvenance(game, sport) {
         : { tone: historical ? "history" : "missing", label: historical ? "No current join" : "Not joined", detail: historical ? "Historical matchup" : "Refresh live scores" };
     const oddsLabel = odds ? oddsFreshness(odds) : "Not linked";
     const oddsState = odds
-        ? { tone: /current|fresh/i.test(oddsLabel) ? "current" : "warning", label: oddsLabel, detail: timestamp(odds.snapshot_at) }
+        ? { tone: /^Updated\s/i.test(oddsLabel) && !/outdated/i.test(oddsLabel) ? "current" : "warning", label: oddsLabel, detail: timestamp(odds.snapshot_at) }
         : { tone: "missing", label: "Not linked", detail: "No matched real snapshot" };
     const overallTone = [predictionState, liveState, oddsState].some(item => item.tone === "warning" || item.tone === "missing") ? "warning" : "current";
     const overallLabel = overallTone === "current" ? "Sources ready" : historical ? "Historical context" : "Source check required";
