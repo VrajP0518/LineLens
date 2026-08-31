@@ -51,6 +51,7 @@
     "build:shared-data": "python scripts/build_shared_data_bundle.py",
     "check:model-drift": "python scripts/model_drift_report.py --baseline data/models/model_registry.json",
     "audit:dpi": "powershell -ExecutionPolicy Bypass -File scripts/windows_dpi_audit.ps1",
+    "audit:visual": "npm run build:web && powershell -ExecutionPolicy Bypass -File scripts/browser_visual_regression.ps1",
     "record:models": "python scripts/score_model_predictions.py",
     "check:data": "python scripts/check_data_status.py",
     "check:sprint4": "python scripts/check_sprint4.py",

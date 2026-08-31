@@ -208,6 +208,9 @@ const state = {
         lastRunAt: null,
         lastStatus: "waiting",
         lastMessage: "Live heartbeat will start after exports load.",
+        lastError: null,
+        retryCount: 0,
+        nextRetryAt: null,
         signatures: {},
         notifications: [],
     },
@@ -757,6 +760,8 @@ function applyDataPayload(kind, payload) {
         state.live.games = normalizeGames(payload);
         state.live.stale = !livePayloadIsFresh(payload);
         state.live.error = state.live.stale ? "Live export is outside the freshness window; waiting for a direct refresh." : null;
+        state.live.sourceStatus = normalizeMeta(payload).source_status || normalizeMeta(payload).refresh_mode || "unknown";
+        state.live.warnings = normalizeMeta(payload).warnings || [];
     }
     if (["nfl", "mlb", "mlbBacktest", "wnba", "wnbaBacktest", "wnbaPropPredictions", "mlbPropPredictions"].includes(kind)) {
         const target = kind === "nfl" ? state.nfl : kind === "mlb" ? state.mlb : kind === "mlbBacktest" ? state.mlbBacktest : kind === "wnba" ? state.wnba : kind === "wnbaBacktest" ? state.wnbaBacktest : null;
@@ -795,11 +800,13 @@ const DEFERRED_DATA_BY_VIEW = {
     props: ["playerProps", "wnbaPropPredictions", "mlbPropPredictions", "propLog", "propRecord", "wnbaPropModelRegistry", "wnbaPropModelCards", "wnbaPropModelHealth", "wnbaPropDatasetSummary", "mlbPropModelRegistry", "mlbPropModelCards", "mlbPropModelHealth", "mlbPropDatasetSummary", "propsDiagnostics"],
     history: ["mlbBacktest", "wnbaBacktest", "resultHistory"],
     record: ["resultHistory"],
-    settings: ["oddsHealth", "sharedDataStatus"],
+    reports: ["reports", "modelComparison", "moltresCard", "featureSummary", "wnbaModelComparison", "wnbaCard", "wnbaFeatureSummary"],
+    models: ["reports", "modelComparison", "moltresCard", "featureSummary", "wnbaModelComparison", "wnbaCard", "wnbaFeatureSummary", "modelUpdateStatus", "wnbaAvailability"],
+    settings: ["oddsHealth", "sharedDataStatus", "bootstrap", "startup", "refresh", "modelUpdateStatus"],
 };
 
 function scheduleDeferredData() {
-    const run = () => loadDataKinds(["reports", "modelComparison", "moltresCard", "featureSummary", "wnbaModelComparison", "wnbaCard", "wnbaFeatureSummary", "modelUpdateStatus", "bootstrap", "startup", "refresh", "sharedDataStatus", "wnbaAvailability"])
+    const run = () => loadDataKinds(["bootstrap", "refresh", "sharedDataStatus"])
         .then(() => { renderView(state.selected.view || "home"); renderGlobalTicker(); })
         .catch(() => {});
     if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(run, { timeout: 1200 });
@@ -1369,8 +1376,20 @@ function renderGameDateCalendar({ sport, dates, selected, games, label }) {
     if (!dates.length) return `<div class="game-date-calendar game-date-calendar--empty">No real game dates loaded yet.</div>`;
     const selectedIndex = Math.max(0, dates.indexOf(selected));
     const start = Math.max(0, Math.min(Math.max(0, dates.length - 7), selectedIndex - 3));
-    const visible = dates.slice(start, start + 7);
     const normalized = normalizedSportCode(sport);
+    // Keep MLB date navigation on the local calendar when loaded exports have
+    // gaps. Otherwise a missing day can expose an unrelated archive date from
+    // another year with the same day number.
+    let visible = dates.slice(start, start + 7);
+    const selectedDate = toIsoDate(selected);
+    if (normalized === "MLB" && selectedDate && dates[0] && dates.at(-1) && selectedDate >= dates[0] && selectedDate <= dates.at(-1)) {
+        let windowStart = shiftDateOnly(selectedDate, -3);
+        if (windowStart < dates[0]) windowStart = dates[0];
+        const windowEnd = shiftDateOnly(windowStart, 6);
+        if (windowEnd > dates.at(-1)) windowStart = shiftDateOnly(dates.at(-1), -6);
+        visible = Array.from({ length: 7 }, (_, index) => shiftDateOnly(windowStart, index))
+            .filter(date => date >= dates[0] && date <= dates.at(-1));
+    }
     return `<div class="game-date-calendar" aria-label="${escapeHtml(label || `${normalized} game dates`)}"><div class="game-date-calendar__top"><h3>Game dates</h3><span>${dates.length} dates loaded</span>${normalized === "MLB" ? `<button class="btn btn--micro" type="button" data-scoreboard-today="MLB">Today</button>` : ""}</div><div class="game-date-calendar__rail"><button class="icon-btn" type="button" data-scoreboard-day="-1" data-scoreboard-sport="${normalized}" aria-label="Previous ${normalized} game date">‹</button><div class="game-date-calendar__days">${visible.map(date => { const item = calendarDateDisplay(date); const count = games.filter(game => gameIsoDate(game) === date).length; return `<button type="button" class="game-date-chip ${date === selected ? "is-active" : ""}" data-scoreboard-date="${date}" data-scoreboard-sport="${normalized}" aria-label="${escapeHtml(`${item.weekday}, ${item.monthDay}, ${count} ${count === 1 ? "game" : "games"}`)}"><span>${escapeHtml(item.weekday)}</span><strong>${escapeHtml(item.monthDay)}</strong><small>${count} ${count === 1 ? "game" : "games"}</small></button>`; }).join("")}</div><button class="icon-btn" type="button" data-scoreboard-day="1" data-scoreboard-sport="${normalized}" aria-label="Next ${normalized} game date">›</button></div><label class="game-date-calendar__picker">Jump to date<input id="${normalized.toLowerCase()}-date-picker" type="date" value="${escapeHtml(selected || "")}" min="${escapeHtml(dates[0])}" max="${escapeHtml(dates.at(-1))}" data-scoreboard-date-picker="${normalized}" /></label></div>`;
 }
 
@@ -1545,18 +1564,26 @@ const DIRECT_LIVE_FEEDS = [
 async function fetchDirectBrowserLiveScores() {
     if (!window.location || !["file:", "http:", "https:"].includes(window.location.protocol)) return null;
     const fetchFeed = async ([sport, category, league]) => {
-        const controller = new AbortController();
-        const timeout = window.setTimeout(() => controller.abort(), 8000);
-        try {
-            const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${category}/${league}/scoreboard?limit=1000`, {
-                cache: "no-store",
-                signal: controller.signal,
-            });
-            if (!response.ok) throw new Error(`${sport} returned ${response.status}`);
-            return [sport, await response.json()];
-        } finally {
-            window.clearTimeout(timeout);
+        const retryDelays = [0, 1200, 3000];
+        let lastError;
+        for (let attempt = 0; attempt < retryDelays.length; attempt += 1) {
+            if (retryDelays[attempt]) await new Promise(resolve => window.setTimeout(resolve, retryDelays[attempt]));
+            const controller = new AbortController();
+            const timeout = window.setTimeout(() => controller.abort(), 8000);
+            try {
+                const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${category}/${league}/scoreboard?limit=1000`, {
+                    cache: "no-store",
+                    signal: controller.signal,
+                });
+                if (!response.ok) throw new Error(`${sport} returned ${response.status}`);
+                return [sport, await response.json(), attempt];
+            } catch (error) {
+                lastError = error;
+            } finally {
+                window.clearTimeout(timeout);
+            }
         }
+        throw lastError || new Error(`${sport} scoreboard unavailable`);
     };
     const results = await Promise.allSettled(DIRECT_LIVE_FEEDS.map(fetchFeed));
     const games = [];
@@ -1566,7 +1593,8 @@ async function fetchDirectBrowserLiveScores() {
             warnings.push(String(result.reason?.message || result.reason || "scoreboard unavailable"));
             return;
         }
-        const [sport, payload] = result.value;
+        const [sport, payload, attempts] = result.value;
+        if (attempts) warnings.push(`${sport} feed recovered after ${attempts} retry${attempts === 1 ? "" : "ies"}`);
         (payload?.events || []).forEach(event => {
             const competition = event.competitions?.[0];
             const competitors = competition?.competitors || [];
@@ -1607,7 +1635,7 @@ async function fetchDirectBrowserLiveScores() {
             });
         });
     });
-    if (!games.length && warnings.length === DIRECT_LIVE_FEEDS.length) return null;
+    if (!games.length && warnings.length >= DIRECT_LIVE_FEEDS.length) throw new Error("All direct score providers failed after retrying.");
     return {
         metadata: {
             app: "LineLens Sports",
@@ -1615,7 +1643,7 @@ async function fetchDirectBrowserLiveScores() {
             generated_at: new Date().toISOString(),
             real_data: true,
             source: "Direct ESPN scoreboard feeds",
-            source_status: "direct_live_fresh",
+            source_status: warnings.length ? "direct_live_partial" : "direct_live_fresh",
             refresh_mode: "direct_live",
             live_poll_seconds_recommended: 30,
             warnings,
@@ -1651,6 +1679,9 @@ async function refreshLiveHeartbeat(options = {}) {
     state.liveRefresh.refreshing = true;
     state.liveRefresh.lastStatus = "refreshing";
     state.liveRefresh.lastMessage = "Refreshing live scores...";
+    state.liveRefresh.lastError = null;
+    state.liveRefresh.retryCount = 0;
+    state.liveRefresh.nextRetryAt = null;
 
     try {
         if (isTauriRefreshAvailable()) {
@@ -1696,6 +1727,7 @@ async function refreshLiveHeartbeat(options = {}) {
             : `Live refresh unavailable; retained ${after.length} non-live cached rows.`;
     } catch (error) {
         state.liveRefresh.lastStatus = "cached";
+        state.liveRefresh.lastError = String(error?.message || error || "refresh failed");
         state.liveRefresh.lastMessage = `Showing cached live data - ${String(error?.message || error || "refresh failed")}`;
     } finally {
         state.liveRefresh.lastRunAt = new Date().toISOString();
@@ -2207,9 +2239,23 @@ function latestLogForGame(game) {
 
 function oddsSnapshotsForGame(game) {
     const snapshots = Array.isArray(state.odds?.snapshots) ? state.odds.snapshots : [];
-    return snapshots
-        .filter(row => row.sport === (game?.sport || "MLB") && sameGame(row, game))
-        .sort((a, b) => String(b.snapshot_at || "").localeCompare(String(a.snapshot_at || "")));
+    const sport = game?.sport || "MLB";
+    const sortNewest = rows => rows.sort((a, b) => String(b.snapshot_at || "").localeCompare(String(a.snapshot_at || "")));
+    const exact = snapshots.filter(row => row.sport === sport && sameGame(row, game));
+    if (exact.length) return sortNewest(exact);
+    // Providers can shift an event date by a timezone or reschedule it
+    // without changing the matchup. Accept one day only when unambiguous.
+    const targetDate = gameIsoDate(game);
+    const targetMs = Date.parse(`${targetDate}T00:00:00Z`);
+    if (!targetDate || !Number.isFinite(targetMs)) return [];
+    const nearby = snapshots.filter(row => {
+        if (row.sport !== sport || !teamsMatch(row, game)) return false;
+        const rowDate = gameIsoDate(row);
+        const rowMs = Date.parse(`${rowDate}T00:00:00Z`);
+        return rowDate && Number.isFinite(rowMs) && Math.abs(rowMs - targetMs) <= 86400000;
+    });
+    const nearbyDates = new Set(nearby.map(row => gameIsoDate(row)).filter(Boolean));
+    return nearbyDates.size === 1 ? sortNewest(nearby) : [];
 }
 
 function latestOddsForGame(game) {
@@ -2283,8 +2329,8 @@ function oddsDisplayForGame(game) {
         snapshot = context.current || context.opening || (hasDirectOdds ? direct : null);
         label = "Current odds";
     }
-    if (!snapshot) return { snapshot: null, label, freshness: "Unavailable" };
-    return { snapshot, label, freshness: oddsFreshness(snapshot) };
+    if (!snapshot) return { snapshot: null, label, freshness: "Unavailable", freshnessState: "missing" };
+    return { snapshot, label, freshness: oddsFreshness(snapshot), freshnessState: oddsFreshnessState(snapshot) };
 }
 
 function renderMlbOdds(game) {
@@ -2342,6 +2388,16 @@ function oddsFreshness(snapshot) {
     const hours = Math.round(minutes / 60);
     if (hours < 48) return `Updated ${hours}h ago · Data may be outdated`;
     return `Updated ${Math.round(hours / 24)}d ago · Data may be outdated`;
+}
+
+function oddsFreshnessState(snapshot) {
+    if (!snapshot?.snapshot_at) return "missing";
+    const ageMs = Date.now() - new Date(snapshot.snapshot_at).getTime();
+    if (!Number.isFinite(ageMs)) return "unknown";
+    const minutes = Math.max(0, ageMs / 60000);
+    if (minutes < 15) return "current";
+    if (minutes < 60) return "aging";
+    return "stale";
 }
 
 function lineMovementSummary(game, sport = game?.sport || "MLB") {
@@ -2660,7 +2716,8 @@ function ensureMlbBoardDate() {
     const selected = state.selected.mlbDate;
     const currentDates = currentMlbBoardDates();
     const explicitlyArchived = state.selected.mlbDateContext === "archive";
-    if (!dates.includes(selected) || (!currentDates.includes(selected) && selected !== localDateIso() && !explicitlyArchived)) {
+    const isWithinCalendarRange = Boolean(selected && dates[0] && dates.at(-1) && selected >= dates[0] && selected <= dates.at(-1));
+    if ((!dates.includes(selected) && !isWithinCalendarRange) || (!currentDates.includes(selected) && selected !== localDateIso() && !explicitlyArchived)) {
         state.selected.mlbDate = defaultMlbBoardDate();
         state.selected.mlbDateContext = currentDates.includes(state.selected.mlbDate) || state.selected.mlbDate === localDateIso() ? "current" : "archive";
     }
@@ -2676,8 +2733,10 @@ function shiftDateOnly(value, days) {
 
 function setMlbBoardDate(value) {
     const normalized = toIsoDate(value);
+    const dates = mlbBoardDates();
     const currentDates = currentMlbBoardDates();
-    state.selected.mlbDate = /^\d{4}-\d{2}-\d{2}$/.test(normalized) ? normalized : ensureMlbBoardDate();
+    const isWithinCalendarRange = Boolean(normalized && dates[0] && dates.at(-1) && normalized >= dates[0] && normalized <= dates.at(-1));
+    state.selected.mlbDate = /^\d{4}-\d{2}-\d{2}$/.test(normalized) && isWithinCalendarRange ? normalized : ensureMlbBoardDate();
     state.selected.mlbDateContext = currentDates.includes(state.selected.mlbDate) || state.selected.mlbDate === localDateIso() ? "current" : "archive";
     persistSettings();
     return state.selected.mlbDate;
@@ -2696,11 +2755,17 @@ function moveMlbBoardDate(delta) {
     const dates = mlbBoardDates();
     if (!dates.length) return null;
     const current = ensureMlbBoardDate();
-    const index = dates.indexOf(current);
-    const nextIndex = index === -1
-        ? (delta < 0 ? 0 : dates.length - 1)
-        : Math.max(0, Math.min(dates.length - 1, index + delta));
-    state.selected.mlbDate = dates[nextIndex];
+    const target = current ? shiftDateOnly(current, delta) : null;
+    const inRange = Boolean(target && target >= dates[0] && target <= dates.at(-1));
+    if (inRange) {
+        state.selected.mlbDate = target;
+    } else {
+        const index = dates.indexOf(current);
+        const nextIndex = index === -1
+            ? (delta < 0 ? 0 : dates.length - 1)
+            : Math.max(0, Math.min(dates.length - 1, index + delta));
+        state.selected.mlbDate = dates[nextIndex];
+    }
     state.selected.mlbDateContext = currentMlbBoardDates().includes(state.selected.mlbDate) ? "current" : "archive";
     persistSettings();
     return state.selected.mlbDate;
@@ -3819,6 +3884,7 @@ function supportReportText() {
         `Refresh bridge: ${state.refreshRuntime.available ? "available" : "unavailable"}`,
         `Last refresh: ${timestamp(state.refreshStatus?.generated_at)}`,
         `Live export: ${state.live.stale ? "stale" : state.live.games.length ? "available" : "missing"}`,
+        `Live source: ${state.live.sourceStatus || "unknown"}; warnings: ${(state.live.warnings || []).length}; retry error: ${state.liveRefresh.lastError || "none"}`,
         `API keys configured: Odds ${state.apiKeys?.odds_api_key ? "yes" : "no"}, Sharp Odds ${state.apiKeys?.sharp_odds_api_key ? "yes" : "no"}, PropLine ${state.apiKeys?.propline_api_key ? "yes" : "no"}`,
         "Runtime checks:",
         ...(checks.length ? checks : ["- Not run"]),
@@ -7473,7 +7539,7 @@ function renderOddsMovementBoard() {
             ${card("Snapshots", snapshots.length, `${gamesWithOdds.length} joined games`)}
             ${card("Provider", normalizeMeta(state.odds).provider || "optional", normalizeMeta(state.odds).source || "odds feed")}
             ${card("Generated", timestamp(normalizeMeta(state.odds).generated_at), "cached export")}
-            ${card("Freshness", oddsFreshness(gamesWithOdds[0]?.movement.current), "latest joined line")}
+            ${card("Freshness", oddsFreshness(gamesWithOdds[0]?.movement.current), `latest joined line · ${oddsFreshnessState(gamesWithOdds[0]?.movement.current)}`)}
         </div>
         <div class="market-board-list">
             ${gamesWithOdds.map(({ game, sport, movement }) => {
@@ -8835,6 +8901,7 @@ function renderSettings() {
         ${window.LineLensSprint5 ? window.LineLensSprint5.renderPreferences(state) : ""}
         ${renderSharedDataPanel()}
         ${renderApiKeysPanel()}
+        ${renderLiveReliabilityPanel()}
         ${renderModelUpdatePanel()}
         ${renderDataDoctorPanel()}
         ${renderLiveWidgetSettings()}
@@ -8894,6 +8961,45 @@ function renderDataOperationsMap() {
                     <button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/actions">Open automation</button>
                 </div>
             </div>
+        </section>
+    `;
+}
+
+function liveFreshnessLabel(payload = state.live.payload) {
+    const ageSeconds = livePayloadAgeSeconds(payload);
+    if (!Number.isFinite(ageSeconds)) return "Unknown freshness";
+    if (ageSeconds < 60) return "Updated less than a minute ago";
+    const minutes = Math.round(ageSeconds / 60);
+    if (minutes < 60) return `Updated ${minutes}m ago`;
+    const hours = Math.round(minutes / 60);
+    return `Updated ${hours}h ago`;
+}
+
+function renderLiveReliabilityPanel() {
+    const meta = normalizeMeta(state.live.payload);
+    const providerHealth = meta.provider_health || {};
+    const refresh = refreshSportStatus("MLB");
+    const liveStatus = state.liveRefresh.lastStatus || "waiting";
+    const feedStatus = state.live.sourceStatus || meta.source_status || meta.refresh_mode || "bundled export";
+    const warningCount = (state.live.warnings || meta.warnings || []).length;
+    const keySummary = state.apiKeys?.available
+        ? `Odds ${state.apiKeys.odds_api_key ? "ready" : "missing"} · Props ${state.apiKeys.propline_api_key ? "ready" : "missing"}`
+        : "Live score feeds are keyless; provider keys are checked in the desktop runtime";
+    const tone = state.liveRefresh.lastStatus === "fresh" && !state.live.stale ? "success" : state.live.games.length ? "warning" : "error";
+    return `
+        <section class="panel live-reliability-panel" aria-labelledby="live-reliability-title">
+            <header class="section-header">
+                <div><p class="eyebrow">Live feed reliability</p><h2 id="live-reliability-title">Scores that explain their freshness</h2><p class="muted">The app retries public feeds, keeps the last usable snapshot, and separates live-score access from optional odds and props keys.</p></div>
+                <span class="chip chip--${tone === "success" ? "success" : tone === "error" ? "danger" : "soft"}">${escapeHtml(liveStatus)}</span>
+            </header>
+            <div class="live-reliability-grid">
+                <div><span>MLB feed</span><strong>${escapeHtml(feedStatus)}</strong><small>${escapeHtml(liveFreshnessLabel())}</small></div>
+                <div><span>Rows retained</span><strong>${state.live.games.length}</strong><small>${warningCount ? `${warningCount} provider warning${warningCount === 1 ? "" : "s"}` : "No provider warnings"}</small></div>
+                <div><span>Retry state</span><strong>${state.liveRefresh.retryCount ? `Attempt ${state.liveRefresh.retryCount + 1}` : "Ready"}</strong><small>${escapeHtml(state.liveRefresh.lastError || "Automatic retry is enabled")}</small></div>
+                <div><span>Provider access</span><strong>${escapeHtml(state.apiKeys?.checked ? (state.apiKeys.available ? "Checked" : "Desktop only") : "Checking")}</strong><small>${escapeHtml(`${keySummary} · ESPN ${providerHealth.espn || "unknown"} · MLB Stats ${providerHealth.mlb_stats_api || "unknown"}`)}</small></div>
+            </div>
+            <p class="data-status" data-variant="${tone}">${escapeHtml(state.liveRefresh.lastMessage || refresh.message || "Waiting for the next live-score refresh.")}</p>
+            <div class="report-actions"><button class="btn btn--primary" type="button" data-live-heartbeat-now>Retry live scores now</button><button class="btn" type="button" data-refresh-command="live_scores">Run full live refresh</button><button class="btn" type="button" data-run-diagnostics>Check runtime access</button></div>
         </section>
     `;
 }
@@ -9148,6 +9254,11 @@ function renderAll() {
     if (visualAuditParams.get("dpi-audit") === "1" && ["home", "underdogs", "models", "nfl", "record", "settings"].includes(visualAuditView)) {
         state.selected.view = visualAuditView;
     }
+    const auditDate = visualAuditParams.get("audit-date");
+    if (visualAuditParams.get("dpi-audit") === "1" && /^\d{4}-\d{2}-\d{2}$/.test(auditDate || "")) {
+        state.selected.mlbDate = auditDate;
+        state.selected.mlbDateContext = "archive";
+    }
     setBodyModes();
     renderedViews.clear();
     renderGlobalHealthSignal();
@@ -9171,6 +9282,13 @@ function renderAll() {
     }
     if (visualAuditParams.get("dpi-audit") === "1" && visualAuditParams.get("dpi-section") === "operations") {
         requestAnimationFrame(() => document.querySelector(".data-operations-map")?.scrollIntoView({ block: "start" }));
+    }
+    if (visualAuditParams.get("dpi-audit") === "1") {
+        requestAnimationFrame(() => {
+            const width = Math.max(window.innerWidth || 0, 1);
+            const overflow = document.documentElement.scrollWidth > width + 1 || document.body.scrollWidth > width + 1;
+            document.documentElement.dataset.auditOverflow = overflow ? "fail" : "pass";
+        });
     }
     if (visualAuditParams.get("dpi-audit") === "1" && visualAuditParams.get("dpi-gamecast")) {
         const auditSport = normalizedSportCode(visualAuditParams.get("dpi-gamecast"));

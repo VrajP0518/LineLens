@@ -12,6 +12,7 @@ def main() -> int:
     app = (ROOT / "app.js").read_text(encoding="utf-8")
     rust = (ROOT / "src-tauri" / "src" / "lib.rs").read_text(encoding="utf-8")
     bridge = (ROOT / "scripts" / "local_server.py").read_text(encoding="utf-8")
+    live = (ROOT / "scripts" / "live_scores.py").read_text(encoding="utf-8")
     index = (ROOT / "index.html").read_text(encoding="utf-8")
     failures: list[str] = []
 
@@ -21,6 +22,8 @@ def main() -> int:
         "refresh result propagation": "return result;",
         "background runtime state": 'phase: "idle"',
         "background live reload": "applyDataPayload(\"live\", live);",
+        "live reliability panel": "function renderLiveReliabilityPanel()",
+        "direct feed retry": "retryDelays = [0, 1200, 3000]",
     }
     for label, needle in required_app.items():
         if needle not in app:
@@ -44,6 +47,14 @@ def main() -> int:
     for label, needle in required_backend.items():
         if needle not in (rust + bridge):
             failures.append(f"refresh backend missing {label}")
+
+    for label, needle in {
+        "provider retry helper": "def request_json_with_retry(",
+        "provider health metadata": '"provider_health": provider_health',
+        "retry policy metadata": '"retry_policy":',
+    }.items():
+        if needle not in live:
+            failures.append(f"live-score refresh missing {label}")
 
     if "https://cdn.jsdelivr.net/npm/chart.js" in index:
         failures.append("index.html still loads Chart.js from a CDN")

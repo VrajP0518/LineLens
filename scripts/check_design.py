@@ -100,6 +100,15 @@ def main() -> int:
         and "overflow-x: auto" in css,
         "compact windows still place the full vertical sidebar before content",
     )
+    visual_audit = (ROOT / "scripts" / "browser_visual_regression.ps1").read_text(encoding="utf-8")
+    require(
+        "home-mobile" in visual_audit
+        and "mlb-calendar-boundary" in visual_audit
+        and "390" in visual_audit
+        and "audit-date=2026-08-30" in visual_audit
+        and "--screenshot=$screenshot" in visual_audit,
+        "browser visual regression matrix is missing mobile, calendar-boundary, or screenshot coverage",
+    )
     require(
         all(f'data-nav-group="{group}"' in html for group in ("home", "explore", "mine", "analytics", "more"))
         and 'id="notifications-btn"' in html

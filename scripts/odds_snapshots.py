@@ -64,6 +64,29 @@ def recent_snapshot(metadata: dict[str, Any], minutes: int) -> bool:
         return False
 
 
+def snapshot_age_minutes(snapshot: dict[str, Any], now_value: datetime | None = None) -> float | None:
+    raw = snapshot.get("snapshot_at")
+    if not raw:
+        return None
+    try:
+        captured = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+        if captured.tzinfo is None:
+            captured = captured.replace(tzinfo=timezone.utc)
+        reference = now_value or datetime.now(timezone.utc)
+        return max(0.0, (reference - captured.astimezone(timezone.utc)).total_seconds() / 60)
+    except (TypeError, ValueError):
+        return None
+
+
+def freshness_metadata(snapshots: list[dict[str, Any]], now_value: datetime | None = None) -> dict[str, Any]:
+    ages = [age for row in snapshots if (age := snapshot_age_minutes(row, now_value)) is not None]
+    stale_count = sum(age >= 60 for age in ages)
+    return {
+        "latest_snapshot_at": max((str(row.get("snapshot_at") or "") for row in snapshots), default=None),
+        "stale_snapshot_count": stale_count,
+        "fresh_snapshot_count": sum(age < 60 for age in ages),
+        "stale_after_minutes": 60,
+    }
 def normalize_name(value: Any) -> str:
     return "".join(ch for ch in str(value or "").lower() if ch.isalnum())
 
@@ -318,6 +341,8 @@ def apply_odds_to_predictions(snapshots: list[dict[str, Any]]) -> int:
                 game["market_edge_home"] = round(float(game["home_win_probability"]) - float(odds["market_implied_home"]), 4)
             game["odds_status"] = "real_odds_snapshot"
             game["odds_snapshot_at"] = odds.get("snapshot_at")
+            age = snapshot_age_minutes(odds)
+            game["odds_freshness_status"] = "Current" if age is not None and age < 60 else "Stale" if age is not None else "Unknown"
             game["odds_provider_event_id"] = odds.get("provider_event_id")
             changed += 1
         if changed:
@@ -405,6 +430,7 @@ def main() -> int:
         seen.add(key)
         deduped.append(row)
     snapshots = list(reversed(deduped))[-600:]
+    freshness = freshness_metadata(snapshots, datetime.now(timezone.utc))
     updated_predictions = apply_odds_to_predictions(new_snapshots)
 
     if interrupted:
@@ -440,6 +466,7 @@ def main() -> int:
                 "cost_last_request": next((row.get("cost_last_request") for row in sport_status.values() if row.get("cost_last_request") is not None), None),
             },
             "sharp_key_present": bool(config.get("sharp_key_present")),
+            "freshness": freshness,
             "note": "Odds are optional. Missing odds never fabricate lines, movement, or CLV.",
         },
         "sports": sport_status,

@@ -5,11 +5,13 @@ from __future__ import annotations
 import json
 import math
 import warnings
+from functools import lru_cache
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+from src.shared.timezones import safe_zone
 
 ROOT = Path(__file__).resolve().parents[2]
 CURRENT_FEATURES = ROOT / "data" / "processed" / "mlb" / "mlb_player_props_current.csv"
@@ -21,9 +23,25 @@ OUTPUT_JS = ROOT / "data" / "predictions" / "mlb_prop_predictions.js"
 DIAGNOSTICS_JSON = ROOT / "data" / "odds" / "props_matching_diagnostics.json"
 DIAGNOSTICS_JS = ROOT / "data" / "odds" / "props_matching_diagnostics.js"
 MODEL_DIR = ROOT / "models"
+MODEL_REGISTRY = ROOT / "data" / "reports" / "mlb_prop_model_registry.json"
+LOCAL_TZ = safe_zone("America/Toronto")
 TARGETS = ("pitcher_strikeouts", "batter_hits", "batter_total_bases")
 ALLOWED_AVAILABILITY = {"expected_active", "confirmed_active", "active", "confirmed_start", "confirmed_lineup"}
 INTERNAL_THRESHOLDS = {"batter_hits": 0.5, "batter_total_bases": 1.5}
+
+
+@lru_cache(maxsize=None)
+def production_model_ready(target: str) -> bool:
+    registry = load(MODEL_REGISTRY, {})
+    if not isinstance(registry, dict) or registry.get("metadata", {}).get("production_ready") is not True:
+        return False
+    return any(
+        entry.get("target_stat") == target
+        and str(entry.get("status") or "").lower() == "production"
+        and entry.get("selected") is True
+        for entry in registry.get("models", [])
+        if isinstance(entry, dict)
+    )
 
 
 def now() -> str:
@@ -91,7 +109,8 @@ def clean_value(value: Any) -> Any:
 def qualifies(row: dict[str, Any]) -> bool:
     try:
         interval = float(row["upper_projection"]) - float(row["lower_projection"])
-        return float(row["probability"]) >= 0.55 and float(row["edge"]) >= 0.03 and interval <= max(4, abs(float(row["line"])) * 1.2) and str(row.get("availability_status") or "").lower() in ALLOWED_AVAILABILITY and str(row.get("freshness_status") or "").lower() == "current"
+        target = str(row.get("market_key") or "")
+        return production_model_ready(target) and row.get("model_validation_status") == "production_ready" and float(row["probability"]) >= 0.55 and float(row["edge"]) >= 0.03 and interval <= max(4, abs(float(row["line"])) * 1.2) and str(row.get("availability_status") or "").lower() in ALLOWED_AVAILABILITY and str(row.get("freshness_status") or "").lower() == "current"
     except (TypeError, ValueError, KeyError):
         return False
 
@@ -99,7 +118,7 @@ def qualifies(row: dict[str, Any]) -> bool:
 def upcoming_mlb_games() -> list[dict[str, Any]]:
     payload = load(LIVE_JSON, {})
     games = payload.get("games", []) if isinstance(payload, dict) else []
-    today = datetime.now(timezone.utc).date().isoformat()
+    today = datetime.now(LOCAL_TZ).date().isoformat()
     output = []
     for game in games:
         if str(game.get("sport") or "").upper() != "MLB":
@@ -319,12 +338,12 @@ def main() -> int:
     if not markets:
         candidates.extend(model_only_candidates(frame))
     unique = {row["prediction_id"]: row for row in candidates}
-    candidates = [{**row, "candidate_only": True, "candidate_reason": row.get("candidate_reason") or "MLB lineup or starter confirmation is required before publication."} for row in unique.values()]
+    candidates = [{**row, "candidate_only": True, "model_validation_status": "production_ready" if production_model_ready(str(row.get("market_key") or "")) else "research_only", "candidate_reason": row.get("candidate_reason") or "MLB lineup or starter confirmation is required before publication."} for row in unique.values()]
     model_picks = model_only_picks(candidates)
     predictions = [row for row in sorted(candidates, key=lambda item: (float(item.get("probability") or 0), float(item.get("edge") or 0)), reverse=True) if qualifies(row)][:10]
     reasons = {}
     for row in candidates:
-        reason = "market_unavailable" if row.get("model_only") else "model_not_trained" if not (MODEL_DIR / f"mlb_prop_{row['market_key']}_v1.joblib").exists() else "availability_unknown" if str(row.get("availability_status") or "").lower() not in ALLOWED_AVAILABILITY else "quality_threshold"
+        reason = "market_unavailable" if row.get("model_only") else "model_not_trained" if not (MODEL_DIR / f"mlb_prop_{row['market_key']}_v1.joblib").exists() else "model_not_production_ready" if not production_model_ready(str(row.get("market_key") or "")) else "availability_unknown" if str(row.get("availability_status") or "").lower() not in ALLOWED_AVAILABILITY else "quality_threshold"
         reasons[reason] = reasons.get(reason, 0) + 1
     has_artifact = any((MODEL_DIR / f"mlb_prop_{target}_v1.joblib").exists() for target in TARGETS)
     status = "success" if predictions else "success_with_candidates" if candidates and not any(row.get("model_only") for row in candidates) else "model_only_projections" if candidates else "model_not_trained" if not has_artifact else "no_market_available" if not markets else "no_qualified_props"
@@ -335,8 +354,8 @@ def main() -> int:
     elif status == "model_only_projections":
         note = "No current MLB player-prop market rows were returned. Real upcoming MLB schedule rows and trained player models produced projection-only candidates; no line, odds, probability, or availability state was inferred."
     else:
-        note = "MLB player projections remain research candidates until a real player-game model and lineup/starter availability state are available."
-    payload = {"metadata": {"sport": "MLB", "version": "v1", "generated_at": now(), "real_data": bool(predictions or candidates or model_picks), "status": status, "markets": list(TARGETS), "candidate_count": len(candidates), "model_pick_count": len(model_picks), "excluded_candidate_counts": reasons, "qualification": {"minimum_probability": 0.55, "minimum_edge": 0.03, "publication_requires": ["real line and odds", "matched player", "confirmed lineup or starter state", "fresh snapshot", "validated model artifact"]}, "model_pick_policy": {"thresholds": INTERNAL_THRESHOLDS, "probability": "chronological holdout RMSE residual approximation", "market_edge": "not available without a bookmaker line", "availability": "not inferred"}, "note": note}, "predictions": predictions, "candidate_predictions": candidates, "model_picks": model_picks}
+        note = "MLB player projections remain research candidates until the registry selects a validated production model and lineup/starter availability state."
+    payload = {"metadata": {"sport": "MLB", "version": "v1", "generated_at": now(), "real_data": bool(predictions or candidates or model_picks), "status": status, "markets": list(TARGETS), "candidate_count": len(candidates), "model_pick_count": len(model_picks), "excluded_candidate_counts": reasons, "qualification": {"minimum_probability": 0.55, "minimum_edge": 0.03, "publication_requires": ["real line and odds", "matched player", "confirmed lineup or starter state", "fresh snapshot", "validated model artifact", "metadata.production_ready=true with selected production model"]}, "model_pick_policy": {"thresholds": INTERNAL_THRESHOLDS, "probability": "chronological holdout RMSE residual approximation", "market_edge": "not available without a bookmaker line", "availability": "not inferred"}, "note": note}, "predictions": predictions, "candidate_predictions": candidates, "model_picks": model_picks}
     write(payload)
     update_diagnostics(markets, len(candidates), len(predictions), reasons)
     print(json.dumps(payload["metadata"], indent=2))

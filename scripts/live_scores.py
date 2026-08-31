@@ -14,6 +14,7 @@ import json
 import math
 import re
 import sys
+import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -60,6 +61,33 @@ ESPN_SPORTS = {
     "NHL": {"sport": "hockey", "league": "nhl"},
     "WNBA": {"sport": "basketball", "league": "wnba"},
 }
+
+RETRY_DELAYS_SECONDS = (0, 1, 3)
+
+
+def request_json_with_retry(
+    url: str,
+    params: dict[str, Any] | None = None,
+    *,
+    timeout: int,
+    attempts: int = len(RETRY_DELAYS_SECONDS),
+) -> dict[str, Any]:
+    """Fetch a provider response with bounded retry and useful final errors."""
+    if requests is None:
+        raise RuntimeError("requests package missing")
+    last_error: Exception | None = None
+    for attempt in range(max(1, min(attempts, len(RETRY_DELAYS_SECONDS)))):
+        if attempt:
+            time.sleep(RETRY_DELAYS_SECONDS[attempt])
+        try:
+            response = requests.get(url, params=params or {}, timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except Exception as error:  # noqa: BLE001 - provider failures are handled by callers.
+            last_error = error
+    raise RuntimeError(f"provider request failed after {attempt + 1} attempts: {last_error}") from last_error
+
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
@@ -354,19 +382,7 @@ def status_bucket(status: str) -> str:
 
 
 def espn_request(url: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
-    if requests is None:
-        raise RuntimeError("requests package missing")
-    response = requests.get(
-        url,
-        params=params or {},
-        timeout=12,
-        headers={
-            "User-Agent": "LineLensSports/1.0 (+https://github.com/VrajP0518/LineLens)",
-            "Accept": "application/json",
-        },
-    )
-    response.raise_for_status()
-    return response.json()
+    return request_json_with_retry(url, params, timeout=12)
 
 
 def espn_scoreboard(sport: str, target_date: date | None = None) -> dict[str, Any]:
@@ -1058,9 +1074,9 @@ def fetch_mlb_games(
 ) -> tuple[list[dict[str, Any]], list[str]]:
     if requests is None:
         return [], ["requests package is missing; MLB live feed unavailable"]
-    response = requests.get(
+    payload = request_json_with_retry(
         MLB_SCHEDULE_URL,
-        params={
+        {
             "sportId": 1,
             "startDate": start_date.isoformat(),
             "endDate": end_date.isoformat(),
@@ -1068,8 +1084,6 @@ def fetch_mlb_games(
         },
         timeout=25,
     )
-    response.raise_for_status()
-    payload = response.json()
     cache_schedule_payload(payload)
     return games_from_schedule_payload(payload, predictions, "live_fresh"), []
 
@@ -1304,6 +1318,7 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
     mlb_predictions, nfl_predictions, wnba_predictions = prediction_indexes()
     warnings: list[str] = []
     source_status = "live_fresh"
+    provider_health = {"espn": "unavailable", "mlb_stats_api": "unavailable"}
     espn_games: list[dict[str, Any]] = []
     mlb_games: list[dict[str, Any]] = []
     try:
@@ -1311,12 +1326,18 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
         warnings.extend(espn_warnings)
         if espn_games:
             source_status = "espn_live_fresh"
+            provider_health["espn"] = "fresh"
+        else:
+            provider_health["espn"] = "empty"
     except Exception as error:  # noqa: BLE001 - ESPN is a fast overlay, not the only source.
+        provider_health["espn"] = "failed"
         warnings.append(f"ESPN live scoreboard refresh failed: {error}")
     try:
         mlb_games, feed_warnings = fetch_mlb_games(fresh_start, end_date, mlb_predictions)
         warnings.extend(feed_warnings)
+        provider_health["mlb_stats_api"] = "fresh"
     except Exception as error:  # noqa: BLE001 - clean fallback is required.
+        provider_health["mlb_stats_api"] = "failed"
         if not espn_games:
             source_status = "source_failed"
         warnings.append(f"MLB Stats API refresh failed: {error}")
@@ -1386,6 +1407,8 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
             },
             "row_count": len(games),
             "warnings": warnings,
+            "provider_health": provider_health,
+            "retry_policy": {"attempts": len(RETRY_DELAYS_SECONDS), "delays_seconds": list(RETRY_DELAYS_SECONDS)},
         },
         "games": games,
     }

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+from functools import lru_cache
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ OUTPUT_JS = ROOT / "data" / "predictions" / "wnba_prop_predictions.js"
 DIAGNOSTICS_JSON = ROOT / "data" / "odds" / "props_matching_diagnostics.json"
 DIAGNOSTICS_JS = ROOT / "data" / "odds" / "props_matching_diagnostics.js"
 MODEL_DIR = ROOT / "models"
+MODEL_REGISTRY = ROOT / "data" / "reports" / "wnba_prop_model_registry.json"
 TARGETS = ("points", "rebounds", "assists")
 ALLOWED_AVAILABILITY = {"expected_active", "confirmed_active", "active"}
 
@@ -35,6 +37,20 @@ def load(path: Path, default: Any) -> Any:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return default
+
+
+@lru_cache(maxsize=None)
+def production_model_ready(target: str) -> bool:
+    registry = load(MODEL_REGISTRY, {})
+    if not isinstance(registry, dict) or registry.get("metadata", {}).get("production_ready") is not True:
+        return False
+    return any(
+        entry.get("target_stat") == target
+        and str(entry.get("status") or "").lower() == "production"
+        and entry.get("selected") is True
+        for entry in registry.get("models", [])
+        if isinstance(entry, dict)
+    )
 
 
 def write(payload: dict[str, Any]) -> None:
@@ -97,7 +113,8 @@ def qualifies(row: dict[str, Any]) -> bool:
     try:
         interval = float(row["upper_projection"]) - float(row["lower_projection"])
         line = abs(float(row["line"]))
-        return (
+        target = str(row.get("market_key") or "").removeprefix("player_")
+        return production_model_ready(target) and row.get("model_validation_status") == "production_ready" and (
             float(probability) >= 0.55
             and float(edge) >= 0.03
             and interval <= max(12, line * 0.9)
@@ -156,13 +173,13 @@ def main() -> int:
         previous = unique_candidates.get(key)
         if previous is None or abs(float(row.get("edge") or 0)) > abs(float(previous.get("edge") or 0)):
             unique_candidates[key] = row
-    candidates = [{**row, "candidate_only": True, "candidate_reason": "Verified player availability is required before publication."} for row in unique_candidates.values()]
+    candidates = [{**row, "candidate_only": True, "model_validation_status": "production_ready" if production_model_ready(str(row.get("market_key") or "").removeprefix("player_")) else "research_only", "candidate_reason": "Verified player availability is required before publication."} for row in unique_candidates.values()]
     predictions = [row for row in sorted(candidates, key=lambda item: (float(item.get("probability") or 0), float(item.get("edge") or 0)), reverse=True) if qualifies(row)][:10]
     excluded_reasons = {}
     for row in candidates:
-        reason = "availability_unknown" if str(row.get("availability_status") or "").lower() not in ALLOWED_AVAILABILITY else "quality_threshold"
+        reason = "model_not_production_ready" if row.get("model_validation_status") != "production_ready" else "availability_unknown" if str(row.get("availability_status") or "").lower() not in ALLOWED_AVAILABILITY else "quality_threshold"
         excluded_reasons[reason] = excluded_reasons.get(reason, 0) + 1
-    payload = {"metadata": {"sport": "WNBA", "version": APP_VERSION, "generated_at": now(), "real_data": bool(predictions or candidates), "status": "success" if predictions else ("success_with_candidates" if candidates else "no_qualified_props"), "markets": list(TARGETS), "candidate_count": len(candidates), "excluded_candidate_counts": excluded_reasons, "qualification": {"minimum_probability": 0.55, "minimum_edge": 0.03, "interval_policy": "80 percent normal approximation from held-out error until validated quantile model exists", "prop_score_formula": "0.55 probability + 1.20 capped absolute edge - uncertainty penalty; health, data quality, freshness, consensus, availability confidence, and lineup confidence are hard gates"}, "note": "Real projections are visible as candidates. Publication still requires verified player availability and all quality gates."}, "predictions": predictions, "candidate_predictions": candidates}
+    payload = {"metadata": {"sport": "WNBA", "version": APP_VERSION, "generated_at": now(), "real_data": bool(predictions or candidates), "status": "success" if predictions else ("success_with_candidates" if candidates else "no_qualified_props"), "markets": list(TARGETS), "candidate_count": len(candidates), "excluded_candidate_counts": excluded_reasons, "qualification": {"minimum_probability": 0.55, "minimum_edge": 0.03, "interval_policy": "80 percent normal approximation from held-out error until validated quantile model exists", "prop_score_formula": "0.55 probability + 1.20 capped absolute edge - uncertainty penalty; health, data quality, freshness, consensus, availability confidence, and lineup confidence are hard gates", "publication_requires": ["metadata.production_ready=true with selected production model", "verified player availability", "fresh market snapshot"]}, "note": "Real projections are visible as candidates. Publication still requires a selected validated production model, verified player availability, and all quality gates."}, "predictions": predictions, "candidate_predictions": candidates}
     diagnostics = load(DIAGNOSTICS_JSON, {"metadata": {"generated_at": now()}, "sports": {}})
     diagnostics.setdefault("metadata", {})["prediction_exported_at"] = now()
     diagnostics.setdefault("sports", {}).setdefault("WNBA", {})

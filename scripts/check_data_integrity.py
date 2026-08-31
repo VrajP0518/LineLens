@@ -231,6 +231,18 @@ def check_exports() -> None:
     check("late-night schedule date", source_date(late_night) == "2026-07-10", "source calendar date is preserved")
     check("canonical date path", "function ensureMlbReviewDate" in app_js and "function selectedMlbDateDisplay" in app_js, "MLB date state and display helpers present")
     check("date-only UTC guard", "function localDateIso" in app_js and "return localDateIso(date);" in app_js, "date offsets use local calendar values")
+    check(
+        "continuous MLB calendar window",
+        "const selectedDate = toIsoDate(selected);" in app_js
+        and "Array.from({ length: 7 }, (_, index) => shiftDateOnly(windowStart, index))" in app_js,
+        "MLB rail uses consecutive local dates across missing-game gaps",
+    )
+    check(
+        "empty MLB dates stay selectable",
+        "const isWithinCalendarRange = Boolean(selected && dates[0] && dates.at(-1)" in app_js
+        and "const target = current ? shiftDateOnly(current, delta) : null;" in app_js,
+        "zero-game dates inside the loaded calendar range remain navigable",
+    )
     board_start = app_js.find("function mlbBoardDateRows")
     board_end = app_js.find("function mlbBoardDates", board_start)
     board_calendar = app_js[board_start:board_end] if board_start >= 0 and board_end >= 0 else ""
