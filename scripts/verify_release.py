@@ -114,6 +114,7 @@ def main() -> int:
         run("JavaScript syntax", [NPM, "run", "check:js"]),
         run("Python compile", [python, "-m", "compileall", "src", "scripts"]),
         run("Data status", [NPM, "run", "check:data"]),
+        run("Data contracts", [NPM, "run", "check:contracts"]),
         run("Player props contracts", [NPM, "run", "check:props"]),
         run("Refresh contract", [NPM, "run", "check:refresh"]),
         run("v6 contract", [NPM, "run", "check:v6"]),

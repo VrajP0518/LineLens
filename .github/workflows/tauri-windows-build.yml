@@ -19,12 +19,6 @@ jobs:
       ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
       SHARP_ODDS_API_KEY: ${{ secrets.SHARP_ODDS_API_KEY }}
       PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
-      # These names are consumed only at Rust compile time. The resulting app
-      # uses them as defaults while still allowing a user's local .env values
-      # to override them.
-      LINELENS_DEFAULT_ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-      LINELENS_DEFAULT_SHARP_ODDS_API_KEY: ${{ secrets.SHARP_ODDS_API_KEY }}
-      LINELENS_DEFAULT_PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -50,7 +44,7 @@ jobs:
       - name: Install Python data dependencies
         run: python -m pip install --disable-pip-version-check -r requirements.txt
 
-      - name: Confirm provider secrets for data and packaged defaults
+      - name: Confirm provider secrets for data refresh
         shell: pwsh
         run: |
           $missing = @('ODDS_API_KEY', 'SHARP_ODDS_API_KEY', 'PROPLINE_API_KEY') | Where-Object { -not (Get-Item "Env:$_" -ErrorAction SilentlyContinue).Value }

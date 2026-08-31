@@ -28,6 +28,7 @@ const DATA_SOURCES = {
     modelRegistry: ["data/models/model_registry.json"],
     modelUpdateStatus: ["data/models/model_update_status.json"],
     modelRecord: ["data/tracking/model_record.json"],
+    strategyLab: ["data/reports/strategy_lab.json"],
     predictionLog: ["data/tracking/model_predictions_log.json"],
     bootstrap: ["data/bootstrap_status.json"],
     startup: ["data/startup_status.json"],
@@ -73,6 +74,7 @@ const state = {
     modelRegistry: window.__MODEL_REGISTRY__ || null,
     modelUpdateStatus: window.__MODEL_UPDATE_STATUS__ || null,
     modelRecord: window.__MODEL_RECORD__ || null,
+    strategyLab: window.__STRATEGY_LAB__ || null,
     predictionLog: window.__MODEL_PREDICTIONS_LOG__ || null,
     bootstrapStatus: window.__BOOTSTRAP_STATUS__ || null,
     startupStatus: window.__STARTUP_STATUS__ || null,
@@ -367,6 +369,11 @@ const REFRESH_COMMANDS = {
         label: "Approved Model Update",
         manual: "npm run update:models",
         description: "Download, verify, and install the latest approved v6 model bundle without replacing the app.",
+    },
+    strategy_lab: {
+        label: "Strategy Lab",
+        manual: "npm run strategy:lab",
+        description: "Rebuild reproducible performance metrics from the logged prediction ledger.",
     },
 };
 
@@ -703,6 +710,7 @@ const DATA_GLOBALS = {
     modelRegistry: ["__MODEL_REGISTRY__"],
     modelUpdateStatus: ["__MODEL_UPDATE_STATUS__"],
     modelRecord: ["__MODEL_RECORD__"],
+    strategyLab: ["__STRATEGY_LAB__"],
     predictionLog: ["__MODEL_PREDICTIONS_LOG__"],
     bootstrap: ["__BOOTSTRAP_STATUS__"],
     startup: ["__STARTUP_STATUS__"],
@@ -744,7 +752,7 @@ function applyDataPayload(kind, payload) {
         app: "app", teams: "teamPayload", report: "report", modelComparison: "modelComparison",
         wnbaModelComparison: "wnbaModelComparison", moltresCard: "moltresCard", featureSummary: "featureSummary",
         wnbaFeatureSummary: "wnbaFeatureSummary", wnbaCard: "wnbaCard", modelRegistry: "modelRegistry",
-        modelUpdateStatus: "modelUpdateStatus", modelRecord: "modelRecord", predictionLog: "predictionLog",
+        modelUpdateStatus: "modelUpdateStatus", modelRecord: "modelRecord", strategyLab: "strategyLab", predictionLog: "predictionLog",
         bootstrap: "bootstrapStatus", startup: "startupStatus", refresh: "refreshStatus",
         sharedDataStatus: "sharedDataStatus", resultHistory: "resultHistory", odds: "odds", playerProps: "playerProps",
         oddsHealth: "oddsHealth", wnbaAvailability: "wnbaAvailability", propsDiagnostics: "propsDiagnostics",
@@ -801,7 +809,7 @@ const DEFERRED_DATA_BY_VIEW = {
     history: ["mlbBacktest", "wnbaBacktest", "resultHistory"],
     record: ["resultHistory"],
     reports: ["reports", "modelComparison", "moltresCard", "featureSummary", "wnbaModelComparison", "wnbaCard", "wnbaFeatureSummary"],
-    models: ["reports", "modelComparison", "moltresCard", "featureSummary", "wnbaModelComparison", "wnbaCard", "wnbaFeatureSummary", "modelUpdateStatus", "wnbaAvailability"],
+        models: ["reports", "modelComparison", "moltresCard", "featureSummary", "wnbaModelComparison", "wnbaCard", "wnbaFeatureSummary", "modelUpdateStatus", "wnbaAvailability", "strategyLab"],
     settings: ["oddsHealth", "sharedDataStatus", "bootstrap", "startup", "refresh", "modelUpdateStatus"],
 };
 
@@ -1588,12 +1596,15 @@ async function fetchDirectBrowserLiveScores() {
     const results = await Promise.allSettled(DIRECT_LIVE_FEEDS.map(fetchFeed));
     const games = [];
     const warnings = [];
+    const providerAttempts = [];
     results.forEach(result => {
         if (result.status === "rejected") {
             warnings.push(String(result.reason?.message || result.reason || "scoreboard unavailable"));
+            providerAttempts.push({ provider: "ESPN", status: "failed", error: String(result.reason?.message || result.reason || "scoreboard unavailable") });
             return;
         }
         const [sport, payload, attempts] = result.value;
+        providerAttempts.push({ provider: `ESPN ${sport}`, status: "fresh", attempts: attempts + 1, rows: payload?.events?.length || 0 });
         if (attempts) warnings.push(`${sport} feed recovered after ${attempts} retry${attempts === 1 ? "" : "ies"}`);
         (payload?.events || []).forEach(event => {
             const competition = event.competitions?.[0];
@@ -1645,8 +1656,12 @@ async function fetchDirectBrowserLiveScores() {
             source: "Direct ESPN scoreboard feeds",
             source_status: warnings.length ? "direct_live_partial" : "direct_live_fresh",
             refresh_mode: "direct_live",
+            schema_version: "linelens.data.v1",
+            fetched_at: new Date().toISOString(),
+            freshness_sla_seconds: 180,
             live_poll_seconds_recommended: 30,
             warnings,
+            provider_attempts: providerAttempts,
             row_count: games.length,
         },
         games,
@@ -1662,6 +1677,8 @@ function applyDirectLivePayload(payload) {
     state.live.payload = { ...payload, games: state.live.games };
     state.live.stale = false;
     state.live.error = null;
+    state.live.sourceStatus = normalizeMeta(payload).source_status || normalizeMeta(payload).refresh_mode || "direct_live";
+    state.live.warnings = normalizeMeta(payload).warnings || [];
     detectLiveAlerts(before, liveGames());
     return liveGames().length;
 }
@@ -1685,12 +1702,20 @@ async function refreshLiveHeartbeat(options = {}) {
 
     try {
         if (isTauriRefreshAvailable()) {
-            const payload = await tauriInvoke("fetch_live_scoreboards", {});
-            const count = applyDirectLivePayload(payload);
-            syncSharedData({ background: true, minimumIntervalMs: 15 * 60 * 1000 });
-            state.liveRefresh.lastStatus = "fresh";
-            state.liveRefresh.lastMessage = `Direct live score feeds updated; ${count} games loaded.`;
-            return;
+            try {
+                const payload = await tauriInvoke("fetch_live_scoreboards", {});
+                const count = applyDirectLivePayload(payload);
+                syncSharedData({ background: true, minimumIntervalMs: 15 * 60 * 1000 });
+                state.liveRefresh.lastStatus = "fresh";
+                state.liveRefresh.lastMessage = `Direct live score feeds updated; ${count} games loaded.`;
+                return;
+            } catch (error) {
+                // The native keyless ESPN request is the fast path. If it is
+                // unavailable, continue into the Python bridge so its MLB
+                // Stats API fallback and cached-data diagnostics can run.
+                state.liveRefresh.retryCount = 1;
+                state.liveRefresh.lastError = String(error?.message || error || "Native live feed failed");
+            }
         }
         try {
             const directPayload = await fetchDirectBrowserLiveScores();
@@ -1831,6 +1856,37 @@ function renderGlobalHealthSignal() {
     signal.title = health.detail;
     signal.classList.toggle("is-quiet", health.tone === "success");
     signal.setAttribute("aria-label", `${health.tone === "success" ? "Data updated" : health.label}. ${health.detail} Open data health in Settings.`);
+}
+
+function contractEnvelope(payload, kind = "shared", options = {}) {
+    return window.LineLensContracts?.envelope
+        ? window.LineLensContracts.envelope(payload, kind, options)
+        : { source: normalizeMeta(payload).source || "unknown", status: normalizeMeta(payload).status || "unknown", freshness: { state: "unknown", label: "Freshness unavailable" }, provenance: {}, warnings: [] };
+}
+
+function trustDomain(label, payload, kind, detail = "") {
+    const envelope = contractEnvelope(payload, kind);
+    const stateLabel = envelope.freshness?.state || "unknown";
+    const status = stateLabel === "current" ? "Current" : stateLabel === "aging" ? "Aging" : stateLabel === "stale" ? "Stale" : envelope.status || "Unavailable";
+    return { label, status, state: stateLabel, source: envelope.source || "unknown", generatedAt: envelope.generated_at, detail: detail || (envelope.warnings || [])[0] || "No warning reported." };
+}
+
+function renderTrustCenter(compact = false) {
+    const live = window.LineLensContracts?.feedHealth
+        ? window.LineLensContracts.feedHealth(state.live.payload, state.liveRefresh)
+        : { state: state.live.stale ? "stale" : state.live.games.length ? "current" : "unknown", source_status: state.live.sourceStatus, source: normalizeMeta(state.live.payload).source };
+    const domains = [
+        { label: "Live scores", status: live.state === "current" ? "Current" : live.state === "stale" ? "Stale" : "Unavailable", state: live.state, source: live.source || live.source_status || "unknown", generatedAt: live.generated_at, detail: live.last_error || (live.warnings || [])[0] || `${state.live.games.length} event rows retained` },
+        trustDomain("Predictions", state.mlb.payload, "shared", `${state.mlb.games.length} MLB rows · ${state.wnba.games.length} WNBA rows`),
+        trustDomain("Odds", state.odds, "odds", oddsStatusMessage()),
+        trustDomain("Player props", state.playerProps, "props", `${state.mlbPropPredictions?.candidate_predictions?.length || 0} MLB candidates · ${state.wnbaPropPredictions?.candidate_predictions?.length || 0} WNBA candidates`),
+        trustDomain("Models / records", state.modelRecord, "shared", `${getLogEntries().length} logged prediction rows`),
+        trustDomain("Shared channel", state.sharedDataStatus, "shared", state.sharedDataRuntime.message || "Signed sanitized exports"),
+    ];
+    const current = domains.filter(domain => domain.state === "current").length;
+    const attention = domains.length - current;
+    const body = domains.map(domain => `<article class="trust-domain" data-variant="${healthTone(domain.status)}"><div class="trust-domain__top"><span class="status-dot" aria-hidden="true"></span><strong>${escapeHtml(domain.label)}</strong><span class="chip chip--soft">${escapeHtml(domain.status)}</span></div><small>${escapeHtml(domain.source || "Source unavailable")}</small><p>${escapeHtml(domain.detail || "No detail available")}</p><time>${escapeHtml(timestamp(domain.generatedAt) || "Timestamp unavailable")}</time></article>`).join("");
+    return `<section class="panel trust-center ${compact ? "trust-center--compact" : ""}" aria-labelledby="trust-center-title"><header class="section-header"><div><p class="eyebrow">Data trust center</p><h2 id="trust-center-title">Know what LineLens knows</h2><p class="muted">Every decision is labeled with source, freshness, and fallback state. Keys remain outside exported data.</p></div><div class="trust-center__summary"><strong>${current}/${domains.length}</strong><span>${attention ? `${attention} need attention` : "All feeds current"}</span></div></header><div class="trust-domain-grid">${body}</div>${compact ? `<div class="report-actions"><button class="btn btn--micro" type="button" data-view-link="settings">Open full Trust Center</button></div>` : `<div class="trust-center__footer"><span>Retry ${state.liveRefresh.retryCount ? `attempt ${state.liveRefresh.retryCount + 1}` : "ready"} · ${escapeHtml(state.liveRefresh.lastError || "No live retry error")}</span><div class="report-actions"><button class="btn btn--primary" type="button" data-live-heartbeat-now>Retry live feeds</button><button class="btn" type="button" data-sync-shared-data ${state.sharedDataRuntime.active || !isTauriRefreshAvailable() ? "disabled" : ""}>Check signed data channel</button><button class="btn" type="button" data-run-diagnostics>Run diagnostics</button></div></div>`}</section>`;
 }
 
 function isCurrentAttentionGame(game) {
@@ -2357,6 +2413,11 @@ function marketImplied(snapshot, side) {
     return safeNumber(snapshot?.[`market_implied_${side}`]);
 }
 
+function marketNoVig(snapshot, side) {
+    const noVig = safeNumber(snapshot?.[`no_vig_${side}`]);
+    return noVig === null ? marketImplied(snapshot, side) : noVig;
+}
+
 function marketSideForPick(game, sport = game?.sport || "MLB") {
     const pick = String(getGamePick(game, sport) || "").toUpperCase();
     if (pick && pick === String(game?.home || "").toUpperCase()) return "home";
@@ -2371,9 +2432,10 @@ function modelProbabilityForSide(game, side, sport = game?.sport || "MLB") {
 }
 
 function marketEdgeForGame(game, snapshot = latestOddsForGame(game), sport = game?.sport || "MLB") {
+    if (oddsFreshnessState(snapshot) === "stale") return null;
     const side = marketSideForPick(game, sport);
     const modelProbability = modelProbabilityForSide(game, side, sport);
-    const implied = marketImplied(snapshot, side);
+    const implied = marketNoVig(snapshot, side);
     if (modelProbability === null || implied === null) return null;
     return modelProbability - implied;
 }
@@ -2404,8 +2466,8 @@ function lineMovementSummary(game, sport = game?.sport || "MLB") {
     const { opening, current, closing } = oddsContextForGame(game);
     const openHome = marketLine(opening, "home", sport);
     const currentHome = marketLine(current, "home", sport);
-    const openImplied = marketImplied(opening, "home");
-    const currentImplied = marketImplied(current, "home");
+    const openImplied = marketNoVig(opening, "home");
+    const currentImplied = marketNoVig(current, "home");
     const impliedMove = currentImplied !== null && openImplied !== null ? currentImplied - openImplied : null;
     let direction = current ? "Current odds" : "Movement unavailable";
     if (impliedMove !== null) {
@@ -2425,6 +2487,7 @@ function lineMovementSummary(game, sport = game?.sport || "MLB") {
         closeImplied: marketImplied(closing, "home"),
         direction,
         freshness: oddsFreshness(current),
+        freshnessState: oddsFreshnessState(current),
         marketEdge: marketEdgeForGame(game, current, sport),
     };
 }
@@ -2442,7 +2505,7 @@ function clvSummaryForGame(game, sport = game?.sport || "MLB") {
     }
     const side = marketSideForPick(game, sport);
     const currentImplied = marketImplied(context.current, side);
-    const closeImplied = marketImplied(context.closing, side);
+    const closeImplied = marketNoVig(context.closing, side);
     if (currentImplied === null || closeImplied === null) {
         return { label: "Unavailable", value: null, note: "No implied close" };
     }
@@ -3367,7 +3430,7 @@ async function executeStartupAutomation(options = {}) {
 }
 
 async function loadAllAfterRefresh() {
-    const [bootstrap, startup, refresh, sharedDataStatus, live, odds, report, modelComparison, moltresCard, featureSummary, modelRegistry, modelUpdateStatus, modelRecord, predictionLog, nfl, mlb, mlbBacktest, wnbaModelComparison, wnbaCard, wnbaFeatureSummary, wnba, wnbaBacktest, playerProps, oddsHealth, wnbaPropPredictions, propLog, propRecord, wnbaPropModelRegistry, wnbaPropModelCards, wnbaPropModelHealth, wnbaPropDatasetSummary, propsDiagnostics, mlbPropPredictions, mlbPropModelRegistry, mlbPropModelCards, mlbPropModelHealth, mlbPropDatasetSummary, wnbaAvailability] = await Promise.all([
+    const [bootstrap, startup, refresh, sharedDataStatus, live, odds, report, modelComparison, moltresCard, featureSummary, modelRegistry, modelUpdateStatus, modelRecord, strategyLab, predictionLog, nfl, mlb, mlbBacktest, wnbaModelComparison, wnbaCard, wnbaFeatureSummary, wnba, wnbaBacktest, playerProps, oddsHealth, wnbaPropPredictions, propLog, propRecord, wnbaPropModelRegistry, wnbaPropModelCards, wnbaPropModelHealth, wnbaPropDatasetSummary, propsDiagnostics, mlbPropPredictions, mlbPropModelRegistry, mlbPropModelCards, mlbPropModelHealth, mlbPropDatasetSummary, wnbaAvailability] = await Promise.all([
         loadOptional("bootstrap", [], { force: true }),
         loadOptional("startup", [], { force: true }),
         loadOptional("refresh", ["__REFRESH_STATUS__"], { force: true }),
@@ -3381,6 +3444,7 @@ async function loadAllAfterRefresh() {
         loadOptional("modelRegistry", [], { force: true }),
         loadOptional("modelUpdateStatus", [], { force: true }),
         loadOptional("modelRecord", [], { force: true }),
+        loadOptional("strategyLab", ["__STRATEGY_LAB__"], { force: true }),
         loadOptional("predictionLog", [], { force: true }),
         loadOptional("nfl", [], { force: true }),
         loadOptional("mlb", [], { force: true }),
@@ -3464,6 +3528,10 @@ async function loadAllAfterRefresh() {
     if (modelRecord) {
         state.modelRecord = modelRecord;
         window.__MODEL_RECORD__ = modelRecord;
+    }
+    if (strategyLab) {
+        state.strategyLab = strategyLab;
+        window.__STRATEGY_LAB__ = strategyLab;
     }
     if (predictionLog) {
         state.predictionLog = predictionLog;
@@ -3578,6 +3646,7 @@ function renderView(view = state.selected.view || "home") {
         models: () => {
             renderModels();
             const root = $("#view-models");
+            if (root) root.insertAdjacentHTML("beforeend", renderStrategyLabPanel());
             const passport = root?.querySelector(".model-passport");
             if (root && window.LineLensSprint5) {
                 const lab = window.LineLensSprint5.renderModelLab(state);
@@ -5188,7 +5257,7 @@ function renderHome() {
     const totalPicks = universalPickRows().filter(game => gameIsoDate(game) === localDateIso()).length;
     const nflLatest = latestNflSeason();
     const nflAvailableLatest = nflSeasons()[0];
-    $("#view-home").innerHTML = `<section class="home-focus-shell"><header class="home-focus-header"><div><p class="eyebrow">Today</p><h2>${escapeHtml(today)}</h2><p class="muted">The strongest available signals, live action, and the teams you follow.</p></div><div class="report-actions"><span class="chip chip--soft">${totalPicks} predictions</span><button class="btn btn--primary" type="button" data-view-link="picks">View all picks</button></div></header><section class="home-focus-layout"><div class="home-focus-main">${best ? homeFocusPickCard(best, "Best edge") : emptyState("No top edge available", "Load a current prediction export to populate Home.")}${picks.length ? `<section class="panel home-focus-panel"><header class="section-header"><div><p class="eyebrow">Top picks</p><h2>Decisions worth your attention</h2></div><button class="btn btn--micro" type="button" data-view-link="picks">See all</button></header><div class="home-focus-picks">${picks.map((row, index) => homeFocusPickCard(row, `Top pick ${index + 2}`)).join("")}</div></section>` : ""}</div><div class="home-focus-side">${renderHomeFocusLive()}${renderHomeFocusWatching()}${renderHomeModelPulse()}</div></section>${nflAvailableLatest && nflLatest && nflAvailableLatest !== nflLatest ? `<div class="home-source-strip" data-variant="warning"><strong>NFL source note</strong><span>${nflAvailableLatest} currently has only a verified postseason supplement; Home defaults to the latest complete model season, ${nflLatest}.</span><button class="btn btn--micro" data-view-link="nfl">Inspect NFL</button></div>` : ""}</section>`;
+    $("#view-home").innerHTML = `<section class="home-focus-shell"><header class="home-focus-header"><div><p class="eyebrow">Today</p><h2>${escapeHtml(today)}</h2><p class="muted">The strongest available signals, live action, and the teams you follow.</p></div><div class="report-actions"><span class="chip chip--soft">${totalPicks} predictions</span><button class="btn btn--primary" type="button" data-view-link="picks">View all picks</button></div></header>${renderTrustCenter(true)}<section class="panel decision-inbox"><header class="section-header"><div><p class="eyebrow">Decision inbox</p><h2>What deserves your attention</h2><p class="muted">Personal priorities are computed locally from your followed teams, live state, and verified model edges.</p></div><div class="report-actions"><span class="chip chip--soft">${window.LineLensSprint5 ? window.LineLensSprint5.getAlerts().filter(alert => !alert.read).length : 0} unread</span><button class="btn btn--micro" type="button" data-view-link="notifications">Open alerts</button></div></header><div class="decision-inbox__grid">${best ? `<article><span class="eyebrow">Best available edge</span><strong>${escapeHtml(getGamePick(best.game, best.game.sport || "MLB"))}</strong><p>${escapeHtml(best.game.away || "Away")} @ ${escapeHtml(best.game.home || "Home")} · ${escapeHtml(formatEdge(best.edge))}</p><button class="btn btn--micro" data-open-gamecast="${escapeHtml(best.game.sport || "MLB")}" data-game-id="${escapeHtml(gameKey(best.game))}">Open analysis</button></article>` : `<article><strong>No verified edge yet</strong><p>LineLens will surface a decision when current model and market inputs agree.</p></article>`}${state.live.games.filter(isLiveSportGame).slice(0, 1).map(game => `<article><span class="eyebrow">Live now</span><strong>${escapeHtml(game.away || "Away")} @ ${escapeHtml(game.home || "Home")}</strong><p>${escapeHtml(gameStatusLine(game))}</p><button class="btn btn--micro" data-open-gamecast="${escapeHtml(game.sport || "MLB")}" data-game-id="${escapeHtml(gameKey(game))}">Open GameCast</button></article>`).join("") || `<article><span class="eyebrow">Live now</span><strong>No verified live games</strong><p>${escapeHtml(liveFreshnessLabel())}. Cached schedules remain labeled.</p></article>`}</div></section><section class="home-focus-layout"><div class="home-focus-main">${best ? homeFocusPickCard(best, "Best edge") : emptyState("No top edge available", "Load a current prediction export to populate Home.")}${picks.length ? `<section class="panel home-focus-panel"><header class="section-header"><div><p class="eyebrow">Top picks</p><h2>Decisions worth your attention</h2></div><button class="btn btn--micro" type="button" data-view-link="picks">See all</button></header><div class="home-focus-picks">${picks.map((row, index) => homeFocusPickCard(row, `Top pick ${index + 2}`)).join("")}</div></section>` : ""}</div><div class="home-focus-side">${renderHomeFocusLive()}${renderHomeFocusWatching()}${renderHomeModelPulse()}</div></section>${nflAvailableLatest && nflLatest && nflAvailableLatest !== nflLatest ? `<div class="home-source-strip" data-variant="warning"><strong>NFL source note</strong><span>${nflAvailableLatest} currently has only a verified postseason supplement; Home defaults to the latest complete model season, ${nflLatest}.</span><button class="btn btn--micro" data-view-link="nfl">Inspect NFL</button></div>` : ""}</section>`;
 }
 
 function statusTone(status) {
@@ -5280,7 +5349,7 @@ function refreshSportStatus(sport) {
 
 function healthTone(status) {
     const normalized = String(status || "").toLowerCase();
-    if (["linked", "real odds", "real_fresh", "model_generated", "success", "available", "ready", "real"].includes(normalized)) return "success";
+    if (["linked", "real odds", "real_fresh", "model_generated", "success", "available", "ready", "real", "current", "fresh"].includes(normalized)) return "success";
     if (["cached", "real_cached", "schedule_only", "missing key", "pending", "manual"].some(token => normalized.includes(token))) return "warning";
     if (["failed", "missing", "unavailable", "error"].some(token => normalized.includes(token))) return "error";
     return "info";
@@ -7953,6 +8022,18 @@ function renderWatchlist() {
     `;
 }
 
+function renderStrategyLabPanel() {
+    const payload = state.strategyLab || {};
+    const metadata = payload.metadata || {};
+    const recent = payload.recent_window || {};
+    const previous = payload.previous_window || {};
+    const delta = safeNumber(recent.win_rate) !== null && safeNumber(previous.win_rate) !== null ? (safeNumber(recent.win_rate) - safeNumber(previous.win_rate)) * 100 : null;
+    const rows = Array.isArray(payload.models) ? payload.models.slice(0, 8) : [];
+    const winRate = recent.win_rate === null || recent.win_rate === undefined ? "-" : `${(recent.win_rate * 100).toFixed(1)}%`;
+    const changeLabel = delta === null ? "comparison unavailable" : `${delta >= 0 ? "+" : ""}${delta.toFixed(1)} pts vs prior`;
+    return `<section class="panel strategy-lab-panel"><header class="section-header"><div><p class="eyebrow">Strategy Lab</p><h2>Measure the process, not just the pick</h2><p class="muted">Reproducible metrics from the logged decision ledger. Pending, unavailable, and unscored rows stay out of performance.</p></div><div class="report-actions"><span class="chip chip--soft">${escapeHtml(metadata.status || "not loaded")}</span><button class="btn btn--micro" type="button" data-refresh-command="strategy_lab">Refresh lab</button></div></header><div class="strategy-lab__kpis">${card("Recent 30", recent.sample || 0, `${recent.wins || 0}-${recent.losses || 0} record`)}${card("Win rate", winRate, changeLabel)}${card("Brier", recent.brier_score ?? "-", "lower is better")}${card("Log loss", recent.log_loss ?? "-", "lower is better")}</div><div class="strategy-lab__table">${rows.length ? rows.map(row => `<div><strong>${escapeHtml(row.sport)} · ${escapeHtml(row.model)}</strong><span>${row.sample || 0} scored · ${row.win_rate === null || row.win_rate === undefined ? "-" : `${(row.win_rate * 100).toFixed(1)}%`} win rate</span><small>Brier ${row.brier_score ?? "-"} · Log loss ${row.log_loss ?? "-"}</small></div>`).join("") : `<p class="muted">Run the Strategy Lab export to populate reproducible metrics.</p>`}</div></section>`;
+}
+
 function renderModels() {
     const entries = modelObservatoryEntries();
     const selected = selectedModelEntry("MLB");
@@ -8896,6 +8977,7 @@ function renderSettings() {
             <div class="report-actions"><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn btn--primary" type="button" data-open-about>Open About</button></div>
             <span class="chip">${escapeHtml(state.app.version || APP_VERSION)}</span>
         </section>
+        ${renderTrustCenter()}
         ${renderDataOperationsMap()}
         ${renderUiPreferencesPanel()}
         ${window.LineLensSprint5 ? window.LineLensSprint5.renderPreferences(state) : ""}

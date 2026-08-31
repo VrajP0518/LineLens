@@ -1319,8 +1319,11 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
     warnings: list[str] = []
     source_status = "live_fresh"
     provider_health = {"espn": "unavailable", "mlb_stats_api": "unavailable"}
+    provider_attempts: list[dict[str, Any]] = []
+    last_error: str | None = None
     espn_games: list[dict[str, Any]] = []
     mlb_games: list[dict[str, Any]] = []
+    espn_started = time.perf_counter()
     try:
         espn_games, espn_warnings = fetch_espn_games(fresh_start, end_date, mlb_predictions, nfl_predictions, wnba_predictions)
         warnings.extend(espn_warnings)
@@ -1329,22 +1332,29 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
             provider_health["espn"] = "fresh"
         else:
             provider_health["espn"] = "empty"
+        provider_attempts.append({"provider": "ESPN", "status": provider_health["espn"], "rows": len(espn_games), "duration_ms": round((time.perf_counter() - espn_started) * 1000), "warnings": len(espn_warnings)})
     except Exception as error:  # noqa: BLE001 - ESPN is a fast overlay, not the only source.
         provider_health["espn"] = "failed"
+        last_error = str(error)
         warnings.append(f"ESPN live scoreboard refresh failed: {error}")
+        provider_attempts.append({"provider": "ESPN", "status": "failed", "rows": 0, "duration_ms": round((time.perf_counter() - espn_started) * 1000), "error": str(error)})
+    mlb_started = time.perf_counter()
     try:
         mlb_games, feed_warnings = fetch_mlb_games(fresh_start, end_date, mlb_predictions)
         warnings.extend(feed_warnings)
         provider_health["mlb_stats_api"] = "fresh"
+        provider_attempts.append({"provider": "MLB Stats API", "status": "fresh", "rows": len(mlb_games), "duration_ms": round((time.perf_counter() - mlb_started) * 1000), "fallback_for": "ESPN" if provider_health["espn"] != "fresh" else None})
     except Exception as error:  # noqa: BLE001 - clean fallback is required.
         provider_health["mlb_stats_api"] = "failed"
         if not espn_games:
             source_status = "source_failed"
+        last_error = str(error)
         warnings.append(f"MLB Stats API refresh failed: {error}")
         mlb_games = cached_mlb_games(fresh_start, end_date, mlb_predictions)
         if mlb_games:
             source_status = "espn_live_fresh" if espn_games else "live_cached"
             warnings.append("Using cached MLB schedule files from data/raw/mlb.")
+        provider_attempts.append({"provider": "MLB Stats API", "status": "failed", "rows": len(mlb_games), "duration_ms": round((time.perf_counter() - mlb_started) * 1000), "error": str(error), "fallback_used": bool(mlb_games)})
     prediction_fallback = fallback_mlb_from_predictions(mlb_predictions, start_date, end_date)
     historical_cache = cached_mlb_games(start_date, fresh_start - timedelta(days=1), mlb_predictions)
     historical_backtest = [
@@ -1389,13 +1399,16 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
         "metadata": {
             "app": "LineLens Sports",
             "version": APP_VERSION,
+            "schema_version": "linelens.data.v1",
             "generated_at": utc_now(),
+            "fetched_at": utc_now(),
             "real_data": True,
             "source": "ESPN Scoreboard API + MLB Stats API + LineLens prediction exports; optional World Cup, NBA, NHL, and WNBA scoreboards",
             "sports": sorted({game.get("sport") for game in games if game.get("sport")}),
             "refresh_mode": "live",
             "source_status": source_status,
             "live_poll_seconds_recommended": 15,
+            "freshness_sla_seconds": 180,
             "data_window": {
                 "center_date": selected.isoformat(),
                 "start_date": start_date.isoformat(),
@@ -1408,6 +1421,9 @@ def build_payload(center_date: str, days_back: int, days_forward: int) -> dict[s
             "row_count": len(games),
             "warnings": warnings,
             "provider_health": provider_health,
+            "provider_attempts": provider_attempts,
+            "last_error": last_error,
+            "fallback_source": "MLB Stats API" if provider_health["mlb_stats_api"] == "fresh" and provider_health["espn"] != "fresh" else "cached MLB schedule" if mlb_games and provider_health["mlb_stats_api"] == "failed" else "LineLens prediction export" if source_status == "prediction_export_fallback" else None,
             "retry_policy": {"attempts": len(RETRY_DELAYS_SECONDS), "delays_seconds": list(RETRY_DELAYS_SECONDS)},
         },
         "games": games,

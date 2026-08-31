@@ -78,13 +78,6 @@ const PROVIDER_KEY_NAMES: [&str; 3] = ["ODDS_API_KEY", "SHARP_ODDS_API_KEY", "PR
 static RUNTIME_SEED_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 static REFRESH_PROCESS_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
-// Release builds may receive these values from GitHub Actions at compile time.
-// They are intentionally separate from the normal runtime environment names so
-// a developer's local environment cannot accidentally bake a key into a build.
-const DEFAULT_ODDS_API_KEY: Option<&str> = option_env!("LINELENS_DEFAULT_ODDS_API_KEY");
-const DEFAULT_SHARP_ODDS_API_KEY: Option<&str> = option_env!("LINELENS_DEFAULT_SHARP_ODDS_API_KEY");
-const DEFAULT_PROPLINE_API_KEY: Option<&str> = option_env!("LINELENS_DEFAULT_PROPLINE_API_KEY");
-
 #[derive(Deserialize)]
 struct SharedDataBundle {
     url: String,
@@ -452,16 +445,6 @@ fn env_key_value(path: &Path, key: &str) -> Option<String> {
     })
 }
 
-fn bundled_default_key(key: &str) -> Option<&'static str> {
-    let value = match key {
-        "ODDS_API_KEY" => DEFAULT_ODDS_API_KEY,
-        "SHARP_ODDS_API_KEY" => DEFAULT_SHARP_ODDS_API_KEY,
-        "PROPLINE_API_KEY" => DEFAULT_PROPLINE_API_KEY,
-        _ => None,
-    }?;
-    (!value.trim().is_empty()).then_some(value)
-}
-
 fn effective_key(root: &Path, key: &str) -> Option<String> {
     if let Ok(value) = std::env::var(key) {
         let value = value.trim();
@@ -469,7 +452,7 @@ fn effective_key(root: &Path, key: &str) -> Option<String> {
             return Some(value.to_string());
         }
     }
-    env_key_value(&root.join(".env"), key).or_else(|| bundled_default_key(key).map(str::to_string))
+    env_key_value(&root.join(".env"), key)
 }
 
 fn api_key_configured(root: &Path, key: &str) -> bool {
@@ -479,14 +462,13 @@ fn api_key_configured(root: &Path, key: &str) -> bool {
 fn configure_provider_environment(command: &mut Command, root: &Path) {
     for key in PROVIDER_KEY_NAMES {
         // Preserve an explicit process environment value. Otherwise provide the
-        // user's saved .env value, falling back to the release default.
+        // user's saved local .env value. Shared signed data is the normal
+        // packaged-client path, so provider secrets are never embedded in it.
         let process_has_value = std::env::var(key)
             .map(|value| !value.trim().is_empty())
             .unwrap_or(false);
         if !process_has_value {
-            if let Some(value) = env_key_value(&root.join(".env"), key)
-                .or_else(|| bundled_default_key(key).map(str::to_string))
-            {
+            if let Some(value) = env_key_value(&root.join(".env"), key) {
                 command.env(key, value);
             }
         }
@@ -499,7 +481,7 @@ fn api_key_status(root: &Path) -> ApiKeyStatus {
         odds_api_key: api_key_configured(root, "ODDS_API_KEY"),
         sharp_odds_api_key: api_key_configured(root, "SHARP_ODDS_API_KEY"),
         propline_api_key: api_key_configured(root, "PROPLINE_API_KEY"),
-        message: "Release defaults and locally saved keys are used for refreshes; keys are never written to data exports.".to_string(),
+        message: "Signed shared-data exports are the default; local provider keys are optional overrides and are never written to data exports.".to_string(),
     }
 }
 
@@ -600,6 +582,7 @@ fn shared_data_allowed_path(path: &str) -> bool {
             | "data/tracking/model_record.json"
             | "data/tracking/prop_prediction_log.json"
             | "data/tracking/prop_record.json"
+            | "data/reports/strategy_lab.json"
     )
 }
 
@@ -922,10 +905,6 @@ fn collect_runtime_diagnostics(app: &tauri::AppHandle) -> Result<RuntimeDiagnost
     let env_bundled = source
         .map(|path| path.join(".env").exists())
         .unwrap_or(false);
-    let release_defaults = PROVIDER_KEY_NAMES
-        .iter()
-        .filter(|key| bundled_default_key(key).is_some())
-        .count();
     let api_keys = api_key_status(&root);
     let configured_keys = [
         api_keys.odds_api_key,
@@ -1002,8 +981,6 @@ fn collect_runtime_diagnostics(app: &tauri::AppHandle) -> Result<RuntimeDiagnost
             !env_bundled,
             if env_bundled {
                 "a .env file was found in the bundled resource"
-            } else if release_defaults > 0 {
-                "release provider defaults are available; no .env file is bundled"
             } else {
                 "no .env file is bundled"
             },
@@ -1128,6 +1105,10 @@ fn command_spec(command_name: &str) -> Result<CommandSpec, String> {
         }),
         "model_update" => Ok(CommandSpec {
             script: "scripts/update_models.py",
+            args: Vec::new(),
+        }),
+        "strategy_lab" => Ok(CommandSpec {
+            script: "scripts/strategy_lab.py",
             args: Vec::new(),
         }),
         _ => Err(format!("Unsupported refresh command: {}", command_name)),

@@ -74,7 +74,17 @@ try {
             "--dump-dom",
             $url
         )
-        & $edge @domArguments 2>$null | Out-File -Encoding utf8 -FilePath $domPath
+        $domStdout = Join-Path $outputRoot "$($case.Name).dom.stdout"
+        $domStderr = Join-Path $outputRoot "$($case.Name).dom.stderr"
+        $domProcess = Start-Process -FilePath $edge -ArgumentList $domArguments -WindowStyle Hidden -PassThru `
+            -RedirectStandardOutput $domStdout -RedirectStandardError $domStderr
+        $domExited = $domProcess.WaitForExit(30000)
+        if (-not $domExited) { Stop-Process -Id $domProcess.Id -Force -ErrorAction SilentlyContinue }
+        if (Test-Path -LiteralPath $domStdout) {
+            Copy-Item -LiteralPath $domStdout -Destination $domPath -Force
+        } else {
+            New-Item -ItemType File -Path $domPath -Force | Out-Null
+        }
         $dom = Get-Content -LiteralPath $domPath -Raw
         if ($dom -match 'data-audit-overflow="fail"') { throw "$($case.Name) has horizontal document overflow." }
         Write-Host "Rendered $screenshot"

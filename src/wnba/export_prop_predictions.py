@@ -25,7 +25,7 @@ DIAGNOSTICS_JS = ROOT / "data" / "odds" / "props_matching_diagnostics.js"
 MODEL_DIR = ROOT / "models"
 MODEL_REGISTRY = ROOT / "data" / "reports" / "wnba_prop_model_registry.json"
 TARGETS = ("points", "rebounds", "assists")
-ALLOWED_AVAILABILITY = {"expected_active", "confirmed_active", "active"}
+ALLOWED_AVAILABILITY = {"confirmed_active", "active", "confirmed_start", "confirmed_lineup"}
 
 
 def now() -> str:
@@ -48,6 +48,7 @@ def production_model_ready(target: str) -> bool:
         entry.get("target_stat") == target
         and str(entry.get("status") or "").lower() == "production"
         and entry.get("selected") is True
+        and str(entry.get("calibration_status") or "").lower() not in {"", "not evaluated without real sportsbook line outcomes", "not evaluated without real sportsbook lines"}
         for entry in registry.get("models", [])
         if isinstance(entry, dict)
     )

@@ -31,6 +31,7 @@ SHARED_FILES = [
     "data/tracking/model_record.json",
     "data/tracking/prop_prediction_log.json",
     "data/tracking/prop_record.json",
+    "data/reports/strategy_lab.json",
 ]
 REQUIRED_FILES = {
     "data/live/live_heartbeat.json",

@@ -118,6 +118,15 @@ def american_implied(odds: int | float | None) -> float | None:
     return None
 
 
+def no_vig_probabilities(home_odds: int | float | None, away_odds: int | float | None) -> dict[str, float | None]:
+    home = american_implied(home_odds)
+    away = american_implied(away_odds)
+    if home is None or away is None or home + away <= 0:
+        return {"home": None, "away": None, "overround": None}
+    total = home + away
+    return {"home": round(home / total, 6), "away": round(away / total, 6), "overround": round(total - 1, 6)}
+
+
 def summarize_market(bookmakers: list[dict[str, Any]], market_key: str = "h2h") -> dict[str, Any]:
     home_prices: list[float] = []
     away_prices: list[float] = []
@@ -197,6 +206,7 @@ def normalize_event(event: dict[str, Any], sport: str, aliases: dict[str, str], 
     commence = event.get("commence_time")
     game_date = str(commence)[:10] if commence else None
     snapshot_id = f"{sport}:{event.get('id')}:{generated_at}"
+    no_vig = no_vig_probabilities(home_consensus, away_consensus)
     return {
         "snapshot_id": snapshot_id,
         "sport": sport,
@@ -224,6 +234,10 @@ def normalize_event(event: dict[str, Any], sport: str, aliases: dict[str, str], 
         "total_under_price_current": round(mean(total_prices["Under"]), 1) if total_prices["Under"] else None,
         "market_implied_home": american_implied(home_consensus),
         "market_implied_away": american_implied(away_consensus),
+        "no_vig_home": no_vig["home"],
+        "no_vig_away": no_vig["away"],
+        "market_overround": no_vig["overround"],
+        "market_consensus_count": len(home_prices) + len(away_prices),
         "books": books[:8],
         "spread_books": spread_books[:8],
         "source": event.get("_line_lens_source") or "The Odds API",
@@ -333,7 +347,7 @@ def apply_odds_to_predictions(snapshots: list[dict[str, Any]]) -> int:
             odds = odds_row_for_game(game, snapshots)
             if not odds:
                 continue
-            for field in ("moneyline_home_current", "moneyline_away_current", "spread_home_current", "spread_away_current", "spread_home_price_current", "spread_away_price_current", "total_current", "total_over_price_current", "total_under_price_current", "market_implied_home", "market_implied_away"):
+            for field in ("moneyline_home_current", "moneyline_away_current", "spread_home_current", "spread_away_current", "spread_home_price_current", "spread_away_price_current", "total_current", "total_over_price_current", "total_under_price_current", "market_implied_home", "market_implied_away", "no_vig_home", "no_vig_away", "market_overround", "market_consensus_count"):
                 game[field] = odds.get(field)
             game["moneyline_home"] = odds.get("moneyline_home_current")
             game["moneyline_away"] = odds.get("moneyline_away_current")
@@ -442,7 +456,9 @@ def main() -> int:
         "metadata": {
             "app": "LineLens Sports",
             "version": APP_VERSION,
+            "schema_version": "linelens.data.v1",
             "generated_at": generated_at,
+            "fetched_at": generated_at,
             "real_data": bool(snapshots),
             "new_real_data": bool(new_snapshots),
             "provider": config.get("provider"),
@@ -454,6 +470,7 @@ def main() -> int:
             "sports_requested": configured_sports(config),
             "timeout_seconds": config.get("timeout_seconds"),
             "region": config.get("region"),
+            "freshness_sla_seconds": 60 * 60,
             "limits": {
                 "max_events": config.get("max_events"),
                 "max_prop_markets": config.get("max_prop_markets"),

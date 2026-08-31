@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "schema_version": "linelens.strategy.v1",
+    "generated_at": "2026-08-31T15:21:41Z",
+    "status": "ready",
+    "source": "model prediction ledger",
+    "provenance": {
+      "ledger": "data/tracking/model_predictions_log.json",
+      "reproducible": true
+    },
+    "note": "Metrics use logged results only. Missing odds and unscored rows are never inferred."
+  },
+  "models": [
+    {
+      "sport": "MLB",
+      "model": "GradientBoostingClassifier",
+      "sample": 134,
+      "wins": 64,
+      "losses": 70,
+      "pushes": 0,
+      "pending": 2,
+      "win_rate": 0.477612,
+      "brier_score": 0.254459,
+      "log_loss": 0.701911
+    },
+    {
+      "sport": "WNBA",
+      "model": "Entei",
+      "sample": 12,
+      "wins": 9,
+      "losses": 3,
+      "pushes": 0,
+      "pending": 1,
+      "win_rate": 0.75,
+      "brier_score": 0.218353,
+      "log_loss": 0.631328
+    }
+  ],
+  "recent_window": {
+    "sample": 28,
+    "wins": 16,
+    "losses": 12,
+    "pushes": 0,
+    "pending": 2,
+    "win_rate": 0.571429,
+    "brier_score": 0.261762,
+    "log_loss": 0.717261
+  },
+  "previous_window": {
+    "sample": 29,
+    "wins": 16,
+    "losses": 13,
+    "pushes": 0,
+    "pending": 1,
+    "win_rate": 0.551724,
+    "brier_score": 0.259559,
+    "log_loss": 0.715094
+  }
+}
