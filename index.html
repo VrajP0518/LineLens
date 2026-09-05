@@ -40,9 +40,8 @@
                 <i></i>
                 <b></b>
             </div>
-            <p class="app-loading__eyebrow">LineLens Sports</p>
             <h1>LineLens</h1>
-            <p id="app-loading-message">Fetching today’s games and predictions…</p>
+            <p id="app-loading-message">Updating data…</p>
             <div class="app-loading__progress" aria-hidden="true"><span></span></div>
         </div>
     </div>
@@ -78,7 +77,7 @@
                 <section class="nav__section" aria-label="My LineLens" data-nav-group="mine">
                     <button class="nav__section-label nav__section-toggle" type="button" data-nav-toggle="mine" aria-expanded="false"><span>My LineLens</span><span aria-hidden="true">⌄</span></button>
                     <button class="nav__item nav__item--watchlist" data-view="watchlist"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m12 4 2.45 4.96 5.48.8-.94 5.45L12 16.5l-4.91 2.57.94-5.45-.94-5.45 5.48-.8Z" /></svg></span><span>Watchlist</span></button>
-                    <button class="nav__item nav__item--tracking" data-view="tracking"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-tracking.png" alt="" /></span><span>My Tracker</span></button>
+                    <button class="nav__item nav__item--tracking" data-view="tracking"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-tracking.png" alt="" /></span><span>Tracker</span></button>
                 </section>
                 <section class="nav__section" aria-label="Analytics" data-nav-group="analytics">
                     <button class="nav__section-label nav__section-toggle" type="button" data-nav-toggle="analytics" aria-expanded="false"><span>Analytics</span><span aria-hidden="true">⌄</span></button>
@@ -89,26 +88,11 @@
                 <section class="nav__section" aria-label="More" data-nav-group="more">
                     <button class="nav__section-label nav__section-toggle" type="button" data-nav-toggle="more" aria-expanded="false"><span>More</span><span aria-hidden="true">⌄</span></button>
                     <button class="nav__item nav__item--foryou" data-view="foryou"><span class="nav-sport-mark" aria-hidden="true">✦</span><span>For You</span></button>
-                    <button class="nav__item nav__item--history" data-view="history"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 12a8 8 0 1 0 2.35-5.65L4 8.7M4 4v4.7h4.7" /></svg></span><span>Prediction History</span></button>
+                    <button class="nav__item nav__item--history" data-view="history"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 12a8 8 0 1 0 2.35-5.65L4 8.7M4 4v4.7h4.7" /></svg></span><span>History</span></button>
                     <button class="nav__item nav__item--teams" data-view="teams"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-teams.png" alt="" /></span><span>Teams</span></button>
                     <button class="nav__item nav__item--settings" data-view="settings"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-settings.png" alt="" /></span><span>Settings</span></button>
                 </section>
             </nav>
-            <div class="sidebar__product">
-                <section class="nav__section nav__section--utility" aria-label="Product information">
-                    <p class="nav__section-label">Product</p>
-                    <button class="nav__item nav__item--about" data-view="about"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="8.5" /><path d="M12 10.5v5M12 7.5h.01" /></svg></span><span>About</span></button>
-                </section>
-            </div>
-            <div class="sidebar__note">
-                <span class="status-dot"></span>
-                Updates show whether data is live, cached, or unavailable.
-            </div>
-            <button class="ll-sidebar-engine" type="button" data-view-link="settings" aria-label="Open data health settings">
-                <strong>Data health</strong>
-                <span>Live, cached, or unavailable</span>
-                <i aria-hidden="true"></i>
-            </button>
             <div id="sidebar-resizer" class="sidebar-resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0"></div>
         </aside>
 

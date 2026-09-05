@@ -1,6 +1,7 @@
 param(
     [int]$Port = 4175,
-    [string]$OutputDirectory = "artifacts/browser-visual"
+    [string]$OutputDirectory = "artifacts/design-audit",
+    [string]$CaseName = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -20,9 +21,20 @@ if (-not $edge) { throw "Chromium browser was not found; install Edge or Chrome 
 $cases = @(
     @{ Name = "home-desktop"; Query = "dpi-view=home"; Width = 1480; Height = 940 },
     @{ Name = "home-mobile"; Query = "dpi-view=home"; Width = 390; Height = 844 },
+    @{ Name = "picks-desktop"; Query = "dpi-view=picks"; Width = 1480; Height = 940 },
+    @{ Name = "picks-mobile"; Query = "dpi-view=picks"; Width = 390; Height = 844 },
+    @{ Name = "props-desktop"; Query = "dpi-view=props"; Width = 1480; Height = 940 },
     @{ Name = "mlb-calendar-boundary"; Query = "dpi-view=mlb&audit-date=2026-08-30"; Width = 1480; Height = 940 },
-    @{ Name = "settings-mobile"; Query = "dpi-view=settings"; Width = 390; Height = 844 }
+    @{ Name = "models-desktop"; Query = "dpi-view=models"; Width = 1480; Height = 940 },
+    @{ Name = "performance-desktop"; Query = "dpi-view=record"; Width = 1480; Height = 940 },
+    @{ Name = "settings-desktop"; Query = "dpi-view=settings"; Width = 1480; Height = 940 },
+    @{ Name = "settings-mobile"; Query = "dpi-view=settings"; Width = 390; Height = 844 },
+    @{ Name = "gamecast-desktop"; Query = "dpi-view=home&dpi-gamecast=MLB&dpi-live-fixture=1"; Width = 1480; Height = 940 }
 )
+if ($CaseName) {
+    $cases = @($cases | Where-Object { $_.Name -eq $CaseName })
+    if (-not $cases.Count) { throw "Unknown visual audit case: $CaseName" }
+}
 
 $server = Start-Process -FilePath "python" -ArgumentList @("-m", "http.server", $Port, "--directory", (Join-Path $repoRoot "dist-web")) -WindowStyle Hidden -PassThru
 try {
@@ -42,7 +54,7 @@ try {
     foreach ($case in $cases) {
         $screenshot = Join-Path $outputRoot "$($case.Name).png"
         $profile = Join-Path $env:TEMP "linelens-visual-$($case.Name)-$PID"
-        $url = "$baseUrl&$($case.Query)"
+        $url = "$baseUrl&$($case.Query)&audit-width=$($case.Width)"
         $arguments = @(
             "--headless=new",
             "--disable-gpu",
@@ -62,6 +74,7 @@ try {
         if (-not (Test-Path -LiteralPath $screenshot)) { throw "Edge failed to render $($case.Name)." }
         if ((Get-Item -LiteralPath $screenshot).Length -lt 10000) { throw "$($case.Name) screenshot is unexpectedly small." }
         $domPath = Join-Path $outputRoot "$($case.Name).html"
+        $profileDom = Join-Path $env:TEMP "linelens-visual-dom-$($case.Name)-$PID"
         $domArguments = @(
             "--headless=new",
             "--disable-gpu",
@@ -69,7 +82,7 @@ try {
             "--disable-background-networking",
             "--no-first-run",
             "--virtual-time-budget=3000",
-            "--user-data-dir=$profile-dom",
+            "--user-data-dir=$profileDom",
             "--window-size=$($case.Width),$($case.Height)",
             "--dump-dom",
             $url
@@ -87,6 +100,9 @@ try {
         }
         $dom = Get-Content -LiteralPath $domPath -Raw
         if ($dom -match 'data-audit-overflow="fail"') { throw "$($case.Name) has horizontal document overflow." }
+        if ($dom -match 'data-audit-element-overflow="fail"') { throw "$($case.Name) has clipped text or component content." }
+        if ($dom -match 'data-audit-viewport-overflow="fail"') { throw "$($case.Name) has content outside the viewport." }
+        if ($case.Name -like "gamecast-*" -and $dom -notmatch 'data-audit-gamecast="pass"') { throw "$($case.Name) did not render an in-bounds GameCast drawer." }
         Write-Host "Rendered $screenshot"
     }
 } finally {

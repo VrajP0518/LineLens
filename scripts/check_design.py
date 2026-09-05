@@ -130,17 +130,29 @@ def main() -> int:
         and (ROOT / "src" / "ui" / "view_policies.js").exists(),
         "frontend view-policy extraction seam is missing",
     )
-    require("renderHomeDecisionRadar" in app and ".decision-radar__lane" in css, "decision-first Home radar is missing")
     require(
-        "Today’s best opportunities" in app
-        and "Prediction History" in html
-        and "My Tracker" in html
+        "home-focus-layout" in app
+        and "renderHomeFocusLive" in app
+        and "renderHomeModelPulse" in app,
+        "focused Home pick, live, watchlist, or performance layout is missing",
+    )
+    require(
+        "No picks for today" in app
+        and ">History<" in html
+        and ">Tracker<" in html
         and "Scores only" in html
-        and "Data health" in html,
+        and ">Settings<" in html,
         "first-time navigation and Home positioning are not clear enough",
     )
     require(
-        "Model edge is the difference between LineLens’ picked probability" in app
+        "settings-disclosure" in app
+        and "picks-page-header" in app
+        and "Data status" in app
+        and "Product design audit" in css,
+        "restrained settings, picks, data-status, or visual-language pass is missing",
+    )
+    require(
+        "Difference between the model probability and the latest matched market price." in app
         and "marketProbabilityForPick" in app
         and "pick-freshness" in app,
         "prediction cards do not separate model probability, market probability, edge, and freshness",
@@ -172,7 +184,8 @@ def main() -> int:
     )
     require(
         "renderGameCastLiveCommand" in app
-        and "Design fixture · not live data" in app
+        and "Design fixture" in app
+        and "not live data" in app
         and "Latest play unavailable from the feed" in app
         and ".gamecast-live-command" in css
         and ".mlb-base-state__label" in css,

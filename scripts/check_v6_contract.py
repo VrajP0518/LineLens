@@ -159,8 +159,9 @@ def main() -> int:
     )
     require(
         "renderDataOperationsMap" in app
-        and "Three clocks, three separate jobs" in app
-        and "Live game state does not wait for model retraining" in app,
+        and "Update schedule" in app
+        and "Live scores, shared data, and model training run on separate schedules." in app
+        and "Live scores continue independently of data publishing and model training." in app,
         "live-score, shared-data, and retraining cadences are not clearly separated in the product",
     )
     require(

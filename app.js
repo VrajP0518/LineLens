@@ -858,7 +858,7 @@ function setAppLoading(message, detail = "", progress = 24) {
     root.classList.add("is-visible");
     root.style.setProperty("--loading-progress", `${Math.max(8, Math.min(96, progress))}%`);
     const messageEl = $("#app-loading-message");
-    if (messageEl) messageEl.textContent = message || "Fetching today’s games and predictions…";
+    if (messageEl) messageEl.textContent = message || "Updating data…";
     const detailEl = $(".app-loading__eyebrow");
     if (detailEl && detail) detailEl.textContent = `LineLens / ${detail}`;
 }
@@ -1886,7 +1886,7 @@ function renderTrustCenter(compact = false) {
     const current = domains.filter(domain => domain.state === "current").length;
     const attention = domains.length - current;
     const body = domains.map(domain => `<article class="trust-domain" data-variant="${healthTone(domain.status)}"><div class="trust-domain__top"><span class="status-dot" aria-hidden="true"></span><strong>${escapeHtml(domain.label)}</strong><span class="chip chip--soft">${escapeHtml(domain.status)}</span></div><small>${escapeHtml(domain.source || "Source unavailable")}</small><p>${escapeHtml(domain.detail || "No detail available")}</p><time>${escapeHtml(timestamp(domain.generatedAt) || "Timestamp unavailable")}</time></article>`).join("");
-    return `<section class="panel trust-center ${compact ? "trust-center--compact" : ""}" aria-labelledby="trust-center-title"><header class="section-header"><div><p class="eyebrow">Data trust center</p><h2 id="trust-center-title">Know what LineLens knows</h2><p class="muted">Every decision is labeled with source, freshness, and fallback state. Keys remain outside exported data.</p></div><div class="trust-center__summary"><strong>${current}/${domains.length}</strong><span>${attention ? `${attention} need attention` : "All feeds current"}</span></div></header><div class="trust-domain-grid">${body}</div>${compact ? `<div class="report-actions"><button class="btn btn--micro" type="button" data-view-link="settings">Open full Trust Center</button></div>` : `<div class="trust-center__footer"><span>Retry ${state.liveRefresh.retryCount ? `attempt ${state.liveRefresh.retryCount + 1}` : "ready"} · ${escapeHtml(state.liveRefresh.lastError || "No live retry error")}</span><div class="report-actions"><button class="btn btn--primary" type="button" data-live-heartbeat-now>Retry live feeds</button><button class="btn" type="button" data-sync-shared-data ${state.sharedDataRuntime.active || !isTauriRefreshAvailable() ? "disabled" : ""}>Check signed data channel</button><button class="btn" type="button" data-run-diagnostics>Run diagnostics</button></div></div>`}</section>`;
+    return `<section class="panel trust-center ${compact ? "trust-center--compact" : ""}" aria-labelledby="trust-center-title"><header class="section-header"><div><h2 id="trust-center-title">Data status</h2><p class="muted">Last update and source for each feed.</p></div><div class="trust-center__summary"><strong>${current}/${domains.length}</strong><span>${attention ? `${attention} need attention` : "Up to date"}</span></div></header><div class="trust-domain-grid">${body}</div>${compact ? `<div class="report-actions"><button class="btn btn--micro" type="button" data-view-link="settings">View data status</button></div>` : `<div class="trust-center__footer">${state.liveRefresh.lastError ? `<span>${escapeHtml(state.liveRefresh.lastError)}</span>` : ""}<div class="report-actions"><button class="btn btn--primary" type="button" data-live-heartbeat-now>Refresh scores</button><button class="btn" type="button" data-sync-shared-data ${state.sharedDataRuntime.active || !isTauriRefreshAvailable() ? "disabled" : ""}>Check for updates</button><button class="btn" type="button" data-run-diagnostics>Diagnostics</button></div></div>`}</section>`;
 }
 
 function isCurrentAttentionGame(game) {
@@ -4375,7 +4375,7 @@ function renderHomeReadoutV2(rows) {
     return `
         <article class="panel home-readout-v2">
             <header class="section-header">
-                <div><p class="eyebrow">Model Readout</p><h2>Signal board</h2></div>
+                <div><h2>Models and records</h2></div>
                 <span class="chip">${escapeHtml(oddsStatusLabel())}</span>
             </header>
             <div class="readout-grid-v2">
@@ -4428,11 +4428,11 @@ function homeDecisionRadarSignals() {
         },
         {
             key: "edge",
-            label: "Strongest signal",
+            label: "Top model pick",
             tone: "edge",
             game: strongest?.game || null,
-            primary: strongest ? `${strongest.pick} · ${formatEdge(strongest.edge)}` : "No ranked signal",
-            secondary: strongest ? `${formatConfidencePercent(strongest.game, strongest.game.sport)} · model separation` : "A current model probability is required.",
+            primary: strongest ? `${strongest.pick} · ${formatEdge(strongest.edge)}` : "No model pick",
+            secondary: strongest ? `${formatConfidencePercent(strongest.game, strongest.game.sport)} model probability` : "A current model probability is required.",
         },
         {
             key: "split",
@@ -4461,9 +4461,8 @@ function renderHomeDecisionRadar() {
         <section class="panel decision-radar" aria-labelledby="decision-radar-title">
             <header class="decision-radar__header">
                 <div>
-                    <p class="eyebrow">Decision radar</p>
-                    <h2 id="decision-radar-title">What deserves attention now</h2>
-                    <p>Four distinct reads from loaded scores, models, consensus, and real joined odds.</p>
+                    <h2 id="decision-radar-title">Current games and picks</h2>
+                    <p>Based on loaded scores, model predictions, and matched odds.</p>
                 </div>
                 <div class="decision-radar__status"><strong>${active}/4 active</strong><span>${freshness ? `Live checked ${timestamp(freshness)}` : "Live feed not loaded"}</span></div>
             </header>
@@ -4508,8 +4507,8 @@ function renderSignalBoard() {
     return `
         <section class="panel signal-board">
             <header class="section-header">
-                <div><p class="eyebrow">Signal Board</p><h2>Highest-conviction board reads</h2><p class="muted">Ranked from loaded model probabilities. Market edge appears only when real odds snapshots join.</p></div>
-                <span class="chip chip--soft">${rows.length} signals</span>
+                <div><h2>Model picks</h2><p class="muted">Ranked by model probability. Market edge appears only when matched odds are available.</p></div>
+                <span class="chip chip--soft">${rows.length} picks</span>
             </header>
             ${rows.length ? `<div class="signal-board__list">${rows.map(({ game, pick, pickedProbability, movement }) => {
                 const quality = featureQualityForGame(game);
@@ -4519,9 +4518,9 @@ function renderSignalBoard() {
                     <div><span>Pick probability</span><strong>${formatProbability(pickedProbability)}</strong></div>
                     <div><span>Market edge</span><strong>${marketEdge === null ? "Unavailable" : formatEdge(marketEdge)}</strong><small>${marketEdge === null ? "No joined odds" : escapeHtml(movement.freshness)}</small></div>
                     <div><span>Data read</span><strong>${escapeHtml(game.sport === "MLB" ? compactQualityValue(quality.pitcher) : "export")}</strong><small>${escapeHtml(game.model_name || "model")}</small></div>
-                    <div class="signal-row__actions"><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport)}" data-game-id="${escapeHtml(gameKey(game))}">GameCast</button>${renderWatchButton(game, "Watch signal")}</div>
+                    <div class="signal-row__actions"><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport)}" data-game-id="${escapeHtml(gameKey(game))}">GameCast</button>${renderWatchButton(game, "Watch game")}</div>
                 </article>`;
-            }).join("")}</div>` : emptyState("No model signals loaded", "Load a real MLB or NFL prediction export to populate the signal board.")}
+            }).join("")}</div>` : emptyState("No model picks loaded", "Load an MLB or NFL prediction export to see model picks.")}
         </section>
     `;
 }
@@ -4537,7 +4536,7 @@ function renderQuickActionsV2() {
             <button class="btn" data-view-link="nfl">Open NFL</button>
             <button class="btn" data-view-link="reports">Reports</button>
             <button class="btn" data-view-link="record">Performance</button>
-            <button class="btn" data-view-link="settings">Data health</button>
+            <button class="btn" data-view-link="settings">Data status</button>
         </div>
     `;
 }
@@ -5105,11 +5104,9 @@ function renderPickCard(game) {
     const movement = lineMovementSummary(game, sport);
     const marketProbability = marketProbabilityForPick(game, sport, movement);
     const marketEdge = safeNumber(movement.marketEdge);
-    const modelSeparation = getGameEdge(game, sport);
-    const strength = modelStrengthLabel(game, sport);
     const sourcePayload = sport === "MLB" ? state.mlb.payload : sport === "WNBA" ? state.wnba.payload : state.nfl.payload;
     const sourceStamp = game.generated_at || game.prediction_at || normalizeMeta(sourcePayload).generated_at;
-    return `<article class="universal-pick-card" data-variant="${status}"><header><span class="sport-pill sport-pill--${sport.toLowerCase()}">${sport}</span><span class="lifecycle-status lifecycle-status--${status}">${status}</span><span class="universal-pick-card__time">${escapeHtml(getGameTimeLabel(game))}</span></header><div class="universal-pick-card__teams"><div>${renderTeamLogo(sport, game.away, "lg", game.away_display)}<strong>${escapeHtml(game.away_display || game.away)}</strong></div><span>@</span><div>${renderTeamLogo(sport, game.home, "lg", game.home_display)}<strong>${escapeHtml(game.home_display || game.home)}</strong></div></div><div class="universal-pick-card__signal"><span>LineLens pick</span><strong>${escapeHtml(pick)}</strong><b>${formatProbability(pickProbability)}</b><small>Model probability</small></div><div class="universal-pick-card__meta"><span><small>Market implied</small><strong>${marketProbability === null ? "Unavailable" : formatProbability(marketProbability)}</strong></span><span title="Model edge is the difference between LineLens’ picked probability and the market-implied probability."><small>Model edge <i class="help-icon" aria-hidden="true">?</i></small><strong>${marketEdge === null ? "Unavailable" : formatEdge(marketEdge)}</strong></span><span title="Model strength summarizes agreement and data quality; it is not a second probability."><small>Model strength <i class="help-icon" aria-hidden="true">?</i></small><strong>${escapeHtml(strength)}</strong></span></div><footer><span>${resultChip(accountabilityLabel(game))}</span><div class="report-actions"><span class="chip chip--soft" title="Model separation is the distance of the picked probability from 50%">${formatEdge(modelSeparation)} separation</span><small class="pick-freshness" title="When this prediction export was generated">Prediction ${escapeHtml(timestamp(sourceStamp) || "timestamp unavailable")}</small>${renderWatchButton(game, "Watch pick")}<button class="btn btn--micro" type="button" data-picks-open="${escapeHtml(gameKey(game))}" data-picks-sport="${sport}">Why this pick</button></div></footer></article>`;
+    return `<article class="universal-pick-card" data-variant="${status}"><header><span class="pick-sport">${sport}</span>${["live", "final", "postponed"].includes(status) ? `<span class="lifecycle-status lifecycle-status--${status}">${status}</span>` : ""}<span class="universal-pick-card__time">${escapeHtml(getGameTimeLabel(game))}</span></header><div class="universal-pick-card__teams"><div>${renderTeamLogo(sport, game.away, "lg", game.away_display)}<strong>${escapeHtml(game.away_display || game.away)}</strong></div><span>@</span><div>${renderTeamLogo(sport, game.home, "lg", game.home_display)}<strong>${escapeHtml(game.home_display || game.home)}</strong></div></div><div class="universal-pick-card__signal"><span>Pick</span><strong>${escapeHtml(pick)}</strong><b>${formatProbability(pickProbability)}</b><small>model probability</small></div><div class="universal-pick-card__meta"><span><small>Market</small><strong>${marketProbability === null ? "Unavailable" : formatProbability(marketProbability)}</strong></span><span title="Difference between the model probability and the latest matched market price."><small>Edge</small><strong>${marketEdge === null ? "Unavailable" : formatEdge(marketEdge)}</strong></span></div><footer><span>${resultChip(accountabilityLabel(game))}</span><div class="report-actions"><small class="pick-freshness">Updated ${escapeHtml(timestamp(sourceStamp) || "time unavailable")}</small>${renderWatchButton(game, "Watch pick")}<button class="btn btn--micro" type="button" data-picks-open="${escapeHtml(gameKey(game))}" data-picks-sport="${sport}">Details</button></div></footer></article>`;
 }
 
 function picksBriefText(rows) {
@@ -5134,9 +5131,8 @@ function renderPicks() {
     const allRows = universalPickRows();
     const rows = filteredPicksRows();
     const date = ensurePicksDate(allRows);
-    const best = picksSortedRows(allRows.filter(game => gameIsoDate(game) === date)).slice(0, 3);
     const todayCount = allRows.filter(game => gameIsoDate(game) === localDateIso()).length;
-    $("#view-picks").innerHTML = `<section class="picks-shell"><section class="panel picks-hero"><div><p class="eyebrow">Multi-sport model intelligence</p><h2>Universal Picks Hub</h2><p class="muted">One daily feed for real MLB and WNBA model predictions. No prediction is shown unless the bundled export contains it.</p></div><div class="report-actions"><button class="btn btn--primary" type="button" data-copy-picks-brief>Copy Daily Brief</button><span class="chip chip--soft">${todayCount} today</span></div></section><section class="panel picks-best"><header class="section-header"><div><p class="eyebrow">Today's Best Picks</p><h2>Highest-conviction real signals</h2></div><span class="muted">${escapeHtml(date ? formatDate(date) : "No date loaded")}</span></header><div class="picks-best-grid">${best.length ? best.map(renderPickCard).join("") : emptyState("No current predictions", "Refresh MLB or WNBA exports to populate this section.")}</div></section>${renderPicksFilters(allRows)}<section class="picks-results"><header class="section-header"><div><p class="eyebrow">Prediction feed</p><h2>${rows.length} picks in view</h2></div><span class="muted">Live and final states join when available</span></header><div class="universal-picks-grid">${rows.length ? rows.map(renderPickCard).join("") : emptyState("No picks match these filters", "Try another date, sport, confidence, or model filter.")}</div></section></section>`;
+    $("#view-picks").innerHTML = `<section class="picks-shell"><section class="picks-page-header"><div><h2>Picks</h2><p>${escapeHtml(date ? formatDate(date) : "No date loaded")}</p></div><div class="report-actions"><span class="home-pick-count">${todayCount} today</span><button class="btn" type="button" data-copy-picks-brief>Copy summary</button></div></section>${renderPicksFilters(allRows)}<section class="picks-results"><header class="section-header"><h2>${rows.length} ${rows.length === 1 ? "pick" : "picks"}</h2></header><div class="universal-picks-grid">${rows.length ? rows.map(renderPickCard).join("") : emptyState("No matching picks", "Try another date or filter.")}</div></section></section>`;
 }
 
 function renderModelTrustCenterCompact() {
@@ -5208,14 +5204,14 @@ function renderHomeLegacy() {
     `;
 }
 
-function homeFocusPickCard(row, label = "Top pick") {
-    if (!row?.game) return emptyState("No model pick loaded", "Refresh the current board to populate this section.");
+function homeFocusPickCard(row) {
+    if (!row?.game) return emptyState("No pick available", "Refresh the current board.");
     const game = row.game;
     const sport = game.sport || "MLB";
     const probability = row.probability === null ? null : (getGamePick(game, sport) === game.home ? row.probability : 1 - row.probability);
     const movement = lineMovementSummary(game, sport);
     const marketProbability = marketProbabilityForPick(game, sport, movement);
-    return `<article class="home-focus-pick"><header><span class="eyebrow">${escapeHtml(label)}</span><span class="sport-pill sport-pill--${sport.toLowerCase()}">${escapeHtml(sport)}</span></header><div class="home-focus-pick__teams"><strong>${escapeHtml(game.away_display || game.away)} @ ${escapeHtml(game.home_display || game.home)}</strong><span>${escapeHtml(getGameTimeLabel(game))}</span></div><div class="home-focus-pick__readout"><div><small>LineLens pick</small><strong>${escapeHtml(row.pick)}</strong></div><div><small>Model</small><strong>${formatProbability(probability)}</strong></div><div><small>Market</small><strong>${marketProbability === null ? "Unavailable" : formatProbability(marketProbability)}</strong></div><div><small>Edge</small><strong>${movement.marketEdge === null ? "Unavailable" : formatEdge(movement.marketEdge)}</strong></div></div><p class="home-focus-pick__why"><span>Why</span>${escapeHtml(bestPickFactors(game).slice(0, 2).join(" · ") || "Model signal")}</p><footer><button class="btn btn--micro btn--primary" type="button" data-open-gamecast="${escapeHtml(sport)}" data-game-id="${escapeHtml(gameKey(game))}">View analysis</button>${renderWatchButton(game, "Watch pick")}</footer></article>`;
+    return `<article class="home-focus-pick"><header><span class="home-focus-pick__sport">${escapeHtml(sport)}</span><time>${escapeHtml(getGameTimeLabel(game))}</time></header><div class="home-focus-pick__teams"><strong>${escapeHtml(game.away_display || game.away)} @ ${escapeHtml(game.home_display || game.home)}</strong></div><div class="home-focus-pick__readout"><div><small>Pick</small><strong>${escapeHtml(row.pick)}</strong></div><div><small>Model</small><strong>${formatProbability(probability)}</strong></div><div><small>Market</small><strong>${marketProbability === null ? "Unavailable" : formatProbability(marketProbability)}</strong></div><div><small>Edge</small><strong>${movement.marketEdge === null ? "Unavailable" : formatEdge(movement.marketEdge)}</strong></div></div><p class="home-focus-pick__why"><span>Key factors</span>${escapeHtml(bestPickFactors(game).slice(0, 2).join(" · ") || "No factor summary available")}</p><footer><button class="btn btn--micro btn--primary" type="button" data-open-gamecast="${escapeHtml(sport)}" data-game-id="${escapeHtml(gameKey(game))}">Details</button>${renderWatchButton(game, "Watch pick")}</footer></article>`;
 }
 
 function homeFocusLiveRows() {
@@ -5233,12 +5229,12 @@ function homeFocusWatchingRows() {
 
 function renderHomeFocusLive() {
     const rows = homeFocusLiveRows();
-    return `<section class="panel home-focus-panel"><header class="section-header"><div><p class="eyebrow">Live</p><h2>Games happening now</h2></div><span class="chip chip--soft">${rows.length} live</span></header>${rows.length ? `<div class="home-focus-live-list">${rows.map(game => `<article><div><span class="lifecycle-status lifecycle-status--live">LIVE</span><strong>${escapeHtml(game.away || "Away")} ${escapeHtml(String(game.away_score ?? "–"))} @ ${escapeHtml(game.home || "Home")} ${escapeHtml(String(game.home_score ?? "–"))}</strong><small>${escapeHtml(game.status_detail || game.inning_state || "Live feed")}</small></div><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport || "MLB")}" data-game-id="${escapeHtml(gameKey(game))}">GameCast</button></article>`).join("")}</div>` : emptyState("No live games loaded", "Live rows appear here when the official scoreboard feed reports an active game.")}</section>`;
+    return `<section class="panel home-focus-panel"><header class="section-header"><h2>Live games</h2></header>${rows.length ? `<div class="home-focus-live-list">${rows.map(game => `<article><div><span class="lifecycle-status lifecycle-status--live">LIVE</span><strong>${escapeHtml(game.away || "Away")} ${escapeHtml(String(game.away_score ?? "–"))} @ ${escapeHtml(game.home || "Home")} ${escapeHtml(String(game.home_score ?? "–"))}</strong><small>${escapeHtml(game.status_detail || game.inning_state || "Live")}</small></div><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport || "MLB")}" data-game-id="${escapeHtml(gameKey(game))}">Open</button></article>`).join("")}</div>` : emptyState("No live games", "Scores will appear when a game starts.")}</section>`;
 }
 
 function renderHomeFocusWatching() {
     const rows = homeFocusWatchingRows();
-    return `<section class="panel home-focus-panel"><header class="section-header"><div><p class="eyebrow">Watching</p><h2>Your follow list</h2></div><button class="btn btn--micro" type="button" data-view-link="watchlist">Open Watchlist</button></header>${rows.length ? `<div class="home-focus-watch-list">${rows.map(game => `<article><span>${escapeHtml(game.sport || "MLB")}</span><strong>${escapeHtml(game.away || "Away")} @ ${escapeHtml(game.home || "Home")}</strong><small>${escapeHtml(getGamePick(game, game.sport || "MLB"))} · ${escapeHtml(modelResultLabel(game))}</small><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport || "MLB")}" data-game-id="${escapeHtml(gameKey(game))}">Open</button></article>`).join("")}</div>` : emptyState("Nothing watched yet", "Star a team or matchup and it will appear here.")}</section>`;
+    return `<section class="panel home-focus-panel"><header class="section-header"><h2>Watchlist</h2><button class="btn btn--micro" type="button" data-view-link="watchlist">View all</button></header>${rows.length ? `<div class="home-focus-watch-list">${rows.map(game => `<article><span>${escapeHtml(game.sport || "MLB")}</span><strong>${escapeHtml(game.away || "Away")} @ ${escapeHtml(game.home || "Home")}</strong><small>${escapeHtml(getGamePick(game, game.sport || "MLB"))} · ${escapeHtml(modelResultLabel(game))}</small><button class="btn btn--micro" type="button" data-open-gamecast="${escapeHtml(game.sport || "MLB")}" data-game-id="${escapeHtml(gameKey(game))}">Open</button></article>`).join("")}</div>` : emptyState("Watchlist is empty", "Star a team or matchup to add it here.")}</section>`;
 }
 
 function renderHomeModelPulse() {
@@ -5246,7 +5242,8 @@ function renderHomeModelPulse() {
     const recent = getLogEntries().filter(row => String(row.game_date || row.generated_at || "").slice(0, 10) >= cutoff);
     const record = summarizeRecordRows(recent);
     const decided = record.wins + record.losses + record.pushes;
-    return `<section class="panel home-focus-panel home-model-pulse"><header class="section-header"><div><p class="eyebrow">Model pulse</p><h2>Last 30 days</h2></div><span class="chip ${decided ? "chip--success" : "chip--soft"}">${decided ? `${((record.wins / Math.max(1, record.wins + record.losses)) * 100).toFixed(1)}% wins` : "Awaiting results"}</span></header><div class="home-pulse-grid"><div><strong>${escapeHtml(recordSummaryCopy(record))}</strong><small>scored model rows</small></div><div><strong>${record.pending}</strong><small>pending</small></div><div><strong>${escapeHtml(selectedModelEntry("MLB")?.model_name || "Not declared")}</strong><small>MLB production model</small></div></div><p class="muted">Performance uses logged results only; unavailable rows stay out of the record.</p><button class="btn btn--micro" type="button" data-view-link="record">View performance</button></section>`;
+    const winRate = decided ? `${((record.wins / Math.max(1, record.wins + record.losses)) * 100).toFixed(1)}%` : "–";
+    return `<section class="panel home-focus-panel home-model-pulse"><header class="section-header"><h2>Last 30 days</h2><button class="btn btn--micro" type="button" data-view-link="record">Performance</button></header><div class="home-pulse-grid"><div><strong>${escapeHtml(recordSummaryCopy(record))}</strong><small>record</small></div><div><strong>${winRate}</strong><small>win rate</small></div><div><strong>${record.pending}</strong><small>pending</small></div></div></section>`;
 }
 
 function renderHome() {
@@ -5257,7 +5254,7 @@ function renderHome() {
     const totalPicks = universalPickRows().filter(game => gameIsoDate(game) === localDateIso()).length;
     const nflLatest = latestNflSeason();
     const nflAvailableLatest = nflSeasons()[0];
-    $("#view-home").innerHTML = `<section class="home-focus-shell"><header class="home-focus-header"><div><p class="eyebrow">Today</p><h2>${escapeHtml(today)}</h2><p class="muted">The strongest available signals, live action, and the teams you follow.</p></div><div class="report-actions"><span class="chip chip--soft">${totalPicks} predictions</span><button class="btn btn--primary" type="button" data-view-link="picks">View all picks</button></div></header>${renderTrustCenter(true)}<section class="panel decision-inbox"><header class="section-header"><div><p class="eyebrow">Decision inbox</p><h2>What deserves your attention</h2><p class="muted">Personal priorities are computed locally from your followed teams, live state, and verified model edges.</p></div><div class="report-actions"><span class="chip chip--soft">${window.LineLensSprint5 ? window.LineLensSprint5.getAlerts().filter(alert => !alert.read).length : 0} unread</span><button class="btn btn--micro" type="button" data-view-link="notifications">Open alerts</button></div></header><div class="decision-inbox__grid">${best ? `<article><span class="eyebrow">Best available edge</span><strong>${escapeHtml(getGamePick(best.game, best.game.sport || "MLB"))}</strong><p>${escapeHtml(best.game.away || "Away")} @ ${escapeHtml(best.game.home || "Home")} · ${escapeHtml(formatEdge(best.edge))}</p><button class="btn btn--micro" data-open-gamecast="${escapeHtml(best.game.sport || "MLB")}" data-game-id="${escapeHtml(gameKey(best.game))}">Open analysis</button></article>` : `<article><strong>No verified edge yet</strong><p>LineLens will surface a decision when current model and market inputs agree.</p></article>`}${state.live.games.filter(isLiveSportGame).slice(0, 1).map(game => `<article><span class="eyebrow">Live now</span><strong>${escapeHtml(game.away || "Away")} @ ${escapeHtml(game.home || "Home")}</strong><p>${escapeHtml(gameStatusLine(game))}</p><button class="btn btn--micro" data-open-gamecast="${escapeHtml(game.sport || "MLB")}" data-game-id="${escapeHtml(gameKey(game))}">Open GameCast</button></article>`).join("") || `<article><span class="eyebrow">Live now</span><strong>No verified live games</strong><p>${escapeHtml(liveFreshnessLabel())}. Cached schedules remain labeled.</p></article>`}</div></section><section class="home-focus-layout"><div class="home-focus-main">${best ? homeFocusPickCard(best, "Best edge") : emptyState("No top edge available", "Load a current prediction export to populate Home.")}${picks.length ? `<section class="panel home-focus-panel"><header class="section-header"><div><p class="eyebrow">Top picks</p><h2>Decisions worth your attention</h2></div><button class="btn btn--micro" type="button" data-view-link="picks">See all</button></header><div class="home-focus-picks">${picks.map((row, index) => homeFocusPickCard(row, `Top pick ${index + 2}`)).join("")}</div></section>` : ""}</div><div class="home-focus-side">${renderHomeFocusLive()}${renderHomeFocusWatching()}${renderHomeModelPulse()}</div></section>${nflAvailableLatest && nflLatest && nflAvailableLatest !== nflLatest ? `<div class="home-source-strip" data-variant="warning"><strong>NFL source note</strong><span>${nflAvailableLatest} currently has only a verified postseason supplement; Home defaults to the latest complete model season, ${nflLatest}.</span><button class="btn btn--micro" data-view-link="nfl">Inspect NFL</button></div>` : ""}</section>`;
+    $("#view-home").innerHTML = `<section class="home-focus-shell"><header class="home-focus-header"><div><p class="eyebrow">Today</p><h2>${escapeHtml(today)}</h2></div><div class="report-actions"><span class="home-pick-count">${totalPicks} picks</span><button class="btn btn--primary" type="button" data-view-link="picks">All picks</button></div></header><section class="home-focus-layout"><div class="home-focus-main">${best ? homeFocusPickCard(best) : emptyState("No picks for today", "Refresh data or choose another date in Picks.")}${picks.length ? `<section class="panel home-focus-panel"><header class="section-header"><h2>More picks</h2><button class="btn btn--micro" type="button" data-view-link="picks">View all</button></header><div class="home-focus-picks">${picks.map(row => homeFocusPickCard(row)).join("")}</div></section>` : ""}</div><div class="home-focus-side">${renderHomeFocusLive()}${renderHomeFocusWatching()}${renderHomeModelPulse()}</div></section>${nflAvailableLatest && nflLatest && nflAvailableLatest !== nflLatest ? `<div class="home-source-strip" data-variant="warning"><strong>NFL data</strong><span>${nflAvailableLatest} has only a postseason supplement. Showing ${nflLatest}, the latest complete model season.</span><button class="btn btn--micro" data-view-link="nfl">Open NFL</button></div>` : ""}</section>`;
 }
 
 function statusTone(status) {
@@ -7503,9 +7500,9 @@ function renderGameDetailHero(game, sport, live) {
     const pickedProbability = probability === null ? null : pick === game.home ? probability : 1 - probability;
     const movement = lineMovementSummary(game, sport);
     const marketProbability = marketProbabilityForPick(game, sport, movement);
-    const stage = isFinalSportGame(live || game) ? "Postgame review" : isLiveSportGame(live || game) ? "Live GameCast" : "Pregame decision";
+    const stage = isFinalSportGame(live || game) ? "Final" : isLiveSportGame(live || game) ? "Live" : "Pregame";
     const edgeLabel = movement.marketEdge === null ? "Edge unavailable" : formatEdge(movement.marketEdge);
-    return `<section class="game-detail-hero" aria-label="Matchup decision summary"><div class="game-detail-hero__intro"><p class="eyebrow">${escapeHtml(stage)}</p><h3>${escapeHtml(pick === "-" ? "No model pick exported" : `${pick} is the current model lean`)}</h3><p>One matchup surface for the decision, the live state, and the postgame result. Source freshness stays visible below.</p></div><div class="game-detail-hero__readout"><div><span>Pick</span><strong>${escapeHtml(pick)}</strong><small>${escapeHtml(game.model_name || `${sport} model`)}</small></div><div><span>Model probability</span><strong>${formatProbability(pickedProbability)}</strong><small>Picked side</small></div><div><span>Market implied</span><strong>${marketProbability === null ? "Unavailable" : formatProbability(marketProbability)}</strong><small>Real matched odds</small></div><div><span>Model edge</span><strong>${escapeHtml(edgeLabel)}</strong><small>${escapeHtml(movement.freshness || "Market comparison")}</small></div></div></section>`;
+    return `<section class="game-detail-hero" aria-label="Matchup summary"><div class="game-detail-hero__intro"><p class="eyebrow">${escapeHtml(stage)}</p><h3>${escapeHtml(pick === "-" ? "No model pick exported" : `${pick} is the current model pick`)}</h3><p>Current prediction, market comparison, and live result.</p></div><div class="game-detail-hero__readout"><div><span>Pick</span><strong>${escapeHtml(pick)}</strong><small>${escapeHtml(game.model_name || `${sport} model`)}</small></div><div><span>Model probability</span><strong>${formatProbability(pickedProbability)}</strong><small>Picked side</small></div><div><span>Market implied</span><strong>${marketProbability === null ? "Unavailable" : formatProbability(marketProbability)}</strong><small>Matched odds</small></div><div><span>Model edge</span><strong>${escapeHtml(edgeLabel)}</strong><small>${escapeHtml(movement.freshness || "Market comparison")}</small></div></div></section>`;
 }
 
 function renderGameCast(game, sport) {
@@ -7519,10 +7516,10 @@ function renderGameCast(game, sport) {
     const statSections = gameActive ? `${renderGameCastBoxScore(game, live)}${renderGameCastPlayerStats(game, live)}` : renderPregameStatAvailability();
     return `
         <div class="gamecast-backdrop" data-close-gamecast></div>
-        <aside class="gamecast-drawer" role="dialog" aria-modal="true" aria-label="LineLens Game Detail">
+        <aside class="gamecast-drawer" role="dialog" aria-modal="true" aria-label="Game details">
             <header class="gamecast-header">
                 <div>
-                    <p class="eyebrow">LineLens Game Detail</p>
+                    <p class="eyebrow">Game details</p>
                     <h2>${escapeHtml(game.away || "Away")} @ ${escapeHtml(game.home || "Home")}</h2>
                 </div>
                 <div class="gamecast-actions">
@@ -7935,7 +7932,7 @@ function formatSeasonSpan(seasons) {
 
 function renderOperationalModelPassport() {
     const production = selectedModelEntry("MLB");
-    if (!production) return `<section class="panel model-passport model-passport--empty">${emptyState("No MLB production passport", "Train and select a real registry model before LineLens declares a production identity.")}</section>`;
+    if (!production) return `<section class="panel model-passport model-passport--empty">${emptyState("No production model", "Train and select an MLB model to see its evaluation record.")}</section>`;
     const challenger = latestRegistryModel("MLB", "Moltres");
     const productionMetrics = production.metrics || {};
     const challengerMetrics = challenger?.metrics || {};
@@ -7956,12 +7953,12 @@ function renderOperationalModelPassport() {
     return `
         <section class="panel model-passport" aria-labelledby="model-passport-title">
             <header class="model-passport__header">
-                <div><p class="eyebrow">Operational model passport</p><h2 id="model-passport-title">What is running, why it won, and what could replace it</h2><p>Registry identity, evaluation boundaries, monitoring, and promotion evidence stay connected to the exported v6 model record.</p></div>
-                <span class="model-passport__state" data-tone="${promotionTone}"><strong>${escapeHtml(promotionLabel)}</strong><small>lower log loss + Brier required</small></span>
+                <div><h2 id="model-passport-title">Production model</h2><p>Training range, holdout results, and challenger comparison for the model currently in use.</p></div>
+                <span class="model-passport__state" data-tone="${promotionTone}"><strong>${escapeHtml(promotionLabel)}</strong><small>Log loss and Brier must both improve</small></span>
             </header>
             <div class="model-passport__layout">
                 <article class="model-passport__identity">
-                    <span class="model-passport__alias">Production alias</span>
+                    <span class="model-passport__alias">Current model</span>
                     <div><strong>${escapeHtml(modelIdentity(production.model_name).legend)}</strong><code>${escapeHtml(production.model_name)}</code></div>
                     <p>${escapeHtml(production.notes || "Selected by the exported chronological evaluation policy.")}</p>
                     <dl>
@@ -7973,16 +7970,16 @@ function renderOperationalModelPassport() {
                 </article>
                 <div class="model-passport__evidence">
                     <section class="model-passport__timeline" aria-label="MLB model evaluation boundary">
-                        <article><span>1 · Train</span><strong>${escapeHtml(trainSeasons)}</strong><small>${safeNumber(production.train_rows) === null ? "Rows not exported" : `${Number(production.train_rows).toLocaleString()} rows`}</small></article>
-                        <article><span>2 · Validate</span><strong>${escapeHtml(validationSeasons)}</strong><small>${safeNumber(production.validation_metrics?.sample_size) === null ? "Expanding-window rows unavailable" : `${Number(production.validation_metrics.sample_size).toLocaleString()} expanding-window rows`}</small></article>
-                        <article><span>3 · Seal holdout</span><strong>${escapeHtml(String(production.test_season || "Not exported"))}</strong><small>${safeNumber(production.test_rows) === null ? "Rows not exported" : `${Number(production.test_rows).toLocaleString()} untouched evaluation rows`}</small></article>
-                        <article><span>4 · Refit</span><strong>${escapeHtml(fitSeasons)}</strong><small>${safeNumber(production.production_fit_rows) === null ? "Rows not exported" : `${Number(production.production_fit_rows).toLocaleString()} completed rows`}</small></article>
+                        <article><span>Training data</span><strong>${escapeHtml(trainSeasons)}</strong><small>${safeNumber(production.train_rows) === null ? "Rows not exported" : `${Number(production.train_rows).toLocaleString()} rows`}</small></article>
+                        <article><span>Validation</span><strong>${escapeHtml(validationSeasons)}</strong><small>${safeNumber(production.validation_metrics?.sample_size) === null ? "Validation rows unavailable" : `${Number(production.validation_metrics.sample_size).toLocaleString()} rows`}</small></article>
+                        <article><span>Holdout</span><strong>${escapeHtml(String(production.test_season || "Not exported"))}</strong><small>${safeNumber(production.test_rows) === null ? "Rows not exported" : `${Number(production.test_rows).toLocaleString()} evaluation rows`}</small></article>
+                        <article><span>Production fit</span><strong>${escapeHtml(fitSeasons)}</strong><small>${safeNumber(production.production_fit_rows) === null ? "Rows not exported" : `${Number(production.production_fit_rows).toLocaleString()} completed rows`}</small></article>
                     </section>
-                    <section class="model-passport__promotion" aria-label="Champion challenger promotion read">
+                    <section class="model-passport__promotion" aria-label="Challenger comparison">
                         <header><div><span>Challenger</span><strong>${escapeHtml(challengerName)}</strong></div><small>${challenger ? escapeHtml(challenger.model_id || "ID not exported") : "No comparable registry row"}</small></header>
                         <div class="model-passport__metric-compare">
-                            <article><span>Log loss delta</span><strong data-result="${logLossDelta.improved === true ? "better" : logLossDelta.improved === false ? "worse" : "missing"}">${escapeHtml(logLossDelta.value)}</strong><small>challenger minus production · lower wins</small></article>
-                            <article><span>Brier delta</span><strong data-result="${brierDelta.improved === true ? "better" : brierDelta.improved === false ? "worse" : "missing"}">${escapeHtml(brierDelta.value)}</strong><small>challenger minus production · lower wins</small></article>
+                            <article><span>Log loss difference</span><strong data-result="${logLossDelta.improved === true ? "better" : logLossDelta.improved === false ? "worse" : "missing"}">${escapeHtml(logLossDelta.value)}</strong><small>challenger minus production · lower is better</small></article>
+                            <article><span>Brier difference</span><strong data-result="${brierDelta.improved === true ? "better" : brierDelta.improved === false ? "worse" : "missing"}">${escapeHtml(brierDelta.value)}</strong><small>challenger minus production · lower is better</small></article>
                             <article><span>Holdout rows</span><strong>${safeNumber(challenger?.test_rows) === null ? "Unavailable" : Number(challenger.test_rows).toLocaleString()}</strong><small>${challenger?.test_season ? `${escapeHtml(String(challenger.test_season))} sealed season` : "Boundary not exported"}</small></article>
                         </div>
                         <p>${challengerWinsRule ? "Both exported proper scores improve. This is a review signal, not automatic deployment approval." : promotionEvidenceReady ? "The challenger does not beat the production model on both exported proper scores, so the production alias remains unchanged." : "LineLens will not infer promotion readiness without comparable exported holdout metrics."}</p>
@@ -7996,7 +7993,7 @@ function renderOperationalModelPassport() {
                 <span><strong>Artifact provenance · ${escapeHtml(provenanceProvider || "Not installed")}</strong><small>${provenanceProvider ? "Approved model-channel record" : "Bundled registry only; no standalone attestation record"}</small></span>
             </div>
             <details class="model-passport__policy">
-                <summary><span>Evaluation and promotion policy</span><small>Show the boundary and limitations</small></summary>
+                <summary><span>Method and limitations</span><small>Evaluation and promotion rules</small></summary>
                 <div><p><strong>Evaluation boundary.</strong> ${escapeHtml(production.production_fit_policy || "Production fit policy was not exported.")} The sealed holdout metrics remain the comparison evidence.</p><p><strong>Promotion boundary.</strong> A challenger must improve both log loss and Brier on comparable sealed data before human review. Accuracy alone does not trigger promotion.</p><p><strong>Provenance boundary.</strong> Registry metadata identifies this bundled model. Signed artifact provenance is shown only when an approved standalone update record exists.</p></div>
             </details>
         </section>
@@ -8061,7 +8058,7 @@ function renderModelTrustCenter(sport) {
     const improved = selectedLogLoss !== null && previousLogLoss !== null ? selectedLogLoss < previousLogLoss : null;
     return `
         <header class="section-header">
-            <div><p class="eyebrow">Model Trust Center</p><h2>${escapeHtml(selected?.model_name || `${sport} model status`)}</h2></div>
+            <div><h2>${escapeHtml(selected?.model_name || `${sport} model status`)}</h2></div>
             <span class="chip ${improved === true ? "chip--success" : improved === false ? "chip--warning" : ""}">${improved === null ? "registry baseline" : improved ? "improved vs previous" : "watch vs previous"}</span>
         </header>
         <div class="trust-grid">
@@ -8070,7 +8067,7 @@ function renderModelTrustCenter(sport) {
             ${card(sport === "MLB" ? "Live record" : "Historical record", recordLine(live), formatProbability(live.accuracy))}
             ${card("Backtest", sport === "MLB" ? recordLine(backtest) : sport === "WNBA" ? recordLine(backtest) : "NFL export", sport === "MLB" || sport === "WNBA" ? formatProbability(backtest.accuracy) : "scored from rows")}
         </div>
-        <p class="muted">Trust comes from exported predictions, logged results, and registry metrics. Missing odds or source data stay marked as missing.</p>
+        <p class="muted">Metrics use exported predictions, logged results, and the model registry. Missing odds and source data remain unavailable.</p>
     `;
 }
 
@@ -8079,7 +8076,7 @@ function renderMoltresModelCard() {
     if (!modelCard) {
         return `
             <section class="panel moltres-card moltres-card--pending">
-                <header class="section-header"><div><p class="eyebrow">MLB flagship model</p><h2>Moltres</h2></div>${renderMoltresBadge()}</header>
+                <header class="section-header"><div><p class="eyebrow">MLB model</p><h2>Moltres</h2></div>${renderMoltresBadge()}</header>
                 <p class="muted">Moltres is integrated as a challenger path but has not been trained in this data bundle yet. No Moltres prediction or performance claim is shown.</p>
                 <code>python -m src.mlb.train_model_mlb</code>
             </section>
@@ -8093,7 +8090,7 @@ function renderMoltresModelCard() {
     return `
         <section class="panel moltres-card">
             <header class="section-header">
-                <div><p class="eyebrow">MLB flagship model</p><h2>Moltres</h2><p class="muted">${escapeHtml(modelCard.identity?.tagline || "Chronological MLB ensemble")}</p></div>
+                <div><p class="eyebrow">MLB model</p><h2>Moltres</h2><p class="muted">${escapeHtml(modelCard.identity?.tagline || "Chronological MLB ensemble")}</p></div>
                 ${renderMoltresBadge()}
             </header>
             <div class="moltres-card__metrics">
@@ -8928,9 +8925,9 @@ function renderUiPreferencesPanel() {
     return `
         <section class="panel ui-preferences-panel">
             <header class="section-header">
-                <div><p class="eyebrow">Presentation</p><h2>Display controls</h2></div>
+                <h2>Display</h2>
                 <div class="report-actions">
-                    <label class="inline-control"><input id="presentation-mode-toggle" type="checkbox" ${state.selected.presentationMode ? "checked" : ""}> Clean UI</label>
+                    <label class="inline-control"><input id="presentation-mode-toggle" type="checkbox" ${state.selected.presentationMode ? "checked" : ""}> Reduce detail</label>
                     <label class="inline-control">Density
                         <select id="table-density-select">
                             <option value="comfortable" ${state.selected.tableDensity !== "compact" ? "selected" : ""}>Comfortable</option>
@@ -8939,7 +8936,7 @@ function renderUiPreferencesPanel() {
                     </label>
                 </div>
             </header>
-            <p class="muted">Clean UI reduces dashboard noise while keeping full diagnostics available in Settings.</p>
+            <p class="muted">Choose how much detail appears in tables and analysis views.</p>
         </section>
     `;
 }
@@ -8972,27 +8969,22 @@ function renderSettings() {
         ["Refresh runtime", state.refreshRuntime.available ? "Available in desktop app" : "Not available in browser/static mode", state.refreshRuntime.message],
     ];
     $("#view-settings").innerHTML = `
-            <section class="module-header panel">
-            <div><p class="eyebrow">Settings / Data health</p><h2>Updates, data health, and preferences</h2><p class="muted">Check freshness, refresh the data channel, adjust display preferences, and inspect diagnostics when a source is unavailable.</p></div>
-            <div class="report-actions"><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn btn--primary" type="button" data-open-about>Open About</button></div>
-            <span class="chip">${escapeHtml(state.app.version || APP_VERSION)}</span>
+        <section class="settings-page-header">
+            <div><h2>Settings</h2><p>LineLens ${escapeHtml(state.app.version || APP_VERSION)}</p></div>
+            <div class="report-actions"><button class="btn" type="button" data-reopen-onboarding>Set up favorites</button><button class="btn" type="button" data-open-about>About</button></div>
         </section>
-        ${renderTrustCenter()}
-        ${renderDataOperationsMap()}
         ${renderUiPreferencesPanel()}
         ${window.LineLensSprint5 ? window.LineLensSprint5.renderPreferences(state) : ""}
-        ${renderSharedDataPanel()}
-        ${renderApiKeysPanel()}
-        ${renderLiveReliabilityPanel()}
-        ${renderModelUpdatePanel()}
-        ${renderDataDoctorPanel()}
-        ${renderLiveWidgetSettings()}
-        ${renderRefreshPanel("settings")}
-        ${renderCommandConsole("settings")}
-        <section class="panel"><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>
-        ${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}
-        <section class="panel settings-support-panel"><header class="section-header"><div><p class="eyebrow">About &amp; Support</p><h2>Project links</h2></div></header><div class="report-actions"><button class="btn btn--primary" type="button" data-open-about>Open About</button><span class="muted">Release notes ship with published builds.</span><button class="btn" type="button" data-reopen-onboarding>Reopen onboarding</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">View source</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
-        <section class="panel"><p class="data-status" data-variant="${state.refreshRuntime.available ? "success" : "warning"}">${state.refreshRuntime.available ? "Bundled exports load first. Python refresh commands are available when the packaged app can access the project scripts." : "Installed app/browser mode is showing bundled exports. Command refresh requires the project repo/dev environment."} Tracking data is stored locally in <code>${TRACKER_KEY}</code>. Refresh logs use <code>${REFRESH_LOGS_KEY}</code>.</p><p class="muted">For analysis and tracking only. Predictions are experimental and not financial advice.</p></section>
+        ${renderTrustCenter()}
+        <details class="settings-disclosure">
+            <summary><span>Updates</span><small>Shared data, live scores, and model versions</small></summary>
+            <div class="settings-disclosure__body">${renderSharedDataPanel()}${renderLiveReliabilityPanel()}${renderModelUpdatePanel()}</div>
+        </details>
+        <details class="settings-disclosure">
+            <summary><span>Developer tools</span><small>Local keys, diagnostics, refresh commands, and runtime details</small></summary>
+            <div class="settings-disclosure__body">${renderDataOperationsMap()}${renderApiKeysPanel()}${renderDataDoctorPanel()}${renderLiveWidgetSettings()}${renderRefreshPanel("settings")}${renderCommandConsole("settings")}<section class="panel"><header class="section-header"><h2>Runtime details</h2></header><div class="settings-grid">${modes.map(([label, status, note]) => `<div class="setting-row"><strong>${escapeHtml(label)}</strong><span>${escapeHtml(status)}</span><code>${escapeHtml(note)}</code></div>`).join("")}</div></section>${dataMode(state.nfl.payload, state.nfl.games) === "missing" ? `<section class="panel">${renderNflManualRecoveryCard()}</section>` : ""}</div>
+        </details>
+        <section class="settings-footer"><p>For analysis and tracking only. Predictions are experimental and are not betting advice.</p><div class="report-actions"><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens">Source code</button><button class="btn" type="button" data-external-link="https://github.com/VrajP0518/LineLens/issues">Report an issue</button></div></section>
     `;
 }
 
@@ -9012,11 +9004,9 @@ function renderDataOperationsMap() {
         <section class="panel data-operations-map" aria-labelledby="data-operations-title">
             <header class="section-header data-operations-map__header">
                 <div>
-                    <p class="eyebrow">Data operations</p>
-                    <h2 id="data-operations-title">Three clocks, three separate jobs</h2>
-                    <p class="muted">Live game state does not wait for model retraining. Provider secrets stay in GitHub; installed clients receive only verified exports.</p>
+                    <h2 id="data-operations-title">Update schedule</h2>
+                    <p class="muted">Live scores, shared data, and model training run on separate schedules.</p>
                 </div>
-                <span class="chip chip--soft">v6 delivery map</span>
             </header>
             <div class="data-operations-map__grid">
                 <article class="operations-lane operations-lane--live" data-variant="${escapeHtml(healthTone(liveStatus))}">
@@ -9036,7 +9026,7 @@ function renderDataOperationsMap() {
                 </article>
             </div>
             <div class="data-operations-map__actions">
-                <p><strong>Bottom line:</strong> live scores continue independently even if the daily data channel or weekly retraining job has not run.</p>
+                <p>Live scores continue independently of data publishing and model training.</p>
                 <div class="report-actions">
                     <button class="btn btn--primary" type="button" data-live-heartbeat-now>Refresh live scores now</button>
                     <button class="btn" type="button" data-sync-shared-data ${state.sharedDataRuntime.active || !desktopLive ? "disabled" : ""}>Check approved data</button>
@@ -9333,7 +9323,15 @@ function openExternalLink(url) {
 function renderAll() {
     const visualAuditParams = new URLSearchParams(window.location.search);
     const visualAuditView = visualAuditParams.get("dpi-view");
-    if (visualAuditParams.get("dpi-audit") === "1" && ["home", "underdogs", "models", "nfl", "record", "settings"].includes(visualAuditView)) {
+    const auditCanvasWidth = Number(visualAuditParams.get("audit-width"));
+    if (visualAuditParams.get("dpi-audit") === "1" && Number.isFinite(auditCanvasWidth) && auditCanvasWidth >= 320) {
+        document.documentElement.style.width = `${auditCanvasWidth}px`;
+        document.body.style.width = `${auditCanvasWidth}px`;
+        document.body.dataset.auditCanvas = String(auditCanvasWidth);
+        document.body.style.setProperty("--audit-canvas-width", `${auditCanvasWidth}px`);
+        document.querySelector(".app-shell")?.style.setProperty("width", `${auditCanvasWidth}px`);
+    }
+    if (visualAuditParams.get("dpi-audit") === "1" && ["home", "foryou", "picks", "props", "nfl", "mlb", "wnba", "models", "record", "settings", "notifications", "about"].includes(visualAuditView)) {
         state.selected.view = visualAuditView;
     }
     const auditDate = visualAuditParams.get("audit-date");
@@ -9367,9 +9365,46 @@ function renderAll() {
     }
     if (visualAuditParams.get("dpi-audit") === "1") {
         requestAnimationFrame(() => {
-            const width = Math.max(window.innerWidth || 0, 1);
-            const overflow = document.documentElement.scrollWidth > width + 1 || document.body.scrollWidth > width + 1;
+            const width = Number.isFinite(auditCanvasWidth) && auditCanvasWidth >= 320 ? auditCanvasWidth : Math.max(window.innerWidth || 0, 1);
+            const overflow = document.body.scrollWidth > width + 4;
             document.documentElement.dataset.auditOverflow = overflow ? "fail" : "pass";
+            document.documentElement.dataset.auditOverflowSize = `${width}/${document.documentElement.scrollWidth}/${document.body.scrollWidth}`;
+            const selectors = "h1, h2, h3, p, small, strong, #data-status, .panel, .home-focus-pick, .universal-pick-card, .prop-card";
+            const clipped = [...document.querySelectorAll(selectors)].filter(node => {
+                const style = getComputedStyle(node);
+                if (["auto", "scroll"].includes(style.overflowX)) return false;
+                if (style.whiteSpace === "nowrap" && style.textOverflow === "ellipsis") return false;
+                return node.clientWidth > 0 && node.scrollWidth > node.clientWidth + 1;
+            });
+            document.documentElement.dataset.auditElementOverflow = clipped.length ? "fail" : "pass";
+            document.documentElement.dataset.auditElementOverflowCount = String(clipped.length);
+            document.documentElement.dataset.auditElementOverflowNodes = clipped.slice(0, 8).map(node => {
+                const name = `${node.tagName.toLowerCase()}.${String(node.className || "").trim().replace(/\s+/g, ".")}`;
+                const sample = String(node.querySelector("h1,h2,h3")?.textContent || node.textContent || "").trim().replace(/\s+/g, " ").slice(0, 48);
+                return `${name}[${node.clientWidth}/${node.scrollWidth}] ${sample}`;
+            }).join("|");
+            const outsideViewport = [...document.querySelectorAll(".topbar, #data-status, .view.is-active > *, .view.is-active .panel")].filter(node => {
+                const rect = node.getBoundingClientRect();
+                return rect.width > 0 && (rect.left < -4 || rect.right > width + 4);
+            });
+            document.documentElement.dataset.auditViewportOverflow = outsideViewport.length ? "fail" : "pass";
+            document.documentElement.dataset.auditViewportOverflowNodes = outsideViewport.slice(0, 8).map(node => {
+                const rect = node.getBoundingClientRect();
+                return `${node.tagName.toLowerCase()}.${String(node.className || "").trim().replace(/\s+/g, ".")}[${Math.round(rect.left)}/${Math.round(rect.right)}]`;
+            }).join("|");
+            const outsideDocument = [...document.body.querySelectorAll("*")].filter(node => {
+                const rect = node.getBoundingClientRect();
+                const style = getComputedStyle(node);
+                return rect.width > 0 && rect.right > width + 1 && !["auto", "scroll"].includes(style.overflowX);
+            });
+            document.documentElement.dataset.auditDocumentOverflowNodes = outsideDocument.slice(0, 8).map(node => {
+                const rect = node.getBoundingClientRect();
+                return `${node.tagName.toLowerCase()}.${String(node.className || "").trim().replace(/\s+/g, ".")}[${Math.round(rect.left)}/${Math.round(rect.right)}]`;
+            }).join("|");
+            document.documentElement.dataset.auditViewLayout = [...document.querySelectorAll(".view.is-active > *")].slice(0, 10).map(node => {
+                const rect = node.getBoundingClientRect();
+                return `${node.tagName.toLowerCase()}.${String(node.className || "").trim().replace(/\s+/g, ".")}[${Math.round(rect.top)}/${Math.round(rect.bottom)}]`;
+            }).join("|");
         });
     }
     if (visualAuditParams.get("dpi-audit") === "1" && visualAuditParams.get("dpi-gamecast")) {
@@ -9400,6 +9435,13 @@ function renderAll() {
         }
         if (auditGame) {
             openGameCast(auditSport, { ...auditGame, sport: auditSport });
+            requestAnimationFrame(() => {
+                const drawer = document.querySelector(".gamecast-drawer");
+                const rect = drawer?.getBoundingClientRect();
+                const visible = Boolean(rect && rect.width > 0 && rect.height > 0 && rect.left >= -4 && rect.right <= (Number.isFinite(auditCanvasWidth) ? auditCanvasWidth : window.innerWidth) + 4);
+                document.documentElement.dataset.auditGamecast = visible ? "pass" : "fail";
+                document.documentElement.dataset.auditGamecastBounds = rect ? `${Math.round(rect.left)}/${Math.round(rect.top)}/${Math.round(rect.right)}/${Math.round(rect.bottom)}` : "missing";
+            });
             if (visualAuditParams.get("dpi-gamecast-section") === "confidence") {
                 requestAnimationFrame(() => requestAnimationFrame(() => {
                     const drawer = document.querySelector(".gamecast-drawer");
@@ -9635,7 +9677,7 @@ document.addEventListener("click", event => {
             setBodyModes();
             persistSettings();
             renderAll();
-            showToast(state.selected.presentationMode ? "Clean UI on" : "Clean UI off");
+            showToast(state.selected.presentationMode ? "Reduced detail on" : "Reduced detail off");
             return;
         }
 
