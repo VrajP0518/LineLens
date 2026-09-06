@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-08-24T19:32:20Z",
+    "generated_at": "2026-09-06T12:59:31Z",
     "status": "clear",
     "policy": "alert at +0.03 log loss, +0.02 Brier, or -0.05 accuracy/ROC AUC"
   },
@@ -10,8 +10,8 @@
       "status": "clear",
       "before_model": "EloBlend",
       "after_model": "EloBlend",
-      "before_id": "mlb_moneyline_v6_20260819T165008",
-      "after_id": "mlb_moneyline_v6_20260824T193110",
+      "before_id": "mlb_moneyline_v6_20260824T193110",
+      "after_id": "mlb_moneyline_v6_20260906T125816",
       "metric_deltas": {
         "log_loss": 0.0,
         "brier_score": 0.0,
