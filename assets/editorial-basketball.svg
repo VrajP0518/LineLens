@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" fill="none">
+  <defs><clipPath id="ball"><circle cx="160" cy="160" r="153"/></clipPath><pattern id="grain" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#602815" opacity=".2"/></pattern></defs>
+  <circle cx="160" cy="160" r="153" fill="#d65b2d"/>
+  <circle cx="145" cy="145" r="140" fill="#ee7441"/>
+  <circle cx="160" cy="160" r="153" fill="url(#grain)"/>
+  <g clip-path="url(#ball)" stroke="#53291e" stroke-width="5"><path d="M-4 160h328M160-4v328M36 18c171 23 171 261 0 284M284 18c-171 23-171 261 0 284"/></g>
+</svg>

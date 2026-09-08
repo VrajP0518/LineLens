@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" fill="none">
+  <defs><clipPath id="ball"><path d="M8 110C67-17 289-17 352 110c-63 127-285 127-344 0Z"/></clipPath></defs>
+  <path d="M8 110C67-17 289-17 352 110c-63 127-285 127-344 0Z" fill="#794333"/>
+  <path d="M8 110C67-17 289-17 352 110 257 163 106 163 8 110Z" fill="#9f6048"/>
+  <g clip-path="url(#ball)" stroke="#f2dfbf" stroke-width="16"><path d="M65 5c-28 66-28 141 0 209M295 5c28 66 28 141 0 209"/></g>
+  <path d="M21 110c100-19 217-19 318 0" stroke="#522c24" stroke-width="3"/>
+  <path d="M132 82h96m-85-11v22m21-22v22m21-22v22m21-22v22m21-22v22" stroke="#f4e7ce" stroke-width="7" stroke-linecap="round"/>
+</svg>

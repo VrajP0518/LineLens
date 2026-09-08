@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LineLens Sports</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="src/ui/editorial.css" />
+    <link rel="preload" href="assets/fonts/BarlowCondensed-Bold.ttf" as="font" type="font/ttf" crossorigin />
     <script src="assets/vendor/chart.umd.min.js" defer></script>
     <script src="data/app_metadata.js" defer></script>
     <script src="data/team_metadata.js" defer></script>
@@ -32,6 +34,7 @@
     <script src="src/ui/data_contracts.js" defer></script>
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <div id="app-loading" class="app-loading is-visible" role="status" aria-live="polite">
         <div class="app-loading__backdrop" aria-hidden="true"></div>
         <div class="app-loading__content">
@@ -49,48 +52,48 @@
     <div class="app-shell">
         <aside class="sidebar">
             <div class="brand">
-                <span class="brand__mark"><img src="images/Logo1.png" alt="LineLens logo" /></span>
+                <span class="brand__mark" aria-hidden="true"><svg viewBox="0 0 36 36"><path d="M7 7v22h10v-5h-5V7zm13 0v22h10v-5h-5V7z" fill="currentColor" /></svg></span>
                 <div>
-                    <strong>LineLens Sports</strong>
+                    <strong>LineLens<span class="brand__dot">.</span></strong>
                     <small id="sidebar-version">v6</small>
                 </div>
             </div>
             <nav class="nav" aria-label="Primary navigation">
                 <section class="nav__section nav__section--home" aria-label="Home" data-nav-group="home">
                     <button class="nav__section-label nav__section-toggle" type="button" data-nav-toggle="home" aria-expanded="true"><span>Home</span><span aria-hidden="true">⌄</span></button>
-                    <button class="nav__item nav__item--home is-active" data-view="home"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-home.png" alt="" /></span><span>Home</span></button>
+                    <button class="nav__item nav__item--home is-active" data-view="home"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>Home</span></button>
                 </section>
                 <section class="nav__section" aria-label="Explore" data-nav-group="explore">
                     <button class="nav__section-label nav__section-toggle" type="button" data-nav-toggle="explore" aria-expanded="true"><span>Explore</span><span aria-hidden="true">⌄</span></button>
                     <button class="nav__item nav__item--picks" data-view="picks"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 5h14M5 12h10M5 19h6" /></svg></span><span>Picks</span></button>
                     <button class="nav__item nav__item--props" data-view="props"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 18V6M5 18h14M9 14l3-3 2 2 5-6" /></svg></span><span>Props</span></button>
+                </section>
                 <section class="nav__section nav__section--sports" aria-label="Sports" data-nav-group="sports">
                     <button class="nav__section-label nav__section-toggle" type="button" data-nav-toggle="sports" aria-expanded="false"><span>Sports</span><span aria-hidden="true">⌄</span></button>
-                    <button class="nav__item nav__item--mlb" data-view="mlb" title="MLB predictions, odds, scores, and box scores"><span class="nav-sport-mark nav-sport-mark--mlb" aria-hidden="true"><img src="assets/sport-icon-mlb.png" alt="" /></span><span class="nav-mlb-word">MLB</span></button>
-                    <button class="nav__item nav__item--nfl" data-view="nfl" title="NFL predictions, spreads, and scores"><span class="nav-sport-mark nav-sport-mark--nfl" aria-hidden="true"><img src="assets/sport-icon-nfl.png" alt="" /></span><span>NFL</span></button>
-                    <button class="nav__item nav__item--wnba" data-view="wnba" title="WNBA predictions, props, and scores"><span class="nav-sport-mark nav-sport-mark--wnba" aria-hidden="true"><img src="assets/sport-icon-wnba.png" alt="" /></span><span>WNBA</span></button>
-                    <button class="nav__item nav__item--nba" data-view="nba" title="Scores only — no LineLens prediction model"><span class="nav-sport-mark nav-sport-mark--nba" aria-hidden="true"><img src="assets/sport-icon-nba.png" alt="" /></span><span>NBA <small class="nav-item-note">Scores only</small></span></button>
-                    <button class="nav__item nav__item--nhl" data-view="nhl" title="Scores only — no LineLens prediction model"><span class="nav-sport-mark nav-sport-mark--nhl" aria-hidden="true"><img src="assets/sport-icon-nhl.png" alt="" /></span><span>NHL <small class="nav-item-note">Scores only</small></span></button>
-                    <button class="nav__item nav__item--soccer" data-view="soccer" title="Scores only — no LineLens prediction model"><span class="nav-sport-mark nav-sport-mark--soccer" aria-hidden="true"><img src="assets/sport-icon-soccer.png" alt="" /></span><span>Soccer <small class="nav-item-note">Scores only</small></span></button>
-                </section>
+                    <button class="nav__item nav__item--mlb" data-view="mlb" title="MLB predictions, odds, scores, and box scores"><span class="nav-sport-mark nav-sport-mark--mlb" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span class="nav-mlb-word">MLB</span></button>
+                    <button class="nav__item nav__item--nfl" data-view="nfl" title="NFL predictions, spreads, and scores"><span class="nav-sport-mark nav-sport-mark--nfl" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>NFL</span></button>
+                    <button class="nav__item nav__item--wnba" data-view="wnba" title="WNBA predictions, props, and scores"><span class="nav-sport-mark nav-sport-mark--wnba" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>WNBA</span></button>
+                    <button class="nav__item nav__item--nba" data-view="nba" title="Scores only — no LineLens prediction model"><span class="nav-sport-mark nav-sport-mark--nba" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>NBA <small class="nav-item-note">Scores only</small></span></button>
+                    <button class="nav__item nav__item--nhl" data-view="nhl" title="Scores only — no LineLens prediction model"><span class="nav-sport-mark nav-sport-mark--nhl" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>NHL <small class="nav-item-note">Scores only</small></span></button>
+                    <button class="nav__item nav__item--soccer" data-view="soccer" title="Scores only — no LineLens prediction model"><span class="nav-sport-mark nav-sport-mark--soccer" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>Soccer <small class="nav-item-note">Scores only</small></span></button>
                 </section>
                 <section class="nav__section" aria-label="My LineLens" data-nav-group="mine">
                     <button class="nav__section-label nav__section-toggle" type="button" data-nav-toggle="mine" aria-expanded="false"><span>My LineLens</span><span aria-hidden="true">⌄</span></button>
                     <button class="nav__item nav__item--watchlist" data-view="watchlist"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m12 4 2.45 4.96 5.48.8-.94 5.45L12 16.5l-4.91 2.57.94-5.45-.94-5.45 5.48-.8Z" /></svg></span><span>Watchlist</span></button>
-                    <button class="nav__item nav__item--tracking" data-view="tracking"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-tracking.png" alt="" /></span><span>Tracker</span></button>
+                    <button class="nav__item nav__item--tracking" data-view="tracking"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>Tracker</span></button>
                 </section>
                 <section class="nav__section" aria-label="Analytics" data-nav-group="analytics">
                     <button class="nav__section-label nav__section-toggle" type="button" data-nav-toggle="analytics" aria-expanded="false"><span>Analytics</span><span aria-hidden="true">⌄</span></button>
-                    <button class="nav__item nav__item--models" data-view="models"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-models.png" alt="" /></span><span>Models</span></button>
-                    <button class="nav__item nav__item--reports" data-view="reports"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-reports.png" alt="" /></span><span>Reports</span></button>
-                    <button class="nav__item nav__item--record" data-view="record"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-record.png" alt="" /></span><span>Performance</span></button>
+                    <button class="nav__item nav__item--models" data-view="models"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>Models</span></button>
+                    <button class="nav__item nav__item--reports" data-view="reports"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>Reports</span></button>
+                    <button class="nav__item nav__item--record" data-view="record"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>Performance</span></button>
                 </section>
                 <section class="nav__section" aria-label="More" data-nav-group="more">
                     <button class="nav__section-label nav__section-toggle" type="button" data-nav-toggle="more" aria-expanded="false"><span>More</span><span aria-hidden="true">⌄</span></button>
                     <button class="nav__item nav__item--foryou" data-view="foryou"><span class="nav-sport-mark" aria-hidden="true">✦</span><span>For You</span></button>
                     <button class="nav__item nav__item--history" data-view="history"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M4 12a8 8 0 1 0 2.35-5.65L4 8.7M4 4v4.7h4.7" /></svg></span><span>History</span></button>
-                    <button class="nav__item nav__item--teams" data-view="teams"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-teams.png" alt="" /></span><span>Teams</span></button>
-                    <button class="nav__item nav__item--settings" data-view="settings"><span class="nav-sport-mark" aria-hidden="true"><img src="assets/nav-icon-settings.png" alt="" /></span><span>Settings</span></button>
+                    <button class="nav__item nav__item--teams" data-view="teams"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>Teams</span></button>
+                    <button class="nav__item nav__item--settings" data-view="settings"><span class="nav-sport-mark" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"></svg></span><span>Settings</span></button>
                 </section>
             </nav>
             <div id="sidebar-resizer" class="sidebar-resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0"></div>
@@ -131,7 +134,7 @@
 
             <p class="data-status" id="data-status">Getting today’s games and predictions…</p>
 
-            <main>
+            <main id="main-content" tabindex="-1">
                 <section class="view is-active" id="view-home"></section>
                 <section class="view" id="view-foryou"></section>
                 <section class="view" id="view-picks"></section>
@@ -168,6 +171,7 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="sprint5.js" defer></script>
     <script src="src/ui/view_policies.js" defer></script>
+    <script src="src/ui/editorial.js" defer></script>
     <script src="app.js" defer></script>
 </body>
 </html>

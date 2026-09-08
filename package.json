@@ -4,6 +4,8 @@
   "private": true,
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
+    "test:ui": "npm run build:web && playwright test",
+    "check:editorial": "node --check src/ui/editorial.js",
     "build:web": "python scripts/build_web_dist.py",
     "app": "python scripts/local_server.py --port 4173",
     "app:dist": "npm run build:web && npx http-server dist-web -p 4174",
@@ -76,6 +78,7 @@
     "tauri:build": "tauri build"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tauri-apps/cli": "^2.0.0",
     "http-server": "^14.1.1"
   },

@@ -9,8 +9,8 @@ const NAV_SECTIONS_KEY = "linelens.navSections.v1";
 const navSections = {
     home: false,
     explore: false,
-    sports: true,
-    mine: true,
+    sports: false,
+    mine: false,
     analytics: true,
     more: true,
 };
@@ -1885,7 +1885,14 @@ function renderTrustCenter(compact = false) {
     ];
     const current = domains.filter(domain => domain.state === "current").length;
     const attention = domains.length - current;
-    const body = domains.map(domain => `<article class="trust-domain" data-variant="${healthTone(domain.status)}"><div class="trust-domain__top"><span class="status-dot" aria-hidden="true"></span><strong>${escapeHtml(domain.label)}</strong><span class="chip chip--soft">${escapeHtml(domain.status)}</span></div><small>${escapeHtml(domain.source || "Source unavailable")}</small><p>${escapeHtml(domain.detail || "No detail available")}</p><time>${escapeHtml(timestamp(domain.generatedAt) || "Timestamp unavailable")}</time></article>`).join("");
+    const body = domains.map(domain => {
+        const detail = String(domain.detail || "No detail available");
+        const technicalError = /HTTPConnection|HTTPSConnection|Traceback|Max retries|ProxyError|ConnectionError/i.test(detail);
+        const explanation = technicalError
+            ? `<p>The provider could not be reached. Check your connection and retry.</p><details><summary>Connection details</summary><p>${escapeHtml(detail)}</p></details>`
+            : `<p>${escapeHtml(detail)}</p>`;
+        return `<article class="trust-domain" data-variant="${healthTone(domain.status)}"><div class="trust-domain__top"><span class="status-dot" aria-hidden="true"></span><strong>${escapeHtml(domain.label)}</strong><span class="chip chip--soft">${escapeHtml(domain.status)}</span></div><small>${escapeHtml(domain.source || "Source unavailable")}</small>${explanation}<time>${escapeHtml(timestamp(domain.generatedAt) || "Timestamp unavailable")}</time></article>`;
+    }).join("");
     return `<section class="panel trust-center ${compact ? "trust-center--compact" : ""}" aria-labelledby="trust-center-title"><header class="section-header"><div><h2 id="trust-center-title">Data status</h2><p class="muted">Last update and source for each feed.</p></div><div class="trust-center__summary"><strong>${current}/${domains.length}</strong><span>${attention ? `${attention} need attention` : "Up to date"}</span></div></header><div class="trust-domain-grid">${body}</div>${compact ? `<div class="report-actions"><button class="btn btn--micro" type="button" data-view-link="settings">View data status</button></div>` : `<div class="trust-center__footer">${state.liveRefresh.lastError ? `<span>${escapeHtml(state.liveRefresh.lastError)}</span>` : ""}<div class="report-actions"><button class="btn btn--primary" type="button" data-live-heartbeat-now>Refresh scores</button><button class="btn" type="button" data-sync-shared-data ${state.sharedDataRuntime.active || !isTauriRefreshAvailable() ? "disabled" : ""}>Check for updates</button><button class="btn" type="button" data-run-diagnostics>Diagnostics</button></div></div>`}</section>`;
 }
 
@@ -3593,18 +3600,18 @@ function switchView(view) {
     });
     $$(".nav__item").forEach(btn => btn.classList.toggle("is-active", btn.dataset.view === view));
     const titles = {
-        home: ["LineLens Sports", "Today"],
+        home: ["Home", "LineLens Sports"],
         foryou: ["For You", "saved preferences and updates"],
         picks: ["Picks", "Today’s picks"],
         underdogs: ["Underdogs", "model picks against the market"],
         props: ["Player Props", "WNBA projection feed"],
-        nfl: ["NFL Spread Predictor", "spread module"],
+        nfl: ["NFL", "Games and predictions"],
         mlb: ["MLB", "Games"],
         "mlb-economics": ["MLB Economics", "payroll, wins, and efficiency"],
         soccer: ["Soccer", "Scores"],
         nba: ["NBA", "Scores"],
         nhl: ["NHL", "Scores"],
-        wnba: ["WNBA Game Board", "model + live scoreboard"],
+        wnba: ["WNBA", "Games and predictions"],
         models: ["Models", "Model comparison"],
         history: ["Prediction History", "search the prediction ledger"],
         watchlist: ["Watchlist", "your teams, games, and model"],
@@ -3613,11 +3620,16 @@ function switchView(view) {
         teams: ["Team Profiles", "team-level model context"],
         tracking: ["My Tracker", "saved picks and results"],
         settings: ["Settings", "Data and preferences"],
-        notifications: ["Notifications", "deduplicated local alerts"],
+        notifications: ["Notifications", "Your updates"],
         about: ["About LineLens", "product information and support"],
     };
     const [title, kicker] = titles[view] || titles.home;
     $("#view-title").textContent = title;
+    document.body.dataset.view = view;
+    document.querySelectorAll('.nav__item[data-view]').forEach(button => {
+        if (button.dataset.view === view) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+    });
     $("#view-kicker").textContent = kicker;
     if (previous !== view && !renderedViews.has(view)) renderView(view);
     if (previous !== view) ensureViewData(view);
@@ -5250,11 +5262,37 @@ function renderHome() {
     const top = homeTopEdges(6);
     const best = top[0];
     const today = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-    const picks = top.slice(1, 3);
+    const picks = top.slice(1, 4);
     const totalPicks = universalPickRows().filter(game => gameIsoDate(game) === localDateIso()).length;
     const nflLatest = latestNflSeason();
     const nflAvailableLatest = nflSeasons()[0];
-    $("#view-home").innerHTML = `<section class="home-focus-shell"><header class="home-focus-header"><div><p class="eyebrow">Today</p><h2>${escapeHtml(today)}</h2></div><div class="report-actions"><span class="home-pick-count">${totalPicks} picks</span><button class="btn btn--primary" type="button" data-view-link="picks">All picks</button></div></header><section class="home-focus-layout"><div class="home-focus-main">${best ? homeFocusPickCard(best) : emptyState("No picks for today", "Refresh data or choose another date in Picks.")}${picks.length ? `<section class="panel home-focus-panel"><header class="section-header"><h2>More picks</h2><button class="btn btn--micro" type="button" data-view-link="picks">View all</button></header><div class="home-focus-picks">${picks.map(row => homeFocusPickCard(row)).join("")}</div></section>` : ""}</div><div class="home-focus-side">${renderHomeFocusLive()}${renderHomeFocusWatching()}${renderHomeModelPulse()}</div></section>${nflAvailableLatest && nflLatest && nflAvailableLatest !== nflLatest ? `<div class="home-source-strip" data-variant="warning"><strong>NFL data</strong><span>${nflAvailableLatest} has only a postseason supplement. Showing ${nflLatest}, the latest complete model season.</span><button class="btn btn--micro" data-view-link="nfl">Open NFL</button></div>` : ""}</section>`;
+    const pickDate = best ? gameIsoDate(best.game) : null;
+    const boardLabel = pickDate && pickDate !== localDateIso()
+        ? `Saved board · ${gameDateDisplay(best.game, best.game.sport)}` : "Today's picks";
+    const leagues = [
+        ["MLB", "Baseball", "Games, odds & predictions", "baseball", "mlb"],
+        ["WNBA", "Basketball", "Games & player projections", "basketball", "wnba"],
+        ["NFL", "Football", "Schedules & spread models", "football", "nfl"],
+    ];
+    $("#view-home").innerHTML = `
+        <div class="home-focus-shell edition-home">
+            <header class="edition-dateline"><time datetime="${localDateIso()}">${escapeHtml(today)}</time><span>MLB / WNBA / NFL</span></header>
+            <section class="edition-hero" aria-labelledby="edition-title">
+                <div class="edition-hero__copy"><p class="edition-kicker">FOR THE LOVE OF THE GAME.</p><h2 id="edition-title">A closer look<br>at every <em>game.</em></h2><p class="edition-deck">The matchups. The markets. The numbers behind your next pick.</p><div class="edition-hero__actions"><button class="btn btn--primary" type="button" data-view-link="picks">Explore picks <span aria-hidden="true">↗</span></button><button class="edition-text-link" type="button" data-view-link="watchlist">Your watchlist <span aria-hidden="true">→</span></button></div><div class="edition-hero__foot"><span>Independent sports analysis</span><span>${totalPicks} picks dated today</span></div></div>
+                ${window.LineLensUI.sportsArtwork()}
+            </section>
+            <nav class="edition-leagues" aria-label="Browse sports">${leagues.map(([sport, name, description, asset, view], index) => `<button type="button" class="edition-league" data-view-link="${view}"><span class="edition-league__number">0${index + 1}</span><span><small>${sport}</small><strong>${name}</strong><span>${description}</span></span><img src="assets/editorial-${asset}.svg" alt="" width="80" height="80" /><b aria-hidden="true">↗</b></button>`).join("")}</nav>
+            <section class="home-focus-layout">
+                <div class="home-focus-main"><header class="edition-section-head"><div><p class="edition-kicker">THE BOARD</p><h2>${escapeHtml(boardLabel)}</h2></div><button class="edition-text-link" type="button" data-view-link="picks">All picks <span aria-hidden="true">→</span></button></header>
+                    ${pickDate && pickDate !== localDateIso() ? '<p class="edition-source-note">These are saved predictions, not current recommendations. Refresh data for today’s board.</p>' : ""}
+                    ${best ? homeFocusPickCard(best) : `<div class="edition-empty"><span class="edition-empty__number" aria-hidden="true">—</span><div><h3>No picks for today</h3><p>Today's predictions haven't arrived. Browse another date or check your data sources.</p><button class="edition-text-link" type="button" data-view-link="settings">Check data status →</button></div></div>`}
+                    ${picks.length ? `<div class="home-focus-picks">${picks.map(row => homeFocusPickCard(row)).join("")}</div>` : ""}
+                    <section class="edition-review"><div><p class="edition-kicker">AFTER THE FINAL WHISTLE</p><h2>Every pick has a record.</h2><p>See what won, what missed, and how the models performed.</p></div><button class="btn" type="button" data-view-link="record">View performance <span aria-hidden="true">↗</span></button></section>
+                </div>
+                <aside class="home-focus-side" aria-label="Scores and your activity">${renderHomeFocusLive()}${renderHomeFocusWatching()}${renderHomeModelPulse()}</aside>
+            </section>
+            ${nflAvailableLatest && nflLatest && nflAvailableLatest !== nflLatest ? `<div class="home-source-strip" data-variant="warning"><strong>NFL data</strong><span>${nflAvailableLatest} has only a postseason supplement. Showing ${nflLatest}, the latest complete model season.</span><button class="btn btn--micro" data-view-link="nfl">Open NFL</button></div>` : ""}
+        </div>`;
 }
 
 function statusTone(status) {
@@ -7865,6 +7903,7 @@ function exportHistoryCsv() {
 }
 
 function renderHistory() {
+    const selected = state.selected;
     const all = historyRows();
     const rows = historyFilteredRows();
     const seasons = uniqueSortedNumbers(all.map(row => gameSeason(row, row.sport)), "desc");
@@ -9560,7 +9599,7 @@ document.addEventListener("click", event => {
         const viewLink = event.target.closest("[data-view-link]");
         if (viewLink) switchView(viewLink.dataset.viewLink);
 
-        const picksSport = event.target.closest("[data-picks-sport]");
+        const picksSport = event.target.closest("[data-picks-sport]:not([data-picks-open])");
         if (picksSport) {
             state.selected.picksSport = picksSport.dataset.picksSport;
             persistSettings();

@@ -25,6 +25,10 @@
         ["Compare models by sport", "Model comparison"],
         ["Your daily follow list.", "Watchlist"],
         ["What changed while you were away", "Recent alerts"],
+        ["One observatory, separate evidence", "Models by sport"],
+        ["No games in this lifecycle state", "No games found"],
+        ["Select a game to inspect the lifecycle", "Choose a matchup"],
+        ["Cross-sport comparison warning", "Compare within each sport"],
     ]);
 
     const quietNormalStates = new Set([
@@ -49,6 +53,14 @@
     ui.applyRestraintCopy = function applyRestraintCopy(view, root) {
         if (!root) return;
         simplifyHeadings(root);
+        if (view === "mlb") {
+            const emptyDetail = root.querySelector('.lifecycle-matchup--empty .empty-state p');
+            if (emptyDetail) emptyDetail.textContent = 'Open a game for predictions, odds, scores, and results.';
+            const boardNote = root.querySelector('.mlb-board-panel > .section-header .muted');
+            if (boardNote && boardNote.textContent.includes('live and watchlisted games lead')) {
+                boardNote.textContent = boardNote.textContent.replace('live and watchlisted games lead; final accountability stays in the full list.', 'Live games and your watchlist appear first.');
+            }
+        }
         if (view === "home") {
             root.querySelectorAll(".home-focus-pick > header > .eyebrow, .home-focus-panel > header .eyebrow").forEach(node => node.remove());
             root.querySelector(".home-focus-header > div > .muted")?.remove();
