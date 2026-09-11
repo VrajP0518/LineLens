@@ -15,6 +15,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, log_loss, roc_auc_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from src.nfl.pregame_policy import FEATURE_POLICY_VERSION, is_pregame_feature
 
 ROOT = Path(__file__).resolve().parent
 PROCESSED_DIR = ROOT / "data" / "processed"
@@ -59,7 +60,7 @@ def _select_feature_columns(df: pd.DataFrame) -> List[str]:
             or col in {"spread_line", "rest_diff"}
         )
     ]
-    candidate_cols = [col for col in candidate_cols if col not in LEAKY_FEATURES]
+    candidate_cols = [col for col in candidate_cols if col not in LEAKY_FEATURES and is_pregame_feature(col)]
     return candidate_cols
 
 
@@ -73,7 +74,7 @@ def train(
     calibration_method: str = typer.Option(
         "sigmoid",
         help=(
-            "Probability calibration strategy applied to the validation season. "
+            "Probability calibration strategy applied to the last training season. "
             "Choose from 'sigmoid', 'isotonic', or 'none' to skip calibration."
         ),
     ),
@@ -81,12 +82,17 @@ def train(
     """Fit a logistic regression model and report validation metrics."""
 
     features_path = _resolve_features_path(features_file)
+    if not train_start_season <= train_end_season < test_season:
+        raise typer.BadParameter("Training seasons must precede the untouched test season.")
     df = pd.read_parquet(features_path)
 
     df = df[df["season"].between(train_start_season, test_season)]
     df = df.replace([np.inf, -np.inf], np.nan).dropna()
 
-    train_df = df[df["season"].between(train_start_season, train_end_season)]
+    # Reserve the last training season for calibration, never calibrate on the test season.
+    fit_end = train_end_season if calibration_method.lower() == "none" else train_end_season - 1
+    train_df = df[df["season"].between(train_start_season, fit_end)]
+    calibration_df = df[df["season"] == train_end_season]
     test_df = df[df["season"] == test_season]
 
     if train_df.empty or test_df.empty:
@@ -118,10 +124,10 @@ def train(
     if calibration_method.lower() == "none":
         estimator = base_pipeline
     else:
-        if test_df.empty:
+        if calibration_df.empty:
             raise typer.BadParameter("Validation split is empty; cannot run calibration.")
         estimator = CalibratedClassifierCV(base_pipeline, method=calibration_method.lower(), cv="prefit")
-        estimator.fit(X_test, y_test)
+        estimator.fit(calibration_df[feature_cols].values, calibration_df["home_cover"].values)
 
     proba = estimator.predict_proba(X_test)[:, 1]
     preds = (proba >= 0.5).astype(int)
@@ -136,7 +142,14 @@ def train(
 
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     model_path = model_out if model_out.is_absolute() else (ROOT / model_out)
-    joblib.dump({"model": estimator, "features": feature_cols}, model_path)
+    from datetime import datetime, timezone
+    joblib.dump({"model": estimator, "features": feature_cols,
+                "feature_policy_version": FEATURE_POLICY_VERSION,
+                "trained_at": datetime.now(timezone.utc).isoformat(),
+                "fit_seasons": [train_start_season, fit_end],
+                "calibration_season": train_end_season if calibration_method.lower() != "none" else None,
+                "holdout_season": test_season, "holdout_metrics": metrics,
+                "publication_status": "requires_review"}, model_path)
     console.print(f"[green]Saved model[/green] -> {model_path}")
 
 

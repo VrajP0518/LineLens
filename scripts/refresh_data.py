@@ -761,6 +761,8 @@ def import_nfl_features_if_available(status: dict[str, Any]) -> bool:
 
 
 def refresh_nfl(status: dict[str, Any], *, require_real: bool = False) -> None:
+    from scripts.refresh_nfl_current import refresh as refresh_current_schedule
+    refresh_current_schedule()
     odds = fetch_odds("NFL")
     features = first_existing(
         [

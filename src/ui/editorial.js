@@ -27,6 +27,32 @@
 
     const media = global.matchMedia('(prefers-reduced-motion: reduce)');
     let frame = 0;
+    let revealObserver;
+    const animated = new WeakSet();
+    global.LineLensUI.animateView = function animateView(root) {
+        revealObserver?.disconnect();
+        if (!root || media.matches || !('IntersectionObserver' in global)) return;
+        revealObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const element = entry.target;
+                revealObserver.unobserve(element);
+                if (animated.has(element)) return;
+                animated.add(element);
+                const delay = Number(element.dataset.motionDelay || 0);
+                // Visible by default; animate only after entry. Failed observers never hide data.
+                element.animate([
+                    { opacity: .6, transform: 'translateY(22px)' },
+                    { opacity: 1, transform: 'translateY(0)' },
+                ], { duration: 600, delay, easing: 'cubic-bezier(.2,.7,.2,1)' });
+            });
+        }, { threshold: .08, rootMargin: '0px 0px -24px 0px' });
+        root.querySelectorAll('.edition-league, .edition-section-head, .edition-review, .home-focus-panel, .home-focus-pick, .universal-pick-card, .nfl-current-card, .view > .panel, .arena-sport-group, .settings-disclosure').forEach((element, index) => {
+            element.classList.remove('ll-scroll-reveal');
+            element.dataset.motionDelay = String(Math.min(index % 3 * 65, 130));
+            revealObserver.observe(element);
+        });
+    };
     function paint() {
         frame = 0;
         const hero = document.querySelector('.view.is-active .edition-hero');
@@ -37,6 +63,12 @@
     }
     // One passive listener, no scroll hijacking, timers, or render-loop work when idle.
     global.addEventListener('scroll', () => { if (!frame) frame = requestAnimationFrame(paint); }, { passive: true });
-    media.addEventListener('change', paint);
+    media.addEventListener('change', () => {
+        paint();
+        if (media.matches) {
+            revealObserver?.disconnect();
+            document.getAnimations().forEach(animation => animation.cancel());
+        } else global.LineLensUI.animateView(document.querySelector('.view.is-active'));
+    });
     global.LineLensUI.sportsArtwork = () => `<div class="edition-art" aria-hidden="true"><div class="edition-art__orbit"></div><span class="edition-art__label">THE GAME / THE NUMBERS</span><img class="edition-art__basketball" src="assets/editorial-basketball.svg" alt="" width="320" height="320" /><img class="edition-art__baseball" src="assets/editorial-baseball.svg" alt="" width="320" height="320" /><img class="edition-art__football" src="assets/editorial-football.svg" alt="" width="360" height="220" /><span class="edition-art__index">LL / 01</span></div>`;
 })(window);

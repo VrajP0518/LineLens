@@ -50,17 +50,18 @@ for (const width of [390, 768, 1440]) {
                         .map(el => el.textContent.trim().slice(0, 90)),
                 };
             });
-            await page.screenshot({ path: `artifacts/editorial-tests/${view}-${width}.png`, fullPage: true });
+            await page.screenshot({ path: `artifacts/editorial-tests/${view}-${width}.png`, fullPage: true, animations: 'disabled' });
             if (width === 1440) {
                 const contrast = await page.evaluate(require('./contrast.cjs'));
                 fs.writeFileSync(`artifacts/editorial-tests/${view}-contrast.json`, JSON.stringify(contrast, null, 2));
+                expect(contrast).toEqual([]);
             }
             expect(overflow).toEqual({ document: false, text: [] });
             expect(errors).toEqual([]);
-            if (process.env.CAPTURE_README === '1' && ['home','picks','mlb'].includes(view) && [390,1440].includes(width)) {
+            if (process.env.CAPTURE_README === '1' && ['home','picks','mlb','nfl'].includes(view) && [390,1440].includes(width)) {
                 const folder = path.join(__dirname, '../../docs/images');
                 fs.mkdirSync(folder, { recursive: true });
-                await page.screenshot({ path: path.join(folder, `editorial-${view}-${width}.png`), fullPage: view === 'home' });
+                await page.screenshot({ path: path.join(folder, `editorial-${view}-${width}.png`), fullPage: ['home','nfl'].includes(view), animations: 'disabled' });
             }
         });
     }
@@ -87,6 +88,8 @@ test('Scroll illustration moves without hiding page content', async ({ page }) =
     await page.evaluate(() => window.scrollTo(0, 450));
     await expect.poll(() => ball.evaluate(el => getComputedStyle(el).transform)).not.toBe(before);
     await expect(page.locator('.edition-review')).toHaveCSS('opacity','1');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(ball).toHaveCSS('transform','none');
 });
 
 for (const width of [390, 1440]) {
@@ -96,17 +99,31 @@ for (const width of [390, 1440]) {
         await page.locator('#view-picks [data-picks-open]').first().click();
         const drawer = page.locator('.gamecast-drawer');
         await expect(drawer).toBeVisible();
+        await expect(page.locator('.app-shell')).toHaveAttribute('inert', '');
+        await expect(drawer.locator('[data-close-gamecast]')).toBeFocused();
         const bounds = await drawer.boundingBox();
         expect(bounds.x).toBeGreaterThanOrEqual(-1);
         expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
-        await page.screenshot({ path: `artifacts/editorial-tests/gamecast-${width}.png` });
+        await page.screenshot({ path: `artifacts/editorial-tests/gamecast-${width}.png`, animations: 'disabled' });
         const contrast = await page.evaluate(require('./contrast.cjs'));
         fs.writeFileSync(`artifacts/editorial-tests/gamecast-${width}-contrast.json`, JSON.stringify(contrast, null, 2));
-        if (process.env.CAPTURE_README === '1' && width === 1440) await page.screenshot({ path: 'docs/images/editorial-gamecast-1440.png' });
+        expect(contrast).toEqual([]);
+        if (process.env.CAPTURE_README === '1' && width === 1440) await page.screenshot({ path: 'docs/images/editorial-gamecast-1440.png', animations: 'disabled' });
         await page.keyboard.press('Escape');
         await expect(drawer).not.toBeVisible();
+        await expect(page.locator('#view-picks [data-picks-open]').first()).toBeFocused();
     });
 }
+
+test('NFL separates current fixtures from historical predictions', async ({ page }) => {
+    await openView(page, 'nfl');
+    await expect(page.locator('.nfl-current-shell')).toBeVisible();
+    await expect(page.locator('.nfl-prediction-notice')).toBeVisible();
+    await page.locator('[data-nfl-board="archive"]').click();
+    await expect(page.locator('.nfl-current-shell')).not.toBeVisible();
+    await page.locator('[data-nfl-board="current"]').click();
+    await expect(page.locator('.nfl-current-shell')).toBeVisible();
+});
 
 test('Calendar remains chronological across an August/September boundary', async ({ page }) => {
     await openView(page, 'mlb');

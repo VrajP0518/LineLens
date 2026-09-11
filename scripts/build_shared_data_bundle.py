@@ -27,6 +27,7 @@ SHARED_FILES = [
     "data/predictions/mlb_predictions.json",
     "data/predictions/wnba_predictions.json",
     "data/predictions/nfl_predictions.json",
+    "data/predictions/nfl_current.json",
     "data/tracking/model_predictions_log.json",
     "data/tracking/model_record.json",
     "data/tracking/prop_prediction_log.json",

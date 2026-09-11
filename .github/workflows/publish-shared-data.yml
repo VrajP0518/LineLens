@@ -56,6 +56,7 @@ jobs:
         run: python scripts/refresh_data.py --sport nfl --mode real
       - name: Refresh sanitized shared exports
         run: |
+          python scripts/refresh_nfl_current.py
           python scripts/refresh_data.py --sport mlb --mode predict
           python scripts/refresh_data.py --sport wnba --mode predict
           python scripts/live_scores.py --days-back 1 --days-forward 7 --output-stem live_heartbeat

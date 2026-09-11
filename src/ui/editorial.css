@@ -88,6 +88,7 @@ main { max-width: 1520px; margin: 0 auto; outline: 0; }
 .topbar .btn { min-height: 36px; padding: 7px 10px; font-size: 11px; }
 .topbar #refresh-btn { background: transparent; color: var(--text); border-color: var(--border); }
 .topbar-action__icon { width: 16px; height: 16px; }
+.topbar .command-palette-trigger .topbar-action__icon { color: var(--text); }
 .topbar .command-palette-trigger kbd { color: #697262; background: #efeee7; border-color: var(--border); font-size: 9px; }
 .global-health-signal { gap: 6px; padding: 0; border: 0; background: transparent; font-size: 10px; color: #70776c; }
 .global-health-signal strong { color: #697262; font-size: 10px; font-weight: 500; }
@@ -367,3 +368,59 @@ body .view input[type="date"] { color-scheme: light; color: var(--text); backgro
     .edition-art img { transform: none; }
     .view--entering { animation: none !important; }
 }
+
+/* Shared motion is limited to composited transforms. Nothing scroll-locks the page. */
+@media (prefers-reduced-motion: no-preference) {
+    .edition-league img { transition: transform 450ms cubic-bezier(.2,.7,.2,1); }
+    .edition-league:hover img { transform: translateY(-5px) rotate(8deg); }
+    .edition-text-link span, .edition-hero__actions .btn span { transition: transform 200ms ease; }
+    .edition-text-link:hover span, .edition-hero__actions .btn:hover span { transform: translateX(4px); }
+    .nav__item, .btn { transition: background-color 160ms ease, border-color 160ms ease; }
+    .edition-art__orbit { animation: cover-orbit-in 1000ms ease-out both; }
+    @keyframes cover-orbit-in { from { opacity: 0; scale: .85; } to { opacity: 1; scale: 1; } }
+}
+#gamecast-root .gamecast-drawer { border-radius: 5px; }
+#gamecast-root .gamecast-drawer :is(section,article,.gamecast-panel,.gamecast-section,.summary-card,.gamecast-scoreboard,.gamecast-matchup,.confidence-anatomy,.confidence-signal,.confidence-anatomy__details,.confidence-anatomy__explanation,.gamecast-why-card) { background: #fffefa; background-image: none; color: var(--text); border-color: var(--border); box-shadow: none; }
+#gamecast-root .gamecast-drawer :is(strong,b,h2,h3,span,em,summary,dt,dd) { color: var(--text); text-shadow: none; }
+#gamecast-root .gamecast-drawer :is(p,small,label,time) { color: var(--muted); }
+#gamecast-root .gamecast-drawer .team-logo { color: #fff; }
+#gamecast-root .gamecast-drawer .team-logo :is(span,b,strong) { color: #fff; }
+#gamecast-root .gamecast-drawer :is(.btn--primary,.btn--primary span) { color: #fffefa; }
+#gamecast-root .gamecast-drawer .chip--warning { color: #80540e; background: #f4ead1; }
+#gamecast-root .gamecast-drawer .chip--success { color: #216941; background: #e4efe3; }
+#gamecast-root .gamecast-stat-availability { background: #eeece5; border-color: var(--border); }
+#gamecast-root .gamecast-provenance > span[data-tone="history"]::before { background: #68745d; }
+#gamecast-root .gamecast-provenance > span[data-tone="current"]::before { background: #216941; }
+#gamecast-root .gamecast-provenance > span[data-tone="missing"]::before { background: #b34b35; }
+#gamecast-root .gamecast-provenance > span[data-tone="warning"]::before { background: #ac7029; }
+#gamecast-root .confidence-coverage { border-left-color: #ac7029; }
+#gamecast-root .confidence-coverage[data-coverage="3"] { border-left-color: #68745d; }
+#gamecast-root .confidence-coverage[data-coverage="4"] { border-left-color: #216941; }
+#gamecast-root .confidence-coverage:is([data-coverage="0"],[data-coverage="1"]) { border-left-color: #b34b35; }
+.view .scoreboard-header__meta span, #view-props .props-advanced summary span { color: var(--muted); }
+.view :is(.rail-performance,.rail-kpis) > div { background: #fffefa; border-color: var(--border); }
+.view .rail-filter-stack span { background: #eeece5; color: var(--text); border-color: var(--border); }
+.view .rail-pick-line b { color: #216941; }
+#view-reports em { color: #9a351d; }
+.nfl-current-shell { display: grid; gap: 24px; }
+.nfl-current-status { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: 11px; }
+.nfl-prediction-notice { padding: 18px 22px; border-left: 3px solid #ac7029; background: #eee9d9; }
+.nfl-prediction-notice p { margin: 7px 0; max-width: 90ch; font-size: 12px; }
+.nfl-prediction-notice summary { cursor: pointer; padding-block: 6px; font-size: 12px; color: #705828; }
+.nfl-current-day { display: grid; gap: 16px; }
+.nfl-current-day h2 { font-family: 'Barlow Condensed',Impact,sans-serif; font-size: 30px; text-transform: uppercase; }
+.nfl-current-day h2 small { margin-left: 10px; font-family: 'Segoe UI',sans-serif; font-size: 12px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.nfl-current-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.nfl-current-card { padding: 18px; border: 1px solid var(--border); border-radius: 4px; background: #fffefa; }
+.nfl-current-card > header { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; color: var(--muted); font-size: 11px; }
+.nfl-current-team { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: center; margin: 8px 0; }
+.nfl-current-team > b { font-family: 'Barlow Condensed',Impact,sans-serif; font-size: 28px; }
+.nfl-current-team .team-logo { width: 28px; height: 28px; }
+.nfl-current-card > p { min-height: 2.8em; font-size: 11px; }
+.nfl-current-pick { display: grid; gap: 6px; padding: 12px 0; border-block: 1px solid var(--border); }
+.nfl-current-pick span { color: var(--muted); font-size: 10px; }
+.nfl-current-pick strong { font-size: 13px; }
+.nfl-current-card footer { padding-top: 12px; }
+.nfl-current-card footer small { font-size: 10px; }
+@media(max-width: 1100px) { .nfl-current-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width: 600px) { .nfl-current-grid { grid-template-columns: 1fr; } }

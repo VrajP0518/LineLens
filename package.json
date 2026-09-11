@@ -5,6 +5,7 @@
   "description": "LineLens Sports desktop prediction dashboard",
   "scripts": {
     "test:ui": "npm run build:web && playwright test",
+    "test:nfl:current": "python -m unittest discover -s tests -p test_nfl_current.py",
     "check:editorial": "node --check src/ui/editorial.js",
     "build:web": "python scripts/build_web_dist.py",
     "app": "python scripts/local_server.py --port 4173",
@@ -44,6 +45,7 @@
     "export:mlb:props": ".venv\\Scripts\\python.exe -m src.mlb.export_prop_predictions",
     "score:props": "python scripts/score_prop_predictions.py",
     "refresh:nfl": "python scripts/refresh_data.py --sport nfl --mode export",
+    "refresh:nfl:current": "python scripts/refresh_nfl_current.py",
     "refresh:nfl:real": "python scripts/refresh_data.py --sport nfl --mode real",
     "refresh:odds": "python scripts/odds_snapshots.py",
     "score:models": "python scripts/score_model_predictions.py",

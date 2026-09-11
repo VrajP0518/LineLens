@@ -42,6 +42,7 @@ const DATA_SOURCES = {
     wnbaAvailability: ["data/odds/wnba_availability.json"],
     propsDiagnostics: ["data/odds/props_matching_diagnostics.json"],
     nfl: ["data/predictions/nfl_predictions.json", "data/predictions.json"],
+    nflCurrent: ["data/predictions/nfl_current.json"],
     mlb: ["data/predictions/mlb_predictions.json"],
     mlbBacktest: ["data/predictions/mlb_backtest_predictions.json"],
     mlbEconomics: ["data/mlb_economics/mlb_economics.json"],
@@ -120,6 +121,7 @@ const state = {
     diagnostics: { checked: false, available: false, status: "Checking", message: "Runtime diagnostics have not run yet.", checks: [] },
     apiKeys: { checked: false, available: false, odds_api_key: false, sharp_odds_api_key: false, propline_api_key: false, message: "Checking local key storage..." },
     nfl: { payload: window.__NFL_PREDICTIONS__ || window.__PREDICTIONS__ || null, games: [], error: null },
+    nflCurrent: null,
     mlb: { payload: window.__MLB_PREDICTIONS__ || null, games: [], error: null },
     mlbBacktest: { payload: window.__MLB_BACKTEST_PREDICTIONS__ || null, games: [], error: null },
     mlbEconomics: window.__MLB_ECONOMICS__ || null,
@@ -724,6 +726,7 @@ const DATA_GLOBALS = {
     wnbaAvailability: ["__WNBA_AVAILABILITY__"],
     propsDiagnostics: ["__PROPS_MATCHING_DIAGNOSTICS__"],
     nfl: ["__NFL_PREDICTIONS__", "__PREDICTIONS__"],
+    nflCurrent: ["__NFL_CURRENT__"],
     mlb: ["__MLB_PREDICTIONS__"],
     mlbBacktest: ["__MLB_BACKTEST_PREDICTIONS__"],
     mlbEconomics: ["__MLB_ECONOMICS__"],
@@ -748,6 +751,7 @@ const loadedDataKinds = new Set();
 
 function applyDataPayload(kind, payload) {
     if (!payload) return;
+    if (kind === "nflCurrent") state.nflCurrent = payload;
     const directTargets = {
         app: "app", teams: "teamPayload", report: "report", modelComparison: "modelComparison",
         wnbaModelComparison: "wnbaModelComparison", moltresCard: "moltresCard", featureSummary: "featureSummary",
@@ -802,7 +806,7 @@ function loadDataKinds(kinds, options = {}) {
 }
 
 const DEFERRED_DATA_BY_VIEW = {
-    nfl: ["nfl"],
+    nfl: ["nfl", "nflCurrent"],
     mlb: ["mlbBacktest", "odds"],
     "mlb-economics": ["mlbEconomics"],
     props: ["playerProps", "wnbaPropPredictions", "mlbPropPredictions", "propLog", "propRecord", "wnbaPropModelRegistry", "wnbaPropModelCards", "wnbaPropModelHealth", "wnbaPropDatasetSummary", "mlbPropModelRegistry", "mlbPropModelCards", "mlbPropModelHealth", "mlbPropDatasetSummary", "propsDiagnostics"],
@@ -3437,6 +3441,7 @@ async function executeStartupAutomation(options = {}) {
 }
 
 async function loadAllAfterRefresh() {
+    await loadDataKinds(['nflCurrent'], { force: true });
     const [bootstrap, startup, refresh, sharedDataStatus, live, odds, report, modelComparison, moltresCard, featureSummary, modelRegistry, modelUpdateStatus, modelRecord, strategyLab, predictionLog, nfl, mlb, mlbBacktest, wnbaModelComparison, wnbaCard, wnbaFeatureSummary, wnba, wnbaBacktest, playerProps, oddsHealth, wnbaPropPredictions, propLog, propRecord, wnbaPropModelRegistry, wnbaPropModelCards, wnbaPropModelHealth, wnbaPropDatasetSummary, propsDiagnostics, mlbPropPredictions, mlbPropModelRegistry, mlbPropModelCards, mlbPropModelHealth, mlbPropDatasetSummary, wnbaAvailability] = await Promise.all([
         loadOptional("bootstrap", [], { force: true }),
         loadOptional("startup", [], { force: true }),
@@ -3680,6 +3685,7 @@ function renderView(view = state.selected.view || "home") {
     applyRestraintCopy(view);
     renderedViews.add(view);
     armScrollReveals(view);
+    window.LineLensUI?.animateView($(`#view-${view}`));
 }
 
 function commandPaletteGameRows() {
@@ -5614,6 +5620,33 @@ function filterNflGames(games) {
 }
 
 function renderNFL() {
+    if (state.selected.nflBoard === "archive") {
+        renderNflArchive();
+        $("#view-nfl").insertAdjacentHTML("afterbegin", '<button class="edition-text-link" type="button" data-nfl-board="current">← Current NFL games</button>');
+        return;
+    }
+    const payload = state.nflCurrent;
+    const meta = payload?.metadata || {};
+    const today = localDateIso();
+    const yesterday = dateOffsetIso(-1);
+    const cutoff = Date.parse(meta.generated_at || "");
+    const stale = !Number.isFinite(cutoff) || Date.now() - cutoff > (meta.freshness_threshold_seconds || 21600) * 1000 || meta.source_status === "cached";
+    const games = (payload?.games || []).filter(game => game.game_date >= yesterday && game.game_date <= dateOffsetIso(7));
+    const days = [...new Set(games.map(game => game.game_date))];
+    $("#view-nfl").innerHTML = `<div class="nfl-current-shell"><header class="picks-page-header"><div><p class="edition-kicker">NFL / ${escapeHtml(String(meta.season || new Date().getFullYear()))}</p><h2>This week's football</h2><p>Kickoff times in your local timezone.</p></div><button class="btn" type="button" data-nfl-board="archive">Historical predictions →</button></header>
+        <div class="nfl-current-status"><span>${stale ? 'Cached schedule · refresh needed' : 'Schedule updated'} ${escapeHtml(timestamp(meta.generated_at) || '')}</span><span>Source: nflverse · not a live play-by-play feed</span></div>
+        <section class="nfl-prediction-notice"><strong>${meta.published_predictions ? `${meta.published_predictions} verified pregame predictions` : 'Pregame predictions need a model update'}</strong><p>${escapeHtml(meta.prediction_note || 'Current schedules load separately from historical predictions. No current prediction export is available.')}</p><details><summary>What needs to change?</summary><p>The legacy NFL model uses same-game player totals and has no reviewed pregame feature snapshot. Retrain with pregame-only features and a separate calibration period, then approve the holdout results before publishing. A prediction cannot be created after a game starts and counted as a pregame pick.</p></details></section>
+        ${days.length ? days.map(day => `<section class="nfl-current-day"><header class="edition-section-head"><h2>${day === today ? 'Today' : day === yesterday ? 'Yesterday' : escapeHtml(calendarDateDisplay(day).weekday)} <small>${escapeHtml(calendarDateDisplay(day).monthDay)}</small></h2></header><div class="nfl-current-grid">${games.filter(game => game.game_date === day).map(game => {
+            const kickoffPassed = Date.parse(game.game_time) <= Date.now();
+            const displayGame = !game.completed && kickoffPassed && game.status === 'Scheduled' ? { ...game, status: 'Awaiting score update' } : game;
+            const usable = !stale && game.publication_status === 'published';
+            const probability = safeNumber(game.home_cover_probability);
+            const market = safeNumber(game.reference_home_spread);
+            return `<article class="nfl-current-card"><header><span>${escapeHtml(displayGame.status)}</span><time datetime="${escapeHtml(game.game_time)}">${escapeHtml(getGameTimeLabel(game))}</time></header><div class="nfl-current-team">${renderTeamLogo('NFL', game.away, 'sm', game.away)}<strong>${escapeHtml(game.away)}</strong><b>${game.completed ? escapeHtml(String(game.away_score)) : '—'}</b></div><div class="nfl-current-team">${renderTeamLogo('NFL', game.home, 'sm', game.home)}<strong>${escapeHtml(game.home)}</strong><b>${game.completed ? escapeHtml(String(game.home_score)) : '—'}</b></div><p>${escapeHtml(game.venue || 'Venue unavailable')}${game.neutral_site ? ' · Neutral site' : ''}</p><div class="nfl-current-pick"><span>LineLens prediction</span><strong>${usable && probability !== null ? `${escapeHtml(game.model_pick)} · ${formatProbability(game.model_pick === game.home ? probability : 1-probability)}` : game.completed ? 'No verified pregame pick' : stale ? 'Waiting for fresh data' : 'Not published'}</strong></div><footer><small>${market === null ? 'Reference spread unavailable' : `Reference spread: ${escapeHtml(game.home)} ${market > 0 ? '+' : ''}${market}`} · not live odds</small></footer></article>`;
+        }).join('')}</div></section>`).join('') : emptyState('No current NFL schedule loaded', 'Refresh NFL data to load this week. Historical predictions are available separately.')}</div>`;
+}
+
+function renderNflArchive() {
     const scope = ensureNflScope();
     const rawGames = scope.games;
     const games = filterNflGames(rawGames);
@@ -7045,6 +7078,7 @@ function renderCLV(game, sport) {
     return `<div class="detail-card detail-card--compact"><span>CLV</span><strong>${escapeHtml(clv.label)}</strong><small>${escapeHtml(clv.note)}</small></div>`;
 }
 
+let gamecastReturnFocus = null;
 function openGameCast(sport, gameOrKey) {
     const game = typeof gameOrKey === "object"
         ? gameOrKey
@@ -7057,12 +7091,16 @@ function openGameCast(sport, gameOrKey) {
     }
     if ((sport || game.sport || "MLB") === "MLB") state.selected.mlb = game;
     state.gamecast = { open: true, sport: sport || game.sport || "MLB", gameId: gameKey(game) };
+    gamecastReturnFocus = document.activeElement;
     renderGameCastRoot();
+    document.querySelector('.gamecast-drawer [data-close-gamecast]')?.focus({ preventScroll: true });
 }
 
 function closeGameCast() {
     state.gamecast.open = false;
     renderGameCastRoot();
+    if (gamecastReturnFocus?.isConnected) gamecastReturnFocus.focus({ preventScroll: true });
+    gamecastReturnFocus = null;
 }
 
 function gamecastGame() {
@@ -7455,7 +7493,7 @@ function confidenceAnatomyData(game, sport) {
         Boolean(odds && marketProbability !== null),
     ];
     const coverage = available.filter(Boolean).length;
-    const coverageLabel = coverage === 4 ? "Full evidence" : coverage === 3 ? "Strong coverage" : coverage === 2 ? "Partial coverage" : "Limited coverage";
+    const coverageLabel = "Sources available";
     return { pick, probability, model, brier, logLoss, sampleSize, consensus, odds, marketProbability, marketEdge, coverage, coverageLabel };
 }
 
@@ -7477,7 +7515,7 @@ function renderConfidenceAnatomy(game, sport) {
     return `
         <section class="confidence-anatomy" aria-labelledby="confidence-anatomy-title">
             <header class="confidence-anatomy__header">
-                <div><p class="eyebrow">Confidence anatomy</p><h3 id="confidence-anatomy-title">${escapeHtml(pickLabel)}</h3><p>A model probability is a measured lean, not a guarantee. These signals stay separate so agreement is visible without being double-counted.</p></div>
+                <div><p class="eyebrow">Behind this pick</p><h3 id="confidence-anatomy-title">${escapeHtml(pickLabel)}</h3><p>Compare the model estimate, test results, other models, and available odds. Agreement does not guarantee a result.</p></div>
                 <span class="confidence-coverage" data-coverage="${data.coverage}"><strong>${data.coverage}/4</strong><small>${escapeHtml(data.coverageLabel)}</small></span>
             </header>
             <div class="confidence-anatomy__signals">
@@ -7620,6 +7658,7 @@ function renderGameCastRoot() {
     const game = gamecastGame();
     root.innerHTML = state.gamecast.open && game ? renderGameCast(game, state.gamecast.sport || game.sport || "MLB") : "";
     document.body.classList.toggle("gamecast-open", Boolean(state.gamecast.open && game));
+    document.querySelector('.app-shell').inert = Boolean(state.gamecast.open && game);
 }
 
 function renderOddsMovementBoard() {
@@ -9524,6 +9563,12 @@ function scrollToGameCastBoxScore() {
 }
 
 document.addEventListener("click", event => {
+        const nflBoard = event.target.closest('[data-nfl-board]');
+        if (nflBoard) {
+            state.selected.nflBoard = nflBoard.dataset.nflBoard;
+            renderView('nfl');
+            return;
+        }
         if (event.target.closest("#command-palette-btn")) {
             openCommandPalette();
             return;
@@ -10232,6 +10277,12 @@ document.addEventListener("click", event => {
     });
 
     document.addEventListener("keydown", event => {
+        if (state.gamecast.open && event.key === 'Tab' && !state.commandPalette.open) {
+            const controls = [...document.querySelectorAll('.gamecast-drawer button, .gamecast-drawer a[href], .gamecast-drawer input, .gamecast-drawer select, .gamecast-drawer summary, .gamecast-drawer [tabindex="0"]')].filter(node => !node.disabled && node.getClientRects().length);
+            const first = controls[0], last = controls.at(-1);
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+        }
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
             event.preventDefault();
             state.commandPalette.open ? closeCommandPalette() : openCommandPalette();
