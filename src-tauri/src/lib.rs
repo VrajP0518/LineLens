@@ -120,38 +120,45 @@ fn espn_live_scoreboards_inner() -> Result<serde_json::Value, String> {
         ("WNBA", "basketball", "wnba"),
         ("NBA", "basketball", "nba"),
         ("NHL", "hockey", "nhl"),
+        ("SOCCER", "soccer", "fifa.world"),
     ];
     let client = reqwest::blocking::Client::builder()
-        .timeout(std::time::Duration::from_secs(15))
+        .timeout(std::time::Duration::from_secs(8))
         .user_agent("LineLens-v6-live-score-client")
         .build()
         .map_err(|error| error.to_string())?;
     let mut games = Vec::new();
     let mut warnings = Vec::new();
+    let mut provider_attempts = Vec::new();
 
-    for (sport, category, league) in feeds {
-        let url = format!(
-            "https://site.api.espn.com/apis/site/v2/sports/{category}/{league}/scoreboard?limit=1000"
-        );
-        let response = match client
-            .get(&url)
-            .send()
-            .and_then(|value| value.error_for_status())
-        {
+    // A slow/offseason league must not hold every other score behind it.
+    let responses = std::thread::scope(|scope| {
+        let jobs: Vec<_> = feeds.iter().map(|&(sport, category, league)| {
+            let client = &client;
+            (sport, scope.spawn(move || -> Result<serde_json::Value, String> {
+                let url = format!("https://site.api.espn.com/apis/site/v2/sports/{category}/{league}/scoreboard?limit=1000");
+                let response = client.get(url).send().and_then(|value| value.error_for_status()).map_err(|error| error.to_string())?;
+                let bytes = response.bytes().map_err(|error| error.to_string())?;
+                serde_json::from_slice(&bytes).map_err(|error| error.to_string())
+            }))
+        }).collect();
+        jobs.into_iter().map(|(sport, job)| (sport, job.join().unwrap_or_else(|_| Err("Scoreboard request failed".into())))).collect::<Vec<_>>()
+    });
+    for (sport, response) in responses {
+        let payload = match response {
             Ok(value) => value,
             Err(error) => {
                 warnings.push(format!("{sport} scoreboard unavailable: {error}"));
+                provider_attempts.push(serde_json::json!({"sport": sport, "status": "failed"}));
                 continue;
             }
         };
-        let bytes = response
-            .bytes()
-            .map_err(|error| format!("Unable to read the {sport} scoreboard: {error}"))?;
-        let payload: serde_json::Value = serde_json::from_slice(&bytes)
-            .map_err(|error| format!("Unable to parse the {sport} scoreboard: {error}"))?;
         let Some(events) = payload.get("events").and_then(|value| value.as_array()) else {
+            warnings.push(format!("{sport} returned an invalid scoreboard"));
+            provider_attempts.push(serde_json::json!({"sport": sport, "status": "failed"}));
             continue;
         };
+        provider_attempts.push(serde_json::json!({"sport": sport, "status": "fresh", "rows": events.len()}));
         for event in events {
             let Some(competition) = event
                 .get("competitions")
@@ -195,7 +202,16 @@ fn espn_live_scoreboards_inner() -> Result<serde_json::Value, String> {
                 .get("completed")
                 .and_then(|value| value.as_bool())
                 .unwrap_or(false);
-            let status = if completed || state == "post" {
+            let status_label = format!("{} {} {}", status_type["name"], status_type["description"], status_type["detail"]).to_lowercase();
+            let status = if status_label.contains("postpon") {
+                "Postponed"
+            } else if status_label.contains("cancel") {
+                "Canceled"
+            } else if status_label.contains("suspend") {
+                "Suspended"
+            } else if status_label.contains("delay") {
+                "Delayed"
+            } else if completed || state == "post" {
                 "Final"
             } else if state == "in" {
                 "In Progress"
@@ -237,14 +253,15 @@ fn espn_live_scoreboards_inner() -> Result<serde_json::Value, String> {
                 "home_display": team_value(home, "displayName"),
                 "away_logo": team_value(away, "logo"),
                 "home_logo": team_value(home, "logo"),
-                "away_score": away.get("score").cloned().unwrap_or(serde_json::Value::Null),
-                "home_score": home.get("score").cloned().unwrap_or(serde_json::Value::Null),
+                "away_score": if status == "Scheduled" { serde_json::Value::Null } else { away.get("score").cloned().unwrap_or(serde_json::Value::Null) },
+                "home_score": if status == "Scheduled" { serde_json::Value::Null } else { home.get("score").cloned().unwrap_or(serde_json::Value::Null) },
                 "inning": competition.get("status").and_then(|value| value.get("period")).cloned().unwrap_or(serde_json::Value::Null),
                 "inning_state": status_type.get("shortDetail").cloned().unwrap_or(serde_json::Value::Null),
                 "clock": competition.get("status").and_then(|value| value.get("displayClock")).cloned().unwrap_or(serde_json::Value::Null),
                 "balls": situation.get("balls").cloned().unwrap_or(serde_json::Value::Null),
                 "strikes": situation.get("strikes").cloned().unwrap_or(serde_json::Value::Null),
                 "outs": situation.get("outs").cloned().unwrap_or(serde_json::Value::Null),
+                "latest_play": situation.get("lastPlay").and_then(|value| value.get("text")).cloned().unwrap_or(serde_json::Value::Null),
                 "bases": {
                     "first": situation.get("onFirst").and_then(|value| value.as_bool()).unwrap_or(false),
                     "second": situation.get("onSecond").and_then(|value| value.as_bool()).unwrap_or(false),
@@ -255,17 +272,18 @@ fn espn_live_scoreboards_inner() -> Result<serde_json::Value, String> {
         }
     }
 
-    if games.is_empty() && !warnings.is_empty() {
+    if warnings.len() == feeds.len() {
         return Err(warnings.join(" | "));
     }
     Ok(serde_json::json!({
         "metadata": {
             "generated_at": timestamp(),
             "source": "Direct ESPN scoreboard feeds",
-            "source_status": "direct_live_fresh",
+            "source_status": if warnings.is_empty() { "direct_live_fresh" } else { "direct_live_partial" },
             "refresh_mode": "direct_live",
             "live_poll_seconds_recommended": 30,
             "warnings": warnings,
+            "provider_attempts": provider_attempts,
             "row_count": games.len()
         },
         "games": games

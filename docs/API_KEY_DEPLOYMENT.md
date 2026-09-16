@@ -12,6 +12,10 @@ The **Publish Shared Data Channel** workflow refreshes scores, odds, props, pred
 
 Live scores do not wait six hours. The installed Tauri app and its Live widget query the keyless public scoreboards directly every 30 seconds while they are open. The shared channel supplies predictions, odds, records, and an offline score fallback; the direct feed supplies the changing score and game state. Model retraining remains a separate weekly review workflow.
 
+The browser app and browser widget also poll the public scoreboards directly. No GitHub secret is needed for scores. The client must be able to reach `https://site.api.espn.com`; repository secrets cannot grant access through a workplace web filter. If a managed network blocks that host, use a permitted network or request an IT-approved exception. The app keeps cached results and reports the outage.
+
+Live freshness is always three minutes, including after a shared-channel update. Partial provider failures keep each game's original fetch time, and an older shared export cannot replace a newer direct score. Postponed, canceled, delayed, and suspended events retain their provider status. Browser regression tests simulate score changes, partial outages, stale caches, and widget refreshes without contacting real providers.
+
 Before each record publication, `refresh_pending_results.py` reads the prediction log, fetches authoritative MLB/ESPN results for every still-pending date, preserves a result-history cache, and runs scoring again. Postponed, canceled, suspended, and delayed games are excluded from model accuracy instead of being mislabeled as losses or left pending forever.
 
 The installed app checks that channel automatically on startup and at a conservative background interval. It accepts only the pinned LineLens v6 release URL and an exact file allowlist, verifies the bundle hash plus every file hash and size, rejects unexpected paths, keeps a local backup, and then loads the new exports. If the network or workflow is unavailable, bundled data remains visible. End users do not need Python or API keys.

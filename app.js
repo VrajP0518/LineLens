@@ -615,12 +615,12 @@ async function detectBrowserRefreshBridge() {
 function livePayloadAgeSeconds(payload) {
     const generatedAt = normalizeMeta(payload).generated_at;
     if (!generatedAt) return Number.POSITIVE_INFINITY;
-    const timestampValue = Date.parse(String(generatedAt));
+    const timestampValue = Date.parse(window.LineLensLive.timestamp(generatedAt) || "");
     if (!Number.isFinite(timestampValue)) return Number.POSITIVE_INFINITY;
     return Math.max(0, (Date.now() - timestampValue) / 1000);
 }
 
-function livePayloadIsFresh(payload, maxAgeSeconds = state.sharedDataStatus ? 7 * 60 * 60 : 180) {
+function livePayloadIsFresh(payload, maxAgeSeconds = 180) {
     return livePayloadAgeSeconds(payload) <= maxAgeSeconds;
 }
 
@@ -768,6 +768,8 @@ function applyDataPayload(kind, payload) {
     };
     if (directTargets[kind]) state[directTargets[kind]] = payload;
     if (kind === "live") {
+        // A slower shared-channel download must not roll back a direct score.
+        if (livePayloadAgeSeconds(state.live.payload) < livePayloadAgeSeconds(payload)) return;
         state.live.payload = payload;
         state.live.games = normalizeGames(payload);
         state.live.stale = !livePayloadIsFresh(payload);
@@ -1273,8 +1275,12 @@ function currentGames() {
 
 function liveGames() {
     return state.live.games
-        .filter(game => !state.live.stale || !isLiveSportGame(game))
-        .map(game => ({ ...game, sport: game.sport || "MLB" }));
+        .map(game => {
+            const fresh = window.LineLensLive.fresh(game.fetched_at || normalizeMeta(state.live.payload).generated_at);
+            return !fresh && isLiveSportGame(game)
+                ? { ...game, sport: game.sport || "MLB", status: "Cached", status_detail: "Cached score · awaiting live update", source_status: "stale" }
+                : { ...game, sport: game.sport || "MLB" };
+        });
 }
 
 function gameStatusText(game) {
@@ -1565,121 +1571,20 @@ function renderLiveNotifications() {
     ` : "";
 }
 
-const DIRECT_LIVE_FEEDS = [
-    ["MLB", "baseball", "mlb"],
-    ["WNBA", "basketball", "wnba"],
-    ["NBA", "basketball", "nba"],
-    ["NHL", "hockey", "nhl"],
-    ["NFL", "football", "nfl"],
-];
-
 async function fetchDirectBrowserLiveScores() {
-    if (!window.location || !["file:", "http:", "https:"].includes(window.location.protocol)) return null;
-    const fetchFeed = async ([sport, category, league]) => {
-        const retryDelays = [0, 1200, 3000];
-        let lastError;
-        for (let attempt = 0; attempt < retryDelays.length; attempt += 1) {
-            if (retryDelays[attempt]) await new Promise(resolve => window.setTimeout(resolve, retryDelays[attempt]));
-            const controller = new AbortController();
-            const timeout = window.setTimeout(() => controller.abort(), 8000);
-            try {
-                const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${category}/${league}/scoreboard?limit=1000`, {
-                    cache: "no-store",
-                    signal: controller.signal,
-                });
-                if (!response.ok) throw new Error(`${sport} returned ${response.status}`);
-                return [sport, await response.json(), attempt];
-            } catch (error) {
-                lastError = error;
-            } finally {
-                window.clearTimeout(timeout);
-            }
-        }
-        throw lastError || new Error(`${sport} scoreboard unavailable`);
-    };
-    const results = await Promise.allSettled(DIRECT_LIVE_FEEDS.map(fetchFeed));
-    const games = [];
-    const warnings = [];
-    const providerAttempts = [];
-    results.forEach(result => {
-        if (result.status === "rejected") {
-            warnings.push(String(result.reason?.message || result.reason || "scoreboard unavailable"));
-            providerAttempts.push({ provider: "ESPN", status: "failed", error: String(result.reason?.message || result.reason || "scoreboard unavailable") });
-            return;
-        }
-        const [sport, payload, attempts] = result.value;
-        providerAttempts.push({ provider: `ESPN ${sport}`, status: "fresh", attempts: attempts + 1, rows: payload?.events?.length || 0 });
-        if (attempts) warnings.push(`${sport} feed recovered after ${attempts} retry${attempts === 1 ? "" : "ies"}`);
-        (payload?.events || []).forEach(event => {
-            const competition = event.competitions?.[0];
-            const competitors = competition?.competitors || [];
-            const away = competitors.find(item => item.homeAway === "away");
-            const home = competitors.find(item => item.homeAway === "home");
-            if (!away || !home) return;
-            const statusType = competition?.status?.type || {};
-            const status = statusType.completed || statusType.state === "post" ? "Final" : statusType.state === "in" ? "In Progress" : "Scheduled";
-            games.push({
-                sport,
-                game_id: String(event.id || competition.id || ""),
-                game_date: toIsoDate(event.date || competition.date),
-                game_time: event.date || competition.date || null,
-                status,
-                status_detail: status === "Scheduled" ? "Scheduled" : statusType.shortDetail || statusType.detail || status,
-                source: "ESPN Scoreboard API",
-                source_status: "direct_live_fresh",
-                source_type: "live",
-                away: away.team?.abbreviation || "AWAY",
-                home: home.team?.abbreviation || "HOME",
-                away_display: away.team?.displayName || away.team?.name || away.team?.abbreviation,
-                home_display: home.team?.displayName || home.team?.name || home.team?.abbreviation,
-                away_logo: away.team?.logo || null,
-                home_logo: home.team?.logo || null,
-                away_score: safeNumber(away.score),
-                home_score: safeNumber(home.score),
-                inning: sport === "MLB" ? competition.status?.period || null : null,
-                period: sport === "MLB" ? null : competition.status?.period || null,
-                clock: competition.status?.displayClock || null,
-                balls: sport === "MLB" ? competition.situation?.balls ?? null : null,
-                strikes: sport === "MLB" ? competition.situation?.strikes ?? null : null,
-                outs: sport === "MLB" ? competition.situation?.outs ?? null : null,
-                bases: sport === "MLB" ? {
-                    first: Boolean(competition.situation?.onFirst || competition.situation?.runnerOnFirst),
-                    second: Boolean(competition.situation?.onSecond || competition.situation?.runnerOnSecond),
-                    third: Boolean(competition.situation?.onThird || competition.situation?.runnerOnThird),
-                } : null,
-            });
-        });
-    });
-    if (!games.length && warnings.length >= DIRECT_LIVE_FEEDS.length) throw new Error("All direct score providers failed after retrying.");
-    return {
-        metadata: {
-            app: "LineLens Sports",
-            version: APP_VERSION,
-            generated_at: new Date().toISOString(),
-            real_data: true,
-            source: "Direct ESPN scoreboard feeds",
-            source_status: warnings.length ? "direct_live_partial" : "direct_live_fresh",
-            refresh_mode: "direct_live",
-            schema_version: "linelens.data.v1",
-            fetched_at: new Date().toISOString(),
-            freshness_sla_seconds: 180,
-            live_poll_seconds_recommended: 30,
-            warnings,
-            provider_attempts: providerAttempts,
-            row_count: games.length,
-        },
-        games,
-    };
+    if (!["file:", "http:", "https:"].includes(window.location?.protocol)) return null;
+    return window.LineLensLive.fetchScores();
 }
 
 function applyDirectLivePayload(payload) {
+    payload = window.LineLensLive.normalize(payload);
     const before = liveGames();
     const directGames = normalizeGames(payload).map(game => ({ ...game, source_type: "live" }));
-    const cachedGames = state.live.games.map(game => ({ ...game, source_type: game.source_type || "live" }));
+    const cachedGames = state.live.games.map(game => ({ ...game, fetched_at: game.fetched_at || window.LineLensLive.timestamp(normalizeMeta(state.live.payload).generated_at), source_type: game.source_type || "live" }));
     const predictionGames = currentGames().map(game => ({ ...game, source_type: "current" }));
     state.live.games = mergeCanonicalGameRows([...directGames, ...cachedGames, ...predictionGames]);
     state.live.payload = { ...payload, games: state.live.games };
-    state.live.stale = false;
+    state.live.stale = !livePayloadIsFresh(payload);
     state.live.error = null;
     state.live.sourceStatus = normalizeMeta(payload).source_status || normalizeMeta(payload).refresh_mode || "direct_live";
     state.live.warnings = normalizeMeta(payload).warnings || [];
@@ -1710,7 +1615,8 @@ async function refreshLiveHeartbeat(options = {}) {
                 const payload = await tauriInvoke("fetch_live_scoreboards", {});
                 const count = applyDirectLivePayload(payload);
                 syncSharedData({ background: true, minimumIntervalMs: 15 * 60 * 1000 });
-                state.liveRefresh.lastStatus = "fresh";
+                state.liveRefresh.lastError = null;
+                state.liveRefresh.lastStatus = state.live.warnings.length ? "partial" : "fresh";
                 state.liveRefresh.lastMessage = `Direct live score feeds updated; ${count} games loaded.`;
                 return;
             } catch (error) {
@@ -1725,14 +1631,17 @@ async function refreshLiveHeartbeat(options = {}) {
             const directPayload = await fetchDirectBrowserLiveScores();
             if (directPayload) {
                 const count = applyDirectLivePayload(directPayload);
-                state.liveRefresh.lastStatus = "fresh";
+                state.liveRefresh.lastError = null;
+                state.liveRefresh.lastStatus = state.live.warnings.length ? "partial" : "fresh";
                 state.liveRefresh.lastMessage = `Direct ESPN score feeds updated; ${count} games loaded.`;
                 return;
             }
-        } catch (_error) {
+        } catch (error) {
+            state.liveRefresh.lastError = String(error?.message || error);
             // Fall through to the local Python bridge when browser CORS/network
             // access is unavailable.
         }
+        if (!isTauriRefreshAvailable() && !browserRefreshAvailable()) throw new Error(state.liveRefresh.lastError || "Live score feed unavailable");
         const result = await runRefreshCommand("live_scores_fast", {
             background: true,
             loadAfterRefresh: false,
@@ -1759,6 +1668,7 @@ async function refreshLiveHeartbeat(options = {}) {
         state.liveRefresh.lastError = String(error?.message || error || "refresh failed");
         state.liveRefresh.lastMessage = `Showing cached live data - ${String(error?.message || error || "refresh failed")}`;
     } finally {
+        state.live.stale = !livePayloadIsFresh(state.live.payload);
         state.liveRefresh.lastRunAt = new Date().toISOString();
         state.liveRefresh.refreshing = false;
         renderAll();
@@ -1779,14 +1689,14 @@ function startLiveHeartbeat() {
     }
     const seconds = liveHeartbeatSeconds();
     if (!seconds) return;
-    const refreshAvailable = isTauriRefreshAvailable() || browserRefreshAvailable();
+    const refreshAvailable = isTauriRefreshAvailable() || browserRefreshAvailable() || ["http:", "https:", "file:"].includes(window.location?.protocol);
     const effectiveSeconds = isTauriRefreshAvailable() ? Math.max(seconds, 30) : seconds;
     state.liveRefresh.lastStatus = refreshAvailable ? "waiting" : "cached";
     state.liveRefresh.lastMessage = refreshAvailable
         ? isTauriRefreshAvailable()
             ? `Live score feeds refresh directly every ${effectiveSeconds} seconds; predictions remain on the approved data channel.`
-            : `Live heartbeat ready every ${seconds}s; live_scores refresh runs in the background.`
-        : `Static mode can only show bundled live data. Start npm run app to enable live refresh.`;
+            : `Public scoreboards refresh every ${seconds}s while the app is open.`
+        : `Public scoreboards are unavailable in this environment; showing cached data.`;
     state.liveRefresh.intervalId = window.setInterval(() => {
         refreshLiveHeartbeat({ source: "interval" });
     }, effectiveSeconds * 1000);
@@ -1840,7 +1750,10 @@ function globalDataHealth() {
     if (!predictionRows) {
         return { tone: "error", label: "Needs data", detail: "No prediction rows are loaded. Open Settings to inspect data sources." };
     }
-    if (state.live.games.length && !state.live.stale) {
+    if (state.live.warnings?.length && livePayloadIsFresh(state.live.payload)) {
+        return { tone: "warning", label: "Partial live feed", detail: state.live.warnings.join(" · ") };
+    }
+    if (state.live.games.length && livePayloadIsFresh(state.live.payload)) {
         return { tone: "success", label: "Fresh", detail: `${state.live.games.length} live-score rows are inside the freshness threshold.` };
     }
     if (state.live.games.length) {
@@ -2265,6 +2178,8 @@ function mergeCanonicalGameRows(rows) {
         ordered.slice(1).forEach(row => {
             Object.entries(row).forEach(([key, value]) => {
                 if (value === null || value === undefined || value === "") return;
+                // Unknown live fields must not inherit an old score, count or play.
+                if (merged.fetched_at && ["away_score", "home_score", "inning", "inning_state", "period", "clock", "balls", "strikes", "outs", "bases", "latest_play"].includes(key)) return;
                 const isTimeField = ["game_time", "start_time", "commence_time", "kickoff", "first_pitch", "game_datetime", "scheduled_date"].includes(key);
                 const shouldFill = merged[key] === null || merged[key] === undefined || merged[key] === "";
                 const shouldUpgradeTime = isTimeField && hasGameClock(value) && !hasGameClock(merged[key]);
@@ -3496,11 +3411,7 @@ async function loadAllAfterRefresh() {
         window.__REFRESH_STATUS__ = refresh;
     }
     if (live) {
-        state.live.payload = live;
-        state.live.games = normalizeGames(live);
-        state.live.stale = !livePayloadIsFresh(live);
-        state.live.error = state.live.stale ? "Live export is older than three minutes; waiting for background refresh." : null;
-        window.__LIVE_SCORES__ = live;
+        applyDataPayload("live", live);
     }
     if (odds) {
         state.odds = odds;
@@ -5701,9 +5612,9 @@ function filterMlbGames(games) {
 function lifecycleStage(game) {
     const live = liveGameFor(game);
     const source = live || game;
-    const statuses = [live?.status_detail, live?.status, game?.status_detail, game?.status].filter(Boolean).map(value => String(value).toLowerCase());
+    const statuses = [source?.status_detail, source?.status].filter(Boolean).map(value => String(value).toLowerCase());
+    if (statuses.some(status => /postpon|cancel|suspend|delay|cached/.test(status))) return "stale";
     if (statuses.some(status => status.includes("final") || status.includes("completed"))) return "final";
-    if (safeNumber(source?.away_score) !== null && safeNumber(source?.home_score) !== null && safeNumber(source?.inning) >= 9 && safeNumber(source?.outs) >= 3) return "final";
     const scheduledAt = gameTimestamp(source);
     const hasStartedScore = safeNumber(source?.away_score, 0) !== 0 || safeNumber(source?.home_score, 0) !== 0;
     if (scheduledAt !== null && scheduledAt > Date.now() + 60_000 && !hasStartedScore) return "pregame";
@@ -5943,8 +5854,8 @@ function renderMlbLifecycleCard(game) {
     const pickMeta = getTeamMeta("MLB", pick, pick);
     const homeMeta = getTeamMeta("MLB", game.home, game.home_display);
     const awayMeta = getTeamMeta("MLB", game.away, game.away_display);
-    const statusLabel = stage === "pregame" ? "UPCOMING" : lifecycleStageLabel(stage).toUpperCase();
-    const dateLabel = stage === "pregame" ? `${gameIsoDate(game) === localDateIso() ? "TODAY" : formatDateOnly(gameIsoDate(game), { month: "short", day: "numeric" }).toUpperCase()} · ${getGameTimeLabel(game)}` : stage === "stale" ? "PAST · VERIFY SOURCE" : gameStatusLine(game, live);
+    const statusLabel = stage === "pregame" ? "UPCOMING" : stage === "stale" && /postpon|cancel|suspend|delay|cached/i.test(source.status || "") ? String(source.status).toUpperCase() : lifecycleStageLabel(stage).toUpperCase();
+    const dateLabel = stage === "pregame" ? `${gameIsoDate(game) === localDateIso() ? "TODAY" : formatDateOnly(gameIsoDate(game), { month: "short", day: "numeric" }).toUpperCase()} · ${getGameTimeLabel(game)}` : stage === "stale" ? source.status_detail || "PAST · VERIFY SOURCE" : gameStatusLine(game, live);
     const marketRead = !market.movement.available ? "" : `<div class="mlb-game-card__market"><span>Market ${market.marketProbability === null ? "Linked" : formatProbability(market.marketProbability)}</span>${market.edge === null ? "" : `<strong>Edge ${formatEdge(market.edge)}</strong>`}</div>`;
     const latestPlay = stage === "live" && live?.latest_play ? `<small class="mlb-game-card__play">${escapeHtml(live.latest_play)}</small>` : "";
     const liveScoreboard = stage === "live"
@@ -6422,6 +6333,7 @@ function renderMlbEconomics() {
 }
 
 function scoreboardStatus(game) {
+    if (/postpon|cancel|suspend|delay|cached/i.test(gameStatusText(game))) return "unavailable";
     if (isFinalSportGame(game)) return "final";
     if (isLiveSportGame(game)) return "live";
     return "upcoming";
@@ -6447,7 +6359,7 @@ function renderScoreboardCard(game, config) {
     const awayScore = safeNumber(game?.away_score);
     const homeScore = safeNumber(game?.home_score);
     const hasScore = awayScore !== null && homeScore !== null;
-    const statusLabel = stage === "live" ? "LIVE" : stage === "final" ? "FINAL" : "UPCOMING";
+    const statusLabel = stage === "live" ? "LIVE" : stage === "final" ? "FINAL" : stage === "unavailable" ? escapeHtml(String(game.status || "Unavailable").toUpperCase()) : "UPCOMING";
     const detail = stage === "live" && game?.latest_play ? game.latest_play : stage === "upcoming" ? getGameTimeLabel(game) : (hasScore ? `${awayScore} – ${homeScore}` : "Score unavailable");
     return `<article class="scoreboard-game scoreboard-game--${stage}" style="--scoreboard-accent:${escapeHtml(config.accent)}">
         <header><span class="scoreboard-game__status">${statusLabel}</span><span>${escapeHtml(game?.status_detail || config.navLabel)}</span></header>

@@ -368,7 +368,12 @@ function logGame(row) {
 }
 
 function buildUnifiedGames() {
-    const liveGames = (state.payload?.games || []).map(normalizeLiveGame);
+    const liveGames = (state.payload?.games || []).map(game => {
+        if (isLiveGame(game) && !window.LineLensLive.fresh(game.fetched_at || state.payload?.metadata?.generated_at)) {
+            return normalizeLiveGame({ ...game, status: "Cached", status_detail: "Cached score · awaiting live update" });
+        }
+        return normalizeLiveGame(game);
+    });
     const mlbGames = (state.mlbPayload?.games || []).map(game => predictionGame(game, "MLB", "mlb_prediction_export"));
     const nflGames = (state.nflPayload?.games || []).map(game => predictionGame(game, "NFL", "nfl_prediction_export")).slice(0, 40);
     const logged = (state.predictionLog?.predictions || []).map(logGame).slice(0, 40);
@@ -798,28 +803,25 @@ async function refreshLive(options = {}) {
     state.refreshStatus = options.background ? "Refreshing live scores..." : "Refreshing live scores...";
     render();
     try {
-        if (isTauri()) {
-            if (!options.background) showToast("Refreshing live scores...");
-            const result = await tauriInvoke("fetch_live_scoreboards", {});
-            state.payload = result || state.payload;
-            state.games = buildUnifiedGames();
-            ensureSelectedDate();
-            clampSelectedIndex();
-            state.refreshStatus = "Direct live scores";
-        } else {
-            const result = await requestLocalRefresh("live_scores");
-            if (result?.success === false) throw new Error(result.stderr || "Live score refresh failed.");
-            if (!result && !options.background) showToast("Start npm run app for live refresh, or showing cached data.");
-        }
-        if (!isTauri()) await loadLocalData("Reloading live schedule...", { forceFetch: true });
-        else render();
+        const result = window.LineLensLive.normalize(isTauri()
+            ? await tauriInvoke("fetch_live_scoreboards", {})
+            : await window.LineLensLive.fetchScores());
+        const oldRows = (state.payload?.games || []).map(game => ({ ...game, fetched_at: game.fetched_at || state.payload?.metadata?.generated_at }));
+        state.payload = { ...result, games: dedupeGames([...result.games, ...oldRows]) };
+        state.games = buildUnifiedGames();
+        ensureSelectedDate();
+        clampSelectedIndex();
+        state.refreshStatus = result.metadata.warnings?.length ? "Partial live feed · some scores are cached" : "Direct live scores";
+        render();
         if (!options.background) showToast("Live scores loaded");
     } catch (error) {
         state.refreshStatus = `Showing cached schedule - live refresh failed`;
+        state.games = buildUnifiedGames();
         if (!options.background) showToast(String(error?.message || error || "Live refresh failed"));
         render();
     } finally {
         state.refreshing = false;
+        render();
     }
 }
 
@@ -948,5 +950,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     render();
     await loadLocalData("Loading local schedule...");
     startAutoRefresh();
-    if (isTauri()) window.setTimeout(() => refreshLive({ background: true }), 750);
+    window.setTimeout(() => refreshLive({ background: true }), 750);
 });

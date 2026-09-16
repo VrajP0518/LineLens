@@ -28,7 +28,7 @@ async function openView(page, view) {
 }
 
 for (const width of [390, 768, 1440]) {
-    for (const view of ['home', 'picks', 'mlb', 'props', 'models', 'record', 'settings', 'watchlist', 'nfl', 'wnba', 'nba', 'reports', 'history', 'teams', 'tracking']) {
+    for (const view of ['home', 'picks', 'mlb', 'props', 'models', 'record', 'settings', 'watchlist', 'nfl', 'wnba', 'nba', 'nhl', 'soccer', 'reports', 'history', 'teams', 'tracking']) {
         test(`${view} layout at ${width}px`, async ({ page }) => {
             const errors = [];
             page.on('pageerror', error => { errors.push(error.message); console.error(`${view}: ${error.message}`); });
@@ -79,6 +79,47 @@ test('Home navigation, keyboard search, and reduced motion', async ({ page }) =>
     await expect(page.locator('[role="combobox"]')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.locator('[role="combobox"]')).not.toBeVisible();
+});
+
+for (const width of [390, 1440]) {
+    test(`Populated MLB cards and secondary tabs at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 1000 });
+        await openView(page, 'mlb');
+        const date = await page.evaluate(() => state.mlb.games.find(game => game.model_consensus?.length || game.model_components?.length)?.game_date);
+        expect(date).toBeTruthy();
+        const picker = page.locator('#mlb-date-picker');
+        await picker.fill(date.slice(0, 10));
+        await picker.dispatchEvent('change');
+        await expect(page.locator('.mlb-game-card__consensus').first()).toBeVisible();
+        const card = page.locator('.mlb-game-card').first();
+        await card.locator('[data-flip-card]').first().click();
+        await expect(card.locator('.mlb-card-flip__back')).not.toHaveAttribute('inert', '');
+        expect.soft(await page.evaluate(require('./contrast.cjs')), 'flipped card').toEqual([]);
+        await card.locator('.mlb-card-flip__back [data-flip-card]').click();
+        for (const tab of ['games', 'predictions', 'players', 'economics']) {
+            if (tab !== 'games') {
+                await page.locator('.nav__item[data-view="mlb"]').click();
+                await page.locator(`[data-mlb-tab="${tab}"]`).click();
+            }
+            await page.screenshot({ path: `artifacts/editorial-tests/mlb-${tab}-${width}.png`, fullPage: true, animations: 'disabled' });
+            const contrast = await page.evaluate(require('./contrast.cjs'));
+            fs.writeFileSync(`artifacts/editorial-tests/mlb-${tab}-${width}-contrast.json`, JSON.stringify(contrast, null, 2));
+            expect.soft(contrast, tab).toEqual([]);
+            expect.soft(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), tab).toBe(true);
+        }
+    });
+}
+
+test('Settings disclosures, notifications and About use readable surfaces', async ({ page }) => {
+    await openView(page, 'settings');
+    await page.locator('#view-settings details').evaluateAll(nodes => nodes.forEach(node => { node.open = true; }));
+    for (const view of ['settings', 'notifications', 'about']) {
+        if (view === 'notifications') await page.locator('#notifications-btn').click();
+        if (view === 'about') await page.locator('#about-btn').click();
+        const contrast = await page.evaluate(require('./contrast.cjs'));
+        fs.writeFileSync(`artifacts/editorial-tests/${view}-expanded-contrast.json`, JSON.stringify(contrast, null, 2));
+        expect.soft(contrast, view).toEqual([]);
+    }
 });
 
 test('Scroll illustration moves without hiding page content', async ({ page }) => {

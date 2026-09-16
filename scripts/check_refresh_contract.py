@@ -14,6 +14,7 @@ def main() -> int:
     bridge = (ROOT / "scripts" / "local_server.py").read_text(encoding="utf-8")
     live = (ROOT / "scripts" / "live_scores.py").read_text(encoding="utf-8")
     index = (ROOT / "index.html").read_text(encoding="utf-8")
+    browser_live = (ROOT / "src" / "ui" / "live_scores.js").read_text(encoding="utf-8")
     failures: list[str] = []
 
     required_app = {
@@ -23,11 +24,17 @@ def main() -> int:
         "background runtime state": 'phase: "idle"',
         "background live reload": "applyDataPayload(\"live\", live);",
         "live reliability panel": "function renderLiveReliabilityPanel()",
-        "direct feed retry": "retryDelays = [0, 1200, 3000]",
+        "shared direct feed": "window.LineLensLive.fetchScores()",
     }
     for label, needle in required_app.items():
         if needle not in app:
             failures.append(f"app.js missing {label}")
+
+    for needle in ("attempt < 2", "AbortController", "Promise.allSettled", "provider_attempts", "180000"):
+        if needle not in browser_live:
+            failures.append(f"shared browser score client missing {needle}")
+    if 'src/ui/live_scores.js' not in index:
+        failures.append("index.html does not load the shared score client")
 
     forbidden_app = {
         "forced webview reload": "window.location.reload",

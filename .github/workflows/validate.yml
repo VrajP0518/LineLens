@@ -43,3 +43,16 @@ jobs:
 
       - name: Build static web bundle
         run: npm run build:web
+
+      - name: Install Chromium for UI checks
+        run: npx playwright install --with-deps chromium
+
+      - name: Check layouts, contrast, and live-score recovery
+        run: npm run test:ui
+
+      - name: Save browser audit results
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: browser-audit
+          path: artifacts/editorial-tests

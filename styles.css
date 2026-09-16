@@ -6153,7 +6153,7 @@ html {
 }
 
 .mlb-game-card__signal-pick {
-    color: color-mix(in srgb, var(--pick-color, #8ce6f4) 54%, #ffffff) !important;
+    color: var(--text);
     font-size: clamp(1.28rem, 1rem + 0.75vw, 1.9rem) !important;
     letter-spacing: 0.045em;
     text-shadow: 0 0 18px color-mix(in srgb, var(--pick-color, #8ce6f4) 28%, transparent);
