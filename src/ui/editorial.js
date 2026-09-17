@@ -42,14 +42,14 @@
                 const delay = Number(element.dataset.motionDelay || 0);
                 // Visible by default; animate only after entry. Failed observers never hide data.
                 element.animate([
-                    { opacity: .6, transform: 'translateY(22px)' },
+                    { opacity: .85, transform: 'translateY(6px)' },
                     { opacity: 1, transform: 'translateY(0)' },
-                ], { duration: 600, delay, easing: 'cubic-bezier(.2,.7,.2,1)' });
+                ], { duration: 180, delay, easing: 'ease-out' });
             });
         }, { threshold: .08, rootMargin: '0px 0px -24px 0px' });
-        root.querySelectorAll('.edition-league, .edition-section-head, .edition-review, .home-focus-panel, .home-focus-pick, .universal-pick-card, .nfl-current-card, .view > .panel, .arena-sport-group, .settings-disclosure').forEach((element, index) => {
+        root.querySelectorAll('.edition-league, .edition-section-head, .edition-review').forEach((element, index) => {
             element.classList.remove('ll-scroll-reveal');
-            element.dataset.motionDelay = String(Math.min(index % 3 * 65, 130));
+            element.dataset.motionDelay = String(Math.min(index % 3 * 25, 50));
             revealObserver.observe(element);
         });
     };

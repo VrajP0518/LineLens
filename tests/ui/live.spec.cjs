@@ -38,6 +38,8 @@ test('Browser heartbeat updates scores, preserves partial data and labels an out
     expect(await page.evaluate(() => liveGames().find(g => g.game_id === 'test-live-1').away_score)).toBe(2);
     feed.score = 4;
     feed.partial = true;
+    // Disabling automatic updates must not disable an explicit refresh.
+    await page.evaluate(() => { state.selected.liveHeartbeatEnabled = false; });
     await page.evaluate(() => refreshLiveHeartbeat({ force: true }));
     expect(await page.evaluate(() => liveGames().find(g => g.game_id === 'test-live-1').away_score)).toBe(4);
     expect(await page.evaluate(() => globalDataHealth().label)).toBe('Partial live feed');

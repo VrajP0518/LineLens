@@ -92,6 +92,14 @@ for (const width of [390, 1440]) {
         await picker.dispatchEvent('change');
         await expect(page.locator('.mlb-game-card__consensus').first()).toBeVisible();
         const card = page.locator('.mlb-game-card').first();
+        const agreement = card.locator('details[data-consensus-game]');
+        await agreement.locator('summary').click();
+        await expect(agreement).toHaveAttribute('open', '');
+        await expect(card).not.toHaveClass(/is-flipped/);
+        await page.evaluate(() => renderMLB());
+        await expect(page.locator('details[data-consensus-game]').first()).toHaveAttribute('open', '');
+        expect.soft(await page.evaluate(require('./contrast.cjs')), 'expanded agreement').toEqual([]);
+        await page.locator('details[data-consensus-game] summary').first().click();
         await card.locator('[data-flip-card]').first().click();
         await expect(card.locator('.mlb-card-flip__back')).not.toHaveAttribute('inert', '');
         expect.soft(await page.evaluate(require('./contrast.cjs')), 'flipped card').toEqual([]);
@@ -101,7 +109,13 @@ for (const width of [390, 1440]) {
                 await page.locator('.nav__item[data-view="mlb"]').click();
                 await page.locator(`[data-mlb-tab="${tab}"]`).click();
             }
+            await page.evaluate(() => window.scrollTo(0, 0));
             await page.screenshot({ path: `artifacts/editorial-tests/mlb-${tab}-${width}.png`, fullPage: true, animations: 'disabled' });
+            if (tab === 'games' && width === 1440) {
+                await page.locator('.mlb-board-panel').scrollIntoViewIfNeeded();
+                await page.screenshot({ path: 'artifacts/editorial-tests/mlb-scoreboard-desktop.png', animations: 'disabled' });
+                await page.evaluate(() => window.scrollTo(0, 0));
+            }
             const contrast = await page.evaluate(require('./contrast.cjs'));
             fs.writeFileSync(`artifacts/editorial-tests/mlb-${tab}-${width}-contrast.json`, JSON.stringify(contrast, null, 2));
             expect.soft(contrast, tab).toEqual([]);
@@ -120,6 +134,19 @@ test('Settings disclosures, notifications and About use readable surfaces', asyn
         fs.writeFileSync(`artifacts/editorial-tests/${view}-expanded-contrast.json`, JSON.stringify(contrast, null, 2));
         expect.soft(contrast, view).toEqual([]);
     }
+});
+
+test('An empty daily board offers a route to available results', async ({ page }) => {
+    await openView(page, 'mlb');
+    await page.locator('#mlb-date-picker').fill('2026-09-17');
+    await page.locator('#mlb-date-picker').dispatchEvent('change');
+    await expect(page.locator('.board-empty')).toContainText('No games loaded');
+    await page.locator('.board-empty [data-scoreboard-date]').click();
+    await expect(page.locator('.mlb-game-card').first()).toBeVisible();
+    await page.locator('[data-mlb-stage-filter="live"]').click();
+    await expect(page.locator('.board-empty')).toContainText('No games match');
+    await page.locator('.board-empty [data-mlb-stage-filter="all"]').click();
+    await expect(page.locator('.mlb-game-card').first()).toBeVisible();
 });
 
 test('Scroll illustration moves without hiding page content', async ({ page }) => {

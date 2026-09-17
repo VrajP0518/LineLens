@@ -38,6 +38,7 @@ dist/
 dist-web/
 dist-models/
 artifacts/
+Microsoft/Windows/PowerShell/
 *.log
 *.tmp
 *.cache
