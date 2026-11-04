@@ -491,12 +491,9 @@ def export(
     df["game_date"] = pd.to_datetime(df["game_date"])
     if season is not None:
         df = df[df["season"] == season]
-    if df.empty:
-        payload = _payload([], "trained_model", "home_win", real_data=False, reason="No rows matched the export filters.")
-        write_json_and_js(payload, json_path, js_path, "__MLB_PREDICTIONS__")
-        console.print("[yellow]No MLB rows matched the export filters; wrote an empty payload.[/yellow]")
-        return
-
+    # Quiet days and offseason windows still belong to the loaded production
+    # artifact. _score_games skips inference for empty frames but returns its
+    # identity, so empty and populated exports use the same metadata path.
     games, artifact = _score_games(df, model_path, limit)
     artifact_meta = artifact.get("metadata", {})
     model_version = artifact_meta.get("version") or APP_VERSION
@@ -506,10 +503,12 @@ def export(
         artifact_meta.get("model_name") or artifact.get("model_name") or "trained_model",
         "home_win",
         real_data=True,
+        reason="No rows matched the export filters." if df.empty else None,
         metadata={
             "generated_at": generated_at,
             "version": model_version,
             "prediction_mode": "model",
+            "export_status": "no_matching_games" if df.empty else "ready",
             "model_name": artifact_meta.get("model_name") or artifact.get("model_name"),
             "model_id": artifact_meta.get("model_id"),
             "feature_count": len(artifact.get("features", [])),
@@ -518,7 +517,7 @@ def export(
         },
     )
     write_json_and_js(payload, json_path, js_path, "__MLB_PREDICTIONS__")
-    if json_path.name == "mlb_predictions.json":
+    if games and json_path.name == "mlb_predictions.json":
         _append_prediction_log(games, artifact, generated_at)
     console.print(f"[green]Wrote[/green] {len(games)} MLB predictions -> {json_path}")
 

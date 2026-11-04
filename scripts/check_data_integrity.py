@@ -119,6 +119,30 @@ def app_js_text() -> str:
     return (ROOT / "app.js").read_text(encoding="utf-8")
 
 
+def check_prediction_calendar(predictions: dict) -> None:
+    """Accept an explicit empty model export, never a missing/broken export."""
+    meta = predictions.get("metadata", {})
+    games = predictions.get("games")
+    empty_model_export = (
+        games == []
+        and meta.get("row_count") == 0
+        and meta.get("real_data") is True
+        and meta.get("mode") == "real"
+        and meta.get("prediction_mode") == "model"
+        and meta.get("export_status") == "no_matching_games"
+        and bool(meta.get("model_type"))
+        and bool(meta.get("model_id"))
+        and bool(meta.get("version"))
+    )
+    prediction_dates = {source_date(row) for row in rows(predictions) if source_date(row)}
+    check(
+        "date source available",
+        bool(prediction_dates) or empty_model_export,
+        "explicit empty model export; no schedule dates to validate"
+        if empty_model_export else f"{len(prediction_dates)} schedule dates available",
+    )
+
+
 def check_exports() -> None:
     app = load("data/app_metadata.json")
     predictions = load("data/predictions/mlb_predictions.json")
@@ -225,8 +249,7 @@ def check_exports() -> None:
     check("non-decisive record guard", "isNonDecisiveGameStatus" in app_js and "is_excluded_prediction" in (ROOT / "scripts/score_model_predictions.py").read_text(encoding="utf-8"), "postponed/delayed/canceled/suspended rows are excluded")
     check("past zero-zero guard", 'return "stale"' in app_js and "Past / verify" in app_js, "past schedule-only rows cannot render as Upcoming or Final")
 
-    prediction_dates = {source_date(row) for row in finals if source_date(row)}
-    check("date source available", bool(prediction_dates), f"{len(prediction_dates)} schedule dates available")
+    check_prediction_calendar(predictions)
     late_night = {"game_date": "2026-07-10T23:59:00-04:00"}
     check("late-night schedule date", source_date(late_night) == "2026-07-10", "source calendar date is preserved")
     check("canonical date path", "function ensureMlbReviewDate" in app_js and "function selectedMlbDateDisplay" in app_js, "MLB date state and display helpers present")
