@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generated_at": "2026-08-24T19:32:20Z",
+    "generated_at": "2026-11-08T16:04:40Z",
     "status": "clear",
     "policy": "alert at +0.03 log loss, +0.02 Brier, or -0.05 accuracy/ROC AUC"
   },
@@ -10,8 +10,8 @@
       "status": "clear",
       "before_model": "EloBlend",
       "after_model": "EloBlend",
-      "before_id": "mlb_moneyline_v6_20260819T165008",
-      "after_id": "mlb_moneyline_v6_20260824T193110",
+      "before_id": "mlb_moneyline_v6_20260824T193110",
+      "after_id": "mlb_moneyline_v6_20261108T160253",
       "metric_deltas": {
         "log_loss": 0.0,
         "brier_score": 0.0,
@@ -25,14 +25,14 @@
       "sport": "WNBA",
       "status": "clear",
       "before_model": "Entei",
-      "after_model": "Entei",
+      "after_model": "Raikou",
       "before_id": "wnba_entei_moneyline",
-      "after_id": "wnba_entei_moneyline",
+      "after_id": "wnba_raikou_moneyline",
       "metric_deltas": {
-        "log_loss": 0.0,
-        "brier_score": 0.0,
-        "accuracy": 0.0,
-        "roc_auc": 0.0
+        "log_loss": -0.007469853803092952,
+        "brier_score": -0.003466093151772598,
+        "accuracy": -0.00917431192660545,
+        "roc_auc": 0.009611724400456656
       },
       "alerts": [],
       "warnings": []
